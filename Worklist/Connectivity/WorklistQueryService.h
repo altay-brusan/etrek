@@ -1,0 +1,85 @@
+#ifndef WORKLISTQUERYSERVICE_H
+#define WORKLISTQUERYSERVICE_H
+
+#pragma once
+
+#include <QVector>
+#include <QList>
+#include <QTimer>
+#include <memory>
+#include "RisConnectionSetting.h"
+#include "dcmtk/dcmdata/dcdatset.h"
+#include "dcmtk/dcmnet/scu.h"
+#include "Result.h"
+#include "AppLogger.h"
+#include "TranslationProvider.h"
+#include "DicomTag.h"
+#include "WorklistEntry.h"
+#include "WorklistPresentationContext.h"
+#include <QMutex>
+
+using namespace Etrek::Core::Log;
+using namespace Etrek::Core::Data::Model;
+using namespace Etrek::Worklist::Data::Entity;
+
+
+class WorklistQueryServiceTest;
+
+class WorklistQueryService : public QObject {
+    Q_OBJECT
+
+    friend class WorklistQueryServiceTest;
+
+public:
+    explicit WorklistQueryService(QObject* parent = nullptr);
+    WorklistQueryService(const WorklistQueryService&) = delete;
+    WorklistQueryService(WorklistQueryService&& other) noexcept;
+
+    ~WorklistQueryService();
+
+    void setWorklistTags(const QList<DicomTag>& tags);
+    void setIdentifierTags(const QList<DicomTag>& identifiers);
+    void setPresentationContext(const WorklistPresentationContext& context);
+    void setSettings(std::shared_ptr<RisConnectionSetting> settings);
+
+    // Explicitly prepare the DICOM association (add contexts + negotiate)
+    Result<QString> prepareAssociation();
+
+    // Release association explicitly
+    Result<QString> releaseAssociation();
+
+    QList<WorklistEntry> getWorklistEntries();
+    Result<QString> echoRis();
+
+signals:
+    void worklistEntriesReceived(const QList<WorklistEntry>& worklistEntries);
+
+private:
+    std::unique_ptr<DcmDataset> createWorklistQuery(const QList<DicomTag>& queryTags) noexcept;
+
+
+    Result<QString> initNetwork();
+    Result<QString> negotiateTheAssociation();
+
+    // Adds a single presentation context (for echo or find)
+    Result<int> addPresentationContextForOperation(const QString& operation);
+
+    void setupTheConnectionParameters();
+    bool isConnected();
+
+    WorklistEntry parseDatasetToWorklist(DcmDataset* dataset, const QVector<DicomTag>& dicomTags);
+
+    void reconnect();
+
+    // Members
+    QList<DicomTag> m_identifierTags;
+    QList<DicomTag> m_worklistTags;
+    std::shared_ptr<RisConnectionSetting> m_settings = nullptr;
+    WorklistPresentationContext m_presentationContext;
+    TranslationProvider* translator;
+    QMutex m_scuMutex;
+    std::unique_ptr<DcmSCU> m_dcmScu;
+    std::shared_ptr<AppLogger> logger;
+};
+
+#endif // WORKLISTQUERYSERVICE_H
