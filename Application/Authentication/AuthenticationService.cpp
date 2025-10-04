@@ -36,18 +36,18 @@ namespace Etrek::Application::Authentication
         const auto& inactiveUsers = inactiveResult.value;
         UserMangerDialog manager(activeUsers, inactiveUsers, roles, translator);
 
-        connect(&manager, &UserMangerDialog::AddUserRequested, this, &AuthenticationService::OnAddUserRequested);
-        connect(&manager, &UserMangerDialog::UpdateUserRequested, this, &AuthenticationService::OnUpdateUserRequested);
-        connect(&manager, &UserMangerDialog::DeleteUserRequested, this, &AuthenticationService::OnDeleteUserRequested);
+        connect(&manager, &UserMangerDialog::AddUserRequested, this, &AuthenticationService::onAddUserRequested);
+        connect(&manager, &UserMangerDialog::UpdateUserRequested, this, &AuthenticationService::onUpdateUserRequested);
+        connect(&manager, &UserMangerDialog::DeleteUserRequested, this, &AuthenticationService::onDeleteUserRequested);
         //selectedUser
 
 
-        connect(this, &AuthenticationService::UserCreatedSuccessfully, &manager, &UserMangerDialog::onUserCreated);
-        connect(this, &AuthenticationService::FailedToCreateUser, &manager, &UserMangerDialog::onUserCreationFailed);
-        connect(this, &AuthenticationService::UserUpdatedSuccessfully, &manager, &UserMangerDialog::onUserUpdated);
-        connect(this, &AuthenticationService::FailedToUpdateUser, &manager, &UserMangerDialog::onUserUpdateFailed);
-        connect(this, &AuthenticationService::UserDeletedSuccessfully, &manager, &UserMangerDialog::onUserDeleted);
-        connect(this, &AuthenticationService::FailedToDeleteUser, &manager, &UserMangerDialog::onUserDeletionFailed);
+        connect(this, &AuthenticationService::userCreatedSuccessfully, &manager, &UserMangerDialog::onUserCreated);
+        connect(this, &AuthenticationService::failedToCreateUser, &manager, &UserMangerDialog::onUserCreationFailed);
+        connect(this, &AuthenticationService::userUpdatedSuccessfully, &manager, &UserMangerDialog::onUserUpdated);
+        connect(this, &AuthenticationService::failedToUpdateUser, &manager, &UserMangerDialog::onUserUpdateFailed);
+        connect(this, &AuthenticationService::userDeletedSuccessfully, &manager, &UserMangerDialog::onUserDeleted);
+        connect(this, &AuthenticationService::failedToDeleteUser, &manager, &UserMangerDialog::onUserDeletionFailed);
 
         // This will block the execution until the dialog is accepted or rejected.
         if (manager.exec() == QDialog::Accepted) {
@@ -56,7 +56,7 @@ namespace Etrek::Application::Authentication
         }
     }
 
-    Result<std::optional<Entity::User>> AuthenticationService::DisplayLoginDialog() const
+    Result<std::optional<Entity::User>> AuthenticationService::displayLoginDialog() const
     {
         // Get all active users from the repository
         auto activeResult = m_repository.getAllActiveUsers();
@@ -98,7 +98,7 @@ namespace Etrek::Application::Authentication
         }
     }
 
-    void AuthenticationService::OnAddUserRequested(User& user, const QString& password) {
+    void AuthenticationService::onAddUserRequested(User& user, const QString& password) {
         // handle creation: validate, encrypt, save to DB
         QString encryptedPassword = m_securityService.encryptPassword(password);
         user.PasswordHash = encryptedPassword;
@@ -107,15 +107,15 @@ namespace Etrek::Application::Authentication
         {
             QString error = translator->getErrorMessage(AUTH_FAILED_TO_CREATE_USER_ERROR_MSG).arg(createdUser.message);
             logger->LogError(error);
-            emit FailedToCreateUser(user, createdUser.message);
+            emit failedToCreateUser(user, createdUser.message);
         }
         else
         {
-            emit UserCreatedSuccessfully(user);
+            emit userCreatedSuccessfully(user);
         }
     }
 
-    void AuthenticationService::OnUpdateUserRequested(User& user, const QString& password) {
+    void AuthenticationService::onUpdateUserRequested(User& user, const QString& password) {
         // handle creation: validate, encrypt, save to DB
         QString encryptedPassword = m_securityService.encryptPassword(password);
         user.PasswordHash = encryptedPassword;
@@ -124,26 +124,26 @@ namespace Etrek::Application::Authentication
         {
             QString error = translator->getErrorMessage(AUTH_FAILED_TO_UPDATE_USER_ERROR_MSG).arg(updatedUser.message);
             logger->LogError(error);
-            emit FailedToUpdateUser(user, updatedUser.message);
+            emit failedToUpdateUser(user, updatedUser.message);
         }
         else
         {
-            emit UserUpdatedSuccessfully(user);
+            emit userUpdatedSuccessfully(user);
         }
     }
 
-    void AuthenticationService::OnDeleteUserRequested(User& user)
+    void AuthenticationService::onDeleteUserRequested(User& user)
     {
         Result<User> deletedUserResult = m_repository.deleteUser(user);
         if (!deletedUserResult.isSuccess)
         {
             QString error = translator->getErrorMessage(AUTH_FAILED_TO_DELETE_USER_ERROR_MSG).arg(deletedUserResult.message);
             logger->LogError(error);
-            emit FailedToDeleteUser(user, deletedUserResult.message);
+            emit failedToDeleteUser(user, deletedUserResult.message);
         }
         else
         {
-            emit UserDeletedSuccessfully(user);
+            emit userDeletedSuccessfully(user);
         }
     }
 
@@ -156,7 +156,7 @@ namespace Etrek::Application::Authentication
             displayUserManagerDialog();
 
         }
-        Result<std::optional<Entity::User>> loginDialogResult = DisplayLoginDialog();
+        Result<std::optional<Entity::User>> loginDialogResult = displayLoginDialog();
 
         return loginDialogResult;
     }

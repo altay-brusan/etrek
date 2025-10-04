@@ -28,22 +28,22 @@ namespace Etrek::Application::Authentication {
 
 
     signals:
-        void UserCreatedSuccessfully(User& user);
-        void FailedToCreateUser(User& user, QString& failReason);
-        void UserUpdatedSuccessfully(User& user);
-        void FailedToUpdateUser(User& user, QString& failReason);
-        void UserDeletedSuccessfully(User& user);
-        void FailedToDeleteUser(User& user, QString& failReason);
+        void userCreatedSuccessfully(User& user);
+        void failedToCreateUser(User& user, QString& failReason);
+        void userUpdatedSuccessfully(User& user);
+        void failedToUpdateUser(User& user, QString& failReason);
+        void userDeletedSuccessfully(User& user);
+        void failedToDeleteUser(User& user, QString& failReason);
 
     private slots:
-        void OnAddUserRequested(User& user, const QString& password);
-        void OnUpdateUserRequested(User& user, const QString& password);
-        void OnDeleteUserRequested(User& user);
+        void onAddUserRequested(User& user, const QString& password);
+        void onUpdateUserRequested(User& user, const QString& password);
+        void onDeleteUserRequested(User& user);
 
 
     private:
         void displayUserManagerDialog() const;
-        Result<std::optional<Entity::User>> DisplayLoginDialog() const;
+        Result<std::optional<Entity::User>> displayLoginDialog() const;
 
 
         CryptoManager m_securityService;
