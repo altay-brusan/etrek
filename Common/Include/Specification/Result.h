@@ -7,84 +7,87 @@
 #include <QVariant>
 #include <type_traits>
 
-// ====================== Generic Result<T> ======================
-template <typename T>
-class Result
+namespace Etrek::Specification
 {
-public:
-    bool isSuccess = false;
-    QString message;
-    T value;
-
-    Result() = default;
-
-    Result(bool success, const QString& msg, const T& val)
-        : isSuccess(success), message(msg), value(val) {
-    }
-
-    static Result<T> Success(const T& val, const QString& msg = "Success")
+    // ====================== Generic Result<T> ======================
+    template <typename T>
+    class Result
     {
-        return Result<T>(true, msg, val);
-    }
+    public:
+        bool isSuccess = false;
+        QString message;
+        T value;
 
-    static Result<T> Failure(const QString& msg)
-    {
-        return Result<T>(false, msg, T{});
-    }
+        Result() = default;
 
-    QJsonObject toJson() const
-    {
-        QJsonObject obj;
-        obj["isSuccess"] = isSuccess;
-        obj["message"] = message;
-
-        if constexpr (std::is_same_v<T, QString>) {
-            obj["value"] = value;
-        }
-        else if constexpr (std::is_arithmetic_v<T>) {
-            obj["value"] = QJsonValue::fromVariant(QVariant::fromValue(value));
-        }
-        else {
-            // For complex T you can extend this as needed
-            obj["value"] = QJsonValue("Unsupported");
+        Result(bool success, const QString& msg, const T& val)
+            : isSuccess(success), message(msg), value(val) {
         }
 
-        return obj;
-    }
-};
+        static Result<T> Success(const T& val, const QString& msg = "Success")
+        {
+            return Result<T>(true, msg, val);
+        }
 
-// ====================== Specialization: Result<void> ======================
-template <>
-class Result<void>
-{
-public:
-    bool isSuccess = false;
-    QString message;
+        static Result<T> Failure(const QString& msg)
+        {
+            return Result<T>(false, msg, T{});
+        }
 
-    Result() = default;
+        QJsonObject toJson() const
+        {
+            QJsonObject obj;
+            obj["isSuccess"] = isSuccess;
+            obj["message"] = message;
 
-    Result(bool success, const QString& msg)
-        : isSuccess(success), message(msg) {
-    }
+            if constexpr (std::is_same_v<T, QString>) {
+                obj["value"] = value;
+            }
+            else if constexpr (std::is_arithmetic_v<T>) {
+                obj["value"] = QJsonValue::fromVariant(QVariant::fromValue(value));
+            }
+            else {
+                // For complex T you can extend this as needed
+                obj["value"] = QJsonValue("Unsupported");
+            }
 
-    static Result<void> Success(const QString& msg = "Success")
+            return obj;
+        }
+    };
+
+    // ====================== Specialization: Result<void> ======================
+    template <>
+    class Result<void>
     {
-        return Result<void>(true, msg);
-    }
+    public:
+        bool isSuccess = false;
+        QString message;
 
-    static Result<void> Failure(const QString& msg)
-    {
-        return Result<void>(false, msg);
-    }
+        Result() = default;
 
-    QJsonObject toJson() const
-    {
-        QJsonObject obj;
-        obj["isSuccess"] = isSuccess;
-        obj["message"] = message;
-        obj["value"] = QJsonValue(); // null
-        return obj;
-    }
-};
+        Result(bool success, const QString& msg)
+            : isSuccess(success), message(msg) {
+        }
+
+        static Result<void> Success(const QString& msg = "Success")
+        {
+            return Result<void>(true, msg);
+        }
+
+        static Result<void> Failure(const QString& msg)
+        {
+            return Result<void>(false, msg);
+        }
+
+        QJsonObject toJson() const
+        {
+            QJsonObject obj;
+            obj["isSuccess"] = isSuccess;
+            obj["message"] = message;
+            obj["value"] = QJsonValue(); // null
+            return obj;
+        }
+    };
+}
 
 #endif // RESULT_H

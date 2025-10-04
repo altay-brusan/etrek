@@ -16,6 +16,7 @@ namespace Etrek::Worklist::Repository
     using namespace Etrek::Core::Log;
     using namespace Etrek::Core::Data::Model;
     using namespace Etrek::Worklist::Data::Entity;
+    using Etrek::Specification::Result;
     class WorklistFieldConfigurationRepository
     {
     public:

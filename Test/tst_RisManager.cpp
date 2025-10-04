@@ -16,33 +16,33 @@ public:
     explicit MockWorklistRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting)
         : WorklistRepository(std::move(connectionSetting)) {}
 
-    Result<QList<WorklistProfile>> GetProfiles() const override {
+    Etrek::Specification::Result<QList<WorklistProfile>> GetProfiles() const override {
         WorklistProfile profile;
         profile.Id = 1;
         profile.Context.Id = 1;
         profile.Context.TransferSyntaxUid = "1.2.840.10008.1.2";
         profile.Context.ProfileId = 1;
-        return Result<QList<WorklistProfile>>::Success({ profile });
+        return Etrek::Specification::Result<QList<WorklistProfile>>::Success({ profile });
     }
 
-    Result<QList<DicomTag>> GetTagsByProfile(int) const override {
-        return Result<QList<DicomTag>>::Success({
+    Etrek::Specification::Result<QList<DicomTag>> GetTagsByProfile(int) const override {
+        return Etrek::Specification::Result<QList<DicomTag>>::Success({
             { -1,"Patient ID" ,"PatientID", 0x0010, 0x0020, 0, 0, true }
         });
     }
 
-    Result<WorklistEntry> GetWorklistEntryById(int) const override {
-        return Result<WorklistEntry>::Failure("Not found");
+    Etrek::Specification::Result<WorklistEntry> GetWorklistEntryById(int) const override {
+        return Etrek::Specification::Result<WorklistEntry>::Failure("Not found");
     }
 
-    Result<int> CreateWorklistEntry(const WorklistEntry& entry) override {
+    Etrek::Specification::Result<int> CreateWorklistEntry(const WorklistEntry& entry) override {
         created.append(entry);
-        return Result<int>::Success(1);
+        return Etrek::Specification::Result<int>::Success(1);
     }
 
-    Result<int> UpdateWorklistEntry(const WorklistEntry& entry) override {
+    Etrek::Specification::Result<int> UpdateWorklistEntry(const WorklistEntry& entry) override {
         updated.append(entry);
-        return Result<int>::Success(1);
+        return Etrek::Specification::Result<int>::Success(1);
     }
 
     QList<WorklistEntry> created;

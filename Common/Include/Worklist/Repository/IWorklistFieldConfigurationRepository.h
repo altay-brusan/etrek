@@ -10,6 +10,8 @@
 namespace Etrek::Worklist::Repository
 {
 
+    using Etrek::Specification::Result;
+
     class IWorklistFieldConfigurationRepository
     {
     public:       

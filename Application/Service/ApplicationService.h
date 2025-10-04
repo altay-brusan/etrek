@@ -31,6 +31,8 @@ using namespace Etrek::Worklist::Connectivity;
 
 namespace Etrek::Application::Service
 {
+    using Etrek::Specification::LaunchMode;
+
     class ApplicationService : public QObject
     {
         Q_OBJECT
