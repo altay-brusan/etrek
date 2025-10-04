@@ -30,7 +30,7 @@ void SystemSettingPageDelegate::attachDelegates(const QVector<QObject*>& list)
         if (!delegates.contains(o)) delegates.append(QPointer<QObject>(o));
 }
 
-SystemSettingPage* SystemSettingPageDelegate::GetPage() const
+SystemSettingPage* SystemSettingPageDelegate::getPage() const
 {
     return m_page;
 }

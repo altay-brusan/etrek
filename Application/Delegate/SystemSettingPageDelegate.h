@@ -21,7 +21,7 @@ public:
 	
 	QString name() const override;
 	void attachDelegates(const QVector<QObject*>& delegates) override;
-	SystemSettingPage* GetPage() const;
+        SystemSettingPage* getPage() const;
 	~SystemSettingPageDelegate();
 
 signals:
