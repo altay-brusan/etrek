@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.19)
-project(Core LANGUAGES CXX)
+project(Application LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -39,7 +39,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
 
 qt_add_resources(MY_APP_RES "resources.qrc")
 
-qt_add_library(Application SHARED
+add_library(Application SHARED
     ${SOURCES}
     ${HEADERS}
     ${MY_APP_RES}
