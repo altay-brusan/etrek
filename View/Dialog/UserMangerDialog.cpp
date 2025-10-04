@@ -51,7 +51,7 @@ UserMangerDialog::UserMangerDialog(const QVector<Entity::User>& activeUsers,
     //onActiveUserChanged(ui->activeUsersComboBox->currentIndex());
     //ui->rolesComboBox->setItemData(0, 0, Qt::UserRole - 1); // Disable
 
-
+    initStyles();
 }
 
 void UserMangerDialog::onActiveUserChanged(int index)
@@ -435,4 +435,145 @@ void UserMangerDialog::onOkBtnClicked()
 UserMangerDialog::~UserMangerDialog()
 {
     delete ui;
+}
+
+
+void UserMangerDialog::initStyles()
+{
+    // ----- minimal styles -----
+    const char* lineCss =
+        "QLineEdit {"
+        "  border:1px solid rgb(120,120,120);"
+        "  border-radius:4px;"
+        "  background:rgb(74,74,74);"
+        "  min-height:20px;"
+        "  padding:2px 6px;"
+        "   width:26px; "
+        "}"
+        "QLineEdit:focus {"
+        "  border-color: rgb(160,160,160);"
+        "}"
+        /* invalid IP cue (red border when property invalid=true) */
+        "QLineEdit#hostIPLineEdit[invalid=\"true\"] {"
+        "  border:1px solid rgb(200,80,80);"
+        "}";
+
+    const char* spinCss =
+        "QSpinBox {"
+        "  border:1px solid rgb(120,120,120); border-radius:4px;"
+        "  background:rgb(74,74,74); min-height:20px; padding:2px 6px; }"
+        "QSpinBox:focus { border-color: rgb(160,160,160); }";
+
+    const char* listCss =
+        "QListView {"
+        "  border: 1px solid rgb(120,120,120);"
+        "  border-radius: 4px;"
+        "  background: rgb(74,74,74);"   // contrast with the container bg
+        "}";
+
+    const char* buttonCss =
+        "QPushButton {"
+        "  border:1px solid rgb(120,120,120);"
+        "  border-radius:4px;"
+        "  background:rgb(74,74,74);"
+        "  min-height:20px;"
+        "  padding:4px 12px;"
+        "  color: rgb(230,230,230);"
+        "}"
+        "QPushButton:hover {"
+        "  border-color: rgb(160,160,160);"
+        "  background:rgb(92,92,92);"
+        "}"
+        "QPushButton:pressed {"
+        "  background:rgb(64,64,64);"
+        "}"
+        "QPushButton:focus {"
+        "  border-color: rgb(180,180,180);"
+        "}"
+        "QPushButton:disabled {"
+        "  border-color: rgb(80,80,80);"
+        "  background:rgb(60,60,60);"
+        "  color: rgb(130,130,130);"
+        "}";
+
+    const char* checkCss =
+        "QCheckBox { spacing: 8px; }"
+        "QCheckBox::indicator { width:16px; height:16px; }"
+        "QCheckBox::indicator:unchecked {"
+        "  border:1px solid rgb(120,120,120); background:rgb(74,74,74); border-radius:3px; }"
+        "QCheckBox::indicator:unchecked:hover { border-color: rgb(160,160,160); }"
+        "QCheckBox::indicator:checked {"
+        "  border:1px solid rgb(160,160,160); background:rgb(54,69,79); border-radius:3px; }";
+
+    const char* comboCss =
+        "QComboBox {"
+        "  border:1px solid rgb(120,120,120); border-radius:4px;"
+        "  background:rgb(74,74,74); min-height:20px; padding:2px 28px 2px 6px;" /* room for arrow */
+        "}"
+        "QComboBox:focus { border-color: rgb(160,160,160); }"
+
+        /* drop-down button area */
+        "QComboBox::drop-down {"
+        "  width:26px; border-left:1px solid rgb(120,120,120); margin:0;"
+        "}"
+
+        /* the arrow itself */
+        "QComboBox::down-arrow {"
+        "  image: url(:/Images/Asset/Icon/chevron-down.svg);"
+        "  width: 12px; height: 12px;"
+        "}"
+        "QComboBox::down-arrow:disabled {"
+        "  image: url(:/Images/Asset/Icon/chevron-down.svg);"
+        "  /* optional: reduce opacity via a lighter icon if you have one */"
+        "}"
+
+        /* popup list */
+        "QComboBox QAbstractItemView {"
+        "  border:1px solid rgb(120,120,120); background:rgb(74,74,74);"
+        "  selection-background-color: rgb(92,92,92);"
+        "}";
+
+    const char* groupCss =
+        "QGroupBox {"
+        "  border:1px solid rgb(120,120,120); border-radius:6px; margin-top:18px; }"
+        "QGroupBox::title { subcontrol-origin: margin; left:10px; padding:0 6px; }";
+
+    const char* tableCss =
+        "QTableView {"
+        "  border: 1px solid rgb(120,120,120);"
+        "  border-radius: 4px;"
+        "  background: rgb(74,74,74);"
+        "  gridline-color: transparent;"
+        /* Selection palette (applies to the whole view) */
+        "  selection-background-color: rgb(45,110,190);"
+        "  selection-color: rgb(235,235,235);"
+        "}"
+        /* Remove the cell focus rect so only the row highlight shows */
+        "QTableView::item:focus { outline: none; }"
+        /* Optional: no per-item override, let the palette above drive it */
+        /* Header */
+        "QHeaderView::section {"
+        "  background-color: rgb(64,64,64);"
+        "  color: rgb(220,220,220);"
+        "  padding: 4px 8px;"
+        "  border: 1px solid rgb(100,100,100);"
+        "  font-weight: bold;"
+        "}"
+        "QHeaderView { border: none; }";
+
+    ui->userNameLineEdit->setStyleSheet(lineCss);
+    ui->nameLineEdit->setStyleSheet(lineCss);
+    ui->surnameLineEdit->setStyleSheet(lineCss);
+    ui->passwordLineEdit->setStyleSheet(lineCss);
+    ui->confirmPasswordLineEdit->setStyleSheet(lineCss);
+    ui->rolesComboBox->setStyleSheet(comboCss);
+    ui->activeUsersComboBox->setStyleSheet(comboCss);
+    ui->deactivatedUsersListComboBox->setStyleSheet(comboCss);
+    ui->activeCheckBox->setStyleSheet(checkCss);
+    
+    ui->addUserBtn->setStyleSheet(buttonCss);
+    ui->updateUserBtn->setStyleSheet(buttonCss);
+    ui->deleteUserBtn->setStyleSheet(buttonCss);
+    ui->okBtn->setStyleSheet(buttonCss);
+
 }

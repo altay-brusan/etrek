@@ -55,6 +55,7 @@ private slots:
 private:
 
     void UpdateActionButtonsState();
+    void initStyles();
 
     Ui::UserMangerDialog *ui;
     QVector<Entity::User> m_activeUsers;
