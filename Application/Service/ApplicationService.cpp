@@ -101,16 +101,22 @@ namespace Etrek::Application::Service
     }
     
     void ApplicationService::closeApplication()
-    {        
+    {
+        if (m_mainWindowDelegate) {
+            m_mainWindowDelegate->deleteLater();
+            m_mainWindowDelegate = nullptr;
+        }
 
         if (m_mainWindow) {
             m_mainWindow->close();
+            m_mainWindow.reset();
         }
+
         LoggerProvider::Instance().Shutdown();
 
         // Defer quit until event loop starts
-        QTimer::singleShot(0, qApp, &QCoreApplication::quit);       
-     
+        QTimer::singleShot(0, qApp, &QCoreApplication::quit);
+
     }
 
     void ApplicationService::constructMainWindow()
@@ -130,13 +136,33 @@ namespace Etrek::Application::Service
             progressCallback("Loading screens...", 10);
         }
 
-		DelegateParameter params;
-		params.dbConnection = m_databaseConnectionSetting;
+        if (m_mainWindowDelegate) {
+            m_mainWindowDelegate->deleteLater();
+            m_mainWindowDelegate = nullptr;
+        }
 
-		MainWindowBuilder builder;
-		auto result = builder.build(params,nullptr, this);
-		//m_mainWindow = result.first; we should not make connection to view here unless it is very exceptional case
-		m_mainWindowDelegate = result.second;
+        if (m_mainWindow) {
+            m_mainWindow->close();
+            m_mainWindow.reset();
+        }
+
+        DelegateParameter params;
+        params.dbConnection = m_databaseConnectionSetting;
+
+        MainWindowBuilder builder;
+        auto result = builder.build(params, nullptr, this);
+        m_mainWindow.reset(result.first);
+        m_mainWindowDelegate = result.second;
+
+        if (!m_mainWindow) {
+            logger->LogError("Failed to build main window instance.");
+            return;
+        }
+
+        if (!m_mainWindowDelegate) {
+            logger->LogError("Failed to build main window delegate.");
+            return;
+        }
 
     }
 
@@ -146,6 +172,11 @@ namespace Etrek::Application::Service
 			logger->LogError("loading main window failed!");
 			return;
 		}
+        if (!m_mainWindow) {
+            logger->LogError("Main window instance is not available for display.");
+            return;
+        }
+
         // Show the main window
         m_mainWindowDelegate->show();
     }
@@ -240,7 +271,15 @@ namespace Etrek::Application::Service
 
     ApplicationService::~ApplicationService()
     {
-        delete m_mainWindow;
+        if (m_mainWindowDelegate) {
+            m_mainWindowDelegate->deleteLater();
+            m_mainWindowDelegate = nullptr;
+        }
+
+        if (m_mainWindow) {
+            m_mainWindow->close();
+            m_mainWindow.reset();
+        }
     }
 
 }

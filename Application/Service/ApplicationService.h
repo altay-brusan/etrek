@@ -2,6 +2,7 @@
 #define APPLICATION_SERVICE_H
 
 #include <QObject>
+#include <memory>
 #include "LaunchMode.h"
 #include "MainWindow.h"
 #include "AppLogger.h"
@@ -54,8 +55,8 @@ namespace Etrek::Application::Service
         std::unique_ptr<ILaunchStrategy> createLaunchStrategy(LaunchMode mode);
 
 
-        MainWindow* m_mainWindow = nullptr;
-        MainWindowDelegate* m_mainWindowDelegate;
+        std::unique_ptr<MainWindow> m_mainWindow;
+        MainWindowDelegate* m_mainWindowDelegate = nullptr;
         std::shared_ptr<AppLogger> logger;
         SettingProvider m_settingProvider;
         TranslationProvider* translator;
