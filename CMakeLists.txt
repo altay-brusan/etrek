@@ -8,6 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})      # .exe here
 
 
 # Globally declare the Core project location
+set(CMAKE_Application_DIRECTORY "${CMAKE_SOURCE_DIR}/Application")
 set(CMAKE_CORE_DIRECTORY "${CMAKE_SOURCE_DIR}/Core")
 set(CMAKE_VIEW_DIRECTORY "${CMAKE_SOURCE_DIR}/View")
 set(CMAKE_DEVICE_DIRECTORY "${CMAKE_SOURCE_DIR}/Device")
