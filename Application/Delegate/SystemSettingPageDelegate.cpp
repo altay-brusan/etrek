@@ -1,5 +1,4 @@
 #include "SystemSettingPageDelegate.h"
-#include "SystemSettingPageDelegate.h"
 #include "SystemSettingPage.h"
 #include <QObject>
 
