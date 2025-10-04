@@ -52,10 +52,10 @@ namespace
         SignalGuard(SignalGuard&&) = delete;
         SignalGuard& operator=(SignalGuard&&) = delete;
 
-        explicit SignalGuard(std::initializer_list<int> signals)
+        explicit SignalGuard(std::initializer_list<int> sigs)
         {
-            handlers_.reserve(signals.size());
-            for (int sig : signals) {
+            handlers_.reserve(sigs.size());
+            for (int sig : sigs) {
                 handlers_.push_back({sig, std::signal(sig, handleSignal)});
             }
         }
@@ -85,7 +85,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     // Single instance enforcement
-    QSharedMemory sharedMemory(QStringLiteral(kSingleInstanceKey));
+    QSharedMemory sharedMemory(QString::fromLatin1(kSingleInstanceKey));
+
     if (!sharedMemory.create(1)) {
         QMessageBox::warning(nullptr, "Already Running", "Another instance of this application is already running.");
         return 1;
