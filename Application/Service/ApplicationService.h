@@ -26,6 +26,7 @@ using namespace Etrek::Core::Setting;
 using namespace Etrek::Core::Data::Model;
 using namespace Etrek::Core::Repository;
 using namespace Etrek::Core::Security;
+using namespace Etrek::Application::Delegate;
 using namespace Etrek::Application::Authentication;
 using namespace Etrek::Worklist::Connectivity;
 
