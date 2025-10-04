@@ -1,6 +1,4 @@
 #include "SplashScreenManager.h"
-#include "SplashScreenManager.h"
-#include "SplashScreenManager.h"
 
 namespace Etrek::Application::Service
 {
