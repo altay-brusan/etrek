@@ -957,26 +957,6 @@ VALUES
  'Atatürk Cd. No:202, Muratpaşa, 07010 Antalya, Türkiye',
  'info@blueskyschool.edu | +90 242 444 22 22', 0);
 
-
-INSERT INTO detectors (
-    device_id, manufacturer, model_number,
-    part_number, serial_number, type_number, technical_specifications,
-    manufacture_date, installation_date, calibration_date,
-    is_active, detector_type, detector_material, pixel_spacing,
-    rows, columns, bits_allocated, bits_stored, high_bit
-)
-VALUES
-    (1, 'Varian', 'PaxScan 4030CB', NULL, '12345-67890', NULL, 'CsI, 0.194 mm pixel size',
-     '2011-06-15', '2012-01-01', '2016-08-14',
-     TRUE, 'Flat Panel', 'CsI', '0.194 mm',
-     2048, 1536, 16, 12, 11),
-    (1, 'Canon', 'CXDI-70C', NULL, 'A1B2C3D4E5', NULL, 'GOS, 0.148 mm pixel size',
-     '2013-09-20', '2014-02-10', '2017-05-22',
-     TRUE, 'Flat Panel', 'GOS', '0.148 mm',
-     3072, 3840, 16, 14, 13);
-
-
-
 INSERT INTO general_equipments 
     (device_serial_number, device_uid, manufacturer, model_name, station_name, institution_id, department_name, date_of_last_calibration, time_of_last_calibration, date_of_manufacture, software_versions, gantry_id, is_active)
 VALUES
@@ -984,17 +964,17 @@ VALUES
 
 
 INSERT INTO generators (
-  device_id, manufacturer, model_number,
+  manufacturer, model_number,
   part_number, serial_number, type_number, technical_specifications,
   manufacture_date, installation_date, calibration_date,
   is_active, is_output1_active, is_output2_active
 )
 VALUES
-  (1,  'Gulmay',  NULL,
+  ('Gulmay',  NULL,
    NULL, '0073-0313', NULL, 'voltage 220V 3.0A',
    '2010-01-01', '2012-01-01', '2016-08-14',
    TRUE, FALSE, FALSE),
-  (1, 'Sedecal', 'SHF-535',
+  ('Sedecal', 'SHF-535',
    NULL, 'G-36421', NULL, '50KW 63KVA',
    '2010-01-01', '2010-08-16', '2016-08-14',
    TRUE, FALSE, FALSE);
