@@ -42,7 +42,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
 
 qt_add_resources(MY_APP_RES "resources.qrc")
 
-qt_add_library(Core SHARED
+add_library(Core SHARED
     ${SOURCES}
     ${HEADERS}
     ${MY_APP_RES}
