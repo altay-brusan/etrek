@@ -30,7 +30,7 @@ namespace Etrek::Application::Delegate
         }
     }
 
-    SystemSettingPage* SystemSettingPageDelegate::GetPage() const
+    SystemSettingPage* SystemSettingPageDelegate::getPage() const
     {
         return m_page;
     }
