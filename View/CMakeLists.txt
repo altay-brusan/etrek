@@ -52,7 +52,7 @@ file(GLOB_RECURSE UIS CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.ui
 )
 
-qt_add_library(View SHARED
+add_library(View SHARED
     ${SOURCES}
     ${HEADERS}
     ${MY_APP_RES}
