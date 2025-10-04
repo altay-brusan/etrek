@@ -38,7 +38,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${CMAKE_CORE_DIRECTORY}/Data/Model/*.h
 )
 
-qt_add_library(Worklist SHARED
+add_library(Worklist SHARED
     ${SOURCES}
     ${HEADERS}
 )
