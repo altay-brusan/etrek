@@ -29,6 +29,8 @@ using namespace Etrek::ScanProtocol::Data::Entity;
 
 namespace Etrek::ScanProtocol::Repository {
 
+    using Etrek::Specification::Result;
+
     class ScanProtocolRepository
     {
     public:

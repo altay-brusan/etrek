@@ -162,7 +162,7 @@ QVector<ImageComment> ImageCommentRepository::getAllComments() const
     return out;
 }
 
-Result<ImageComment> ImageCommentRepository::addComment(const ImageComment& comment) const
+Etrek::Specification::Result<ImageComment> ImageCommentRepository::addComment(const ImageComment& comment) const
 {
     const QString cx = "comments_add_" + QString::number(QRandomGenerator::global()->generate());
     ImageComment inserted = comment;
@@ -172,12 +172,12 @@ Result<ImageComment> ImageCommentRepository::addComment(const ImageComment& comm
         if (!db.open()) {
             const auto err = errOpen(db, translator);
             logger->LogError(err);
-            return Result<ImageComment>::Failure(err);
+            return Etrek::Specification::Result<ImageComment>::Failure(err);
         }
 
         if (comment.Heading.trimmed().isEmpty() && comment.Comment.trimmed().isEmpty()) {
             const auto err = QStringLiteral("Either Heading or Comment must be provided.");
-            return Result<ImageComment>::Failure(err);
+            return Etrek::Specification::Result<ImageComment>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -193,7 +193,7 @@ Result<ImageComment> ImageCommentRepository::addComment(const ImageComment& comm
         if (!q.exec()) {
             const auto err = errExec(q, translator);
             logger->LogError(err);
-            return Result<ImageComment>::Failure(err);
+            return Etrek::Specification::Result<ImageComment>::Failure(err);
         }
 
         const QVariant newId = q.lastInsertId();
@@ -203,13 +203,13 @@ Result<ImageComment> ImageCommentRepository::addComment(const ImageComment& comm
     }
 
     QSqlDatabase::removeDatabase(cx);
-    return Result<ImageComment>::Success(inserted, "Inserted");
+    return Etrek::Specification::Result<ImageComment>::Success(inserted, "Inserted");
 }
 
-Result<ImageComment> ImageCommentRepository::updateComment(const ImageComment& comment) const
+Etrek::Specification::Result<ImageComment> ImageCommentRepository::updateComment(const ImageComment& comment) const
 {
     if (comment.Id <= 0) {
-        return Result<ImageComment>::Failure("Invalid comment id.");
+        return Etrek::Specification::Result<ImageComment>::Failure("Invalid comment id.");
     }
 
     const QString cx = "comments_update_" + QString::number(QRandomGenerator::global()->generate());
@@ -219,7 +219,7 @@ Result<ImageComment> ImageCommentRepository::updateComment(const ImageComment& c
         if (!db.open()) {
             const auto err = errOpen(db, translator);
             logger->LogError(err);
-            return Result<ImageComment>::Failure(err);
+            return Etrek::Specification::Result<ImageComment>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -239,22 +239,22 @@ Result<ImageComment> ImageCommentRepository::updateComment(const ImageComment& c
         if (!q.exec()) {
             const auto err = errExec(q, translator);
             logger->LogError(err);
-            return Result<ImageComment>::Failure(err);
+            return Etrek::Specification::Result<ImageComment>::Failure(err);
         }
 
         if (q.numRowsAffected() == 0) {
-            return Result<ImageComment>::Failure("No rows updated (comment not found?).");
+            return Etrek::Specification::Result<ImageComment>::Failure("No rows updated (comment not found?).");
         }
     }
 
     QSqlDatabase::removeDatabase(cx);
-    return Result<ImageComment>::Success(comment, "Updated");
+    return Etrek::Specification::Result<ImageComment>::Success(comment, "Updated");
 }
 
-Result<ImageComment> ImageCommentRepository::removeComment(const ImageComment& comment) const
+Etrek::Specification::Result<ImageComment> ImageCommentRepository::removeComment(const ImageComment& comment) const
 {
     if (comment.Id <= 0) {
-        return Result<ImageComment>::Failure("Invalid comment id.");
+        return Etrek::Specification::Result<ImageComment>::Failure("Invalid comment id.");
     }
 
     const QString cx = "comments_delete_" + QString::number(QRandomGenerator::global()->generate());
@@ -264,7 +264,7 @@ Result<ImageComment> ImageCommentRepository::removeComment(const ImageComment& c
         if (!db.open()) {
             const auto err = errOpen(db, translator);
             logger->LogError(err);
-            return Result<ImageComment>::Failure(err);
+            return Etrek::Specification::Result<ImageComment>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -277,16 +277,16 @@ Result<ImageComment> ImageCommentRepository::removeComment(const ImageComment& c
         if (!q.exec()) {
             const auto err = errExec(q, translator);
             logger->LogError(err);
-            return Result<ImageComment>::Failure(err);
+            return Etrek::Specification::Result<ImageComment>::Failure(err);
         }
 
         if (q.numRowsAffected() == 0) {
-            return Result<ImageComment>::Failure("No rows deleted (comment not found?).");
+            return Etrek::Specification::Result<ImageComment>::Failure("No rows deleted (comment not found?).");
         }
     }
 
     QSqlDatabase::removeDatabase(cx);
-    return Result<ImageComment>::Success(comment, "Deleted");
+    return Etrek::Specification::Result<ImageComment>::Success(comment, "Deleted");
 }
 
 ImageCommentRepository::~ImageCommentRepository() = default;

@@ -56,12 +56,12 @@ void WorklistQueryService::setSettings(std::shared_ptr<RisConnectionSetting> set
     setupTheConnectionParameters();
 }
 
-Result<QString> WorklistQueryService::prepareAssociation()
+Etrek::Specification::Result<QString> WorklistQueryService::prepareAssociation()
 {
      //QMutexLocker locker(&m_scuMutex);
 
     if (!m_dcmScu) {
-        return Result<QString>::Failure("DICOM SCU not initialized.");
+        return Etrek::Specification::Result<QString>::Failure("DICOM SCU not initialized.");
     }
 
     // Release any existing association to start fresh
@@ -73,14 +73,14 @@ Result<QString> WorklistQueryService::prepareAssociation()
     {
         QString message = "Failed to add C-ECHO context: " + addEcho.message;
         qDebug()<<message;
-        return Result<QString>::Failure(addEcho.message);
+        return Etrek::Specification::Result<QString>::Failure(addEcho.message);
     }
     auto addFind = addPresentationContextForOperation("C-FIND");
     if (!addFind.isSuccess)
     {
         QString message = "Failed to add C-FIND context: " + addFind.message;
         qDebug()<<message;
-        return Result<QString>::Failure(addFind.message);
+        return Etrek::Specification::Result<QString>::Failure(addFind.message);
     }
     auto initNet = initNetwork();
     if (!initNet.isSuccess)
@@ -95,22 +95,22 @@ Result<QString> WorklistQueryService::prepareAssociation()
         return echo;
 
     auto message = translator->getInfoMessage(RIS_ASSOCIATION_NEGOTIATION_SUCCEED);
-    return Result<QString>::Success(message);
+    return Etrek::Specification::Result<QString>::Success(message);
 }
 
-Result<QString> WorklistQueryService::releaseAssociation()
+Etrek::Specification::Result<QString> WorklistQueryService::releaseAssociation()
 {
     if (!m_dcmScu)
-        return Result<QString>::Failure("DICOM SCU not initialized.");
+        return Etrek::Specification::Result<QString>::Failure("DICOM SCU not initialized.");
 
     OFCondition cond = m_dcmScu->releaseAssociation();
     if (cond.bad()) {
         QString err = translator->getErrorMessage(RIS_RELEASE_CONNECTION_FAILED).arg(cond.text());
         logger->LogError(err);
-        return Result<QString>::Failure(err);
+        return Etrek::Specification::Result<QString>::Failure(err);
     }
 
-    return Result<QString>::Success(translator->getInfoMessage(RIS_RELEASE_CONNECTION_SUCCEED));
+    return Etrek::Specification::Result<QString>::Success(translator->getInfoMessage(RIS_RELEASE_CONNECTION_SUCCEED));
 }
 
 QList<WorklistEntry> WorklistQueryService::getWorklistEntries()
@@ -219,7 +219,7 @@ std::unique_ptr<DcmDataset> WorklistQueryService::createWorklistQuery(const QLis
 }
 
 
-Result<QString> WorklistQueryService::echoRis()
+Etrek::Specification::Result<QString> WorklistQueryService::echoRis()
 {
     if (!isConnected()) {
         setupTheConnectionParameters();
@@ -229,43 +229,43 @@ Result<QString> WorklistQueryService::echoRis()
     if (cond.bad()) {
         QString err = translator->getErrorMessage(RIS_C_ECHO_FAILED).arg(cond.text());
         logger->LogError(err);
-        return Result<QString>::Failure(err);
+        return Etrek::Specification::Result<QString>::Failure(err);
     }
 
     QString msg = translator->getInfoMessage(RIS_C_ECHO_SUCCEED);
-    return Result<QString>::Success(msg);
+    return Etrek::Specification::Result<QString>::Success(msg);
 }
 
-Result<QString> WorklistQueryService::initNetwork()
+Etrek::Specification::Result<QString> WorklistQueryService::initNetwork()
 {
     OFCondition cond = m_dcmScu->initNetwork();
     if (cond.bad()) {
         QString err = translator->getErrorMessage(RIS_NETWORK_INIT_FAILED).arg(cond.text());
         logger->LogError(err);
-        return Result<QString>::Failure(err);
+        return Etrek::Specification::Result<QString>::Failure(err);
     }
     QString msg = translator->getInfoMessage(RIS_NETWORK_INIT_SUCCEED);
-    return Result<QString>::Success(msg);
+    return Etrek::Specification::Result<QString>::Success(msg);
 }
 
-Result<QString> WorklistQueryService::negotiateTheAssociation()
+Etrek::Specification::Result<QString> WorklistQueryService::negotiateTheAssociation()
 {
     OFCondition cond = m_dcmScu->negotiateAssociation();
     if (cond.bad()) {
         QString error = translator->getDebugMessage(RIS_ASSOCIATION_NEGOTIATION_FAILED).arg(cond.text());
         logger->LogError(error);
-        return Result<QString>::Failure(error);
+        return Etrek::Specification::Result<QString>::Failure(error);
     }
     QString msg = translator->getInfoMessage(RIS_ASSOCIATION_NEGOTIATION_SUCCEED);
-    return Result<QString>::Success(msg);
+    return Etrek::Specification::Result<QString>::Success(msg);
 }
 
-Result<int> WorklistQueryService::addPresentationContextForOperation(const QString& operation)
+Etrek::Specification::Result<int> WorklistQueryService::addPresentationContextForOperation(const QString& operation)
 {
     if (m_presentationContext.Id == -1) {
         QString message = translator->getErrorMessage(RIS_PRESENTATION_CONTEXT_NOT_SET_MSG);
         logger->LogError(message);
-        return Result<int>::Failure(message);
+        return Etrek::Specification::Result<int>::Failure(message);
     }
 
     OFString sopClassUid;
@@ -280,7 +280,7 @@ Result<int> WorklistQueryService::addPresentationContextForOperation(const QStri
     else {
         auto message = translator->getErrorMessage(RIS_INVALID_OPERATION_SPECIFIED);
         logger->LogError(message);
-        return Result<int>::Failure(message);
+        return Etrek::Specification::Result<int>::Failure(message);
     }
 
     OFList<OFString> transferSyntaxList;
@@ -290,14 +290,14 @@ Result<int> WorklistQueryService::addPresentationContextForOperation(const QStri
     if (cond.bad()) {
         QString message = translator->getDebugMessage(RIS_ADD_PRESENTATION_CONTEXT_FAILED).arg(cond.text());
         logger->LogDebug(message);
-        return Result<int>::Failure(message);
+        return Etrek::Specification::Result<int>::Failure(message);
     }
 
     int presentationNumber = m_dcmScu->findPresentationContextID(sopClassUid, transferSyntaxUid);
     if (presentationNumber == 0)
         presentationNumber = 1; // fallback, but typically should be 1 or 3
 
-    return Result<int>::Success(presentationNumber);
+    return Etrek::Specification::Result<int>::Success(presentationNumber);
 }
 
 void WorklistQueryService::setupTheConnectionParameters()

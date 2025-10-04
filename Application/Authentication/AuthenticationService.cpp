@@ -9,6 +9,8 @@
 
 namespace Etrek::Application::Authentication
 {
+    using Etrek::Specification::Result;
+
     AuthenticationService::AuthenticationService(const AuthenticationRepository& repository,
         const CryptoManager& securityService,
         QObject* parent)

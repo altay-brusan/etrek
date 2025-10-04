@@ -7,8 +7,10 @@
 
 
 using namespace Etrek::Worklist::Data::Entity;
-namespace Etrek::Worklist::Repository 
+
+namespace Etrek::Worklist::Repository
 {
+    using Etrek::Specification::Result;
 
     WorklistFieldConfigurationRepository::WorklistFieldConfigurationRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting)
         : m_connectionSetting(connectionSetting)

@@ -7,27 +7,30 @@
 #include "MainWindow.h"
 #include "DelegateParameter.h"
 
-class MainWindowDelegate : public QObject
+namespace Etrek::Application::Delegate
 {
-	Q_OBJECT
+    class MainWindowDelegate : public QObject
+    {
+        Q_OBJECT
 
-public:
-	MainWindowDelegate(const DelegateParameter& params,MainWindow* widget, QObject* parent);
-	
-	void show();
+    public:
+        MainWindowDelegate(const DelegateParameter& params, MainWindow* widget, QObject* parent);
 
-	~MainWindowDelegate();
+        void show();
 
-signals:
-	void aboutToClose();
+        ~MainWindowDelegate();
 
-private slots:
-	void onLoadSystemPageAction();
+    signals:
+        void aboutToClose();
 
-private:
-	SystemSettingPageDelegate* m_systemSettingPageDelegate{ nullptr };
-	MainWindow* m_mainWindow{ nullptr };
-	DelegateParameter m_params;
-};
+    private slots:
+        void onLoadSystemPageAction();
+
+    private:
+        SystemSettingPageDelegate* m_systemSettingPageDelegate{ nullptr };
+        MainWindow* m_mainWindow{ nullptr };
+        DelegateParameter m_params;
+    };
+}
 
 #endif // MAINWINDOWDELEGATE_H

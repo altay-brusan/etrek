@@ -30,6 +30,8 @@ using namespace Etrek::Core::Log;
 
 namespace Etrek::Device::Repository
 {
+    using Etrek::Specification::Result;
+
     class DeviceRepository
     {
     public:

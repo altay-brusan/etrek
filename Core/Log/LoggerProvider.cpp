@@ -10,6 +10,8 @@
 
 
 namespace Etrek::Core::Log {
+
+    using Etrek::Specification::Result;
     LoggerProvider& LoggerProvider::Instance()
     {
         static LoggerProvider instance;

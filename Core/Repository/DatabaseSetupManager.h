@@ -14,6 +14,8 @@ using namespace Etrek::Core::Data;
 
 namespace Etrek::Core::Repository {
 
+    using Etrek::Specification::Result;
+
     /**
      * @class DatabaseSetupManager
      * @brief Manages the initialization and setup of the database.

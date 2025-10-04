@@ -8,13 +8,15 @@
 #include "IPageAction.h"
 #include "SystemSettingPage.h"
 
-class SystemSettingPageDelegate : 
-	public QObject,
-	public IDelegate,
-	public IPageAction
+namespace Etrek::Application::Delegate
 {
-	Q_OBJECT
-	Q_INTERFACES(IDelegate IPageAction)
+    class SystemSettingPageDelegate :
+        public QObject,
+        public IDelegate,
+        public IPageAction
+    {
+        Q_OBJECT
+        Q_INTERFACES(IDelegate IPageAction)
 
 public:
 	SystemSettingPageDelegate(SystemSettingPage* page,QObject *parent);
@@ -24,17 +26,19 @@ public:
         SystemSettingPage* getPage() const;
 	~SystemSettingPageDelegate();
 
-signals:
-	void closeSettings();
-public slots:
-	void apply() override;
-	void accept() override;
-	void reject() override;
+    signals:
+        void closeSettings();
 
-private:
-	SystemSettingPage* m_page;
-	QVector<QPointer<QObject>> delegates;
-};
+    public slots:
+        void apply() override;
+        void accept() override;
+        void reject() override;
+
+    private:
+        SystemSettingPage* m_page;
+        QVector<QPointer<QObject>> delegates;
+    };
+}
 
 
 #endif // SYSTEMSETTINGPAGEDELEGATE_H

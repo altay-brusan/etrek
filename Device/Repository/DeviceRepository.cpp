@@ -37,7 +37,7 @@ QSqlDatabase DeviceRepository::createConnection(const QString& connectionName) c
 
 // -------- generators --------
 
-Result<QVector<Generator>> DeviceRepository::getGeneratorList() const
+Etrek::Specification::Result<QVector<Generator>> DeviceRepository::getGeneratorList() const
 {
     QVector<Generator> generators;
     const QString connectionName = "dev_conn_gen_list_" + QString::number(QRandomGenerator::global()->generate());
@@ -49,7 +49,7 @@ Result<QVector<Generator>> DeviceRepository::getGeneratorList() const
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG)
                 .arg(db.lastError().text());
             logger->LogError(err);
-            return Result<QVector<Generator>>::Failure(err);
+            return Etrek::Specification::Result<QVector<Generator>>::Failure(err);
         }
 
         // Query: load all Generator fields
@@ -81,7 +81,7 @@ Result<QVector<Generator>> DeviceRepository::getGeneratorList() const
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG)
                 .arg(query.lastError().text());
             logger->LogError(err);
-            return Result<QVector<Generator>>::Failure(err);
+            return Etrek::Specification::Result<QVector<Generator>>::Failure(err);
         }
 
         // Iterate query results
@@ -114,10 +114,10 @@ Result<QVector<Generator>> DeviceRepository::getGeneratorList() const
     } // <--- Scoped connection ends here, db will be destroyed
 
     QSqlDatabase::removeDatabase(connectionName);
-    return Result<QVector<Generator>>::Success(generators);
+    return Etrek::Specification::Result<QVector<Generator>>::Success(generators);
 }
 
-Result<Generator> DeviceRepository::getGeneratorById(int id) const
+Etrek::Specification::Result<Generator> DeviceRepository::getGeneratorById(int id) const
 {
     const QString connectionName = QString("dev_conn_gen_%1").arg(id);
     QSqlDatabase db = createConnection(connectionName);
@@ -125,7 +125,7 @@ Result<Generator> DeviceRepository::getGeneratorById(int id) const
         const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG)
             .arg(db.lastError().text());
         logger->LogError(err);
-        return Result<Generator>::Failure(err);
+        return Etrek::Specification::Result<Generator>::Failure(err);
     }
 
     QSqlQuery query(db);
@@ -160,12 +160,12 @@ Result<Generator> DeviceRepository::getGeneratorById(int id) const
             .arg(query.lastError().text());
         logger->LogError(err);
         QSqlDatabase::removeDatabase(connectionName);
-        return Result<Generator>::Failure(err);
+        return Etrek::Specification::Result<Generator>::Failure(err);
     }
 
     if (!query.next()) {
         QSqlDatabase::removeDatabase(connectionName);
-        return Result<Generator>::Failure(QString("Generator with id %1 not found").arg(id));
+        return Etrek::Specification::Result<Generator>::Failure(QString("Generator with id %1 not found").arg(id));
     }
 
     Generator gen;
@@ -191,13 +191,13 @@ Result<Generator> DeviceRepository::getGeneratorById(int id) const
     gen.UpdateDate = query.value("update_date").toDateTime();
 
     QSqlDatabase::removeDatabase(connectionName);
-    return Result<Generator>::Success(gen);
+    return Etrek::Specification::Result<Generator>::Success(gen);
 }
 
-Result<Generator> DeviceRepository::updateGenerator(const Generator& generator)
+Etrek::Specification::Result<Generator> DeviceRepository::updateGenerator(const Generator& generator)
 {
     if (generator.Id == -1) {
-        return Result<Generator>::Failure("Cannot update generator: invalid Id (-1).");
+        return Etrek::Specification::Result<Generator>::Failure("Cannot update generator: invalid Id (-1).");
     }
 
     const QString connectionName = QString("dev_conn_update_gen_%1").arg(generator.Id);
@@ -207,19 +207,19 @@ Result<Generator> DeviceRepository::updateGenerator(const Generator& generator)
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG)
                 .arg(db.lastError().text());
             logger->LogError(err);
-            return Result<Generator>::Failure(err);
+            return Etrek::Specification::Result<Generator>::Failure(err);
         }
 
         // === Precondition: deactivate other active generators if needed ===
         QString preconditionError;
         if (generator.IsOutput1Active && generator.Output1 != -1) {
             if (!deactivateOtherActiveGenerators(1, generator.Id, db, preconditionError))
-                return Result<Generator>::Failure(preconditionError);
+                return Etrek::Specification::Result<Generator>::Failure(preconditionError);
         }
 
         if (generator.IsOutput2Active && generator.Output2 != -1) {
             if (!deactivateOtherActiveGenerators(2, generator.Id, db, preconditionError))
-                return Result<Generator>::Failure(preconditionError);
+                return Etrek::Specification::Result<Generator>::Failure(preconditionError);
         }
 
         // === Update the generator itself ===
@@ -267,11 +267,11 @@ Result<Generator> DeviceRepository::updateGenerator(const Generator& generator)
                 .arg(query.lastError().text());
             logger->LogError(err);
             QSqlDatabase::removeDatabase(connectionName);
-            return Result<Generator>::Failure(err);
+            return Etrek::Specification::Result<Generator>::Failure(err);
         }
     }
     QSqlDatabase::removeDatabase(connectionName);
-    return Result<Generator>::Success(generator);
+    return Etrek::Specification::Result<Generator>::Success(generator);
 }
 
 bool DeviceRepository::deactivateOtherActiveGenerators(int outputNumber, int excludeGeneratorId, QSqlDatabase& db, QString& errorMessage) const
@@ -299,7 +299,7 @@ bool DeviceRepository::deactivateOtherActiveGenerators(int outputNumber, int exc
 
 // -------- tubes --------
 
-Result<XRayTube> DeviceRepository::getXRayTube(int tubeId) const
+Etrek::Specification::Result<XRayTube> DeviceRepository::getXRayTube(int tubeId) const
 {
     const QString connectionName = "dev_conn_xray_single_" + QString::number(QRandomGenerator::global()->generate());
 
@@ -312,7 +312,7 @@ Result<XRayTube> DeviceRepository::getXRayTube(int tubeId) const
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG)
                 .arg(db.lastError().text());
             logger->LogError(err);
-            return Result<XRayTube>::Failure(err);
+            return Etrek::Specification::Result<XRayTube>::Failure(err);
         }
 
         QSqlQuery query(db);
@@ -345,12 +345,12 @@ Result<XRayTube> DeviceRepository::getXRayTube(int tubeId) const
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG)
                 .arg(query.lastError().text());
             logger->LogError(err);
-            return Result<XRayTube>::Failure(err);
+            return Etrek::Specification::Result<XRayTube>::Failure(err);
         }
 
         if (!query.next()) {
             const auto err = QString("XRayTube with id %1 not found").arg(tubeId);
-            return Result<XRayTube>::Failure(err);
+            return Etrek::Specification::Result<XRayTube>::Failure(err);
         }
 
         tube.Id = query.value("id").toInt();
@@ -377,10 +377,10 @@ Result<XRayTube> DeviceRepository::getXRayTube(int tubeId) const
     }
 
     QSqlDatabase::removeDatabase(connectionName);
-    return Result<XRayTube>::Success(tube);
+    return Etrek::Specification::Result<XRayTube>::Success(tube);
 }
 
-Result<QVector<XRayTube>> DeviceRepository::getXRayTubesList() const
+Etrek::Specification::Result<QVector<XRayTube>> DeviceRepository::getXRayTubesList() const
 {
     QVector<XRayTube> tubes;
     const QString connectionName = "dev_conn_xray_list_" + QString::number(QRandomGenerator::global()->generate());
@@ -392,7 +392,7 @@ Result<QVector<XRayTube>> DeviceRepository::getXRayTubesList() const
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG)
                 .arg(db.lastError().text());
             logger->LogError(err);
-            return Result<QVector<XRayTube>>::Failure(err);
+            return Etrek::Specification::Result<QVector<XRayTube>>::Failure(err);
         }
 
         QSqlQuery query(db);
@@ -423,7 +423,7 @@ Result<QVector<XRayTube>> DeviceRepository::getXRayTubesList() const
             QString err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG)
                 .arg(query.lastError().text());
             logger->LogError(err);
-            return Result<QVector<XRayTube>>::Failure(err);
+            return Etrek::Specification::Result<QVector<XRayTube>>::Failure(err);
         }
 
         while (query.next()) {
@@ -456,10 +456,10 @@ Result<QVector<XRayTube>> DeviceRepository::getXRayTubesList() const
     } // Scoped connection ends here
 
     QSqlDatabase::removeDatabase(connectionName);
-    return Result<QVector<XRayTube>>::Success(tubes);
+    return Etrek::Specification::Result<QVector<XRayTube>>::Success(tubes);
 }
 
-Result<XRayTube> DeviceRepository::updateXRayTube(const XRayTube& tube)
+Etrek::Specification::Result<XRayTube> DeviceRepository::updateXRayTube(const XRayTube& tube)
 {
     const QString connectionName = "dev_conn_update_xray_" + QString::number(QRandomGenerator::global()->generate());
 
@@ -469,7 +469,7 @@ Result<XRayTube> DeviceRepository::updateXRayTube(const XRayTube& tube)
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG)
                 .arg(db.lastError().text());
             logger->LogError(err);
-            return Result<XRayTube>::Failure(err);
+            return Etrek::Specification::Result<XRayTube>::Failure(err);
         }
 
         QSqlQuery query(db);
@@ -525,7 +525,7 @@ Result<XRayTube> DeviceRepository::updateXRayTube(const XRayTube& tube)
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG)
                 .arg(query.lastError().text());
             logger->LogError(err);
-            return Result<XRayTube>::Failure(err);
+            return Etrek::Specification::Result<XRayTube>::Failure(err);
         }
     } // db destroyed here
 
@@ -535,7 +535,7 @@ Result<XRayTube> DeviceRepository::updateXRayTube(const XRayTube& tube)
 
 // -------- detector --------
 
-Result<QVector<Detector>> DeviceRepository::getDetectorList() const
+Etrek::Specification::Result<QVector<Detector>> DeviceRepository::getDetectorList() const
 {
     QVector<Detector> detectors;
 
@@ -547,7 +547,7 @@ Result<QVector<Detector>> DeviceRepository::getDetectorList() const
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG)
                 .arg(db.lastError().text());
             logger->LogError(err);
-            return Result<QVector<Detector>>::Failure(err);
+            return Etrek::Specification::Result<QVector<Detector>>::Failure(err);
         }
 
         QSqlQuery query(db);
@@ -582,7 +582,7 @@ Result<QVector<Detector>> DeviceRepository::getDetectorList() const
                 .arg(query.lastError().text());
             logger->LogError(err);
             QSqlDatabase::removeDatabase(connectionName);
-            return Result<QVector<Etrek::Device::Data::Entity::Detector>>::Failure(err);
+            return Etrek::Specification::Result<QVector<Etrek::Device::Data::Entity::Detector>>::Failure(err);
         }
 
         while (query.next()) {
@@ -617,10 +617,10 @@ Result<QVector<Detector>> DeviceRepository::getDetectorList() const
     }
     
     QSqlDatabase::removeDatabase(connectionName);
-    return Result<QVector<Detector>>::Success(detectors);
+    return Etrek::Specification::Result<QVector<Detector>>::Success(detectors);
 }
 
-Result<Detector> DeviceRepository::getDetectorById(int detectorId) const
+Etrek::Specification::Result<Detector> DeviceRepository::getDetectorById(int detectorId) const
 {
     const QString connectionName = "detector_by_id_" + QString::number(QRandomGenerator::global()->generate());
     Detector d;
@@ -633,7 +633,7 @@ Result<Detector> DeviceRepository::getDetectorById(int detectorId) const
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG)
                 .arg(db.lastError().text());
             logger->LogError(err);
-            return Result<Detector>::Failure(err);
+            return Etrek::Specification::Result<Detector>::Failure(err);
         }
 
         QSqlQuery query(db);
@@ -673,7 +673,7 @@ Result<Detector> DeviceRepository::getDetectorById(int detectorId) const
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG)
                 .arg(query.lastError().text());
             logger->LogError(err);
-            return Result<Etrek::Device::Data::Entity::Detector>::Failure(err);
+            return Etrek::Specification::Result<Etrek::Device::Data::Entity::Detector>::Failure(err);
         }
 
         if (query.next()) {
@@ -700,15 +700,15 @@ Result<Detector> DeviceRepository::getDetectorById(int detectorId) const
             d.CreateDate = query.value("create_date").toDateTime();
             d.UpdateDate = query.value("update_date").toDateTime();
 
-            return Result<Detector>::Success(d);
+            return Etrek::Specification::Result<Detector>::Success(d);
         }
     } // <- db goes out of scope here
 
     QSqlDatabase::removeDatabase(connectionName);
-    return Result<Detector>::Failure("Detector not found");
+    return Etrek::Specification::Result<Detector>::Failure("Detector not found");
 }
 
-Result<Detector> DeviceRepository::updateDetector(const Detector& detector)
+Etrek::Specification::Result<Detector> DeviceRepository::updateDetector(const Detector& detector)
 {
     const QString cx = "update_detector_" + QString::number(QRandomGenerator::global()->generate());
     {
@@ -716,7 +716,7 @@ Result<Detector> DeviceRepository::updateDetector(const Detector& detector)
         if (!db.open()) {
             auto err = QString("Failed to open database: %1").arg(db.lastError().text());
             logger->LogError(err);
-            return Result<Detector>::Failure(err);
+            return Etrek::Specification::Result<Detector>::Failure(err);
         }
 
         // === Update the detector itself ===
@@ -775,18 +775,18 @@ Result<Detector> DeviceRepository::updateDetector(const Detector& detector)
         if (!query.exec()) {
             auto err = QString("Failed to update detector: %1").arg(query.lastError().text());
             logger->LogError(err);
-            return Result<Detector>::Failure(err);
+            return Etrek::Specification::Result<Detector>::Failure(err);
         }
     } // db goes out of scope
 
     QSqlDatabase::removeDatabase(cx);
-    return Result<Detector>::Success(detector);
+    return Etrek::Specification::Result<Detector>::Success(detector);
 }
 
 
 // -------------------- Institutions --------------------
 
-Result<QVector<Institution>> DeviceRepository::getInstitutionList() const
+Etrek::Specification::Result<QVector<Institution>> DeviceRepository::getInstitutionList() const
 {
     QVector<Institution> vec;
     const QString cx = "inst_list_" + QString::number(QRandomGenerator::global()->generate());
@@ -795,7 +795,7 @@ Result<QVector<Institution>> DeviceRepository::getInstitutionList() const
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<QVector<Institution>>::Failure(err);
+            return Etrek::Specification::Result<QVector<Institution>>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -809,7 +809,7 @@ Result<QVector<Institution>> DeviceRepository::getInstitutionList() const
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<QVector<Institution>>::Failure(err);
+            return Etrek::Specification::Result<QVector<Institution>>::Failure(err);
         }
 
         while (q.next()) {
@@ -826,10 +826,10 @@ Result<QVector<Institution>> DeviceRepository::getInstitutionList() const
         }
     }
     QSqlDatabase::removeDatabase(cx);
-    return Result<QVector<Institution>>::Success(vec);
+    return Etrek::Specification::Result<QVector<Institution>>::Success(vec);
 }
 
-Result<Institution> DeviceRepository::getInstitutionById(int id) const
+Etrek::Specification::Result<Institution> DeviceRepository::getInstitutionById(int id) const
 {
     const QString cx = "inst_by_id_" + QString::number(id);
     {
@@ -837,7 +837,7 @@ Result<Institution> DeviceRepository::getInstitutionById(int id) const
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<Institution>::Failure(err);
+            return Etrek::Specification::Result<Institution>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -851,11 +851,11 @@ Result<Institution> DeviceRepository::getInstitutionById(int id) const
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<Institution>::Failure(err);
+            return Etrek::Specification::Result<Institution>::Failure(err);
         }
 
         if (!q.next()) {
-            return Result<Institution>::Failure(QString("Institution with id %1 not found").arg(id));
+            return Etrek::Specification::Result<Institution>::Failure(QString("Institution with id %1 not found").arg(id));
         }
 
         Institution inst;
@@ -869,11 +869,11 @@ Result<Institution> DeviceRepository::getInstitutionById(int id) const
         inst.IsActive = q.value("is_active").toBool();
 
         QSqlDatabase::removeDatabase(cx);
-        return Result<Institution>::Success(inst);
+        return Etrek::Specification::Result<Institution>::Success(inst);
     }
 }
 
-Result<Institution> DeviceRepository::createInstitution(const Institution& inst)
+Etrek::Specification::Result<Institution> DeviceRepository::createInstitution(const Institution& inst)
 {
     const QString cx = "inst_create_" + QString::number(QRandomGenerator::global()->generate());
     int newId = -1;
@@ -882,7 +882,7 @@ Result<Institution> DeviceRepository::createInstitution(const Institution& inst)
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<Institution>::Failure(err);
+            return Etrek::Specification::Result<Institution>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -903,7 +903,7 @@ Result<Institution> DeviceRepository::createInstitution(const Institution& inst)
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<Institution>::Failure(err);
+            return Etrek::Specification::Result<Institution>::Failure(err);
         }
         newId = q.lastInsertId().toInt();
     }
@@ -911,9 +911,9 @@ Result<Institution> DeviceRepository::createInstitution(const Institution& inst)
     return getInstitutionById(newId);
 }
 
-Result<Institution> DeviceRepository::updateInstitution(const Institution& inst)
+Etrek::Specification::Result<Institution> DeviceRepository::updateInstitution(const Institution& inst)
 {
-    if (inst.Id <= 0) return Result<Institution>::Failure("Invalid institution Id.");
+    if (inst.Id <= 0) return Etrek::Specification::Result<Institution>::Failure("Invalid institution Id.");
 
     const QString cx = "inst_update_" + QString::number(inst.Id);
     {
@@ -921,7 +921,7 @@ Result<Institution> DeviceRepository::updateInstitution(const Institution& inst)
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<Institution>::Failure(err);
+            return Etrek::Specification::Result<Institution>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -949,14 +949,14 @@ Result<Institution> DeviceRepository::updateInstitution(const Institution& inst)
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<Institution>::Failure(err);
+            return Etrek::Specification::Result<Institution>::Failure(err);
         }
     }
     QSqlDatabase::removeDatabase(cx);
     return getInstitutionById(inst.Id);
 }
 
-Result<bool> DeviceRepository::deleteInstitution(int id)
+Etrek::Specification::Result<bool> DeviceRepository::deleteInstitution(int id)
 {
     const QString cx = "inst_delete_" + QString::number(id);
     {
@@ -964,7 +964,7 @@ Result<bool> DeviceRepository::deleteInstitution(int id)
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -974,14 +974,14 @@ Result<bool> DeviceRepository::deleteInstitution(int id)
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
     }
     QSqlDatabase::removeDatabase(cx);
-    return Result<bool>::Success(true);
+    return Etrek::Specification::Result<bool>::Success(true);
 }
 
-Result<bool> DeviceRepository::deactivateInstitution(int id)
+Etrek::Specification::Result<bool> DeviceRepository::deactivateInstitution(int id)
 {
     const QString cx = "inst_deactivate_" + QString::number(id);
     {
@@ -989,7 +989,7 @@ Result<bool> DeviceRepository::deactivateInstitution(int id)
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -999,17 +999,17 @@ Result<bool> DeviceRepository::deactivateInstitution(int id)
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
     }
     QSqlDatabase::removeDatabase(cx);
-    return Result<bool>::Success(true);
+    return Etrek::Specification::Result<bool>::Success(true);
 }
 
 
 // -------------------- General Equipment --------------------
 
-Result<QVector<GeneralEquipment>> DeviceRepository::getGeneralEquipmentList() const
+Etrek::Specification::Result<QVector<GeneralEquipment>> DeviceRepository::getGeneralEquipmentList() const
 {
     QVector<GeneralEquipment> vec;
     const QString cx = "ge_list_" + QString::number(QRandomGenerator::global()->generate());
@@ -1018,7 +1018,7 @@ Result<QVector<GeneralEquipment>> DeviceRepository::getGeneralEquipmentList() co
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<QVector<GeneralEquipment>>::Failure(err);
+            return Etrek::Specification::Result<QVector<GeneralEquipment>>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -1052,7 +1052,7 @@ Result<QVector<GeneralEquipment>> DeviceRepository::getGeneralEquipmentList() co
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<QVector<GeneralEquipment>>::Failure(err);
+            return Etrek::Specification::Result<QVector<GeneralEquipment>>::Failure(err);
         }
 
         while (q.next()) {
@@ -1085,10 +1085,10 @@ Result<QVector<GeneralEquipment>> DeviceRepository::getGeneralEquipmentList() co
         }
     }
     QSqlDatabase::removeDatabase(cx);
-    return Result<QVector<GeneralEquipment>>::Success(vec);
+    return Etrek::Specification::Result<QVector<GeneralEquipment>>::Success(vec);
 }
 
-Result<GeneralEquipment> DeviceRepository::getGeneralEquipmentById(int id) const
+Etrek::Specification::Result<GeneralEquipment> DeviceRepository::getGeneralEquipmentById(int id) const
 {
     const QString cx = "ge_by_id_" + QString::number(id);
     {
@@ -1096,7 +1096,7 @@ Result<GeneralEquipment> DeviceRepository::getGeneralEquipmentById(int id) const
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<GeneralEquipment>::Failure(err);
+            return Etrek::Specification::Result<GeneralEquipment>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -1132,11 +1132,11 @@ Result<GeneralEquipment> DeviceRepository::getGeneralEquipmentById(int id) const
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<GeneralEquipment>::Failure(err);
+            return Etrek::Specification::Result<GeneralEquipment>::Failure(err);
         }
 
         if (!q.next()) {
-            return Result<GeneralEquipment>::Failure(QString("GeneralEquipment with id %1 not found").arg(id));
+            return Etrek::Specification::Result<GeneralEquipment>::Failure(QString("GeneralEquipment with id %1 not found").arg(id));
         }
 
         GeneralEquipment ge;
@@ -1164,11 +1164,11 @@ Result<GeneralEquipment> DeviceRepository::getGeneralEquipmentById(int id) const
         ge.Institution.IsActive = q.value("inst_is_active").toBool();
 
         QSqlDatabase::removeDatabase(cx);
-        return Result<GeneralEquipment>::Success(ge);
+        return Etrek::Specification::Result<GeneralEquipment>::Success(ge);
     }
 }
 
-Result<GeneralEquipment> DeviceRepository::createGeneralEquipment(const GeneralEquipment& ge)
+Etrek::Specification::Result<GeneralEquipment> DeviceRepository::createGeneralEquipment(const GeneralEquipment& ge)
 {
     const QString cx = "ge_create_" + QString::number(QRandomGenerator::global()->generate());
     int newId = -1;
@@ -1177,7 +1177,7 @@ Result<GeneralEquipment> DeviceRepository::createGeneralEquipment(const GeneralE
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<GeneralEquipment>::Failure(err);
+            return Etrek::Specification::Result<GeneralEquipment>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -1213,7 +1213,7 @@ Result<GeneralEquipment> DeviceRepository::createGeneralEquipment(const GeneralE
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<GeneralEquipment>::Failure(err);
+            return Etrek::Specification::Result<GeneralEquipment>::Failure(err);
         }
         newId = q.lastInsertId().toInt();
     }
@@ -1221,9 +1221,9 @@ Result<GeneralEquipment> DeviceRepository::createGeneralEquipment(const GeneralE
     return getGeneralEquipmentById(newId);
 }
 
-Result<GeneralEquipment> DeviceRepository::updateGeneralEquipment(const GeneralEquipment& ge)
+Etrek::Specification::Result<GeneralEquipment> DeviceRepository::updateGeneralEquipment(const GeneralEquipment& ge)
 {
-    if (ge.Id <= 0) return Result<GeneralEquipment>::Failure("Invalid GeneralEquipment Id.");
+    if (ge.Id <= 0) return Etrek::Specification::Result<GeneralEquipment>::Failure("Invalid GeneralEquipment Id.");
 
     const QString cx = "ge_update_" + QString::number(ge.Id);
     {
@@ -1231,7 +1231,7 @@ Result<GeneralEquipment> DeviceRepository::updateGeneralEquipment(const GeneralE
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<GeneralEquipment>::Failure(err);
+            return Etrek::Specification::Result<GeneralEquipment>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -1274,14 +1274,14 @@ Result<GeneralEquipment> DeviceRepository::updateGeneralEquipment(const GeneralE
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<GeneralEquipment>::Failure(err);
+            return Etrek::Specification::Result<GeneralEquipment>::Failure(err);
         }
     }
     QSqlDatabase::removeDatabase(cx);
     return getGeneralEquipmentById(ge.Id);
 }
 
-Result<bool> DeviceRepository::deleteGeneralEquipment(int id)
+Etrek::Specification::Result<bool> DeviceRepository::deleteGeneralEquipment(int id)
 {
     const QString cx = "ge_delete_" + QString::number(id);
     {
@@ -1289,7 +1289,7 @@ Result<bool> DeviceRepository::deleteGeneralEquipment(int id)
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -1299,14 +1299,14 @@ Result<bool> DeviceRepository::deleteGeneralEquipment(int id)
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
     }
     QSqlDatabase::removeDatabase(cx);
-    return Result<bool>::Success(true);
+    return Etrek::Specification::Result<bool>::Success(true);
 }
 
-Result<bool> DeviceRepository::deactivateGeneralEquipment(int id)
+Etrek::Specification::Result<bool> DeviceRepository::deactivateGeneralEquipment(int id)
 {
     const QString cx = "ge_deactivate_" + QString::number(id);
     {
@@ -1314,7 +1314,7 @@ Result<bool> DeviceRepository::deactivateGeneralEquipment(int id)
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -1324,14 +1324,14 @@ Result<bool> DeviceRepository::deactivateGeneralEquipment(int id)
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
     }
     QSqlDatabase::removeDatabase(cx);
-    return Result<bool>::Success(true);
+    return Etrek::Specification::Result<bool>::Success(true);
 }
 
-Result<EnvironmentSetting> DeviceRepository::getEnvironmentSettings() const
+Etrek::Specification::Result<EnvironmentSetting> DeviceRepository::getEnvironmentSettings() const
 {
     const QString cx = "env_settings_get_" + QString::number(QRandomGenerator::global()->generate());
     {
@@ -1339,7 +1339,7 @@ Result<EnvironmentSetting> DeviceRepository::getEnvironmentSettings() const
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<EnvironmentSetting>::Failure(err);
+            return Etrek::Specification::Result<EnvironmentSetting>::Failure(err);
         }
 
         // Try to read the single row
@@ -1364,7 +1364,7 @@ Result<EnvironmentSetting> DeviceRepository::getEnvironmentSettings() const
         if (!q.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
             logger->LogError(err);
-            return Result<EnvironmentSetting>::Failure(err);
+            return Etrek::Specification::Result<EnvironmentSetting>::Failure(err);
         }
 
         if (q.next()) {
@@ -1383,7 +1383,7 @@ Result<EnvironmentSetting> DeviceRepository::getEnvironmentSettings() const
             s.UpdateDate = q.value("update_date").toDateTime();
 
             QSqlDatabase::removeDatabase(cx);
-            return Result<EnvironmentSetting>::Success(s);
+            return Etrek::Specification::Result<EnvironmentSetting>::Success(s);
         }
 
         // If table is empty, create a default row (optional convenience)
@@ -1412,7 +1412,7 @@ Result<EnvironmentSetting> DeviceRepository::getEnvironmentSettings() const
         if (!ins.exec()) {
             const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(ins.lastError().text());
             logger->LogError(err);
-            return Result<EnvironmentSetting>::Failure(err);
+            return Etrek::Specification::Result<EnvironmentSetting>::Failure(err);
         }
     }
     QSqlDatabase::removeDatabase(cx);
@@ -1420,7 +1420,7 @@ Result<EnvironmentSetting> DeviceRepository::getEnvironmentSettings() const
     return getEnvironmentSettings();
 }
 
-Result<EnvironmentSetting> DeviceRepository::updateEnvironmentSettings(const EnvironmentSetting& s)
+Etrek::Specification::Result<EnvironmentSetting> DeviceRepository::updateEnvironmentSettings(const EnvironmentSetting& s)
 {
     // Always keep a single row. Default to id=1 if not provided.
     const int targetId = (s.Id > 0) ? s.Id : 1;
@@ -1431,7 +1431,7 @@ Result<EnvironmentSetting> DeviceRepository::updateEnvironmentSettings(const Env
         if (!db.open()) {
             const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
             logger->LogError(err);
-            return Result<EnvironmentSetting>::Failure(err);
+            return Etrek::Specification::Result<EnvironmentSetting>::Failure(err);
         }
 
         // First try UPDATE
@@ -1466,7 +1466,7 @@ Result<EnvironmentSetting> DeviceRepository::updateEnvironmentSettings(const Env
             if (!q.exec()) {
                 const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
                 logger->LogError(err);
-                return Result<EnvironmentSetting>::Failure(err);
+                return Etrek::Specification::Result<EnvironmentSetting>::Failure(err);
             }
 
             if (q.numRowsAffected() == 0) {
@@ -1499,7 +1499,7 @@ Result<EnvironmentSetting> DeviceRepository::updateEnvironmentSettings(const Env
                 if (!qi.exec()) {
                     const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(qi.lastError().text());
                     logger->LogError(err);
-                    return Result<EnvironmentSetting>::Failure(err);
+                    return Etrek::Specification::Result<EnvironmentSetting>::Failure(err);
                 }
             }
         }
