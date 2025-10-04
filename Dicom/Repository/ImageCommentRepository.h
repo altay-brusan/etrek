@@ -29,9 +29,9 @@ public:
 	QVector<ImageComment> getAcceptedComments() const;
 	QVector<ImageComment> getRejectComments() const;
 	QVector<ImageComment> getAllComments() const;
-	Result<ImageComment> addComment(const ImageComment& comment) const;
-	Result<ImageComment> removeComment(const ImageComment& comment) const;
-	Result<ImageComment> updateComment(const ImageComment& comment) const;
+	Etrek::Specification::Result<ImageComment> addComment(const ImageComment& comment) const;
+	Etrek::Specification::Result<ImageComment> removeComment(const ImageComment& comment) const;
+	Etrek::Specification::Result<ImageComment> updateComment(const ImageComment& comment) const;
 
 	~ImageCommentRepository();
 

@@ -23,8 +23,11 @@
 
 using namespace Etrek::Application::Authentication;
 using namespace Etrek::Application::Delegate;
+
 namespace Etrek::Application::Service
 {
+    using Etrek::Specification::LaunchMode;
+    using Etrek::Specification::Result;
     ApplicationService::ApplicationService(QObject* parent)
         : QObject{ parent }
     {

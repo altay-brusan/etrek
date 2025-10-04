@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     });
 
     QStringList arguments = QCoreApplication::arguments();
-    LaunchMode mode = ParseLaunchMode(arguments);
+    const Etrek::Specification::LaunchMode mode = Etrek::Specification::ParseLaunchMode(arguments);
 
     Etrek::Application::Service::ApplicationService applicationService(&a);
     try {

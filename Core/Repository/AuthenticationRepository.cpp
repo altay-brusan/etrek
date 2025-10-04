@@ -8,6 +8,8 @@
 
 namespace Etrek::Core::Repository {
 
+    using Etrek::Specification::Result;
+
     AuthenticationRepository::AuthenticationRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting, TranslationProvider* tr)
         : m_connectionSetting(std::move(connectionSetting)),
         translator(tr ? tr : &TranslationProvider::Instance()),

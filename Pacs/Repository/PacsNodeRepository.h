@@ -24,9 +24,9 @@ class PacsNodeRepository
 public:
     explicit PacsNodeRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting);
 
-    Result<PacsNode> addPacsNode(const PacsNode& node) const;
-    Result<bool>     removePacsNode(const PacsNode& node) const;
-    Result<PacsNode> updatePacsNode(const PacsNode& node) const;
+    Etrek::Specification::Result<PacsNode> addPacsNode(const PacsNode& node) const;
+    Etrek::Specification::Result<bool>     removePacsNode(const PacsNode& node) const;
+    Etrek::Specification::Result<PacsNode> updatePacsNode(const PacsNode& node) const;
 
     QVector<PacsNode> getPacsNodes() const;
 

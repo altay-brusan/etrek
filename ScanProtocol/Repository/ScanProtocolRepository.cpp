@@ -15,6 +15,7 @@ static inline QString kRepoName() { return "ScanProtocolRepository"; }
 
 using Etrek::ScanProtocol::ScanProtocolUtil;
 using namespace Etrek::ScanProtocol::Repository;
+using Etrek::Specification::Result;
 
 // ----------------------------- Local DB helpers ------------------------------
 #include <QVariant>

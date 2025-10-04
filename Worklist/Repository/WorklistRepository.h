@@ -21,6 +21,8 @@ using namespace Etrek::Core::Data::Model;
 
 namespace Etrek::Worklist::Repository {
 
+    using Etrek::Specification::Result;
+
     /**
      * @class WorklistRepository
      * @brief Provides data access and management for DICOM worklist entries, profiles, and attributes.

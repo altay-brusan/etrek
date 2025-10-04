@@ -41,10 +41,10 @@ private:
     }
 
     // Helper function to get tags by profile ID
-    Result<QList<DicomTag>> getTags(int profileId) {
+    Etrek::Specification::Result<QList<DicomTag>> getTags(int profileId) {
         auto getTagsResult = manager->GetTagsByProfile(profileId);
         if (!getTagsResult.isSuccess || getTagsResult.value.isEmpty()) {
-            return Result<QList<DicomTag>>::Failure("Failed to fetch tags");
+            return Etrek::Specification::Result<QList<DicomTag>>::Failure("Failed to fetch tags");
         }
         return getTagsResult;
     }

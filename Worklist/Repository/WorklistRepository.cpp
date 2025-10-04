@@ -10,6 +10,8 @@
 
 namespace Etrek::Worklist::Repository {
 
+    using Etrek::Specification::Result;
+
     WorklistRepository::WorklistRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting, QObject* parent)
         : QObject(parent), m_connectionSetting(connectionSetting), translator(nullptr), logger(nullptr)
     {

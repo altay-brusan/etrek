@@ -14,6 +14,8 @@
 using namespace  Etrek::Core::Globalization;
 namespace  Etrek::Core::Log {
 
+    using Etrek::Specification::Result;
+
     /**
      * @class LoggerProvider
      * @brief Provides file-based logging services for the application.

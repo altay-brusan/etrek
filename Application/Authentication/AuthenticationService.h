@@ -14,6 +14,8 @@ using namespace Etrek::Core::Repository;
 
 namespace Etrek::Application::Authentication {
 
+    using Etrek::Specification::Result;
+
     class AuthenticationService : public QObject
     {
         Q_OBJECT

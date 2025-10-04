@@ -43,13 +43,13 @@ public:
     void setSettings(std::shared_ptr<RisConnectionSetting> settings);
 
     // Explicitly prepare the DICOM association (add contexts + negotiate)
-    Result<QString> prepareAssociation();
+    Etrek::Specification::Result<QString> prepareAssociation();
 
     // Release association explicitly
-    Result<QString> releaseAssociation();
+    Etrek::Specification::Result<QString> releaseAssociation();
 
     QList<WorklistEntry> getWorklistEntries();
-    Result<QString> echoRis();
+    Etrek::Specification::Result<QString> echoRis();
 
 signals:
     void worklistEntriesReceived(const QList<WorklistEntry>& worklistEntries);
@@ -58,11 +58,11 @@ private:
     std::unique_ptr<DcmDataset> createWorklistQuery(const QList<DicomTag>& queryTags) noexcept;
 
 
-    Result<QString> initNetwork();
-    Result<QString> negotiateTheAssociation();
+    Etrek::Specification::Result<QString> initNetwork();
+    Etrek::Specification::Result<QString> negotiateTheAssociation();
 
     // Adds a single presentation context (for echo or find)
-    Result<int> addPresentationContextForOperation(const QString& operation);
+    Etrek::Specification::Result<int> addPresentationContextForOperation(const QString& operation);
 
     void setupTheConnectionParameters();
     bool isConnected();

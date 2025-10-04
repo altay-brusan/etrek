@@ -11,6 +11,8 @@
 
 namespace Etrek::Core::Repository {
 
+    using Etrek::Specification::Result;
+
     DatabaseSetupManager::DatabaseSetupManager(std::shared_ptr<Model::DatabaseConnectionSetting> connectionSetting)
         :m_connectionSetting(std::move(connectionSetting))
         {

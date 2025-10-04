@@ -19,6 +19,8 @@ using namespace Etrek::Core::Log;
 
 namespace Etrek::Core::Repository {
 
+    using Etrek::Specification::Result;
+
     /**
      * @class AuthenticationRepository
      * @brief Provides methods for user authentication and role management.

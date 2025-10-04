@@ -100,29 +100,29 @@ QVector<PacsNode> PacsNodeRepository::getPacsNodes() const
     return out;
 }
 
-Result<PacsNode> PacsNodeRepository::addPacsNode(const PacsNode& node) const
+Etrek::Specification::Result<PacsNode> PacsNodeRepository::addPacsNode(const PacsNode& node) const
 {
     const QString cx = "pacs_nodes_add_" + QString::number(QRandomGenerator::global()->generate());
     PacsNode inserted = node;
 
     // Basic validations (tune as needed)
     if (node.HostName.trimmed().isEmpty())
-        return Result<PacsNode>::Failure("HostName is required.");
+        return Etrek::Specification::Result<PacsNode>::Failure("HostName is required.");
     if (node.HostIp.trimmed().isEmpty())
-        return Result<PacsNode>::Failure("HostIp is required.");
+        return Etrek::Specification::Result<PacsNode>::Failure("HostIp is required.");
     if (node.Port <= 0 || node.Port > 65535)
-        return Result<PacsNode>::Failure("Port must be between 1 and 65535.");
+        return Etrek::Specification::Result<PacsNode>::Failure("Port must be between 1 and 65535.");
     if (node.CalledAet.trimmed().isEmpty())
-        return Result<PacsNode>::Failure("CalledAET is required.");
+        return Etrek::Specification::Result<PacsNode>::Failure("CalledAET is required.");
     if (node.CallingAet.trimmed().isEmpty())
-        return Result<PacsNode>::Failure("CallingAET is required.");
+        return Etrek::Specification::Result<PacsNode>::Failure("CallingAET is required.");
 
     {
         QSqlDatabase db = createConnection(cx);
         if (!db.open()) {
             const auto err = errOpen(db, translator);
             logger->LogError(err);
-            return Result<PacsNode>::Failure(err);
+            return Etrek::Specification::Result<PacsNode>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -144,7 +144,7 @@ Result<PacsNode> PacsNodeRepository::addPacsNode(const PacsNode& node) const
         if (!q.exec()) {
             const auto err = errExec(q, translator);
             logger->LogError(err);
-            return Result<PacsNode>::Failure(err);
+            return Etrek::Specification::Result<PacsNode>::Failure(err);
         }
 
         const QVariant newId = q.lastInsertId();
@@ -152,24 +152,24 @@ Result<PacsNode> PacsNodeRepository::addPacsNode(const PacsNode& node) const
     }
 
     QSqlDatabase::removeDatabase(cx);
-    return Result<PacsNode>::Success(inserted, "Inserted");
+    return Etrek::Specification::Result<PacsNode>::Success(inserted, "Inserted");
 }
 
-Result<PacsNode> PacsNodeRepository::updatePacsNode(const PacsNode& node) const
+Etrek::Specification::Result<PacsNode> PacsNodeRepository::updatePacsNode(const PacsNode& node) const
 {
     if (node.Id <= 0)
-        return Result<PacsNode>::Failure("Invalid node Id.");
+        return Etrek::Specification::Result<PacsNode>::Failure("Invalid node Id.");
 
     if (node.HostName.trimmed().isEmpty())
-        return Result<PacsNode>::Failure("HostName is required.");
+        return Etrek::Specification::Result<PacsNode>::Failure("HostName is required.");
     if (node.HostIp.trimmed().isEmpty())
-        return Result<PacsNode>::Failure("HostIp is required.");
+        return Etrek::Specification::Result<PacsNode>::Failure("HostIp is required.");
     if (node.Port <= 0 || node.Port > 65535)
-        return Result<PacsNode>::Failure("Port must be between 1 and 65535.");
+        return Etrek::Specification::Result<PacsNode>::Failure("Port must be between 1 and 65535.");
     if (node.CalledAet.trimmed().isEmpty())
-        return Result<PacsNode>::Failure("CalledAET is required.");
+        return Etrek::Specification::Result<PacsNode>::Failure("CalledAET is required.");
     if (node.CallingAet.trimmed().isEmpty())
-        return Result<PacsNode>::Failure("CallingAET is required.");
+        return Etrek::Specification::Result<PacsNode>::Failure("CallingAET is required.");
 
     const QString cx = "pacs_nodes_upd_" + QString::number(QRandomGenerator::global()->generate());
 
@@ -178,7 +178,7 @@ Result<PacsNode> PacsNodeRepository::updatePacsNode(const PacsNode& node) const
         if (!db.open()) {
             const auto err = errOpen(db, translator);
             logger->LogError(err);
-            return Result<PacsNode>::Failure(err);
+            return Etrek::Specification::Result<PacsNode>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -204,22 +204,22 @@ Result<PacsNode> PacsNodeRepository::updatePacsNode(const PacsNode& node) const
         if (!q.exec()) {
             const auto err = errExec(q, translator);
             logger->LogError(err);
-            return Result<PacsNode>::Failure(err);
+            return Etrek::Specification::Result<PacsNode>::Failure(err);
         }
 
         if (q.numRowsAffected() == 0) {
-            return Result<PacsNode>::Failure("No rows updated (node not found?).");
+            return Etrek::Specification::Result<PacsNode>::Failure("No rows updated (node not found?).");
         }
     }
 
     QSqlDatabase::removeDatabase(cx);
-    return Result<PacsNode>::Success(node, "Updated");
+    return Etrek::Specification::Result<PacsNode>::Success(node, "Updated");
 }
 
-Result<bool> PacsNodeRepository::removePacsNode(const PacsNode& node) const
+Etrek::Specification::Result<bool> PacsNodeRepository::removePacsNode(const PacsNode& node) const
 {
     if (node.Id <= 0)
-        return Result<bool>::Failure("Invalid node Id.");
+        return Etrek::Specification::Result<bool>::Failure("Invalid node Id.");
 
     const QString cx = "pacs_nodes_del_" + QString::number(QRandomGenerator::global()->generate());
     bool deleted = false;
@@ -229,7 +229,7 @@ Result<bool> PacsNodeRepository::removePacsNode(const PacsNode& node) const
         if (!db.open()) {
             const auto err = errOpen(db, translator);
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
 
         QSqlQuery q(db);
@@ -242,15 +242,15 @@ Result<bool> PacsNodeRepository::removePacsNode(const PacsNode& node) const
         if (!q.exec()) {
             const auto err = errExec(q, translator);
             logger->LogError(err);
-            return Result<bool>::Failure(err);
+            return Etrek::Specification::Result<bool>::Failure(err);
         }
 
         deleted = (q.numRowsAffected() > 0);
         if (!deleted) {
-            return Result<bool>::Failure("No rows deleted (node not found?).");
+            return Etrek::Specification::Result<bool>::Failure("No rows deleted (node not found?).");
         }
     }
 
     QSqlDatabase::removeDatabase(cx);
-    return Result<bool>::Success(true, "Deleted");
+    return Etrek::Specification::Result<bool>::Success(true, "Deleted");
 }

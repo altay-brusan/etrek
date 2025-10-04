@@ -67,7 +67,7 @@ void DatabaseInitializerTest::testInitializeDatabase_createsDbAndTables()
     QVERIFY(QFile::exists("temp_test_script.sql"));
 
     DatabaseInitializer initializer(m_connectionSettings);
-    Result<QString> result = initializer.InitializeDatabase(std::move(customFile));
+    Etrek::Specification::Result<QString> result = initializer.InitializeDatabase(std::move(customFile));
 
     QVERIFY2(result.isSuccess, qUtf8Printable("Database initialization failed: " + result.message));
 
