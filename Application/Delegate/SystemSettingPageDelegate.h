@@ -1,44 +1,40 @@
 #ifndef SYSTEMSETTINGPAGEDELEGATE_H
 #define SYSTEMSETTINGPAGEDELEGATE_H
 
-#include <QObject>
-#include <QPointer>
-#include <memory>
 #include "IDelegate.h"
 #include "IPageAction.h"
 #include "SystemSettingPage.h"
+#include <QObject>
+#include <QPointer>
+#include <memory>
 
-namespace Etrek::Application::Delegate
-{
-    class SystemSettingPageDelegate :
-        public QObject,
-        public IDelegate,
-        public IPageAction
-    {
-        Q_OBJECT
-        Q_INTERFACES(IDelegate IPageAction)
+namespace Etrek::Application::Delegate {
+class SystemSettingPageDelegate : public QObject,
+                                  public IDelegate,
+                                  public IPageAction {
+  Q_OBJECT
+  Q_INTERFACES(IDelegate IPageAction)
 
 public:
-	SystemSettingPageDelegate(SystemSettingPage* page,QObject *parent);
-	
-	QString name() const override;
-	void attachDelegates(const QVector<QObject*>& delegates) override;
-        SystemSettingPage* getPage() const;
-	~SystemSettingPageDelegate();
+  SystemSettingPageDelegate(SystemSettingPage *page, QObject *parent);
 
-    signals:
-        void closeSettings();
+  QString name() const override;
+  void attachDelegates(const QVector<QObject *> &delegates) override;
+  SystemSettingPage *getPage() const;
+  ~SystemSettingPageDelegate();
 
-    public slots:
-        void apply() override;
-        void accept() override;
-        void reject() override;
+signals:
+  void closeSettings();
 
-    private:
-        SystemSettingPage* m_page;
-        QVector<QPointer<QObject>> delegates;
-    };
-}
+public slots:
+  void apply() override;
+  void accept() override;
+  void reject() override;
 
+private:
+  SystemSettingPage *m_page;
+  QVector<QPointer<QObject>> delegates;
+};
+} // namespace Etrek::Application::Delegate
 
 #endif // SYSTEMSETTINGPAGEDELEGATE_H

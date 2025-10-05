@@ -1,16 +1,16 @@
 #include "SystemSettingPageBuilder.h"
-#include "WorkflowConfigurationBuilder.h"
+#include "CollimatorConfigurationBuilder.h"
 #include "ConnectionSetupBuilder.h"
-#include "ImageCommentConfigurationBuilder.h"
+#include "DapConfigurationBuilder.h"
 #include "DetectorConfigurationBuilder.h"
 #include "GeneratorConfigurationBuilder.h"
-#include "DapConfigurationBuilder.h"
-#include "CollimatorConfigurationBuilder.h"
-#include "WorkListConfigurationBuilder.h"
+#include "ImageCommentConfigurationBuilder.h"
 #include "PacsEntityConfigurationBuilder.h"
 #include "ProcedureConfigurationBuilder.h"
-#include "ViewConfigurationBuilder.h"
 #include "TechniqueConfigurationBuilder.h"
+#include "ViewConfigurationBuilder.h"
+#include "WorkListConfigurationBuilder.h"
+#include "WorkflowConfigurationBuilder.h"
 
 using namespace Etrek::Worklist::Delegate;
 using namespace Etrek::Device::Delegate;
@@ -18,129 +18,134 @@ using namespace Etrek::Dicom::Delegate;
 using namespace Etrek::Pacs::Delegate;
 using namespace Etrek::ScanProtocol::Delegate;
 
-namespace Etrek::Application::Delegate
-{
+namespace Etrek::Application::Delegate {
 
-    SystemSettingPageBuilder::SystemSettingPageBuilder() = default;
-    SystemSettingPageBuilder::~SystemSettingPageBuilder() = default;
+SystemSettingPageBuilder::SystemSettingPageBuilder() = default;
+SystemSettingPageBuilder::~SystemSettingPageBuilder() = default;
 
-    std::pair<SystemSettingPage*, SystemSettingPageDelegate*>
-        SystemSettingPageBuilder::build(const DelegateParameter& params,
-            QWidget* parentWidget,
-            QObject* parentDelegate)
-    {
-        auto page = new SystemSettingPage(parentWidget);
+std::pair<SystemSettingPage *, SystemSettingPageDelegate *>
+SystemSettingPageBuilder::build(const DelegateParameter &params,
+                                QWidget *parentWidget,
+                                QObject *parentDelegate) {
+  auto page = new SystemSettingPage(parentWidget);
 
-        auto* systemSettingPageDelegate = new SystemSettingPageDelegate(
-            page,
-            parentDelegate
-        );
+  auto *systemSettingPageDelegate =
+      new SystemSettingPageDelegate(page, parentDelegate);
 
-        // Prepare delegate parameters for all sub-builders
-        DelegateParameter delegateParameters;
-        delegateParameters.dbConnection = params.dbConnection;
+  // Prepare delegate parameters for all sub-builders
+  DelegateParameter delegateParameters;
+  delegateParameters.dbConnection = params.dbConnection;
 
-        // WorkflowConfiguration
-        WorkflowConfigurationBuilder workflowConfigurationBuilder;
-        auto workflowConfig = workflowConfigurationBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* workflowConfigurationWidget = workflowConfig.first;
-        auto& workflowConfigurationDelegate = workflowConfig.second;
-        page->setWorkflowConfigurationWidget(workflowConfigurationWidget);
+  // WorkflowConfiguration
+  WorkflowConfigurationBuilder workflowConfigurationBuilder;
+  auto workflowConfig = workflowConfigurationBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *workflowConfigurationWidget = workflowConfig.first;
+  auto &workflowConfigurationDelegate = workflowConfig.second;
+  page->setWorkflowConfigurationWidget(workflowConfigurationWidget);
 
-        // ConnectionSetup
-        ConnectionSetupBuilder connectionSetupBuilder;
-        auto connectionSetup = connectionSetupBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* connectionSetupWidget = connectionSetup.first;
-        auto& connectionSetupDelegate = connectionSetup.second;
-        page->setConnectionSetupWidget(connectionSetupWidget);
+  // ConnectionSetup
+  ConnectionSetupBuilder connectionSetupBuilder;
+  auto connectionSetup = connectionSetupBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *connectionSetupWidget = connectionSetup.first;
+  auto &connectionSetupDelegate = connectionSetup.second;
+  page->setConnectionSetupWidget(connectionSetupWidget);
 
-        // ImageCommentConfiguration
-        ImageCommentConfigurationBuilder imageCommentConfigBuilder;
-        auto imageCommentConfig = imageCommentConfigBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* imageCommentConfigWidget = imageCommentConfig.first;
-        auto& imageCommentDelegate = imageCommentConfig.second;
-        page->setImageCommentWidget(imageCommentConfigWidget);
+  // ImageCommentConfiguration
+  ImageCommentConfigurationBuilder imageCommentConfigBuilder;
+  auto imageCommentConfig = imageCommentConfigBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *imageCommentConfigWidget = imageCommentConfig.first;
+  auto &imageCommentDelegate = imageCommentConfig.second;
+  page->setImageCommentWidget(imageCommentConfigWidget);
 
-        // DetectorConfiguration
-        DetectorConfigurationBuilder detectorConfigBuilder;
-        auto detectorConfig = detectorConfigBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* detectorConfigWidget = detectorConfig.first;
-        auto& detectorCommentDelegate = detectorConfig.second;
-        page->setDetectorConfigurationWidget(detectorConfigWidget);
+  // DetectorConfiguration
+  DetectorConfigurationBuilder detectorConfigBuilder;
+  auto detectorConfig = detectorConfigBuilder.build(delegateParameters, page,
+                                                    systemSettingPageDelegate);
+  auto *detectorConfigWidget = detectorConfig.first;
+  auto &detectorCommentDelegate = detectorConfig.second;
+  page->setDetectorConfigurationWidget(detectorConfigWidget);
 
-        // GeneratorConfiguration
-        GeneratorConfigurationBuilder generatorConfigBuilder;
-        auto generatorConfig = generatorConfigBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* generatorConfigWidget = generatorConfig.first;
-        auto& generatorDelegate = generatorConfig.second;
-        page->setGeneratorConfigurationWidget(generatorConfigWidget);
+  // GeneratorConfiguration
+  GeneratorConfigurationBuilder generatorConfigBuilder;
+  auto generatorConfig = generatorConfigBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *generatorConfigWidget = generatorConfig.first;
+  auto &generatorDelegate = generatorConfig.second;
+  page->setGeneratorConfigurationWidget(generatorConfigWidget);
 
-        // DapConfiguration
-        DapConfigurationBuilder dapConfigBuilder;
-        auto dapConfig = dapConfigBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* dapConfigWidget = dapConfig.first;
-        auto& dapDelegate = dapConfig.second;
-        page->setDapConfigurationWidget(dapConfigWidget);
+  // DapConfiguration
+  DapConfigurationBuilder dapConfigBuilder;
+  auto dapConfig = dapConfigBuilder.build(delegateParameters, page,
+                                          systemSettingPageDelegate);
+  auto *dapConfigWidget = dapConfig.first;
+  auto &dapDelegate = dapConfig.second;
+  page->setDapConfigurationWidget(dapConfigWidget);
 
-        // CollimatorConfiguration
-        CollimatorConfigurationBuilder collimatorConfigurationBuilder;
-        auto collimatorConfig = collimatorConfigurationBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* collimatorConfigWidget = collimatorConfig.first;
-        auto& collimatorConfigDelegate = collimatorConfig.second;
-        page->setCollimatorConfigurationWidget(collimatorConfigWidget);
+  // CollimatorConfiguration
+  CollimatorConfigurationBuilder collimatorConfigurationBuilder;
+  auto collimatorConfig = collimatorConfigurationBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *collimatorConfigWidget = collimatorConfig.first;
+  auto &collimatorConfigDelegate = collimatorConfig.second;
+  page->setCollimatorConfigurationWidget(collimatorConfigWidget);
 
-        // WorkListConfiguration
-        WorkListConfigurationBuilder workListConfigurationBuilder;
-        auto worklistConfig = workListConfigurationBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* worklistConfigWidget = worklistConfig.first;
-        auto& worklistConfigDelegate = worklistConfig.second;
-        page->setWorkListConfigurationWidget(worklistConfigWidget);
+  // WorkListConfiguration
+  WorkListConfigurationBuilder workListConfigurationBuilder;
+  auto worklistConfig = workListConfigurationBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *worklistConfigWidget = worklistConfig.first;
+  auto &worklistConfigDelegate = worklistConfig.second;
+  page->setWorkListConfigurationWidget(worklistConfigWidget);
 
-        // PacsEntityConfiguration
-        PacsEntityConfigurationBuilder pacsEntityConfigurationBuilder;
-        auto pacsEntityConfig = pacsEntityConfigurationBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* pacsEntityConfigWidget = pacsEntityConfig.first;
-        auto& pacsEntityConfigDelegate = pacsEntityConfig.second;
-        page->setPacsEntityConfigurationWidget(pacsEntityConfigWidget);
+  // PacsEntityConfiguration
+  PacsEntityConfigurationBuilder pacsEntityConfigurationBuilder;
+  auto pacsEntityConfig = pacsEntityConfigurationBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *pacsEntityConfigWidget = pacsEntityConfig.first;
+  auto &pacsEntityConfigDelegate = pacsEntityConfig.second;
+  page->setPacsEntityConfigurationWidget(pacsEntityConfigWidget);
 
-        // ProcedureConfiguration
-        ProcedureConfigurationBuilder procedureConfigurationBuilder;
-        auto procedureConfig = procedureConfigurationBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* procedureConfigWidget = procedureConfig.first;
-        auto& procedureConfigDelegate = procedureConfig.second;
-        page->setProcedureConfigurationWidget(procedureConfigWidget);
+  // ProcedureConfiguration
+  ProcedureConfigurationBuilder procedureConfigurationBuilder;
+  auto procedureConfig = procedureConfigurationBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *procedureConfigWidget = procedureConfig.first;
+  auto &procedureConfigDelegate = procedureConfig.second;
+  page->setProcedureConfigurationWidget(procedureConfigWidget);
 
-        // ViewConfiguration
-        ViewConfigurationBuilder viewConfigurationBuilder;
-        auto viewConfig = viewConfigurationBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* viewConfigWidget = viewConfig.first;
-        auto& viewConfigDelegate = viewConfig.second;
-        page->setViewConfigurationWidget(viewConfigWidget);
+  // ViewConfiguration
+  ViewConfigurationBuilder viewConfigurationBuilder;
+  auto viewConfig = viewConfigurationBuilder.build(delegateParameters, page,
+                                                   systemSettingPageDelegate);
+  auto *viewConfigWidget = viewConfig.first;
+  auto &viewConfigDelegate = viewConfig.second;
+  page->setViewConfigurationWidget(viewConfigWidget);
 
-        // TechniqueConfiguration
-        TechniqueConfigurationBuilder techniqueConfigurationBuilder;
-        auto techniqueConfig = techniqueConfigurationBuilder.build(delegateParameters, page, systemSettingPageDelegate);
-        auto* techniqueConfigWidget = techniqueConfig.first;
-        auto& techniqueConfigDelegate = techniqueConfig.second;
-        page->setTechniqueConfigurationWidget(techniqueConfigWidget);
+  // TechniqueConfiguration
+  TechniqueConfigurationBuilder techniqueConfigurationBuilder;
+  auto techniqueConfig = techniqueConfigurationBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *techniqueConfigWidget = techniqueConfig.first;
+  auto &techniqueConfigDelegate = techniqueConfig.second;
+  page->setTechniqueConfigurationWidget(techniqueConfigWidget);
 
-        QVector<QObject*> delegates = {
-            workflowConfigurationDelegate,
-            connectionSetupDelegate,
-            imageCommentDelegate,
-            detectorCommentDelegate,
-            generatorDelegate,
-            dapDelegate,
-            collimatorConfigDelegate,
-            worklistConfigDelegate,
-            pacsEntityConfigDelegate,
-            procedureConfigDelegate,
-            viewConfigDelegate,
-            techniqueConfigDelegate
-        };
-        systemSettingPageDelegate->attachDelegates(delegates);
-        
-        return { page, systemSettingPageDelegate };
-    }
+  QVector<QObject *> delegates = {workflowConfigurationDelegate,
+                                  connectionSetupDelegate,
+                                  imageCommentDelegate,
+                                  detectorCommentDelegate,
+                                  generatorDelegate,
+                                  dapDelegate,
+                                  collimatorConfigDelegate,
+                                  worklistConfigDelegate,
+                                  pacsEntityConfigDelegate,
+                                  procedureConfigDelegate,
+                                  viewConfigDelegate,
+                                  techniqueConfigDelegate};
+  systemSettingPageDelegate->attachDelegates(delegates);
 
+  return {page, systemSettingPageDelegate};
 }
+} // namespace Etrek::Application::Delegate
