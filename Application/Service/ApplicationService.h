@@ -29,7 +29,7 @@
 namespace Etrek::Application::Service
 {
 
-    namespace lg =  Etrek::Core::Log;
+    namespace lg = Etrek::Core::Log;
     namespace set = Etrek::Core::Setting;
     namespace mdl = Etrek::Core::Data::Model;
     namespace ent = Etrek::Core::Data::Entity;
