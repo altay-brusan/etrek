@@ -23,7 +23,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
         
         BodyPart() = default;
 
-        bool operator==(const BodyPart& other) const {
+        bool operator==(const BodyPart& other) const noexcept {
             return Id == other.Id;
         }
     };

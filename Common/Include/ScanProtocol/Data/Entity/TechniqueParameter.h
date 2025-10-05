@@ -79,7 +79,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
         * @return True if the TechniqueParameter belongs to the same TechniqueParameter.
         */
         bool
-        operator==(const ent::TechniqueParameter&other) const {
+        operator==(const ent::TechniqueParameter&other) const noexcept {
         return Id == other.Id;
         }
 };

@@ -35,7 +35,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
          * @brief Equality: if both IDs are valid (>=0), compare IDs; otherwise compare unique name.
          * This avoids treating two unsaved (-1) instances as equal.
          */
-        bool operator==(const Positioner& other) const {
+        bool operator==(const Positioner& other) const noexcept {
             if (Id >= 0 && other.Id >= 0) return Id == other.Id;
             return PositionName.compare(other.PositionName, Qt::CaseInsensitive) == 0;
         }

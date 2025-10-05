@@ -19,7 +19,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
 
         AnatomicRegion() = default;
 
-        bool operator==(const AnatomicRegion& other) const {
+        bool operator==(const AnatomicRegion& other) const noexcept {
             return Id == other.Id;
         }
     };
