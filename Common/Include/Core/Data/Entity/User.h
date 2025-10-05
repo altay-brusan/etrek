@@ -25,25 +25,9 @@ namespace Etrek::Core::Data::Entity {
 
         User() = default;
 
+        bool operator==(const User& other) const noexcept { return Id == other.Id; }
+        bool operator!=(const User& other) const noexcept { return !(*this == other); }
 
-        int getId() const { return Id; }
-        QString getUsername() const { return Username; }
-        QString getName() const  { return Name; }
-        QString getSurname() const  { return Surname; }
-        QString getPasswordHash() const  { return PasswordHash; }
-        bool isActive() const  { return IsActive; }
-        bool isDeleted() const  { return IsDeleted; }
-        QDateTime getCreateDate() const  { return CreateDate; }
-        QDateTime getUpdateDate() const  { return UpdateDate; }
-
-        QVector<Role*> getRoles() const  {
-            QVector<Role*> result;
-            result.reserve(Roles.size());
-            for (const auto& role : Roles) {
-                result.push_back(const_cast<Role*>(&role)); // safe if Role implements IRole
-            }
-            return result;
-        }
     };
 
 }
