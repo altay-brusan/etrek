@@ -1,7 +1,6 @@
 #include "ApplicationService.h"
-#include "ApplicationService.h"
+
 #include <QTimer>
-#include <csignal>
 #include <functional>
 #include <QApplication>
 #include <QCoreApplication>
@@ -9,7 +8,6 @@
 #include "LoggerProvider.h"
 #include "AppLoggerFactory.h"
 
-#include "ApplicationService.h"
 #include "DatabaseSetupManager.h"
 #include "UserManagerLaunchStrategy.h"
 #include "SettingManagerLaunchStrategy.h"
@@ -28,6 +26,18 @@ namespace Etrek::Application::Service
 {
     using Etrek::Specification::LaunchMode;
     using Etrek::Specification::Result;
+
+    using namespace Etrek::Core::Log;
+    using namespace Etrek::Core::Setting;
+    using namespace Etrek::Core::Data::Model;
+    using namespace Etrek::Core::Data::Entity;
+    using namespace Etrek::Core::Repository;
+    using namespace Etrek::Core::Security;
+    using namespace Etrek::Application::Delegate;
+    using namespace Etrek::Application::Authentication;
+    using namespace Etrek::Worklist::Connectivity;
+    using namespace Etrek::Specification;
+
     ApplicationService::ApplicationService(QObject* parent)
         : QObject{ parent }
     {
@@ -37,7 +47,6 @@ namespace Etrek::Application::Service
 
     void ApplicationService::initialize(LaunchMode launchMode)
     {        
-        qApp->processEvents();
 
         qRegisterMetaType<Role>("Role");
         qRegisterMetaType<User>("User");
@@ -60,21 +69,28 @@ namespace Etrek::Application::Service
 
     std::optional<Entity::User> ApplicationService::authenticateUser()
     {
-        logger->LogInfo(translator->getInfoMessage(AUTH_START_MSG));
+        if (!m_authService) {
+            if (logger) logger->LogError("Auth service is not initialized.");
+            return std::nullopt;
+        }
 
-        auto authenticationResult = m_authService->authenticateUser();
+        logger->LogInfo(translator->getInfoMessage(AUTH_START_MSG));
+        const auto authenticationResult = m_authService->authenticateUser();
         if (!authenticationResult.isSuccess) {
             return std::nullopt;
         }
-		return authenticationResult.value;
-
         logger->LogInfo(translator->getInfoMessage(AUTH_SUCCEED));
+		return authenticationResult.value;
     }
 
     void ApplicationService::setupLogger(std::function<void(const QString&, int)> progressCallback)
     {
         if (progressCallback) {
             progressCallback("Setup logging system...", 10);
+        }
+        if (!m_fileLoggerSetting) {
+            // Either call loadSettings() earlier or bail out
+            throw std::runtime_error("File logger settings not loaded.");
         }
 		// Initialize the logger with file settings for all systems
         LoggerProvider::Instance().InitializeFileLogger(m_fileLoggerSetting->getLogDirectory(),
@@ -92,16 +108,22 @@ namespace Etrek::Application::Service
 
     void ApplicationService::connectSignalsAndSlots()
     {
-		if (m_mainWindowDelegate)
-		{
-			connect(m_mainWindowDelegate, &MainWindowDelegate::aboutToClose, m_modalityWorklistManager, &ModalityWorklistManager::onAboutToCloseApplication);
+        if (!m_mainWindowDelegate) {
+            logger->LogError("Main window is not initialized. Cannot connect signals.");
+            return;
+        }
+        if (!m_modalityWorklistManager) {
+            logger->LogWarning("ModalityWorklistManager not ready; skipping connections.");
+            return;
+        }
 
-		}
-		else
-		{
-			logger->LogError("Main window is not initialized. Cannot connect signals.");
-		}
+        QObject::connect(
+            m_mainWindowDelegate, &MainWindowDelegate::aboutToClose,
+            m_modalityWorklistManager, &ModalityWorklistManager::onAboutToCloseApplication,
+            Qt::UniqueConnection
+        );
     }
+
     
     void ApplicationService::closeApplication()
     {
@@ -133,7 +155,7 @@ namespace Etrek::Application::Service
         
     void ApplicationService::loadMainWindow(std::function<void(const QString&, int)> progressCallback)
     {
-        logger->LogInfo(translator->getInfoMessage(DB_START_INIT_MSG));
+        logger->LogInfo("loading main window");
 
         if (progressCallback) {
             progressCallback("Loading screens...", 10);
@@ -157,13 +179,8 @@ namespace Etrek::Application::Service
         m_mainWindow.reset(result.first);
         m_mainWindowDelegate = result.second;
 
-        if (!m_mainWindow) {
-            logger->LogError("Failed to build main window instance.");
-            return;
-        }
-
-        if (!m_mainWindowDelegate) {
-            logger->LogError("Failed to build main window delegate.");
+        if (!m_mainWindow || !m_mainWindowDelegate) {
+            logger->LogError("Failed to build main window or delegate.");
             return;
         }
 
@@ -187,33 +204,42 @@ namespace Etrek::Application::Service
     void ApplicationService::initializeRisConnections(std::function<void(const QString&, int)> progressCallback)
     {
         logger->LogInfo(translator->getInfoMessage(RIS_START_NETWORK_INIT_MSG));
+        if (progressCallback) progressCallback("Initializing RIS connections...", 20);
 
-		if (progressCallback) {
-			progressCallback("Initializing RIS connections...", 20);
-		}
-        // TODO: The RIS connections are not limited to a single instance.  
-        // Future implementations may support multiple RIS connections.
-        auto risConnection = m_risConnectionSettingList.first();
-        
-		auto worklistRepository = std::make_shared<WorklistRepository>(m_databaseConnectionSetting);
-		bool isActive = risConnection->getActiveFlag();        	
-        if (risConnection && risConnection->getActiveFlag())
-        {
-            auto stdRisConnection = std::shared_ptr<RisConnectionSetting>(
-                risConnection.data(),
-                [](RisConnectionSetting*) {} // empty deleter
-            );
-            m_modalityWorklistManager = new ModalityWorklistManager(worklistRepository, stdRisConnection, this);
-            auto profiles = worklistRepository->getProfiles();
-            if (profiles.isSuccess) {
-                auto defaultProfile = profiles.value.first();
-                m_modalityWorklistManager->setActiveProfile(defaultProfile);
-                m_modalityWorklistManager->startWorklistQueryFromRis();
-            }
+        if (m_risConnectionSettingList.isEmpty()) {
+            logger->LogWarning("No RIS connections configured.");
+            return;
+        }
+
+        const auto risQ = m_risConnectionSettingList.first();
+        if (!risQ || !risQ->getActiveFlag()) {
+            logger->LogInfo("RIS connection is not active.");
+            return;
+        }
+
+        auto worklistRepository = std::make_shared<WorklistRepository>(m_databaseConnectionSetting);
+
+        // Bridge QSharedPointer -> std::shared_ptr while keeping the Qt ref alive.
+        std::shared_ptr<RisConnectionSetting> risStd(
+            risQ.data(),
+            [keepAlive = risQ](RisConnectionSetting*) mutable { keepAlive.clear(); } // hold ref
+        );
+
+        m_modalityWorklistManager = new ModalityWorklistManager(worklistRepository, risStd, this);
+
+        const auto profiles = worklistRepository->getProfiles();
+        if (profiles.isSuccess && !profiles.value.isEmpty()) {
+            const auto defaultProfile = profiles.value.first();
+            m_modalityWorklistManager->setActiveProfile(defaultProfile);
+            m_modalityWorklistManager->startWorklistQueryFromRis();
+        }
+        else {
+            logger->LogWarning("No worklist profiles available.");
         }
 
         logger->LogInfo(translator->getInfoMessage(RIS_NETWORK_INIT_SUCCEED));
     }
+
 
     void ApplicationService::intializeAuthentication(std::function<void(const QString&, int)> progressCallback)
     {
@@ -243,8 +269,8 @@ namespace Etrek::Application::Service
 			progressCallback("Initializing database...", 15);
 		}
 
-        DatabaseSetupManager _initializer(m_databaseConnectionSetting);
-        Result<QString> result = _initializer.initializeDatabase();
+        DatabaseSetupManager initializer(m_databaseConnectionSetting);
+        Result<QString> result = initializer.initializeDatabase();
         if (!result.isSuccess)
             return false;
 
