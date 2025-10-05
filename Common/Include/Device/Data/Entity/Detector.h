@@ -37,7 +37,7 @@ namespace Etrek::Device::Data::Entity {
 
         Detector() = default;
 
-        bool operator==(const Detector& other) const {
+        bool operator==(const Detector& other) const noexcept {
             return Id == other.Id;
         }
     };
