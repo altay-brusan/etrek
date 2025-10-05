@@ -1,32 +1,51 @@
 #ifndef INSTITUTION_H
 #define INSTITUTION_H
 
+/**
+ * @file Institution.h
+ * @brief Entity representing an institution/organization and optional department info.
+ */
+
 #include <QString>
 #include <QMetaType>
 
 namespace Etrek::Device::Data::Entity {
 
+    /**
+     * @class Institution
+     * @brief Organization metadata used for device/site association and display.
+     *
+     * @note Id == -1 indicates a non-persisted instance.
+     */
     class Institution {
     public:
-        int Id = -1;                                // id INT AUTO_INCREMENT PRIMARY KEY
-        QString Name;                               // name VARCHAR(128) NOT NULL UNIQUE
-        QString InstitutionType;                    // institution_type VARCHAR(128)
-        QString InstitutionId;                      // institution_type VARCHAR(128)
-        QString DepartmentName;                     // department_name VARCHAR(128)
-        QString Address;                            // address VARCHAR(512) NULL
-        QString ContactInformation;                 // contact_information VARCHAR(500)
-        bool IsActive = true;                       // is_active BOOLEAN DEFAULT TRUE
+        int Id = -1;                 ///< Primary identifier.
 
+        QString Name;                ///< Institution name (e.g., hospital, clinic, lab).
+        QString InstitutionType;     ///< Type/category (e.g., Hospital, Clinic, Research).
+        QString InstitutionId;       ///< External or organizational identifier/code.
+        QString DepartmentName;      ///< Department or unit name within the institution.
+        QString Address;             ///< Postal/street address.
+        QString ContactInformation;  ///< Contact details (phone/email/notes).
+
+        bool IsActive = true;        ///< Whether the institution entry is active.
+
+        /// Default constructor.
         Institution() = default;
 
-        // Equality comparison based on ID
-        bool operator==(const Institution& other) const {
+        /**
+         * @brief Equality by primary identifier.
+         * @param other Another instance to compare.
+         * @return true if Id values are equal; otherwise false.
+         */
+        bool operator==(const Institution& other) const noexcept {
             return Id == other.Id;
         }
     };
 
 } // namespace Etrek::Device::Data::Entity
 
+/// Qt metatype declaration (needed only if used with QVariant/queued connections).
 Q_DECLARE_METATYPE(Etrek::Device::Data::Entity::Institution)
 
 #endif // INSTITUTION_H
