@@ -3,8 +3,6 @@
 
 #include <QString>
 #include <QMetaType>
-#include <QDate>
-#include <QDateTime>
 
 namespace Etrek::ScanProtocol::Data::Entity {
 

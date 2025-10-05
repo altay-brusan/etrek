@@ -10,8 +10,8 @@
 #include <QString>
 #include <optional>
 
-using namespace Etrek::ScanProtocol;
-using namespace Etrek::ScanProtocol::Data::Entity;
+namespace sp = Etrek::ScanProtocol;
+namespace ent = Etrek::ScanProtocol::Data::Entity;
 
 namespace Etrek::ScanProtocol::Data::Entity {
 
@@ -20,13 +20,13 @@ namespace Etrek::ScanProtocol::Data::Entity {
         int Id = -1;
         ///< Unique identifier (primary key in the database)
 
-        BodyPart BodyPart;
+        ent::BodyPart BodyPart;
         ///< Anatomical body part associated with this technique
 
-        BodySize Size = BodySize::Medium;
+        sp::BodySize Size = BodySize::Medium;
         ///< Body size category (Fat, Medium, Thin, Paediatric)
 
-        TechniqueProfile Profile = TechniqueProfile::AP_PA;
+        sp::TechniqueProfile Profile = TechniqueProfile::AP_PA;
         ///< Projection profile (e.g., AP|PA, LAT, OBL, AXIAL)
 
         int Kvp = 0;
@@ -62,7 +62,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
         QString GridSpeed;
         ///< Grid speed classification (e.g., "High", "Medium")
 
-        ExposureStyle ExposureStyle;
+        sp::ExposureStyle ExposureStyle;
         ///< Exposure style (Mas Mode, Time Mode, AEC Mode, Manual)
 
         QString AecFields;
@@ -74,12 +74,12 @@ namespace Etrek::ScanProtocol::Data::Entity {
         TechniqueParameter() = default;
 
         /**
-        * @brief Equality operator for comparing with a BodyPart.
-        * @param other The BodyPart to compare against.
-        * @return True if the TechniqueParameter belongs to the same BodyPart.
+        * @brief Equality operator for comparing with a TechniqueParameter.
+        * @param other The TechniqueParameter to compare against.
+        * @return True if the TechniqueParameter belongs to the same TechniqueParameter.
         */
         bool
-        operator==(const Etrek::ScanProtocol::Data::Entity::BodyPart &other) const {
+        operator==(const ent::TechniqueParameter&other) const {
         return Id == other.Id;
         }
 };

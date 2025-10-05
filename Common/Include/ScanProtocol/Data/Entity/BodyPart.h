@@ -7,6 +7,8 @@
 #include <QDateTime>
 #include "AnatomicRegion.h"
 
+namespace ent = Etrek::ScanProtocol::Data::Entity;
+
 namespace Etrek::ScanProtocol::Data::Entity {
 
     class BodyPart {
@@ -16,7 +18,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
         QString CodeValue;                  ///< Unique code used inside Etrek to identify body part
 		QString CodingSchema = "ETREK";     ///< Internal coding schema
         QString Description;                ///< Body part descrioption
-		AnatomicRegion Region;              ///< Associated anatomic region
+		ent::AnatomicRegion Region;         ///< Associated anatomic region
 		bool IsActive = true;
         
         BodyPart() = default;
