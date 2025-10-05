@@ -1,6 +1,14 @@
 #ifndef SCANPROTOCOLUTIL_H
 #define SCANPROTOCOLUTIL_H
 
+/**
+ * @file ScanProtocolUtil.h
+ * @brief Enumerations and helper utilities for Scan Protocol domain types.
+ *
+ * Provides strongly-typed enums for technique, view/orientation, and print
+ * configuration, plus conversion helpers to/from user-visible and DB strings.
+ */
+
 #include <QString>
 #include <QVector>
 #include <QMetaType>
@@ -8,18 +16,61 @@
 
 namespace Etrek::ScanProtocol {
 
-    // ---------------- Technique / Exposure ----------------
+    /** @name Technique / Exposure enums
+     *  @brief Domain concepts for exposure and technique selection.
+     *  @{ */
+     /**
+      * @enum BodySize
+      * @brief Patient/body habitus categories.
+      */
     enum class BodySize { Fat, Medium, Thin, Paediatric };
-    enum class TechniqueProfile { AP_PA, LAT, OBL, AXIAL };
-    enum class ExposureStyle { MasMode, TimeMode, AECMode, Manual };
-    enum class GridType { Parallel, Focused, Crossed, Moving, Virtual };
-    enum class TechniqueParameterRole { Primary, Low, High };
 
-    // ---------------- View / Orientation ------------------
+    /**
+     * @enum TechniqueProfile
+     * @brief Projection categories for technique parameters.
+     */
+    enum class TechniqueProfile { AP_PA, LAT, OBL, AXIAL };
+
+    /**
+     * @enum ExposureStyle
+     * @brief Exposure control style used by acquisition.
+     */
+    enum class ExposureStyle { MasMode, TimeMode, AECMode, Manual };
+
+    /**
+     * @enum GridType
+     * @brief Anti-scatter grid design.
+     */
+    enum class GridType { Parallel, Focused, Crossed, Moving, Virtual };
+
+    /**
+     * @enum TechniqueParameterRole
+     * @brief Role of a technique within a View (e.g., for multi-technique views).
+     */
+    enum class TechniqueParameterRole { Primary, Low, High };
+    /** @} */
+
+    /** @name View / Orientation enums
+     *  @brief DICOM-inspired concepts for patient orientation and projection.
+     *  @{ */
+     /**
+      * @enum ProjectionProfile
+      * @brief High-level projection profile (views may support DUAL).
+      */
     enum class ProjectionProfile { AP_PA, LAT, OBL, AXIAL, DUAL };
+
+    /**
+     * @enum PatientPosition
+     * @brief Patient position during acquisition (DICOM 0018,5100-like).
+     */
     enum class PatientPosition { Supine, Prone, Erect, Lateral };
 
-    // DICOM-derived patient orientation tags (Row/Col share same domain)
+    /**
+     * @enum PatientOrientation
+     * @brief DICOM-derived orientation codes for row/column axes.
+     *
+     * Single- and two-letter codes (e.g., L, R, LA, RP, etc.).
+     */
     enum class PatientOrientation {
         L, R, A, P, H, F,
         LA, LP, LH, LF,
@@ -30,19 +81,62 @@ namespace Etrek::ScanProtocol {
         FL, FR, FA, FP
     };
 
+    /**
+     * @enum ViewPosition
+     * @brief DICOM-like view position (0018,5101).
+     */
     enum class ViewPosition { AP, PA, LL, RL, RLD, LLD, RLO, LLO };
-    enum class ImageLaterality { L, R, B };
-    enum class LabelMark { R, L, PA, AP, LAT, OBL, FLAT, UPRT };
-    enum class LabelPosition { LEFT_TOP, RIGHT_TOP, LEFT_BOTTOM, RIGHT_BOTTOM };
 
-    // ---------------- Procedure ------------------
+    /**
+     * @enum ImageLaterality
+     * @brief Laterality marker for the imaged anatomy.
+     */
+    enum class ImageLaterality { L, R, B };
+
+    /**
+     * @enum LabelMark
+     * @brief Label content to overlay (e.g., side/position marks).
+     */
+    enum class LabelMark { R, L, PA, AP, LAT, OBL, FLAT, UPRT };
+
+    /**
+     * @enum LabelPosition
+     * @brief Corner placement for labels in the rendered image.
+     */
+    enum class LabelPosition { LEFT_TOP, RIGHT_TOP, LEFT_BOTTOM, RIGHT_BOTTOM };
+    /** @} */
+
+    /** @name Print / Layout enums
+     *  @brief Printing orientation and film layout.
+     *  @{ */
+     /**
+      * @enum PrintOrientation
+      * @brief Page/film orientation.
+      */
     enum class PrintOrientation { Landscape, Portrait };
+
+    /**
+     * @enum PrintFormat
+     * @brief Film layout (DICOM Basic Grayscale Print-like strings).
+     *
+     * Encoded as literals such as "STANDARD\\1,1".
+     */
     enum class PrintFormat { STANDARD_1_1, STANDARD_1_2, STANDARD_2_1, STANDARD_2_2 };
-    
-    
+    /** @} */
+
+    /**
+     * @class ScanProtocolUtil
+     * @brief Utility functions for converting enums to/from strings.
+     *
+     * Provides stable string encodings for UI, persistence, and configuration.
+     * - `toString(...)` returns a user-facing or DB-facing literal.
+     * - `parse...(QString)` converts a string to the corresponding enum or
+     *   `std::optional<std::...>` when invalid.
+     */
     class ScanProtocolUtil {
     public:
         // ---------- BodySize ----------
+        /** @brief Convert BodySize to display string. */
         static QString toString(BodySize v) {
             switch (v) {
             case BodySize::Fat:        return "Fat";
@@ -52,18 +146,21 @@ namespace Etrek::ScanProtocol {
             }
             return "Medium";
         }
+        /** @brief Parse BodySize from string (case-insensitive). */
         static BodySize parseSize(const QString& s) {
-            if (s.compare("Fat", Qt::CaseInsensitive) == 0)        return BodySize::Fat;
-            if (s.compare("Medium", Qt::CaseInsensitive) == 0)     return BodySize::Medium;
-            if (s.compare("Thin", Qt::CaseInsensitive) == 0)       return BodySize::Thin;
+            if (s.compare("Fat", Qt::CaseInsensitive) == 0) return BodySize::Fat;
+            if (s.compare("Medium", Qt::CaseInsensitive) == 0) return BodySize::Medium;
+            if (s.compare("Thin", Qt::CaseInsensitive) == 0) return BodySize::Thin;
             if (s.compare("Paediatric", Qt::CaseInsensitive) == 0) return BodySize::Paediatric;
             return BodySize::Medium;
         }
+        /** @brief All BodySize strings in canonical order. */
         static QVector<QString> allSizeStrings() {
             return { "Fat", "Medium", "Thin", "Paediatric" };
         }
 
         // ---------- TechniqueProfile ----------
+        /** @brief Convert TechniqueProfile to display string. */
         static QString toString(TechniqueProfile v) {
             switch (v) {
             case TechniqueProfile::AP_PA: return "AP|PA";
@@ -73,6 +170,7 @@ namespace Etrek::ScanProtocol {
             }
             return "AP|PA";
         }
+        /** @brief Parse TechniqueProfile from string (case-insensitive). */
         static TechniqueProfile parseProfile(const QString& s) {
             if (s.compare("AP|PA", Qt::CaseInsensitive) == 0) return TechniqueProfile::AP_PA;
             if (s.compare("LAT", Qt::CaseInsensitive) == 0) return TechniqueProfile::LAT;
@@ -80,11 +178,13 @@ namespace Etrek::ScanProtocol {
             if (s.compare("AXIAL", Qt::CaseInsensitive) == 0) return TechniqueProfile::AXIAL;
             return TechniqueProfile::AP_PA;
         }
+        /** @brief All TechniqueProfile strings in canonical order. */
         static QVector<QString> allProfileStrings() {
             return { "AP|PA", "LAT", "OBL", "AXIAL" };
         }
 
         // ---------- ExposureStyle ----------
+        /** @brief Convert ExposureStyle to display string. */
         static QString toString(ExposureStyle v) {
             switch (v) {
             case ExposureStyle::MasMode:  return "Mas Mode";
@@ -94,18 +194,21 @@ namespace Etrek::ScanProtocol {
             }
             return "Manual";
         }
+        /** @brief Parse ExposureStyle from string (case-insensitive). */
         static ExposureStyle parseExposureStyle(const QString& s) {
-            if (s.compare("Mas Mode", Qt::CaseInsensitive) == 0)  return ExposureStyle::MasMode;
+            if (s.compare("Mas Mode", Qt::CaseInsensitive) == 0) return ExposureStyle::MasMode;
             if (s.compare("Time Mode", Qt::CaseInsensitive) == 0) return ExposureStyle::TimeMode;
-            if (s.compare("AEC Mode", Qt::CaseInsensitive) == 0)  return ExposureStyle::AECMode;
-            if (s.compare("Manual", Qt::CaseInsensitive) == 0)    return ExposureStyle::Manual;
+            if (s.compare("AEC Mode", Qt::CaseInsensitive) == 0) return ExposureStyle::AECMode;
+            if (s.compare("Manual", Qt::CaseInsensitive) == 0) return ExposureStyle::Manual;
             return ExposureStyle::Manual;
         }
+        /** @brief All ExposureStyle strings in canonical order. */
         static QVector<QString> allExposureStyleStrings() {
             return { "Mas Mode", "Time Mode", "AEC Mode", "Manual" };
         }
 
         // ---------- GridType ----------
+        /** @brief Convert GridType to display string. */
         static QString toString(GridType v) {
             switch (v) {
             case GridType::Parallel: return "Parallel";
@@ -116,6 +219,7 @@ namespace Etrek::ScanProtocol {
             }
             return "Parallel";
         }
+        /** @brief Parse GridType from string (case-insensitive). */
         static GridType parseGridType(const QString& s) {
             if (s.compare("Parallel", Qt::CaseInsensitive) == 0) return GridType::Parallel;
             if (s.compare("Focused", Qt::CaseInsensitive) == 0) return GridType::Focused;
@@ -124,11 +228,13 @@ namespace Etrek::ScanProtocol {
             if (s.compare("Virtual", Qt::CaseInsensitive) == 0) return GridType::Virtual;
             return GridType::Parallel;
         }
+        /** @brief All GridType strings in canonical order. */
         static QVector<QString> allGridTypeStrings() {
             return { "Parallel", "Focused", "Crossed", "Moving", "Virtual" };
         }
 
         // ---------- TechniqueParameterRole ----------
+        /** @brief Convert TechniqueParameterRole to DB string literal. */
         static QString toDbString(TechniqueParameterRole r) {
             switch (r) {
             case TechniqueParameterRole::Primary: return QStringLiteral("PRIMARY");
@@ -137,18 +243,21 @@ namespace Etrek::ScanProtocol {
             }
             return QStringLiteral("PRIMARY");
         }
+        /** @brief Parse TechniqueParameterRole from DB string literal. */
         static TechniqueParameterRole fromDbString(const QString& s) {
             if (s.compare(QStringLiteral("LOW"), Qt::CaseInsensitive) == 0) return TechniqueParameterRole::Low;
             if (s.compare(QStringLiteral("HIGH"), Qt::CaseInsensitive) == 0) return TechniqueParameterRole::High;
             return TechniqueParameterRole::Primary;
         }
-        // Convenience aliases mirroring the removed entity helpers
+        /// Convenience alias. @see toDbString
         static inline QString roleToDbString(TechniqueParameterRole r) { return toDbString(r); }
+        /// Convenience alias. @see fromDbString
         static inline TechniqueParameterRole roleFromDbString(const QString& s) { return fromDbString(s); }
 
         // ===================== VIEW UTILS =====================
 
         // ---------- ProjectionProfile (Views) ----------
+        /** @brief Convert ProjectionProfile to display string. */
         static QString toString(ProjectionProfile v) {
             switch (v) {
             case ProjectionProfile::AP_PA: return "AP|PA";
@@ -159,6 +268,7 @@ namespace Etrek::ScanProtocol {
             }
             return "AP|PA";
         }
+        /** @brief Parse ProjectionProfile from string (case-insensitive). */
         static ProjectionProfile parseProjectionProfile(const QString& s) {
             if (s.compare("AP|PA", Qt::CaseInsensitive) == 0) return ProjectionProfile::AP_PA;
             if (s.compare("LAT", Qt::CaseInsensitive) == 0) return ProjectionProfile::LAT;
@@ -169,6 +279,7 @@ namespace Etrek::ScanProtocol {
         }
 
         // ---------- PatientPosition ----------
+        /** @brief Convert PatientPosition to display string. */
         static QString toString(PatientPosition v) {
             switch (v) {
             case PatientPosition::Supine:  return "Supine";
@@ -178,6 +289,7 @@ namespace Etrek::ScanProtocol {
             }
             return "Supine";
         }
+        /** @brief Parse PatientPosition from string (case-insensitive) or null if invalid. */
         static std::optional<PatientPosition> parsePatientPosition(const QString& s) {
             if (s.compare("Supine", Qt::CaseInsensitive) == 0) return PatientPosition::Supine;
             if (s.compare("Prone", Qt::CaseInsensitive) == 0) return PatientPosition::Prone;
@@ -185,11 +297,13 @@ namespace Etrek::ScanProtocol {
             if (s.compare("Lateral", Qt::CaseInsensitive) == 0) return PatientPosition::Lateral;
             return std::nullopt;
         }
+        /** @brief All PatientPosition strings in canonical order. */
         static QVector<QString> allPatientPositionStrings() {
             return { "Supine","Prone","Erect","Lateral" };
         }
 
         // ---------- PatientOrientation ----------
+        /** @brief Convert PatientOrientation to display string. */
         static QString toString(PatientOrientation v) {
             switch (v) {
             case PatientOrientation::L:  return "L";
@@ -225,6 +339,7 @@ namespace Etrek::ScanProtocol {
             }
             return "L";
         }
+        /** @brief Parse PatientOrientation from string or null if invalid. */
         static std::optional<PatientOrientation> parsePatientOrientation(const QString& s) {
             const QString v = s.trimmed().toUpper();
             if (v == "L")  return PatientOrientation::L;
@@ -259,6 +374,7 @@ namespace Etrek::ScanProtocol {
             if (v == "FP") return PatientOrientation::FP;
             return std::nullopt;
         }
+        /** @brief All PatientOrientation strings in canonical order. */
         static QVector<QString> allPatientOrientationStrings() {
             return { "L","R","A","P","H","F","LA","LP","LH","LF",
                      "RA","RP","RH","RF","AL","AR","AH","AF",
@@ -267,6 +383,7 @@ namespace Etrek::ScanProtocol {
         }
 
         // ---------- ViewPosition ----------
+        /** @brief Convert ViewPosition to display string. */
         static QString toString(ViewPosition v) {
             switch (v) {
             case ViewPosition::AP:  return "AP";
@@ -280,6 +397,7 @@ namespace Etrek::ScanProtocol {
             }
             return "AP";
         }
+        /** @brief Parse ViewPosition from string or null if invalid. */
         static std::optional<ViewPosition> parseViewPosition(const QString& s) {
             const QString v = s.trimmed().toUpper();
             if (v == "AP")  return ViewPosition::AP;
@@ -292,11 +410,13 @@ namespace Etrek::ScanProtocol {
             if (v == "LLO") return ViewPosition::LLO;
             return std::nullopt;
         }
+        /** @brief All ViewPosition strings in canonical order. */
         static QVector<QString> allViewPositionStrings() {
             return { "AP","PA","LL","RL","RLD","LLD","RLO","LLO" };
         }
 
         // ---------- ImageLaterality ----------
+        /** @brief Convert ImageLaterality to display string. */
         static QString toString(ImageLaterality v) {
             switch (v) {
             case ImageLaterality::L: return "L";
@@ -305,6 +425,7 @@ namespace Etrek::ScanProtocol {
             }
             return "L";
         }
+        /** @brief Parse ImageLaterality from string or null if invalid. */
         static std::optional<ImageLaterality> parseImageLaterality(const QString& s) {
             const QString v = s.trimmed().toUpper();
             if (v == "L") return ImageLaterality::L;
@@ -312,11 +433,13 @@ namespace Etrek::ScanProtocol {
             if (v == "B") return ImageLaterality::B;
             return std::nullopt;
         }
+        /** @brief All ImageLaterality strings in canonical order. */
         static QVector<QString> allImageLateralityStrings() {
             return { "L","R","B" };
         }
 
         // ---------- LabelMark ----------
+        /** @brief Convert LabelMark to display string. */
         static QString toString(LabelMark v) {
             switch (v) {
             case LabelMark::R:   return "R";
@@ -330,6 +453,7 @@ namespace Etrek::ScanProtocol {
             }
             return "R";
         }
+        /** @brief Parse LabelMark from string or null if invalid. */
         static std::optional<LabelMark> parseLabelMark(const QString& s) {
             const QString v = s.trimmed().toUpper();
             if (v == "R")    return LabelMark::R;
@@ -342,11 +466,13 @@ namespace Etrek::ScanProtocol {
             if (v == "UPRT") return LabelMark::UPRT;
             return std::nullopt;
         }
+        /** @brief All LabelMark strings in canonical order. */
         static QVector<QString> allLabelMarkStrings() {
             return { "R","L","PA","AP","LAT","OBL","FLAT","UPRT" };
         }
 
         // ---------- LabelPosition ----------
+        /** @brief Convert LabelPosition to display string. */
         static QString toString(LabelPosition v) {
             switch (v) {
             case LabelPosition::LEFT_TOP:     return "LEFT TOP";
@@ -356,6 +482,7 @@ namespace Etrek::ScanProtocol {
             }
             return "RIGHT TOP";
         }
+        /** @brief Parse LabelPosition from string or null if invalid. */
         static std::optional<LabelPosition> parseLabelPosition(const QString& s) {
             const QString v = s.trimmed().toUpper();
             if (v == "LEFT TOP")     return LabelPosition::LEFT_TOP;
@@ -364,11 +491,13 @@ namespace Etrek::ScanProtocol {
             if (v == "RIGHT BOTTOM") return LabelPosition::RIGHT_BOTTOM;
             return std::nullopt;
         }
+        /** @brief All LabelPosition strings in canonical order. */
         static QVector<QString> allLabelPositionStrings() {
             return { "LEFT TOP","RIGHT TOP","LEFT BOTTOM","RIGHT BOTTOM" };
         }
-    
+
         // --- PrintOrientation ---
+        /** @brief Convert PrintOrientation to display string. */
         static QString toString(PrintOrientation v) {
             switch (v) {
             case PrintOrientation::Landscape: return "Landscape";
@@ -376,6 +505,7 @@ namespace Etrek::ScanProtocol {
             }
             return "Landscape";
         }
+        /** @brief Parse PrintOrientation from string or null if invalid. */
         static std::optional<PrintOrientation> parsePrintOrientation(const QString& s) {
             if (s.compare("Landscape", Qt::CaseInsensitive) == 0) return PrintOrientation::Landscape;
             if (s.compare("Portrait", Qt::CaseInsensitive) == 0) return PrintOrientation::Portrait;
@@ -383,7 +513,9 @@ namespace Etrek::ScanProtocol {
         }
 
         // --- PrintFormat ---
-        // DB uses literal values like "STANDARD\1,1"
+        /**
+         * @brief Convert PrintFormat to the DICOM-like literal used in DB (e.g., "STANDARD\\1,1").
+         */
         static QString toString(PrintFormat v) {
             switch (v) {
             case PrintFormat::STANDARD_1_1: return "STANDARD\\1,1";
@@ -393,6 +525,9 @@ namespace Etrek::ScanProtocol {
             }
             return "STANDARD\\1,1";
         }
+        /**
+         * @brief Parse PrintFormat from a DICOM-like literal or return null if invalid.
+         */
         static std::optional<PrintFormat> parsePrintFormat(const QString& s) {
             const auto v = s.trimmed();
             if (v.compare("STANDARD\\1,1", Qt::CaseInsensitive) == 0) return PrintFormat::STANDARD_1_1;
@@ -401,11 +536,11 @@ namespace Etrek::ScanProtocol {
             if (v.compare("STANDARD\\2,2", Qt::CaseInsensitive) == 0) return PrintFormat::STANDARD_2_2;
             return std::nullopt;
         }
-        
-     };
+    };
 
 } // namespace Etrek::ScanProtocol
 
+// ---- Qt metatype declarations (for QVariant, queued connections, etc.) ----
 Q_DECLARE_METATYPE(Etrek::ScanProtocol::BodySize)
 Q_DECLARE_METATYPE(Etrek::ScanProtocol::TechniqueProfile)
 Q_DECLARE_METATYPE(Etrek::ScanProtocol::ExposureStyle)
@@ -422,4 +557,5 @@ Q_DECLARE_METATYPE(Etrek::ScanProtocol::LabelPosition)
 
 Q_DECLARE_METATYPE(Etrek::ScanProtocol::PrintOrientation)
 Q_DECLARE_METATYPE(Etrek::ScanProtocol::PrintFormat)
+
 #endif // SCANPROTOCOLUTIL_H
