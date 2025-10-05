@@ -1,6 +1,15 @@
 #ifndef TECHNIQUEPARAMETER_H
 #define TECHNIQUEPARAMETER_H
 
+/**
+ * @file TechniqueParameter.h
+ * @brief Declares the TechniqueParameter entity used for defining radiographic exposure parameters.
+ *
+ * Represents configurable exposure settings for a given body part and projection,
+ * including kVp, mAs, SID, grid, and AEC configuration. It forms the technical basis
+ * for scan protocol definition in the system.
+ */
+
 #include "AnatomicRegion.h"
 #include "BodyPart.h"
 #include "ScanProtocolUtil.h"
@@ -10,82 +19,93 @@
 #include <QString>
 #include <optional>
 
-namespace sp = Etrek::ScanProtocol;
-namespace ent = Etrek::ScanProtocol::Data::Entity;
-
 namespace Etrek::ScanProtocol::Data::Entity {
 
+    namespace sp = Etrek::ScanProtocol;
+    namespace ent = Etrek::ScanProtocol::Data::Entity;
+
+
+    /**
+     * @class TechniqueParameter
+     * @brief Persistable entity defining technical exposure parameters for a scan.
+     *
+     * Stores parameters used to determine imaging technique for a given body part,
+     * size, and projection. Equality compares by @ref Id only.
+     */
     class TechniqueParameter {
     public:
+        /** @brief Unique identifier (primary key in the database). */
         int Id = -1;
-        ///< Unique identifier (primary key in the database)
 
+        /** @brief Anatomical body part associated with this technique. */
         ent::BodyPart BodyPart;
-        ///< Anatomical body part associated with this technique
 
-        sp::BodySize Size = BodySize::Medium;
-        ///< Body size category (Fat, Medium, Thin, Paediatric)
+        /** @brief Body size category (e.g., Fat, Medium, Thin, Paediatric). */
+        sp::BodySize Size = sp::BodySize::Medium;
 
-        sp::TechniqueProfile Profile = TechniqueProfile::AP_PA;
-        ///< Projection profile (e.g., AP|PA, LAT, OBL, AXIAL)
+        /** @brief Projection profile (e.g., AP/PA, LAT, OBL, AXIAL). */
+        sp::TechniqueProfile Profile = sp::TechniqueProfile::AP_PA;
 
+        /** @brief Kilovoltage peak (tube voltage) used for exposure. */
         int Kvp = 0;
-        ///< Kilovoltage peak (tube voltage) used for exposure
 
+        /** @brief Tube current (milliampere-seconds, mAs total). */
         int Ma = 0;
-        ///< Tube current (milliampere-seconds, mAs total)
 
+        /** @brief Exposure time in milliseconds. */
         int Ms = 0;
-        ///< Exposure time in milliseconds
 
+        /** @brief Fixed kVp value (override for body part, if defined). */
         int FKvp = 0;
-        ///< Fixed kVp value (override for body part, if defined)
 
+        /** @brief Fixed mAs value (override for body part, if defined). */
         double FMa = 0;
-        ///< Fixed mAs value (override for body part, if defined)
 
-        int FocalSpotSize;
-        ///< Focal spot size (usually in microns or mm)
+        /** @brief Focal spot size (usually in microns or mm). */
+        int FocalSpotSize = 0;
 
+        /** @brief Minimum Source-to-Image Distance (SID) in cm. */
         double SIDMin = 0.0;
-        ///< Minimum Source-to-Image Distance (SID) in cm
 
+        /** @brief Maximum Source-to-Image Distance (SID) in cm. */
         double SIDMax = 0.0;
-        ///< Maximum Source-to-Image Distance (SID) in cm
 
-        std::optional<GridType> GridType;
-        ///< Grid type (Parallel, Focused, Crossed, Moving, Virtual) or null if none
+        /** @brief Grid type (Parallel, Focused, Crossed, Moving, Virtual) or null if none. */
+        std::optional<sp::GridType> GridType;
 
+        /** @brief Grid ratio (e.g., "8:1", "10:1"). */
         QString GridRatio;
-        ///< Grid ratio (e.g., "8:1", "10:1")
 
+        /** @brief Grid speed classification (e.g., "High", "Medium"). */
         QString GridSpeed;
-        ///< Grid speed classification (e.g., "High", "Medium")
 
+        /** @brief Exposure style (Mas Mode, Time Mode, AEC Mode, Manual). */
         sp::ExposureStyle ExposureStyle;
-        ///< Exposure style (Mas Mode, Time Mode, AEC Mode, Manual)
 
+        /** @brief Active AEC (Automatic Exposure Control) detector fields configuration. */
         QString AecFields;
-        ///< Active AEC (Automatic Exposure Control) detector fields configuration
 
-        int AecDensity;
-        ///< AEC density setting (positive/negative shift for exposure)
+        /** @brief AEC density setting (positive/negative shift for exposure). */
+        int AecDensity = 0;
 
+        /** @brief Default constructor. */
         TechniqueParameter() = default;
 
         /**
-        * @brief Equality operator for comparing with a TechniqueParameter.
-        * @param other The TechniqueParameter to compare against.
-        * @return True if the TechniqueParameter belongs to the same TechniqueParameter.
-        */
-        bool
-        operator==(const ent::TechniqueParameter&other) const noexcept {
-        return Id == other.Id;
+         * @brief Equality operator comparing by @ref Id only.
+         * @param other The TechniqueParameter to compare against.
+         * @return True if both objects have the same @ref Id; otherwise false.
+         */
+        bool operator==(const ent::TechniqueParameter& other) const noexcept {
+            return Id == other.Id;
         }
-};
+    };
 
 } // namespace Etrek::ScanProtocol::Data::Entity
 
+/**
+ * @brief Enables TechniqueParameter for use with Qt's meta-object system (e.g., QVariant).
+ */
 Q_DECLARE_METATYPE(Etrek::ScanProtocol::Data::Entity::TechniqueParameter)
 
 #endif // TECHNIQUEPARAMETER_H

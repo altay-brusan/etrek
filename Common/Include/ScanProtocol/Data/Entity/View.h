@@ -3,10 +3,11 @@
 
 /**
  * @file View.h
- * @brief Entity representing a radiographic view (e.g., "Head AP").
+ * @brief Declares the View entity representing a radiographic projection/view.
  *
- * @details
- * Maps to the `views` table. See individual fields for schema mapping notes.
+ * Represents a radiographic view definition (e.g., "Head AP") including
+ * projection, orientation, laterality, and other metadata for protocol
+ * configuration and UI display.
  */
 
 #include <QDateTime>
@@ -19,92 +20,136 @@
 
 namespace Etrek::ScanProtocol::Data::Entity {
 
-/**
- * @class View
- * @brief Application entity for a radiographic view definition.
- *
- * @note Equality compares only the primary key (`Id`).
- */
-class View {
-public:
-  int Id = -1;  ///< Primary key (`views.id`). `-1` indicates not yet persisted.
-  QString Name; ///< Human-readable name (e.g., "Head AP").
-  QString Description; ///< Optional free-text description.
+	namespace sp = Etrek::ScanProtocol;
 
-  BodyPart BodyPart; ///< Foreign key to `body_parts` (denormalized here).
+    /**
+     * @class View
+     * @brief Application entity for a radiographic view definition.
+     *
+     * Encapsulates metadata describing a specific radiographic projection, including
+     * DICOM-inspired orientation, projection profile, label placement, and UI hints.
+     *
+     * @note Equality compares only the surrogate key (@ref Id).
+     */
+    class View {
+    public:
+        /** @brief Primary key (`views.id`). `-1` indicates not yet persisted. */
+        int Id = -1;
 
-  // --- Patient orientation / position (DICOM-inspired) ---
+        /** @brief Human-readable name (e.g., "Head AP"). */
+        QString Name;
 
-  /// DICOM patient orientation code for the **row** direction (optional).
-  /// See ::Etrek::ScanProtocol::PatientOrientation.
-  std::optional<Etrek::ScanProtocol::PatientOrientation> PatientOrientationRow;
+        /** @brief Optional free-text description of the view. */
+        QString Description;
 
-  /// DICOM patient orientation code for the **column** direction (optional).
-  /// See ::Etrek::ScanProtocol::PatientOrientation.
-  std::optional<Etrek::ScanProtocol::PatientOrientation> PatientOrientationCol;
+        /** @brief Associated body part (foreign key to `body_parts`). */
+        BodyPart BodyPart;
 
-  /// Patient position (DICOM 0018,5100-like). Optional in DB.
-  /// See ::Etrek::ScanProtocol::PatientPosition.
-  std::optional<Etrek::ScanProtocol::PatientPosition> PatientPosition;
+        // --- Patient orientation / position (DICOM-inspired) ---
 
-  /// Projection profile. Defaults to AP|PA. Views support DUAL.
-  /// See ::Etrek::ScanProtocol::ProjectionProfile.
-  Etrek::ScanProtocol::ProjectionProfile ProjectionProfile =
-      Etrek::ScanProtocol::ProjectionProfile::AP_PA;
+        /**
+         * @brief DICOM patient orientation code for the **row** direction (optional).
+         * @see Etrek::ScanProtocol::PatientOrientation
+         */
+        std::optional<sp::PatientOrientation> PatientOrientationRow;
 
-  /// View position (DICOM 0018,5101). Optional (often unset for AXIAL, etc.).
-  /// See ::Etrek::ScanProtocol::ViewPosition.
-  std::optional<Etrek::ScanProtocol::ViewPosition> ViewPosition;
+        /**
+         * @brief DICOM patient orientation code for the **column** direction (optional).
+         * @see Etrek::ScanProtocol::PatientOrientation
+         */
+        std::optional<sp::PatientOrientation> PatientOrientationCol;
 
-  /// Image laterality (DICOM 0020,0062). Optional.
-  /// See ::Etrek::ScanProtocol::ImageLaterality.
-  std::optional<Etrek::ScanProtocol::ImageLaterality> ImageLaterality;
+        /**
+         * @brief Patient position (DICOM 0018,5100-like). Optional in DB.
+         * @see Etrek::ScanProtocol::PatientPosition
+         */
+        std::optional<sp::PatientPosition> PatientPosition;
 
-  /// Optional clockwise image rotation in degrees (stored as TINYINT in DB).
-  std::optional<int> ImageRotate;
+        /**
+         * @brief Projection profile for the view (default: AP/PA).
+         * @see Etrek::ScanProtocol::ProjectionProfile
+         */
+        sp::ProjectionProfile ProjectionProfile =
+            sp::ProjectionProfile::AP_PA;
 
-  // --- Files / algorithms / UI hints ---
+        /**
+         * @brief View position (DICOM 0018,5101). Optional.
+         * Often unset for axial or non-standard projections.
+         * @see Etrek::ScanProtocol::ViewPosition
+         */
+        std::optional<sp::ViewPosition> ViewPosition;
 
-  QString IconFileLocation; ///< Path to an icon file (`icon_file_location`).
-  QString CollimatorSize;   ///< Collimator size hint (`collimator_size`).
-  QString ImageProcessingAlgorithm; ///< Recommended algorithm
-                                    ///< (`image_processing_algorithm`).
+        /**
+         * @brief Image laterality (DICOM 0020,0062). Optional.
+         * @see Etrek::ScanProtocol::ImageLaterality
+         */
+        std::optional<sp::ImageLaterality> ImageLaterality;
 
-  bool ImageHorizontalFlip =
-      false; ///< UI hint: mirror image horizontally (`image_horizontal_flip`).
+        /**
+         * @brief Optional clockwise image rotation in degrees.
+         * Stored as a small integer (TINYINT) in the database.
+         */
+        std::optional<int> ImageRotate;
 
-  /// Optional label mark (e.g., R/L/LAT/OBL).
-  /// See ::Etrek::ScanProtocol::LabelMark.
-  std::optional<Etrek::ScanProtocol::LabelMark> LabelMark;
+        // --- Files / algorithms / UI hints ---
 
-  /// Optional label placement on the image.
-  /// See ::Etrek::ScanProtocol::LabelPosition.
-  std::optional<Etrek::ScanProtocol::LabelPosition> LabelPosition;
+        /** @brief Path to an icon file (`icon_file_location`). */
+        QString IconFileLocation;
 
-  /// Positioner linkage by name (FK by `position_name`). Stored as plain string
-  /// to avoid circular deps.
-  QString PositionName;
+        /** @brief Collimator size hint (`collimator_size`). */
+        QString CollimatorSize;
 
-  bool IsActive = true; ///< Soft-delete flag (`is_active`).
+        /** @brief Recommended image processing algorithm (`image_processing_algorithm`). */
+        QString ImageProcessingAlgorithm;
 
-  /// Default constructor.
-  View() = default;
+        /** @brief UI hint: mirror image horizontally (`image_horizontal_flip`). */
+        bool ImageHorizontalFlip = false;
 
-  /// @brief Equality compares primary key (`Id`).
-  /// @param other The other view.
-  /// @return `true` if `Id` matches; otherwise `false`.
-  bool operator==(const View &other) const noexcept { return Id == other.Id; }
+        /**
+         * @brief Optional label mark (e.g., "R", "L", "LAT", "OBL").
+         * @see Etrek::ScanProtocol::LabelMark
+         */
+        std::optional<sp::LabelMark> LabelMark;
 
-  /// @brief Inequality.
-  /// @param other The other view.
-  /// @return `true` if `Id` differs; otherwise `false`.
-  bool operator!=(const View &other) const noexcept {
-    return !(*this == other);
-  }
-};
+        /**
+         * @brief Optional label placement position on the image.
+         * @see Etrek::ScanProtocol::LabelPosition
+         */
+        std::optional<sp::LabelPosition> LabelPosition;
+
+        /**
+         * @brief Positioner linkage by name (foreign key by `position_name`).
+         *
+         * Stored as plain string to avoid circular dependencies with Positioner.
+         */
+        QString PositionName;
+
+        /** @brief Indicates whether the view is active (`is_active`). */
+        bool IsActive = true;
+
+        /** @brief Default constructor. */
+        View() = default;
+
+        /**
+         * @brief Equality operator comparing by @ref Id.
+         * @param other The other view to compare.
+         * @return true if both have the same @ref Id; otherwise false.
+         */
+        bool operator==(const View& other) const noexcept { return Id == other.Id; }
+
+        /**
+         * @brief Inequality operator (negation of @ref operator==).
+         * @param other The other view to compare.
+         * @return true if IDs differ; otherwise false.
+         */
+        bool operator!=(const View& other) const noexcept { return !(*this == other); }
+    };
 
 } // namespace Etrek::ScanProtocol::Data::Entity
 
+/**
+ * @brief Enables View for use with Qt's meta-object system (e.g., QVariant).
+ */
 Q_DECLARE_METATYPE(Etrek::ScanProtocol::Data::Entity::View)
 
 #endif // VIEW_H

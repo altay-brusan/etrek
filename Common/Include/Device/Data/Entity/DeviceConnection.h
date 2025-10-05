@@ -11,21 +11,23 @@
 
 
 namespace Etrek::Device::Data::Entity {
-
+    
+    namespace dev = Etrek::Device;
+    
     class DeviceConnection {
     public:
         int Id = -1;                          ///< Primary key
         int GeneratorId = -1;                 ///< Foreign key to generator
         int TubeId = -1;                      ///< Foreign key to x-ray tube
-        int PosinioerId = -1;                 ///< Foreign key to positioner
-        Connector Connector;                  ///< Connector
-        ConnectionProtocol Protocol;          ///< Connection protocol
+        int PosinionerId = -1;                ///< Foreign key to positioner
+        dev::Connector Connector;             ///< Connector
+        dev::ConnectionProtocol Protocol;     ///< Connection protocol
         QString InterfaceName;                ///< Optional connection name
-        QJsonObject Parameters;               ///< pConnection Parameters
+        QJsonObject Parameters;               ///< Connection Parameters
        
         DeviceConnection() = default;
 
-        bool operator==(const DeviceConnection& other) const {
+        bool operator==(const DeviceConnection& other) const noexcept {
             return Id == other.Id;
         }
     };
