@@ -28,10 +28,34 @@ namespace {
 
     void handleSignal(int sig) {
         g_lastSignal.store(sig, std::memory_order_relaxed);
-        // Avoid non–async-signal-safe work here:
+        // _Exit is the safe “get out now” button.
         std::_Exit(EXIT_FAILURE);
     }
 
+
+    /*
+    * 
+    * If a graceful shutdown (run cleanup/aboutToQuit) needed,
+    * don’t _Exit in the handler. Instead, set a flag and let
+    * the main thread call QCoreApplication::quit():
+    * global
+    *    static volatile sig_atomic_t g_gotSignal = 0;
+    *
+    *    void handleSignal(int sig) {
+    *        g_gotSignal = sig;      // async-signal-safe
+    *    }
+    *
+    *    QTimer timer;
+    *    QObject::connect(&timer, &QTimer::timeout, [&]{
+    *        if (g_gotSignal) {
+    *            // do minimal, safe app-level handling here
+    *            QCoreApplication::quit();
+    *        }
+    *    });
+    *    timer.start(100);
+
+    */
+    
     class SignalGuard {
     public:
         explicit SignalGuard(std::initializer_list<int> sigs) {
