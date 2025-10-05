@@ -3,6 +3,11 @@
 
 #include <QObject>
 #include <memory>
+#include <functional>
+#include <optional>
+#include <QSharedPointer>
+
+
 #include "LaunchMode.h"
 #include "MainWindow.h"
 #include "AppLogger.h"
@@ -21,30 +26,31 @@
 #include "SplashScreenManager.h"
 
 
-using namespace Etrek::Core::Log;
-using namespace Etrek::Core::Setting;
-using namespace Etrek::Core::Data::Model;
-using namespace Etrek::Core::Repository;
-using namespace Etrek::Core::Security;
-using namespace Etrek::Application::Delegate;
-using namespace Etrek::Application::Authentication;
-using namespace Etrek::Worklist::Connectivity;
-
 namespace Etrek::Application::Service
 {
-    using Etrek::Specification::LaunchMode;
+
+    namespace lg = Etrek::Core::Log;
+    namespace set = Etrek::Core::Setting;
+    namespace mdl = Etrek::Core::Data::Model;
+    namespace ent = Etrek::Core::Data::Entity;
+    namespace rpo = Etrek::Core::Repository;
+    namespace sec = Etrek::Core::Security;
+    namespace dlg = Etrek::Application::Delegate;
+    namespace aut = Etrek::Application::Authentication;
+    namespace cnc = Etrek::Worklist::Connectivity;
+    namespace spc = Etrek::Specification;
 
     class ApplicationService : public QObject
     {
         Q_OBJECT
     public:
         explicit ApplicationService(QObject* parent = nullptr);
-        void initialize(LaunchMode mode);
+        void initialize(spc::LaunchMode mode);
         bool initializeDatabase(std::function<void(const QString&, int)> progressCallback);
         void initializeRisConnections(std::function<void(const QString&, int)> progressCallback);
         void intializeAuthentication(std::function<void(const QString&, int)> progressCallback);
         void intializeDevices(std::function<void(const QString&, int)> progressCallback);
-        std::optional<Entity::User> authenticateUser();
+        std::optional<ent::User> authenticateUser();
         void loadMainWindow(std::function<void(const QString&, int)> progressCallback);
         bool loadSettings(std::function<void(const QString&, int)> progressCallback);
         void setupLogger(std::function<void(const QString&, int)> progressCallback);
@@ -55,21 +61,21 @@ namespace Etrek::Application::Service
         ~ApplicationService();
 
     private:
-        std::unique_ptr<ILaunchStrategy> createLaunchStrategy(LaunchMode mode);
+        std::unique_ptr<ILaunchStrategy> createLaunchStrategy(spc::LaunchMode mode);
 
 
         std::unique_ptr<MainWindow> m_mainWindow;
-        MainWindowDelegate* m_mainWindowDelegate = nullptr;
+        dlg::MainWindowDelegate* m_mainWindowDelegate = nullptr;
         std::shared_ptr<AppLogger> logger;
-        SettingProvider m_settingProvider;
+        set::SettingProvider m_settingProvider;
         TranslationProvider* translator;
         std::shared_ptr<AuthenticationRepository> m_authRepository;
         CryptoManager m_securityService;
-        AuthenticationService* m_authService = nullptr;
+        aut::AuthenticationService* m_authService = nullptr;
         std::shared_ptr<Model::DatabaseConnectionSetting> m_databaseConnectionSetting;
         std::shared_ptr<Model::FileLoggerSetting> m_fileLoggerSetting;
         QVector< QSharedPointer<Model::RisConnectionSetting>> m_risConnectionSettingList;
-        ModalityWorklistManager* m_modalityWorklistManager = nullptr;
+        cnc::ModalityWorklistManager* m_modalityWorklistManager = nullptr;
     };
 }
 
