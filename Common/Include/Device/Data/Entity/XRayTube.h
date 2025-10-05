@@ -4,9 +4,11 @@
 #include <QString>
 #include <QDate>
 #include <QMetaType>
-#include "Device/DevicePosition.h"
+#include "DevicePosition.h"
 
 namespace Etrek::Device::Data::Entity {
+
+	namespace dev = Etrek::Device;
 
     /**
      * @class XRayTube
@@ -30,7 +32,7 @@ namespace Etrek::Device::Data::Entity {
         int MaxCurrent = 0;                      ///< in mA
         QString PowerRange;                      ///< in kW
         QString TubeName;                        ///< e.g., "Ceiling Tube"
-        DevicePosition Position;
+        dev::DevicePosition Position;
         QString TubeFilter;                  
 
         bool IsActive = false;
