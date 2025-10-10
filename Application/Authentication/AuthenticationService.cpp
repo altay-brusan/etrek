@@ -2,7 +2,6 @@
 #include "Result.h"
 #include "MessageKey.h"
 #include "LoginDialog.h"
-#include "Result.h"
 #include "AppLoggerFactory.h"
 #include "UserMangerDialog.h"
 #include "CryptoManager.h"
