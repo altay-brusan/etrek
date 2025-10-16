@@ -69,8 +69,8 @@ namespace Etrek::Application::Service
         std::shared_ptr<AppLogger> logger;
         set::SettingProvider m_settingProvider;
         TranslationProvider* translator;
-        std::shared_ptr<AuthenticationRepository> m_authRepository;
-        CryptoManager m_securityService;
+        std::shared_ptr<rpo::AuthenticationRepository> m_authRepository;
+        sec::CryptoManager m_securityService;
         aut::AuthenticationService* m_authService = nullptr;
         std::shared_ptr<Model::DatabaseConnectionSetting> m_databaseConnectionSetting;
         std::shared_ptr<Model::FileLoggerSetting> m_fileLoggerSetting;
