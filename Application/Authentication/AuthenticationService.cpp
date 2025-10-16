@@ -2,21 +2,25 @@
 #include "Result.h"
 #include "MessageKey.h"
 #include "LoginDialog.h"
-#include "AppLoggerFactory.h"
 #include "UserMangerDialog.h"
 #include "CryptoManager.h"
+#include "LoggerProvider.h"
+#include "AppLoggerFactory.h"
+
+namespace lg = Etrek::Core::Log;
 
 namespace Etrek::Application::Authentication
 {
     using Etrek::Specification::Result;
 
-    AuthenticationService::AuthenticationService(const AuthenticationRepository& repository,
-        const CryptoManager& securityService,
+
+    AuthenticationService::AuthenticationService(const rep::AuthenticationRepository& repository,
+        const sec::CryptoManager& securityService,
         QObject* parent)
         : QObject(parent), m_securityService(securityService), m_repository(repository)
     {
         translator = &TranslationProvider::Instance();
-        AppLoggerFactory factory(LoggerProvider::Instance(), translator);
+        lg::AppLoggerFactory factory(LoggerProvider::Instance(), translator);
         logger = factory.CreateLogger("DatabaseInitializer");
 
     }
@@ -163,6 +167,8 @@ namespace Etrek::Application::Authentication
     }
 
 } 
+
+
 
 
 

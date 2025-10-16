@@ -1,28 +1,25 @@
 #ifndef AUTHENTICATIONSERVICE_H
 #define AUTHENTICATIONSERVICE_H
 #include <QObject>
-#include "AuthenticationRepository.h"
-#include "TranslationProvider.h"
-#include "AppLogger.h"
-#include "CryptoManager.h"
+#include <AuthenticationRepository.h>
+#include <CryptoManager.h>
 
-
-using namespace Etrek::Core::Log;
-using namespace Etrek::Core::Data;
-using namespace Etrek::Core::Security;
-using namespace Etrek::Core::Repository;
 
 namespace Etrek::Application::Authentication {
 
     using Etrek::Specification::Result;
+	namespace ent = Etrek::Core::Data::Entity;
+	namespace usr = Etrek::Core::Data;
+    namespace rep = Etrek::Core::Repository;
+	namespace sec = Etrek::Core::Security;
 
     class AuthenticationService : public QObject
     {
         Q_OBJECT
 
     public:
-        explicit AuthenticationService(const AuthenticationRepository& repository,
-            const CryptoManager& securityService,
+        explicit AuthenticationService(const rep::AuthenticationRepository& repository,
+            const Etrek::Core::Security::CryptoManager& securityService,
             QObject* parent = nullptr);
 
 
@@ -48,8 +45,8 @@ namespace Etrek::Application::Authentication {
         Result<std::optional<Entity::User>> displayLoginDialog() const;
 
 
-        CryptoManager m_securityService;
-        AuthenticationRepository m_repository;
+        sec::CryptoManager m_securityService;
+        rep::AuthenticationRepository m_repository;
         TranslationProvider* translator;
         std::shared_ptr<AppLogger> logger;
     };
