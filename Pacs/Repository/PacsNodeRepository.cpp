@@ -3,15 +3,19 @@
 #include "AppLogger.h"
 
 #include <QVariant>
-#include <IWorklistRepository.h>
+#include "IWorklistRepository.h"
+#include "DatabaseConnectionSetting.h"
+
+
 
 
 namespace Etrek::Pacs::Repository {
 
-    using namespace Etrek::Core::Log;
     using namespace Etrek::Pacs;
+    using namespace Etrek::Core::Log;
     using namespace Etrek::Pacs::Data::Entity;
     using namespace Etrek::Core::Globalization;
+    using namespace Etrek::Core::Data::Model;
 
     static inline QString kRepoName() { return "PacsNodeRepository"; }
     static inline QString kTable() { return "pacs_nodes"; }
@@ -23,7 +27,7 @@ namespace Etrek::Pacs::Repository {
         return QString("Query failed: %1").arg(q.lastError().text());
     }
 
-    PacsNodeRepository::PacsNodeRepository(std::shared_ptr<mdl::DatabaseConnectionSetting> connectionSetting)
+    PacsNodeRepository::PacsNodeRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting)
         : m_connectionSetting(std::move(connectionSetting))
     {
         translator = &TranslationProvider::Instance();

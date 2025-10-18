@@ -1,14 +1,25 @@
 #include <QDebug>
 #include <QMetaObject>
 #include <QTimer>
+
 #include "ModalityWorklistManager.h"
+#include "RisConnectionSetting.h"
+#include "WorklistRepository.h"
+#include "WorklistEntry.h"
+#include "WorklistProfile.h"
+#include "WorklistQueryService.h"
 
 
 
 namespace Etrek::Worklist::Connectivity
 {
-    ModalityWorklistManager::ModalityWorklistManager(std::shared_ptr<rep::WorklistRepository> repository,
-        std::shared_ptr<mdl::RisConnectionSetting> settings,
+    using namespace Etrek::Core::Data::Model;
+    using namespace Etrek::Worklist::Repository;
+    using namespace Etrek::Worklist::Data::Entity;
+
+
+    ModalityWorklistManager::ModalityWorklistManager(std::shared_ptr<WorklistRepository> repository,
+        std::shared_ptr<RisConnectionSetting> settings,
         QObject* parent)
         : QObject(parent),
         m_repository(repository),
@@ -23,12 +34,13 @@ namespace Etrek::Worklist::Connectivity
         m_findTimer = new QTimer(this);
         m_findTimer->setInterval(m_refreshPeriodMs);
     }
-	void ModalityWorklistManager::onAboutToCloseApplication()
-	{
-		qDebug() << "[INFO] ModalityWorklistManager: Application is closing, stopping worklist query.";
-		stopWorklistQueryFromRis();
-		this->deleteLater();  // Safely delete this object
-	}
+
+    void ModalityWorklistManager::onAboutToCloseApplication()
+    {
+        qDebug() << "[INFO] ModalityWorklistManager: Application is closing, stopping worklist query.";
+        stopWorklistQueryFromRis();
+        this->deleteLater();  // Safely delete this object
+    }
 
     ModalityWorklistManager::~ModalityWorklistManager()
     {
@@ -42,7 +54,7 @@ namespace Etrek::Worklist::Connectivity
         }
     }
 
-    void ModalityWorklistManager::setActiveProfile(const ent::WorklistProfile& profile)
+    void ModalityWorklistManager::setActiveProfile(const WorklistProfile& profile)
     {
         m_profile = profile;
 
@@ -89,7 +101,7 @@ namespace Etrek::Worklist::Connectivity
         connect(this, &ModalityWorklistManager::QueryRequested, m_queryService.get(), [this]() {
             const auto entries = m_queryService->getWorklistEntries();
             QMetaObject::invokeMethod(this, "handleNewQueryResults", Qt::QueuedConnection,
-                Q_ARG(QList<ent::WorklistEntry>, entries));
+                Q_ARG(QList<WorklistEntry>, entries));
             });
 
 
@@ -118,7 +130,7 @@ namespace Etrek::Worklist::Connectivity
         // DO NOT trigger PerformWorklistQuery directly; wait for thread start signal
     }
 
-    QList<ent::WorklistEntry> ModalityWorklistManager::getEntities()
+    QList<WorklistEntry> ModalityWorklistManager::getEntities()
     {
         if (m_queryService)
             return m_queryService->getWorklistEntries();
@@ -171,13 +183,13 @@ namespace Etrek::Worklist::Connectivity
         }
     }
 
-    void ModalityWorklistManager::handleNewQueryResults(const QList<ent::WorklistEntry>& entries)
+    void ModalityWorklistManager::handleNewQueryResults(const QList<WorklistEntry>& entries)
     {
         m_isFindRunning = false;
         for (const auto& entry : entries) {
             auto existing = m_repository->getWorklistEntry(entry, m_profile);
             if (!existing.isSuccess) {
-                ent::WorklistEntry remapedEntry = entry;
+                WorklistEntry remapedEntry = entry;
                 remapedEntry.Profile = m_profile;
                 remapedEntry.Source = Source::RIS;
                 remapedEntry.Status = ProcedureStepStatus::PENDING;

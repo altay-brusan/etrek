@@ -8,17 +8,28 @@
 #include "WorklistEnum.h"
 #include "AppLoggerFactory.h"
 #include "MessageKey.h"
+#include "DatabaseConnectionSetting.h"
+#include "TranslationProvider.h"
+#include "WorklistProfile.h"
+#include "Result.h"
+#include "DicomTag.h"
+#include "WorklistEntry.h"
 
 namespace Etrek::Worklist::Repository {
 
     using Etrek::Specification::Result;
+    using namespace Etrek::Core::Data::Model;
+	using namespace Etrek::Worklist::Data::Entity;
+	using namespace Etrek::Core::Globalization;
+    using namespace Etrek::Core::Log;
+    using namespace Etrek::Specification;
 
-    WorklistRepository::WorklistRepository(std::shared_ptr<mdl::DatabaseConnectionSetting> connectionSetting, QObject* parent)
+    WorklistRepository::WorklistRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting, QObject* parent)
         : QObject(parent), m_connectionSetting(connectionSetting), translator(nullptr), logger(nullptr)
     {
 
-        translator = &glob::TranslationProvider::Instance();
-        lg::AppLoggerFactory factory(lg::LoggerProvider::Instance(), translator);
+        translator = &TranslationProvider::Instance();
+        AppLoggerFactory factory(LoggerProvider::Instance(), translator);
         logger = factory.CreateLogger("WorklistRepository");
     }
 
@@ -32,8 +43,8 @@ namespace Etrek::Worklist::Repository {
         return db;
     }
 
-    Result<QList<ent::WorklistProfile>> WorklistRepository::getProfiles() const {
-        QList<ent::WorklistProfile> profiles;
+    Result<QList<WorklistProfile>> WorklistRepository::getProfiles() const {
+        QList<WorklistProfile> profiles;
 
         QString connName = "conn_get_profiles_" + QString::number(QRandomGenerator::global()->generate());
         {
@@ -43,7 +54,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::WorklistProfile>>::Failure(error);
+                return Result<QList<WorklistProfile>>::Failure(error);
             }
 
             // Fetch profiles along with associated presentation context and tags
@@ -62,23 +73,23 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_QUERY_FAILED_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::WorklistProfile>>::Failure(error);
+                return Result<QList<WorklistProfile>>::Failure(error);
             }
 
             // Create a map to track which profiles we've already processed
-            QMap<int, ent::WorklistProfile> profilesMap;
+            QMap<int, WorklistProfile> profilesMap;
 
             while (query.next()) {
                 int profileId = query.value("profile_id").toInt();
 
                 // Check if this profile is already in the map
                 if (!profilesMap.contains(profileId)) {
-                    ent::WorklistProfile profile;
+                    WorklistProfile profile;
                     profile.Id = profileId;
                     profile.Name = query.value("profile_name").toString();
 
                     // Set the context for the profile
-                    ent::WorklistPresentationContext context;
+                    WorklistPresentationContext context;
                     context.Id = query.value("context_id").toInt();
                     context.TransferSyntaxUid = query.value("transfer_syntax_uid").toString();
 
@@ -91,7 +102,7 @@ namespace Etrek::Worklist::Repository {
 
                 // Add associated tags for the profile (we can do this in a separate loop)
                 if (query.value("tag_id").isValid()) {
-                    ent::ProfileTagAssociation association;
+                    ProfileTagAssociation association;
                     association.Tag.Id = query.value("tag_id").toInt();
                     association.Tag.Name = query.value("tag_name").toString();
 
@@ -104,11 +115,11 @@ namespace Etrek::Worklist::Repository {
             profiles = profilesMap.values();
         }
         QSqlDatabase::removeDatabase(connName); // ✅ SAFE — all references destroyed
-        return Result<QList<ent::WorklistProfile>>::Success(profiles);
+        return Result<QList<WorklistProfile>>::Success(profiles);
     }
 
-    Result<QList<ent::DicomTag>> WorklistRepository::getTagsByProfile(int profileId) const {
-        QList<ent::DicomTag> tags;
+    Result<QList<DicomTag>> WorklistRepository::getTagsByProfile(int profileId) const {
+        QList<DicomTag> tags;
         QString connName = "conn_get_tags_" + QString::number(QRandomGenerator::global()->generate());
         {
             QSqlDatabase db = createConnection(connName);
@@ -117,7 +128,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<QList<ent::DicomTag>>::Failure(error);
+                return Result<QList<DicomTag>>::Failure(error);
             }
 
             QSqlQuery query(db);
@@ -133,11 +144,11 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_QUERY_FAILED_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<QList<ent::DicomTag>>::Failure(error);
+                return Result<QList<DicomTag>>::Failure(error);
             }
 
             while (query.next()) {
-                ent::DicomTag tag;
+                DicomTag tag;
                 tag.Id = query.value("id").toInt();
                 tag.Name = query.value("name").toString();
                 tag.DisplayName = query.value("display_name").toString();
@@ -151,11 +162,11 @@ namespace Etrek::Worklist::Repository {
             }
         }
         QSqlDatabase::removeDatabase(connName);
-        return spc::Result<QList<ent::DicomTag>>::Success(tags);
+        return Result<QList<DicomTag>>::Success(tags);
     }
 
-    Result<QList<ent::DicomTag>> WorklistRepository::getIdentifiersByProfile(int profileId) const {
-        QList<ent::DicomTag> tags;
+    Result<QList<DicomTag>> WorklistRepository::getIdentifiersByProfile(int profileId) const {
+        QList<DicomTag> tags;
         QString connName = "conn_get_tags_" + QString::number(QRandomGenerator::global()->generate());
         {
             QSqlDatabase db = createConnection(connName);
@@ -164,7 +175,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<QList<ent::DicomTag>>::Failure(error);
+                return Result<QList<DicomTag>>::Failure(error);
             }
 
             QSqlQuery query(db);
@@ -180,11 +191,11 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_QUERY_FAILED_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::DicomTag>>::Failure(error);
+                return Result<QList<DicomTag>>::Failure(error);
             }
 
             while (query.next()) {
-                ent::DicomTag tag;
+                DicomTag tag;
                 tag.Id = query.value("id").toInt();
                 tag.Name = query.value("name").toString();
                 tag.DisplayName = query.value("display_name").toString();
@@ -198,12 +209,12 @@ namespace Etrek::Worklist::Repository {
             }
         }
         QSqlDatabase::removeDatabase(connName);
-        return spc::Result<QList<ent::DicomTag>>::Success(tags);
+        return Result<QList<DicomTag>>::Success(tags);
     }
 
-    Result<ent::WorklistEntry> WorklistRepository::getWorklistEntryById(int entryId) const {
+    Result<WorklistEntry> WorklistRepository::getWorklistEntryById(int entryId) const {
         QString connName = "conn_get_worklist_" + QString::number(QRandomGenerator::global()->generate());
-        ent::WorklistEntry entry;
+        WorklistEntry entry;
         {
             QSqlDatabase db = createConnection(connName);
 
@@ -211,7 +222,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<ent::WorklistEntry>::Failure(error);
+                return Result<WorklistEntry>::Failure(error);
             }
 
             QSqlQuery query(db);
@@ -226,7 +237,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_ENTRY_NOT_FOUND_OR_QUERY_FAILED_MSG);
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<ent::WorklistEntry>::Failure(error);
+                return Result<WorklistEntry>::Failure(error);
             }
 
             entry.Id = query.value("id").toInt();
@@ -251,11 +262,11 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_FAILED_TO_LOAD_ATTRIBUTES_MSG);
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<ent::WorklistEntry>::Failure(error);
+                return Result<WorklistEntry>::Failure(error);
             }
 
             while (attrQuery.next()) {
-                ent::WorklistAttribute attr;
+                WorklistAttribute attr;
                 attr.id = attrQuery.value("id").toInt();
                 attr.EntryId = entryId;
                 attr.Tag.Id = attrQuery.value("tag_id").toInt();
@@ -273,11 +284,11 @@ namespace Etrek::Worklist::Repository {
         }
 
         QSqlDatabase::removeDatabase(connName);
-        return Result<ent::WorklistEntry>::Success(entry);
+        return Result<WorklistEntry>::Success(entry);
     }
 
-    Result<QList<ent::WorklistEntry>> WorklistRepository::getWorklistEntries(const QDateTime* from, const QDateTime* to) const {
-        QList<ent::WorklistEntry> entries;
+    Result<QList<WorklistEntry>> WorklistRepository::getWorklistEntries(const QDateTime* from, const QDateTime* to) const {
+        QList<WorklistEntry> entries;
         const QString connName = "conn_get_entries_" + QString::number(QRandomGenerator::global()->generate());
 
         {
@@ -287,7 +298,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::WorklistEntry>>::Failure(error);
+                return Result<QList<WorklistEntry>>::Failure(error);
             }
 
             QString sql = R"(SELECT id, source, profile_id, status, created_at, updated_at FROM mwl_entries WHERE 1=1 )";
@@ -309,12 +320,12 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_QUERY_FAILED_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::WorklistEntry>>::Failure(error);
+                return Result<QList<WorklistEntry>>::Failure(error);
             }
 
             QList<int> entryIds;
             while (query.next()) {
-                ent::WorklistEntry entry;
+                WorklistEntry entry;
                 entry.Id = query.value("id").toInt();
                 entry.Source = static_cast<Source>(query.value("source").toInt());
                 entry.Profile.Id = query.value("profile_id").toInt();
@@ -337,11 +348,11 @@ namespace Etrek::Worklist::Repository {
 
         QSqlDatabase::removeDatabase(connName);  // ✅ safe: all objects referencing the db are destroyed
 
-        return spc::Result<QList<ent::WorklistEntry>>::Success(entries);
+        return Result<QList<WorklistEntry>>::Success(entries);
     }
 
-    Result<QList<ent::WorklistEntry>> WorklistRepository::getWorklistEntries(Source source) const {
-        QList<ent::WorklistEntry> entries;
+    Result<QList<WorklistEntry>> WorklistRepository::getWorklistEntries(Source source) const {
+        QList<WorklistEntry> entries;
         QString connName = "conn_get_entries_src_" + QString::number(QRandomGenerator::global()->generate());
         {
             QSqlDatabase db = createConnection(connName);
@@ -350,7 +361,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::WorklistEntry>>::Failure(error);
+                return Result<QList< WorklistEntry>>::Failure(error);
             }
 
             QSqlQuery query(db);
@@ -365,12 +376,12 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_QUERY_FAILED_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::WorklistEntry>>::Failure(error);
+                return Result<QList< WorklistEntry>>::Failure(error);
             }
 
             QList<int> entryIds;
             while (query.next()) {
-                ent::WorklistEntry entry;
+                 WorklistEntry entry;
                 entry.Id = query.value("id").toInt();
                 entry.Source = static_cast<Source>(query.value("source").toInt());
                 entry.Profile.Id = query.value("profile_id").toInt();
@@ -393,11 +404,11 @@ namespace Etrek::Worklist::Repository {
             }
         }
         QSqlDatabase::removeDatabase(connName);
-        return spc::Result<QList<ent::WorklistEntry>>::Success(entries);
+        return Result<QList< WorklistEntry>>::Success(entries);
     }
 
-    Result<QList<ent::WorklistEntry>> WorklistRepository::getWorklistEntries(ProcedureStepStatus status) const {
-        QList<ent::WorklistEntry> entries;
+    Result<QList< WorklistEntry>> WorklistRepository::getWorklistEntries(ProcedureStepStatus status) const {
+        QList< WorklistEntry> entries;
         QString connName = "conn_get_entries_status_" + QString::number(QRandomGenerator::global()->generate());
         {
             QSqlDatabase db = createConnection(connName);
@@ -406,7 +417,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::WorklistEntry>>::Failure(error);
+                return Result<QList< WorklistEntry>>::Failure(error);
             }
 
             QSqlQuery query(db);
@@ -421,12 +432,12 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_QUERY_FAILED_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::WorklistEntry>>::Failure(error);
+                return Result<QList< WorklistEntry>>::Failure(error);
             }
 
             QList<int> entryIds;
             while (query.next()) {
-                ent::WorklistEntry entry;
+                 WorklistEntry entry;
                 entry.Id = query.value("id").toInt();
                 entry.Source = static_cast<Source>(query.value("source").toInt());
                 entry.Profile.Id = query.value("profile_id").toInt();
@@ -450,7 +461,7 @@ namespace Etrek::Worklist::Repository {
 
         }
         QSqlDatabase::removeDatabase(connName);
-        return spc::Result<QList<ent::WorklistEntry>>::Success(entries);
+        return Result<QList< WorklistEntry>>::Success(entries);
     }
 
     Result<bool> WorklistRepository::deleteWorklistEntries(const QDateTime& beforeDate) {
@@ -612,7 +623,7 @@ namespace Etrek::Worklist::Repository {
         return Result<bool>::Success(true);
     }
 
-    Result<int> WorklistRepository::addDicomTag(const ent::DicomTag& tag) {
+    Result<int> WorklistRepository::addDicomTag(const  DicomTag& tag) {
         int newId = -1;
         QString connName = "conn_add_dicom_tag_" + QString::number(QRandomGenerator::global()->generate());
 
@@ -758,9 +769,9 @@ namespace Etrek::Worklist::Repository {
         return Result<QString>::Success("Status updated");
     }
 
-    Result<int> WorklistRepository::createWorklistEntry(const ent::WorklistEntry& entry) {
+    Result<int> WorklistRepository::createWorklistEntry(const  WorklistEntry& entry) {
         int newId = -1;
-        ent::WorklistEntry result;
+         WorklistEntry result;
         QString connName = "conn_create_worklist_" + QString::number(QRandomGenerator::global()->generate());
 
         {
@@ -804,7 +815,7 @@ namespace Etrek::Worklist::Repository {
                 VALUES (:entryId, :tagId, :tagValue)
             )");
 
-            for (const ent::WorklistAttribute& attr : entry.Attributes) {
+            for (const  WorklistAttribute& attr : entry.Attributes) {
                 if (attr.Tag.IsActive) {
                     attrQuery.bindValue(":entryId", newId);
                     attrQuery.bindValue(":tagId", attr.Tag.Id);
@@ -828,12 +839,12 @@ namespace Etrek::Worklist::Repository {
             result = entry;
             result.Id = newId;
         }
-        emit worklistEntryCreated(static_cast<const ent::WorklistEntry&>(result));  // after commit
+        emit worklistEntryCreated(static_cast<const  WorklistEntry&>(result));  // after commit
         QSqlDatabase::removeDatabase(connName);
         return Result<int>::Success(newId);
     }
 
-    Result<int> WorklistRepository::updateWorklistEntry(const ent::WorklistEntry& entry) {
+    Result<int> WorklistRepository::updateWorklistEntry(const  WorklistEntry& entry) {
         QString connName = "conn_update_worklist_" + QString::number(QRandomGenerator::global()->generate());
         {
             QSqlDatabase db = createConnection(connName);
@@ -893,7 +904,7 @@ namespace Etrek::Worklist::Repository {
                 VALUES (:entryId, :tagId, :tagValue)
             )");
 
-            for (const ent::WorklistAttribute& attr : entry.Attributes) {
+            for (const  WorklistAttribute& attr : entry.Attributes) {
                 if (attr.Tag.IsActive) {
                     attrQuery.bindValue(":entryId", entry.Id);
                     attrQuery.bindValue(":tagId", attr.Tag.Id);
@@ -924,21 +935,21 @@ namespace Etrek::Worklist::Repository {
         return Result<int>::Success(entry.Id);
     }
 
-    spc::Result<ent::WorklistEntry> WorklistRepository::getWorklistEntry(const ent::WorklistEntry& entry) const {
+    Result< WorklistEntry> WorklistRepository::getWorklistEntry(const  WorklistEntry& entry) const {
         // Get active identifiers tags for profile
         auto activeTagsResult = getActiveIdentifierTags(entry.Profile.Id);
         if (!activeTagsResult.isSuccess) {
             QString error = translator->getWarningMessage(MWL_FAILED_TO_GET_ACTIVE_IDENTIFIERS_MSG).arg(activeTagsResult.message);
             logger->LogError(error);
             qDebug()<<error;
-            return Result<ent::WorklistEntry>::Failure(error);
+            return Result< WorklistEntry>::Failure(error);
         }
 
         // Build tagId to value map for provided entry only for active identifier tags
         QMap<int, QString> tagIdToValue;
         for (const auto& attr : entry.Attributes) {
             if (std::any_of(activeTagsResult.value.begin(), activeTagsResult.value.end(),
-                            [&](const ent::DicomTag& tag) { return tag.Id == attr.Tag.Id; })) {
+                            [&](const  DicomTag& tag) { return tag.Id == attr.Tag.Id; })) {
                 tagIdToValue[attr.Tag.Id] = attr.TagValue;
             }
         }
@@ -948,7 +959,7 @@ namespace Etrek::Worklist::Repository {
             QString warning = translator->getWarningMessage(MWL_FAILED_TO_FIND_ACTIVE_IDENTIFIER_FOR_ENTRY_MSG);
             logger->LogError(warning);
             qDebug()<<warning;
-            return spc::Result<ent::WorklistEntry>::Failure(warning);
+            return Result< WorklistEntry>::Failure(warning);
         }
 
         // Search existing entry by identifiers
@@ -957,11 +968,11 @@ namespace Etrek::Worklist::Repository {
             QString error = translator->getErrorMessage(MWL_FAILED_TO_FIND_ENTRY_MSG).arg(findResult.message);
             logger->LogError(error);
             qDebug()<<error;
-            return spc::Result<ent::WorklistEntry>::Failure(error);
+            return Result< WorklistEntry>::Failure(error);
         }
 
         // Now fetch the entry details (tags and attributes)
-        ent::WorklistEntry worklistEntry;
+         WorklistEntry worklistEntry;
         worklistEntry.Id = findResult.value;
 
         // Fetch attributes and tags for the found entry
@@ -970,24 +981,24 @@ namespace Etrek::Worklist::Repository {
             return entryWithDetails;  // Return the error if fetching details failed
         }
 
-        return spc::Result<ent::WorklistEntry>::Success(entryWithDetails.value);
+        return Result< WorklistEntry>::Success(entryWithDetails.value);
     }
 
-    spc::Result<ent::WorklistEntry> WorklistRepository::getWorklistEntry(const ent::WorklistEntry& entry, const ent::WorklistProfile& profile) const {
+    Result< WorklistEntry> WorklistRepository::getWorklistEntry(const  WorklistEntry& entry, const  WorklistProfile& profile) const {
         // Get active identifiers tags for profile
         auto activeTagsResult = getActiveIdentifierTags(profile.Id);
         if (!activeTagsResult.isSuccess) {
             QString error = translator->getWarningMessage(MWL_FAILED_TO_GET_ACTIVE_IDENTIFIERS_MSG).arg(activeTagsResult.message);
             logger->LogError(error);
             qDebug()<<error;
-            return Result<ent::WorklistEntry>::Failure("Failed to get active identifier tags");
+            return Result< WorklistEntry>::Failure("Failed to get active identifier tags");
         }
 
         // Build tagId to value map for provided entry only for active identifier tags
         QMap<int, QString> tagIdToValue;
         for (const auto& attr : entry.Attributes) {
             if (std::any_of(activeTagsResult.value.begin(), activeTagsResult.value.end(),
-                            [&](const ent::DicomTag& tag) { return tag.Id == attr.Tag.Id; })) {
+                            [&](const  DicomTag& tag) { return tag.Id == attr.Tag.Id; })) {
                 tagIdToValue[attr.Tag.Id] = attr.TagValue;
             }
         }
@@ -997,7 +1008,7 @@ namespace Etrek::Worklist::Repository {
             QString warning = translator->getWarningMessage(MWL_FAILED_TO_FIND_ACTIVE_IDENTIFIER_FOR_ENTRY_MSG);
             logger->LogError(warning);
             qDebug()<<warning;
-            return spc::Result<ent::WorklistEntry>::Failure(warning);
+            return Result< WorklistEntry>::Failure(warning);
         }
 
         // Search existing entry by identifiers
@@ -1006,11 +1017,11 @@ namespace Etrek::Worklist::Repository {
             QString error = translator->getErrorMessage(MWL_FAILED_TO_FIND_ENTRY_MSG).arg(findResult.message);
             logger->LogError(error);
             qDebug()<<error;
-            return spc::Result<ent::WorklistEntry>::Failure(error);
+            return Result< WorklistEntry>::Failure(error);
         }
 
         // Now fetch the entry details (tags and attributes)
-        ent::WorklistEntry worklistEntry;
+         WorklistEntry worklistEntry;
         worklistEntry.Id = findResult.value;
 
         // Fetch attributes and tags for the found entry
@@ -1019,11 +1030,11 @@ namespace Etrek::Worklist::Repository {
             return entryWithDetails;  // Return the error if fetching details failed
         }
 
-        return spc::Result<ent::WorklistEntry>::Success(entryWithDetails.value);
+        return Result< WorklistEntry>::Success(entryWithDetails.value);
     }
 
-    Result<QList<ent::DicomTag>> WorklistRepository::getActiveIdentifierTags(int profileId) const {
-        QList<ent::DicomTag> tags;
+    Result<QList<DicomTag>> WorklistRepository::getActiveIdentifierTags(int profileId) const {
+        QList<DicomTag> tags;
         QString connName = "conn_get_active_ids_" + QString::number(QRandomGenerator::global()->generate());
 
         {
@@ -1033,7 +1044,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::DicomTag>>::Failure(error);
+                return Result<QList<DicomTag>>::Failure(error);
             }
 
             QSqlQuery query(db);
@@ -1049,11 +1060,11 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_QUERY_FAILED_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::DicomTag>>::Failure(error);
+                return Result<QList<DicomTag>>::Failure(error);
             }
 
             while (query.next()) {
-            ent::DicomTag tag;
+            DicomTag tag;
             tag.Id = query.value("id").toInt();
             tag.Name = query.value("name").toString();
             tag.DisplayName = query.value("display_name").toString();
@@ -1068,11 +1079,11 @@ namespace Etrek::Worklist::Repository {
         }
 
         QSqlDatabase::removeDatabase(connName);
-        return spc::Result<QList<ent::DicomTag>>::Success(tags);
+        return Result<QList<DicomTag>>::Success(tags);
     }
 
-    Result<QList<ent::DicomTag>> WorklistRepository::getMandatoryIdentifierTags(int profileId) const {
-        QList<ent::DicomTag> tags;
+    Result<QList<DicomTag>> WorklistRepository::getMandatoryIdentifierTags(int profileId) const {
+        QList<DicomTag> tags;
         QString connName = "conn_get_mandatory_ids_" + QString::number(QRandomGenerator::global()->generate());
         {
             QSqlDatabase db = createConnection(connName);
@@ -1080,7 +1091,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return spc::Result<QList<ent::DicomTag>>::Failure(error);
+                return Result<QList<DicomTag>>::Failure(error);
             }
 
             QSqlQuery query(db);
@@ -1096,11 +1107,11 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_QUERY_FAILED_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<QList<ent::DicomTag>>::Failure(error);
+                return Result<QList<DicomTag>>::Failure(error);
             }
 
             while (query.next()) {
-                ent::DicomTag tag;
+                DicomTag tag;
                 tag.Id = query.value("id").toInt();
                 tag.Name = query.value("name").toString();
                 tag.DisplayName = query.value("display_name").toString();
@@ -1114,7 +1125,7 @@ namespace Etrek::Worklist::Repository {
             }
         }
         QSqlDatabase::removeDatabase(connName);
-        return spc::Result<QList<ent::DicomTag>>::Success(tags);
+        return Result<QList<DicomTag>>::Success(tags);
     }
 
     Result<bool> WorklistRepository::updateIdentifierFlags(int profileId, int tagId, bool isIdentifier, bool isMandatoryIdentifier) {
@@ -1150,7 +1161,7 @@ namespace Etrek::Worklist::Repository {
         }
 
         QSqlDatabase::removeDatabase(connName);
-        return spc::Result<bool>::Success(true);
+        return Result<bool>::Success(true);
     }
 
     Result<int> WorklistRepository::findWorklistEntryByIdentifiers(int profileId, const QMap<int, QString>& tagIdToValue) const {
@@ -1247,8 +1258,8 @@ namespace Etrek::Worklist::Repository {
         return Result<int>::Success(-1);  // not found
     }
 
-    QMap<int, QList<ent::WorklistAttribute>> WorklistRepository::loadAttributesForEntries(const QList<int>& entryIds, QSqlDatabase& db) const {
-        QMap<int, QList<ent::WorklistAttribute>> attributesMap;
+    QMap<int, QList<WorklistAttribute>> WorklistRepository::loadAttributesForEntries(const QList<int>& entryIds, QSqlDatabase& db) const {
+        QMap<int, QList<WorklistAttribute>> attributesMap;
         if (entryIds.isEmpty()) return attributesMap;
 
         QStringList placeholders;
@@ -1277,7 +1288,7 @@ namespace Etrek::Worklist::Repository {
         }
 
         while (query.next()) {
-            ent::WorklistAttribute attr;
+            WorklistAttribute attr;
             attr.id = query.value("id").toInt();
             attr.EntryId = query.value("mwl_entry_id").toInt();
             attr.Tag.Id = query.value("tag_id").toInt();
@@ -1297,9 +1308,9 @@ namespace Etrek::Worklist::Repository {
         return attributesMap;
     }
 
-    Result<ent::WorklistEntry> WorklistRepository::getWorklistEntryDetails(int entryId) const {
+    Result<WorklistEntry> WorklistRepository::getWorklistEntryDetails(int entryId) const {
 
-        ent::WorklistEntry entry;
+        WorklistEntry entry;
         QString connName = "conn_get_entry_details_" + QString::number(QRandomGenerator::global()->generate());
 
         {
@@ -1309,7 +1320,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<ent::WorklistEntry>::Failure(error);
+                return Result<WorklistEntry>::Failure(error);
             }
 
             QSqlQuery query(db);
@@ -1324,7 +1335,7 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_FAILED_TO_FIND_ENTRY_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<ent::WorklistEntry>::Failure(error);
+                return Result<WorklistEntry>::Failure(error);
             }
 
             entry.Id = query.value("id").toInt();
@@ -1348,11 +1359,11 @@ namespace Etrek::Worklist::Repository {
                 QString error = translator->getErrorMessage(MWL_FAILED_TO_LOAD_ATTRIBUTES_MSG);
                 logger->LogError(error);
                 qDebug()<<error;
-                return Result<ent::WorklistEntry>::Failure(error);
+                return Result<WorklistEntry>::Failure(error);
             }
 
             while (attrQuery.next()) {
-                ent::WorklistAttribute attr;
+                WorklistAttribute attr;
                 attr.id = attrQuery.value("id").toInt();
                 attr.EntryId = entryId;
                 attr.Tag.Id = attrQuery.value("tag_id").toInt();
@@ -1371,7 +1382,7 @@ namespace Etrek::Worklist::Repository {
 
         }
         QSqlDatabase::removeDatabase(connName);
-        return Result<ent::WorklistEntry>::Success(entry);
+        return Result<WorklistEntry>::Success(entry);
     }
 
 } // namespace Etrek::Repository

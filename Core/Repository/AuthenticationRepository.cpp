@@ -1,11 +1,12 @@
 // AuthenticationRepository.cpp
-#include "AuthenticationRepository.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
+
+#include "DatabaseConnectionSetting.h"
+#include "AuthenticationRepository.h"
 #include "AppLoggerFactory.h"
 #include "MessageKey.h"
-#include "DatabaseConnectionSetting.h"
 
 namespace Etrek::Core::Repository {
 

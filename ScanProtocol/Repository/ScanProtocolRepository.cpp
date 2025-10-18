@@ -9,6 +9,7 @@
 #include "AppLoggerFactory.h"
 #include "ScanProtocolUtil.h"
 #include "IWorklistRepository.h"
+#include "Result.h"
 
 
 namespace Etrek::ScanProtocol::Repository 
@@ -203,7 +204,7 @@ namespace Etrek::ScanProtocol::Repository
 
     // --------------------------------- Regions -----------------------------------
 
-    spc::Result<QVector<AnatomicRegion>> ScanProtocolRepository::getAllAnatomicRegions() const
+    Result<QVector<AnatomicRegion>> ScanProtocolRepository::getAllAnatomicRegions() const
     {
         QVector<AnatomicRegion> rows;
         const QString cx = "anatomic_regions_" + QString::number(QRandomGenerator::global()->generate());
@@ -212,7 +213,7 @@ namespace Etrek::ScanProtocol::Repository
             if (!db.open()) {
                 const auto err = translator->getErrorMessage(FAILED_TO_OPEN_DB_MSG).arg(db.lastError().text());
                 logger->LogError(err);
-                return spc::Result<QVector<AnatomicRegion>>::Failure(err);
+                return Result<QVector<AnatomicRegion>>::Failure(err);
             }
 
             QSqlQuery q(db);
@@ -228,7 +229,7 @@ namespace Etrek::ScanProtocol::Repository
                 const auto err = translator->getCriticalMessage(QUERY_FAILED_ERROR_MSG).arg(q.lastError().text());
                 logger->LogError(err);
                 QSqlDatabase::removeDatabase(cx);
-                return spc::Result<QVector<AnatomicRegion>>::Failure(err);
+                return Result<QVector<AnatomicRegion>>::Failure(err);
             }
 
             while (q.next()) {
@@ -246,12 +247,12 @@ namespace Etrek::ScanProtocol::Repository
             }
         }
         QSqlDatabase::removeDatabase(cx);
-        return spc::Result<QVector<AnatomicRegion>>::Success(rows);
+        return Result<QVector<AnatomicRegion>>::Success(rows);
     }
 
     // -------------------------------- Body Parts ---------------------------------
 
-    spc::Result<QVector<BodyPart>> ScanProtocolRepository::getAllBodyParts() const
+    Result<QVector<BodyPart>> ScanProtocolRepository::getAllBodyParts() const
     {
         QVector<BodyPart> rows;
         const QString cx = "body_parts_" + QString::number(QRandomGenerator::global()->generate());
@@ -322,7 +323,7 @@ namespace Etrek::ScanProtocol::Repository
 
     // -------------------------- Technique Parameters -----------------------------
 
-    spc::Result<QVector<TechniqueParameter>> ScanProtocolRepository::getAllTechniqueParameters() const
+    Result<QVector<TechniqueParameter>> ScanProtocolRepository::getAllTechniqueParameters() const
     {
         QVector<TechniqueParameter> rows;
         const QString cx = "tech_params_" + QString::number(QRandomGenerator::global()->generate());
@@ -420,7 +421,7 @@ namespace Etrek::ScanProtocol::Repository
     static QString profToDb(TechniqueProfile p) { return ScanProtocolUtil::toString(p); }
     static QString expToDb(ExposureStyle e) { return ScanProtocolUtil::toString(e); }
 
-    spc::Result<void> ScanProtocolRepository::upsertTechniqueParameter(const TechniqueParameter& tp) const
+    Result<void> ScanProtocolRepository::upsertTechniqueParameter(const TechniqueParameter& tp) const
     {
         const QString cx = "tp_upsert_" + QString::number(QRandomGenerator::global()->generate());
         {
@@ -970,7 +971,7 @@ namespace Etrek::ScanProtocol::Repository
     }
 
 
-    spc::Result<QVector<Procedure>> ScanProtocolRepository::getAllProcedures() const
+    Result<QVector<Procedure>> ScanProtocolRepository::getAllProcedures() const
     {
         QVector<Procedure> rows;
         const QString cx = "proc_all_" + QString::number(QRandomGenerator::global()->generate());
@@ -1022,7 +1023,7 @@ namespace Etrek::ScanProtocol::Repository
         return Result<QVector<Procedure>>::Success(rows);
     }
 
-    spc::Result<Procedure> ScanProtocolRepository::getProcedureById(int id) const
+    Result<Procedure> ScanProtocolRepository::getProcedureById(int id) const
     {
         const QString cx = "proc_id_" + QString::number(QRandomGenerator::global()->generate());
         {

@@ -9,21 +9,17 @@
  * including kVp, mAs, SID, grid, and AEC configuration. It forms the technical basis
  * for scan protocol definition in the system.
  */
-
-#include "AnatomicRegion.h"
-#include "BodyPart.h"
-#include "ScanProtocolUtil.h"
 #include <QDate>
 #include <QDateTime>
 #include <QMetaType>
 #include <QString>
 #include <optional>
 
+#include "AnatomicRegion.h"
+#include "BodyPart.h"
+#include "ScanProtocolUtil.h"
+
 namespace Etrek::ScanProtocol::Data::Entity {
-
-    namespace sp = Etrek::ScanProtocol;
-    namespace ent = Etrek::ScanProtocol::Data::Entity;
-
 
     /**
      * @class TechniqueParameter
@@ -38,13 +34,13 @@ namespace Etrek::ScanProtocol::Data::Entity {
         int Id = -1;
 
         /** @brief Anatomical body part associated with this technique. */
-        ent::BodyPart BodyPart;
+        Etrek::ScanProtocol::Data::Entity::BodyPart BodyPart;
 
         /** @brief Body size category (e.g., Fat, Medium, Thin, Paediatric). */
-        sp::BodySize Size = sp::BodySize::Medium;
+        Etrek::ScanProtocol::BodySize Size = Etrek::ScanProtocol::BodySize::Medium;
 
         /** @brief Projection profile (e.g., AP/PA, LAT, OBL, AXIAL). */
-        sp::TechniqueProfile Profile = sp::TechniqueProfile::AP_PA;
+        Etrek::ScanProtocol::TechniqueProfile Profile = Etrek::ScanProtocol::TechniqueProfile::AP_PA;
 
         /** @brief Kilovoltage peak (tube voltage) used for exposure. */
         int Kvp = 0;
@@ -71,7 +67,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
         double SIDMax = 0.0;
 
         /** @brief Grid type (Parallel, Focused, Crossed, Moving, Virtual) or null if none. */
-        std::optional<sp::GridType> GridType;
+        std::optional<Etrek::ScanProtocol::GridType> GridType;
 
         /** @brief Grid ratio (e.g., "8:1", "10:1"). */
         QString GridRatio;
@@ -80,7 +76,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
         QString GridSpeed;
 
         /** @brief Exposure style (Mas Mode, Time Mode, AEC Mode, Manual). */
-        sp::ExposureStyle ExposureStyle;
+        Etrek::ScanProtocol::ExposureStyle ExposureStyle;
 
         /** @brief Active AEC (Automatic Exposure Control) detector fields configuration. */
         QString AecFields;
@@ -96,7 +92,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
          * @param other The TechniqueParameter to compare against.
          * @return True if both objects have the same @ref Id; otherwise false.
          */
-        bool operator==(const ent::TechniqueParameter& other) const noexcept {
+        bool operator==(const Etrek::ScanProtocol::Data::Entity::TechniqueParameter& other) const noexcept {
             return Id == other.Id;
         }
     };

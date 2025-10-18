@@ -14,19 +14,11 @@
 #include "DicomTag.h"
 #include "WorklistEntry.h"
 #include "WorklistPresentationContext.h"
-#include "RisConnectionSetting.h"
 #include <QMutex>
 
 namespace Etrek::Worklist::Connectivity 
 {
-    namespace lg = Etrek::Core::Log;
-    namespace mdl = Etrek::Core::Data::Model;
-    namespace ent = Etrek::Worklist::Data::Entity;
-	namespace glob = Etrek::Core::Globalization;
-
     class WorklistQueryServiceTest;
-
-
 
     class WorklistQueryService : public QObject {
 
@@ -42,10 +34,10 @@ namespace Etrek::Worklist::Connectivity
 
         ~WorklistQueryService();
 
-        void setWorklistTags(const QList<ent::DicomTag>& tags);
-        void setIdentifierTags(const QList<ent::DicomTag>& identifiers);
-        void setPresentationContext(const ent::WorklistPresentationContext& context);
-        void setSettings(std::shared_ptr<mdl::RisConnectionSetting> settings);
+        void setWorklistTags(const QList<Etrek::Worklist::Data::Entity::DicomTag>& tags);
+        void setIdentifierTags(const QList<Etrek::Worklist::Data::Entity::DicomTag>& identifiers);
+        void setPresentationContext(const Etrek::Worklist::Data::Entity::WorklistPresentationContext& context);
+        void setSettings(std::shared_ptr<Etrek::Core::Data::Model::RisConnectionSetting> settings);
 
         // Explicitly prepare the DICOM association (add contexts + negotiate)
         Etrek::Specification::Result<QString> prepareAssociation();
@@ -53,14 +45,14 @@ namespace Etrek::Worklist::Connectivity
         // Release association explicitly
         Etrek::Specification::Result<QString> releaseAssociation();
 
-        QList<ent::WorklistEntry> getWorklistEntries();
+        QList<Etrek::Worklist::Data::Entity::WorklistEntry> getWorklistEntries();
         Etrek::Specification::Result<QString> echoRis();
 
     signals:
-        void worklistEntriesReceived(const QList<ent::WorklistEntry>& worklistEntries);
+        void worklistEntriesReceived(const QList<Etrek::Worklist::Data::Entity::WorklistEntry>& worklistEntries);
 
     private:
-        std::unique_ptr<DcmDataset> createWorklistQuery(const QList<ent::DicomTag>& queryTags) noexcept;
+        std::unique_ptr<DcmDataset> createWorklistQuery(const QList<Etrek::Worklist::Data::Entity::DicomTag>& queryTags) noexcept;
 
 
         Etrek::Specification::Result<QString> initNetwork();
@@ -72,19 +64,19 @@ namespace Etrek::Worklist::Connectivity
         void setupTheConnectionParameters();
         bool isConnected();
 
-        ent::WorklistEntry parseDatasetToWorklist(DcmDataset* dataset, const QVector<ent::DicomTag>& dicomTags);
+        Etrek::Worklist::Data::Entity::WorklistEntry parseDatasetToWorklist(DcmDataset* dataset, const QVector<Etrek::Worklist::Data::Entity::DicomTag>& dicomTags);
 
         void reconnect();
 
         // Members
-        QList<ent::DicomTag> m_identifierTags;
-        QList<ent::DicomTag> m_worklistTags;
-        std::shared_ptr<mdl::RisConnectionSetting> m_settings = nullptr;
-        ent::WorklistPresentationContext m_presentationContext;
-        glob::TranslationProvider* translator;
+        QList<Etrek::Worklist::Data::Entity::DicomTag> m_identifierTags;
+        QList<Etrek::Worklist::Data::Entity::DicomTag> m_worklistTags;
+        std::shared_ptr<Etrek::Core::Data::Model::RisConnectionSetting> m_settings = nullptr;
+        Etrek::Worklist::Data::Entity::WorklistPresentationContext m_presentationContext;
+        Etrek::Core::Globalization::TranslationProvider* translator;
         QMutex m_scuMutex;
         std::unique_ptr<DcmSCU> m_dcmScu;
-        std::shared_ptr<lg::AppLogger> logger;
+        std::shared_ptr<Etrek::Core::Log::AppLogger> logger;
     };
 
 }

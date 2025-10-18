@@ -13,28 +13,22 @@
 #include "TranslationProvider.h"
 #include "AppLogger.h"
 #include "ImageComment.h"
-#include "DatabaseConnectionSetting.h"
 
 namespace Etrek::Dicom::Repository {
 
-    namespace spc = Etrek::Specification;
-    namespace ent = Etrek::Dicom::Data::Entity;
-    namespace mdl = Etrek::Core::Data::Model;
-    namespace glob = Etrek::Core::Globalization;
-    namespace lg = Etrek::Core::Log;
 
     class ImageCommentRepository
     {
     public:
-        explicit ImageCommentRepository(std::shared_ptr<mdl::DatabaseConnectionSetting> connectionSetting,
-            glob::TranslationProvider* tr = nullptr);
+        explicit ImageCommentRepository(std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> connectionSetting,
+            Etrek::Core::Globalization::TranslationProvider* tr = nullptr);
 
-        QVector<ent::ImageComment> getAcceptedComments() const;
-        QVector<ent::ImageComment> getRejectComments() const;
-        QVector<ent::ImageComment> getAllComments() const;
-        spc::Result<ent::ImageComment> addComment(const ent::ImageComment& comment) const;
-        spc::Result<ent::ImageComment> removeComment(const ent::ImageComment& comment) const;
-        spc::Result<ent::ImageComment> updateComment(const ent::ImageComment& comment) const;
+        QVector<Etrek::Dicom::Data::Entity::ImageComment> getAcceptedComments() const;
+        QVector<Etrek::Dicom::Data::Entity::ImageComment> getRejectComments() const;
+        QVector<Etrek::Dicom::Data::Entity::ImageComment> getAllComments() const;
+        Etrek::Specification::Result<Etrek::Dicom::Data::Entity::ImageComment> addComment(const Etrek::Dicom::Data::Entity::ImageComment& comment) const;
+        Etrek::Specification::Result<Etrek::Dicom::Data::Entity::ImageComment> removeComment(const Etrek::Dicom::Data::Entity::ImageComment& comment) const;
+        Etrek::Specification::Result<Etrek::Dicom::Data::Entity::ImageComment> updateComment(const Etrek::Dicom::Data::Entity::ImageComment& comment) const;
 
         ~ImageCommentRepository();
 
@@ -44,9 +38,9 @@ namespace Etrek::Dicom::Repository {
         static bool toRejectBool(const QString& s);       // "true", "1", "y", "yes" => true
         static QString fromRejectBool(bool b);            // "true"/"false" (or "1"/"0" if you prefer)
 
-        std::shared_ptr<mdl::DatabaseConnectionSetting> m_connectionSetting;
-        glob::TranslationProvider* translator = nullptr;
-        std::shared_ptr<lg::AppLogger> logger;
+        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> m_connectionSetting;
+        Etrek::Core::Globalization::TranslationProvider* translator = nullptr;
+        std::shared_ptr<Etrek::Core::Log::AppLogger> logger;
     };
 
 } // namespace Etrek::Dicom::Repository

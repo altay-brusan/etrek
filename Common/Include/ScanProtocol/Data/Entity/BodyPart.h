@@ -23,9 +23,6 @@
   */
 namespace Etrek::ScanProtocol::Data::Entity {
 
-    /// Convenient alias for the entity namespace used below.
-    namespace ent = Etrek::ScanProtocol::Data::Entity;
-
     /**
      * @class BodyPart
      * @brief Persistable entity describing a standardized body part.
@@ -77,7 +74,7 @@ namespace Etrek::ScanProtocol::Data::Entity {
          *
          * Used for grouping and validation in scan protocol configuration.
          */
-        ent::AnatomicRegion Region;
+        AnatomicRegion Region;
 
         /**
          * @brief Indicates whether this body part is active/available for selection.
