@@ -1,10 +1,13 @@
+#include <qmessagebox.h>
+
 #include "MainAppLaunchStrategy.h"  
 #include "ApplicationService.h"  
-#include <qmessagebox.h>
+#include "User.h"
 
 
 namespace Etrek::Application::Service  
-{  
+{
+	using namespace Etrek::Core::Data::Entity;
 	MainAppLaunchStrategy::MainAppLaunchStrategy(QObject* parent)
 		: QObject(parent)
 	{
@@ -88,7 +91,7 @@ void MainAppLaunchStrategy::launch(ApplicationService* service)
 	// make sure when application is about to close the ris received signal to close the connection
 	service->connectSignalsAndSlots();
 
-	std::optional<ent::User> user = service->authenticateUser();
+	std::optional<User> user = service->authenticateUser();
 	if(user.has_value())
 		service->showMainWindow();
 	else

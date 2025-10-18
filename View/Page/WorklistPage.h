@@ -6,7 +6,6 @@
 #include <QStandardItemModel.h>
 #include "DateTimeSpan.h"
 
-using namespace Etrek::Worklist::Repository;
 namespace Ui {
 class WorkListPage;
 }
@@ -17,7 +16,7 @@ class WorkListPage : public QWidget
     Q_OBJECT
 
 public:
-    explicit WorkListPage(std::shared_ptr<IWorklistRepository> repository,QWidget *parent = nullptr);
+    explicit WorkListPage(std::shared_ptr<Etrek::Worklist::Repository::IWorklistRepository> repository,QWidget *parent = nullptr);
     void setProxyModel(QPointer<QStandardItemModel> proxyModel);
     ~WorkListPage();
 

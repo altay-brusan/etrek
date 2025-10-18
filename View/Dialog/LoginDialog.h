@@ -11,23 +11,20 @@ namespace Ui {
 class LoginDialog;
 }
 
-using namespace Etrek::Core::Data;
-using namespace Etrek::Core::Data::Entity;
-
 class LoginDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit LoginDialog(const QVector<Entity::User>& users, QWidget *parent = nullptr);
-    std::optional<std::pair<Entity::User, QString>>getLoginCredentials() const;
+    explicit LoginDialog(const QVector<Etrek::Core::Data::Entity::User>& users, QWidget *parent = nullptr);
+    std::optional<std::pair<Etrek::Core::Data::Entity::User, QString>>getLoginCredentials() const;
     void clearPassword();
     ~LoginDialog();
 
 
 private:
     Ui::LoginDialog *ui;
-    const QVector<Entity::User>& m_users;
+    const QVector<Etrek::Core::Data::Entity::User>& m_users;
 };
 
 #endif // LOGINDIALOG_H

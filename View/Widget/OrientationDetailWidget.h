@@ -10,20 +10,17 @@
 namespace Ui { class OrientationDetailWidget; }
 class ExposureDetailWidget;
 
-using namespace Etrek::ScanProtocol;
-using namespace Etrek::ScanProtocol::Data::Entity;
-
 class OrientationDetailWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit OrientationDetailWidget(TechniqueProfile profile,
-        const QVector<TechniqueParameter>* data,
+    explicit OrientationDetailWidget(Etrek::ScanProtocol::TechniqueProfile profile,
+        const QVector<Etrek::ScanProtocol::Data::Entity::TechniqueParameter>* data,
         QWidget* parent = nullptr);
     ~OrientationDetailWidget();
 
     // NEW: snapshot all 4 size tabs for a given body part
-    QVector<TechniqueParameter> collectForBodyPart(const BodyPart& bp) const;
+    QVector<Etrek::ScanProtocol::Data::Entity::TechniqueParameter> collectForBodyPart(const Etrek::ScanProtocol::Data::Entity::BodyPart& bp) const;
 
 public slots:
     void onBodyPartChanged(int bodyPartId);
@@ -35,12 +32,12 @@ private:
     ExposureDetailWidget* m_small{};   // Thin
     ExposureDetailWidget* m_child{};   // Paediatric
 
-    TechniqueProfile m_profile{};
-    const QVector<TechniqueParameter>* m_all{};
+    Etrek::ScanProtocol::TechniqueProfile m_profile{};
+    const QVector<Etrek::ScanProtocol::Data::Entity::TechniqueParameter>* m_all{};
 
     void initStyles();
-    void updateTopAecControls(const QMap<BodySize, TechniqueParameter>& bySize) const;
-    static const TechniqueParameter* pickRepresentative(const QMap<BodySize, TechniqueParameter>& bySize);
+    void updateTopAecControls(const QMap<Etrek::ScanProtocol::BodySize, Etrek::ScanProtocol::Data::Entity::TechniqueParameter>& bySize) const;
+    static const Etrek::ScanProtocol::Data::Entity::TechniqueParameter* pickRepresentative(const QMap<Etrek::ScanProtocol::BodySize, Etrek::ScanProtocol::Data::Entity::TechniqueParameter>& bySize);
 };
 
 #endif // ORIENTATIONDETAILWIDGET_H

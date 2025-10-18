@@ -8,209 +8,205 @@
 #include <functional>
 #include "WorklistEntry.h"
 
-
-using namespace Etrek::Worklist::Data::Entity;
-
-
-using Setter = std::function<void(WorklistEntry&, const QString&)>;
+using Setter = std::function<void(Etrek::Worklist::Data::Entity::WorklistEntry&, const QString&)>;
 
 QMap<QString, Setter> createWorklistFieldMap() {
     return {
-        {"AccessionNumber", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"AccessionNumber", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "AccessionNumber";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"PatientID", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"PatientID", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "PatientID";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"PatientName", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"PatientName", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "PatientName";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"OtherPatientID", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"OtherPatientID", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "OtherPatientID";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"PatientAge", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"PatientAge", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "PatientAge";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"PatientSex", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"PatientSex", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "PatientSex";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"RequestingPhysician", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"RequestingPhysician", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "RequestingPhysician";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"StudyInstanceUID", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"StudyInstanceUID", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "StudyInstanceUID";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ProcedureCode", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ProcedureCode", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ProcedureCode";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ScheduledProcedureStepID", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ScheduledProcedureStepID", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ScheduledProcedureStepID";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ScheduledAETitle", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ScheduledAETitle", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ScheduledAETitle";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"PatientBirthDate", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"PatientBirthDate", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "PatientBirthDate";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"PatientComments", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"PatientComments", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "PatientComments";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ProcedureDescription", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ProcedureDescription", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ProcedureDescription";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ScheduledProcedureStepDescription", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ScheduledProcedureStepDescription", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ScheduledProcedureStepDescription";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"PatientAllergies", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"PatientAllergies", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "PatientAllergies";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ReferringPhysicianContact", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ReferringPhysicianContact", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ReferringPhysicianContact";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"AdmissionID", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"AdmissionID", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "AdmissionID";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"VisitID", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"VisitID", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "VisitID";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ModalityType", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ModalityType", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ModalityType";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ScheduledProcedureStepStatus", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ScheduledProcedureStepStatus", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ScheduledProcedureStepStatus";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"Priority", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"Priority", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "Priority";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"StudyDescription", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"StudyDescription", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "StudyDescription";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"StudyDate", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"StudyDate", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "StudyDate";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"StudyTime", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"StudyTime", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "StudyTime";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"InsuranceInformation", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"InsuranceInformation", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "InsuranceInformation";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"Status", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"Status", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "Status";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"PriorityCode", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"PriorityCode", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "PriorityCode";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
         // New entries
-        {"ConsultingPhysicianName", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ConsultingPhysicianName", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ConsultingPhysicianName";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ScheduledProcedureStepStartDate", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ScheduledProcedureStepStartDate", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ScheduledProcedureStepStartDate";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ScheduledProcedureStepStartTime", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ScheduledProcedureStepStartTime", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ScheduledProcedureStepStartTime";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ScheduledStationAETitle", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ScheduledStationAETitle", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ScheduledStationAETitle";
              attr.TagValue = v;
              m.Attributes.append(attr);
          }},
-        {"ScheduledProcedureStepPriority", [](WorklistEntry& m, const QString& v) {
-             WorklistAttribute attr;
+        {"ScheduledProcedureStepPriority", [](Etrek::Worklist::Data::Entity::WorklistEntry& m, const QString& v) {
+             Etrek::Worklist::Data::Entity::WorklistAttribute attr;
              attr.Tag.Name = "ScheduledProcedureStepPriority";
              attr.TagValue = v;
              m.Attributes.append(attr);

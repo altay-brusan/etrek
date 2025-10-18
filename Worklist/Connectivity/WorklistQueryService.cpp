@@ -3,6 +3,9 @@
 #include "DcmtkQtUtils.h"
 #include "MessageKey.h"
 #include "MappingProfile.h"
+#include "DicomTag.h"
+
+using namespace Etrek::Worklist::Data::Entity;
 
 namespace Etrek::Worklist::Connectivity
 {

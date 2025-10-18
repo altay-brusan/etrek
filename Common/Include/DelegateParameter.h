@@ -7,10 +7,9 @@
 #include "DatabaseConnectionSetting.h"
 #include "IDelegate.h"
 
-using namespace Etrek::Core::Data::Model;
 struct DelegateParameter
 {
-    std::shared_ptr<DatabaseConnectionSetting> dbConnection;
+    std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection;
     QMap<QString, QWeakPointer<IDelegate>> delegates;
 };
 

@@ -13,20 +13,17 @@ namespace Ui {
     class PacsEntityConfigurationWidget;
 }
 
-using namespace Etrek::Pacs::Data::Entity; // PacsNode
-using namespace Etrek::Pacs;              // PacsEntityType
-
 class PacsEntityConfigurationWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit PacsEntityConfigurationWidget(const QVector<PacsNode>& nodes, QWidget* parent = nullptr);
+    explicit PacsEntityConfigurationWidget(const QVector<Etrek::Pacs::Data::Entity::PacsNode>& nodes, QWidget* parent = nullptr);
     ~PacsEntityConfigurationWidget();
 
 signals:
     // Let a delegate handle the real DICOM C-ECHO / assoc test
-    void testConnectionRequested(const PacsNode& node);
+    void testConnectionRequested(const Etrek::Pacs::Data::Entity::PacsNode& node);
 
 protected:
     bool eventFilter(QObject* obj, QEvent* ev) override;
@@ -38,7 +35,7 @@ private slots:
 
 private:
     Ui::PacsEntityConfigurationWidget* ui = nullptr;
-    QVector<PacsNode> m_nodes;
+    QVector<Etrek::Pacs::Data::Entity::PacsNode> m_nodes;
 
     // Quick lookup by Id
     QHash<int, int> m_indexById; // Id -> index in m_nodes
@@ -53,12 +50,12 @@ private:
     void buildModels();
     void bindListViews();
 
-    static QString nodeDisplay(const PacsNode& n);
-    void loadNodeIntoForm(const PacsNode* n);
+    static QString nodeDisplay(const Etrek::Pacs::Data::Entity::PacsNode& n);
+    void loadNodeIntoForm(const Etrek::Pacs::Data::Entity::PacsNode* n);
     void clearForm();
 
-    const PacsNode* selectedArchiveNode() const;
-    const PacsNode* selectedMppsNode() const;
+    const Etrek::Pacs::Data::Entity::PacsNode* selectedArchiveNode() const;
+    const Etrek::Pacs::Data::Entity::PacsNode* selectedMppsNode() const;
 };
 
 #endif // PACSENTITYCONFIGURATIONWIDGET_H

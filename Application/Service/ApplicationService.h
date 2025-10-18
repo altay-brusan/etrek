@@ -53,10 +53,10 @@ namespace Etrek::Worklist::Connectivity {
     class ModalityWorklistManager;
 }
 
-class ILaunchStrategy;
-
 namespace Etrek::Application::Service
 {
+    class ILaunchStrategy;
+
     class ApplicationService : public QObject
     {
         Q_OBJECT

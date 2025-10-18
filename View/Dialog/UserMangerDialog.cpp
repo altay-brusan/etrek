@@ -4,12 +4,17 @@
 #include <QPushButton>
 #include "ui_UserMangerDialog.h"
 #include "MessageKey.h"
+#include "User.h"
+#include "Role.h"
+#include "TranslationProvider.h"
 
 using namespace Etrek::Core::Data::Entity;
+using namespace Etrek::Core::Globalization;
 
-UserMangerDialog::UserMangerDialog(const QVector<Entity::User>& activeUsers,
-                                   const QVector<Entity::User>& deactivatedUsers,
-                                   const QVector<Entity::Role>& roles,
+
+UserMangerDialog::UserMangerDialog(const QVector<User>& activeUsers,
+                                   const QVector<User>& deactivatedUsers,
+                                   const QVector<Role>& roles,
                                    TranslationProvider* translationProvider,
                                    QWidget *parent)
     : QDialog(parent),
@@ -108,16 +113,16 @@ void UserMangerDialog::onDeactiveUserChanged(int index)
 }
 
 
-Entity::Role UserMangerDialog::GetSelectedRole() const {
+Role UserMangerDialog::GetSelectedRole() const {
     if (ui->rolesComboBox->currentIndex() <= 0)
         return {}; // empty role
-    return ui->rolesComboBox->currentData().value<Entity::Role>();
+    return ui->rolesComboBox->currentData().value<Role>();
 }
 
-Entity::User UserMangerDialog::GetSelectedUser() const {
+User UserMangerDialog::GetSelectedUser() const {
     if (ui->activeUsersComboBox->currentIndex() <= 0)
         return {}; // empty user
-    return ui->activeUsersComboBox->currentData().value<Entity::User>();
+    return ui->activeUsersComboBox->currentData().value<User>();
 }
 
 
@@ -136,13 +141,13 @@ void UserMangerDialog::onAddUserBtnClicked()
     }
 
     // Check for duplicate username in active users
-    bool usernameExists = std::any_of(m_activeUsers.begin(), m_activeUsers.end(), [&](const Entity::User& u) {
+    bool usernameExists = std::any_of(m_activeUsers.begin(), m_activeUsers.end(), [&](const User& u) {
         return u.Username.compare(username, Qt::CaseInsensitive) == 0;
     });
 
     // Check in deactivated users as well
     if (!usernameExists) {
-        usernameExists = std::any_of(m_deactivatedUsers.begin(), m_deactivatedUsers.end(), [&](const Entity::User& u) {
+        usernameExists = std::any_of(m_deactivatedUsers.begin(), m_deactivatedUsers.end(), [&](const User& u) {
             return u.Username.compare(username, Qt::CaseInsensitive) == 0;
         });
     }
@@ -181,7 +186,7 @@ void UserMangerDialog::onAddUserBtnClicked()
         return;
     }
 
-    Entity::User newUser;
+    User newUser;
     newUser.Username = username;
     newUser.Name = ui->nameLineEdit->text();
     newUser.Surname = ui->surnameLineEdit->text();
@@ -189,12 +194,12 @@ void UserMangerDialog::onAddUserBtnClicked()
     newUser.IsDeleted = false;
 
     // role assignment
-    auto role = ui->rolesComboBox->currentData().value<Entity::Role>();
+    auto role = ui->rolesComboBox->currentData().value<Role>();
     newUser.Roles.append(role);
 
     emit AddUserRequested(newUser, password);
 }
-void UserMangerDialog::onUserCreated(const Entity::User& user)
+void UserMangerDialog::onUserCreated(const User& user)
 {
     // Show success message
     QString infoMessage = translator->getInfoMessage(AUTH_USER_CREATION_SUCCEED_MSG).arg(user.Username);
@@ -218,7 +223,7 @@ void UserMangerDialog::onUserCreated(const Entity::User& user)
     UpdateActionButtonsState();
 
 }
-void UserMangerDialog::onUserCreationFailed(const Entity::User& user, QString& failReason)
+void UserMangerDialog::onUserCreationFailed(const User& user, QString& failReason)
 {
 
     // Show success message
@@ -294,7 +299,7 @@ void UserMangerDialog::onUpdateUserBtnClicked()
     }
 
     // 4. Build updated user object (preserve existing ID)
-    Entity::User updatedUser = m_activeUsers[index];
+    User updatedUser = m_activeUsers[index];
     updatedUser.Username = newUsername;
     updatedUser.Name = name;
     updatedUser.Surname = surname;
@@ -307,7 +312,7 @@ void UserMangerDialog::onUpdateUserBtnClicked()
 
     // Optional: show feedback or close the dialog
 }
-void UserMangerDialog::onUserUpdated(const Entity::User& user)
+void UserMangerDialog::onUserUpdated(const User& user)
 {
     // Show success message
     QString infoMessage = translator->getInfoMessage(AUTH_USER_UPDATE_SUCCEED_MSG).arg(user.Username);
@@ -346,7 +351,7 @@ void UserMangerDialog::onUserUpdated(const Entity::User& user)
         ui->activeUsersComboBox->addItem(user.Username, QVariant::fromValue(user));
     }
 }
-void UserMangerDialog::onUserUpdateFailed(const Entity::User& user, QString& failReason)
+void UserMangerDialog::onUserUpdateFailed(const User& user, QString& failReason)
 {
     // Show success message
     QString infoMessage = translator->getErrorMessage(AUTH_USER_UPDATE_FAILED_ERROR).arg(user.Username).arg(failReason);
@@ -367,11 +372,11 @@ void UserMangerDialog::onDeleteUserBtnClicked()
         return;
     }
 
-    Entity::User selectedUser = m_activeUsers[index];
+    User selectedUser = m_activeUsers[index];
     emit DeleteUserRequested(selectedUser);
 
 }
-void UserMangerDialog::onUserDeleted(const Entity::User& user)
+void UserMangerDialog::onUserDeleted(const User& user)
 {
     // Show success message
     QString infoMessage = translator->getInfoMessage(AUTH_USER_DELETE_SUCCEED_MSG).arg(user.Username);
@@ -393,7 +398,7 @@ void UserMangerDialog::onUserDeleted(const Entity::User& user)
 
     // Find and remove from combo box using user ID
     for (int i = 1; i < ui->activeUsersComboBox->count(); ++i) { // skip index 0 ("Select one")
-        auto comboData = ui->activeUsersComboBox->itemData(i).value<Entity::User>();
+        auto comboData = ui->activeUsersComboBox->itemData(i).value<User>();
         if (comboData.Id == user.Id) {
             ui->activeUsersComboBox->removeItem(i);
             break;
@@ -408,7 +413,7 @@ void UserMangerDialog::onUserDeleted(const Entity::User& user)
 
 
 }
-void UserMangerDialog::onUserDeletionFailed(const Entity::User& user,QString& failReason)
+void UserMangerDialog::onUserDeletionFailed(const User& user,QString& failReason)
 {
     QString infoMessage = translator->getErrorMessage(AUTH_USER_DELETE_FAILED_ERROR).arg(user.Username).arg(failReason);
     QString messageBoxTitle = translator->getInfoMessage(AUTH_USER_DELETE_SUCCEED_TITLE_MSG);

@@ -1,5 +1,6 @@
 #include "ApplicationService.h"
 #include "LaunchMode.h"
+#include "ILaunchStrategy.h"
 #include "User.h"
 #include "DatabaseConnectionSetting.h"
 #include "FileloggerSetting.h"

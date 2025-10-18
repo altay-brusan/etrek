@@ -13,20 +13,21 @@
 #include "IDelegate.h"
 #include "IPageAction.h"
 
-using namespace Etrek::Worklist::Repository;
-
 namespace Etrek::Worklist::Delegate {
+
+    namespace repo = Etrek::Worklist::Repository;
+    namespace ent = Etrek::Worklist::Data::Entity;
 
     class WorkListPageDelegate :
 	public QObject,
     public IDelegate,
-    public IPageAction 
+    public IPageAction
     {
         Q_OBJECT
         Q_INTERFACES(IDelegate IPageAction)
 
     public:
-        explicit WorkListPageDelegate(WorkListPage* ui, std::shared_ptr<WorklistRepository> repository, QObject* parent = nullptr);
+        explicit WorkListPageDelegate(WorkListPage* ui, std::shared_ptr<repo::WorklistRepository> repository, QObject* parent = nullptr);
         
         QString name() const override;
         void attachDelegates(const QVector<QObject*>& delegates) override;
@@ -38,9 +39,9 @@ namespace Etrek::Worklist::Delegate {
         void onSourceChanged(const QString& source);
         void onClearFilters();
         void onSearchChanged();
-       
-        void onEntryCreated(const Etrek::Worklist::Data::Entity::WorklistEntry& entry);
-        void onEntryUpdated(const Etrek::Worklist::Data::Entity::WorklistEntry& entry);
+
+        void onEntryCreated(const ent::WorklistEntry& entry);
+        void onEntryUpdated(const ent::WorklistEntry& entry);
         void onEntryDeleted(int entryId);
 
         void onSearchName(const QString& name);
@@ -55,14 +56,14 @@ namespace Etrek::Worklist::Delegate {
         void applySearch();
         void loadWorklistData(const QList<ent::WorklistEntry>& entries);
         void onClearSearch();
- 
+
 
         WorkListPage* ui;
         QList<ent::DicomTag> getDisplayTagList() const;
-        QList<QStandardItem*> createRowForEntry(const Etrek::Worklist::Data::Entity::WorklistEntry& entry) const;
+        QList<QStandardItem*> createRowForEntry(const ent::WorklistEntry& entry) const;
         QPointer<QStandardItemModel> baseModel;
         QPointer<QSortFilterProxyModel> proxyModel;
-        std::shared_ptr<WorklistRepository> repository;
+        std::shared_ptr<repo::WorklistRepository> repository;
 
         void apply() override;
         void accept() override;

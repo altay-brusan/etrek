@@ -1,4 +1,3 @@
-#include "WorkListPageDelegate.h"
 #include <QHeaderView>
 #include <QDateEdit>
 #include <QLineEdit>
@@ -6,7 +5,11 @@
 #include <QDateTime>
 #include <QStandardItem>
 
+#include "WorkListPageDelegate.h"
+#include "WorklistRepository.h"
 
+
+using namespace Etrek::Worklist::Repository;
 
 namespace Etrek::Worklist::Delegate
 {

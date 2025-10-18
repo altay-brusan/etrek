@@ -5,14 +5,12 @@
 #include <QString>
 #include <memory>
 #include <optional>
+#include "CryptoManager.h"
+#include "AuthenticationRepository.h"
 
 // Forward declarations - no heavy includes needed
 namespace Etrek::Core::Repository {
     class AuthenticationRepository;
-}
-
-namespace Etrek::Core::Security {
-    class CryptoManager;
 }
 
 namespace Etrek::Core::Data::Entity {

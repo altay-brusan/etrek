@@ -1,7 +1,11 @@
 #include "GeneratorTableModel.h"
+#include "Generator.h"
 #include <QColor> 
 #include <QVector>
 #include <QApplication>
+
+
+using namespace Etrek::Device::Data::Entity;
 
 GeneratorTableModel::GeneratorTableModel(QObject* parent)
     : QAbstractTableModel(parent)

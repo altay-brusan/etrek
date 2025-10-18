@@ -3,7 +3,11 @@
 #include <QApplication>
 #include <QPalette>
 #include <optional>
+#include "XRayTube.h"
+#include "DevicePosition.h"
 
+using namespace Etrek::Device::Data::Entity;
+using namespace Etrek::Device;
 
 TubeTableModel::TubeTableModel(QObject* parent)
     : QAbstractTableModel(parent)

@@ -1,7 +1,4 @@
-﻿#include "DetectorConfigurationWidget.h"
-#include "ui_DetectorConfigurationWidget.h"
-
-#include <QLineEdit>
+﻿#include <QLineEdit>
 #include <QComboBox>
 #include <QGroupBox>
 #include <QSpinBox>
@@ -12,7 +9,12 @@
 #include <QSortFilterProxyModel>
 #include <QHeaderView>
 
+#include "ui_DetectorConfigurationWidget.h"
+#include "DetectorConfigurationWidget.h"
 #include "DetectorTableModel.h"
+#include "Detector.h"
+
+using namespace Etrek::Device::Data::Entity;
 
 DetectorConfigurationWidget::DetectorConfigurationWidget(const QVector<Detector>& nodes,QWidget* parent)
 	: QWidget(parent),

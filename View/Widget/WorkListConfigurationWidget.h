@@ -4,8 +4,6 @@
 #include <QWidget>
 #include "DicomTag.h"
 
-using namespace Etrek::Worklist::Data::Entity;
-
 namespace Ui {
 class WorkListConfigurationWidget;
 }
@@ -14,12 +12,12 @@ class WorkListConfigurationWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit WorkListConfigurationWidget(const QList<DicomTag>& dicomTags, QWidget* parent = nullptr);
+    explicit WorkListConfigurationWidget(const QList<Etrek::Worklist::Data::Entity::DicomTag>& dicomTags, QWidget* parent = nullptr);
     ~WorkListConfigurationWidget();
 
 signals:
     // Emitted ONLY when user presses "Update Tag" button
-    void tagUpdateRequested(const DicomTag& updated);
+    void tagUpdateRequested(const Etrek::Worklist::Data::Entity::DicomTag& updated);
 
 protected:
     bool eventFilter(QObject* obj, QEvent* ev) override;
@@ -29,7 +27,7 @@ private slots:
 
 private:
     Ui::WorkListConfigurationWidget* ui;
-    QList<DicomTag> m_dicomTags;
+    QList<Etrek::Worklist::Data::Entity::DicomTag> m_dicomTags;
     int m_currentRow = -1;
 
     // Helpers
