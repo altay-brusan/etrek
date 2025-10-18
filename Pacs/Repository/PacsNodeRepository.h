@@ -13,35 +13,41 @@
 #include "Result.h"
 #include "AppLogger.h"
 #include "PacsNode.h"  // contains PacsNode + PacsEntityType
+#include "PacsEntityType.h"
 
-using namespace Etrek::Core::Log;
-using namespace Etrek::Core::Data::Model;
-using namespace Etrek::Pacs;
-using namespace Etrek::Pacs::Data::Entity;
+namespace Etrek::Pacs::Repository {
 
-class PacsNodeRepository
-{
-public:
-    explicit PacsNodeRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting);
+    namespace spc = Etrek::Specification;
+    namespace ent = Etrek::Pacs::Data::Entity;
+    namespace mdl = Etrek::Core::Data::Model;
+    namespace glob = Etrek::Core::Globalization;
+    namespace lg = Etrek::Core::Log;
+    using namespace Etrek::Pacs::Repository;
+    class PacsNodeRepository
+    {
+    public:
+        explicit PacsNodeRepository(std::shared_ptr<mdl::DatabaseConnectionSetting> connectionSetting);
 
-    Etrek::Specification::Result<PacsNode> addPacsNode(const PacsNode& node) const;
-    Etrek::Specification::Result<bool>     removePacsNode(const PacsNode& node) const;
-    Etrek::Specification::Result<PacsNode> updatePacsNode(const PacsNode& node) const;
+        spc::Result<ent::PacsNode> addPacsNode(const ent::PacsNode& node) const;
+        spc::Result<bool>     removePacsNode(const ent::PacsNode& node) const;
+        spc::Result<ent::PacsNode> updatePacsNode(const ent::PacsNode& node) const;
 
-    QVector<PacsNode> getPacsNodes() const;
+        QVector<ent::PacsNode> getPacsNodes() const;
 
-    ~PacsNodeRepository() = default;
+        ~PacsNodeRepository() = default;
 
-private:
-    // Helpers
-    QSqlDatabase createConnection(const QString& connectionName) const;
+    private:
+        // Helpers
+        QSqlDatabase createConnection(const QString& connectionName) const;
 
-    static QString toEntityTypeString(PacsEntityType t);  // "Archive"/"MPPS"
-    static PacsEntityType parseEntityTypeString(const QString& s);
+        static QString toEntityTypeString(PacsEntityType t);  // "Archive"/"MPPS"
+        static PacsEntityType parseEntityTypeString(const QString& s);
 
-    std::shared_ptr<DatabaseConnectionSetting> m_connectionSetting;
-    TranslationProvider* translator = nullptr;
-    std::shared_ptr<AppLogger> logger;
-};
+        std::shared_ptr<mdl::DatabaseConnectionSetting> m_connectionSetting;
+        glob::TranslationProvider* translator = nullptr;
+        std::shared_ptr<lg::AppLogger> logger;
+    };
+
+} // namespace Etrek::Pacs::Repository
 
 #endif // PACSNODEREPOSITORY_H

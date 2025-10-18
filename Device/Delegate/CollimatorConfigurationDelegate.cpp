@@ -1,9 +1,4 @@
 #include "CollimatorConfigurationDelegate.h"
-#include "CollimatorConfigurationDelegate.h"
-#include "CollimatorConfigurationDelegate.h"
-#include "CollimatorConfigurationDelegate.h"
-#include "CollimatorConfigurationDelegate.h"
-#include "CollimatorConfigurationDelegate.h"
 
 namespace Etrek::Device::Delegate
 {

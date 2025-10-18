@@ -1,6 +1,8 @@
 #include "ImageCommentConfigurationBuilder.h"
 #include "ImageCommentRepository.h"
-namespace Etrek::Dicom::Delegate {
+namespace Etrek::Dicom::Delegate 
+{
+	using Etrek::Dicom::Repository::ImageCommentRepository;
 
     ImageCommentConfigurationBuilder::ImageCommentConfigurationBuilder()
     {

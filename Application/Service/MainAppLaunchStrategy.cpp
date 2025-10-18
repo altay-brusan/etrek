@@ -88,7 +88,7 @@ void MainAppLaunchStrategy::launch(ApplicationService* service)
 	// make sure when application is about to close the ris received signal to close the connection
 	service->connectSignalsAndSlots();
 
-	std::optional<Entity::User> user = service->authenticateUser();
+	std::optional<ent::User> user = service->authenticateUser();
 	if(user.has_value())
 		service->showMainWindow();
 	else

@@ -20,7 +20,7 @@ namespace Etrek::Application::Authentication
         : QObject(parent), m_securityService(securityService), m_repository(repository)
     {
         translator = &TranslationProvider::Instance();
-        lg::AppLoggerFactory factory(LoggerProvider::Instance(), translator);
+        lg::AppLoggerFactory factory(lg::LoggerProvider::Instance(), translator);
         logger = factory.CreateLogger("DatabaseInitializer");
 
     }

@@ -6,11 +6,17 @@
 #include "MessageKey.h"
 
 
-using namespace Etrek::Worklist::Data::Entity;
 
 namespace Etrek::Worklist::Repository
 {
+    using namespace Etrek::Worklist::Data::Entity;
+	using Etrek::Core::Log::AppLogger;
+	using Etrek::Core::Log::AppLoggerFactory;
+	using Etrek::Core::Globalization::TranslationProvider;
+	using Etrek::Core::Log::LoggerProvider;
     using Etrek::Specification::Result;
+	using Etrek::Core::Data::Model::DatabaseConnectionSetting;
+
 
     WorklistFieldConfigurationRepository::WorklistFieldConfigurationRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting)
         : m_connectionSetting(connectionSetting)

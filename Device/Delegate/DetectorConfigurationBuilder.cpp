@@ -3,11 +3,10 @@
 #include "Result.h"
 
 
-using namespace Etrek::Device::Repository;
-using namespace Etrek::Device::Data::Entity;
-
 namespace Etrek::Device::Delegate
 {
+    using Etrek::Device::Repository::DeviceRepository;
+
     DetectorConfigurationBuilder::DetectorConfigurationBuilder()
     {
     }

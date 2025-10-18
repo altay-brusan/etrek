@@ -9,9 +9,9 @@
 #include <QVector.h>
 #include <QSharedPointer>
 
-using namespace Etrek::Core::Data;
-
 namespace Etrek::Core::Setting {
+
+    namespace mdl = Etrek::Core::Data::Model;
 
     /**
     *  @file SettingProvider.h
@@ -51,27 +51,27 @@ namespace Etrek::Core::Setting {
         bool loadSettingsFile(const QString& jsonFilePath);
 
         /**
-        *   @brief Retrieves the current database connection settings. 
-        *   @return A shared pointer to the current DatabaseConnectionSetting. 
+        *   @brief Retrieves the current database connection settings.
+        *   @return A shared pointer to the current DatabaseConnectionSetting.
         */
-        std::shared_ptr<Model::DatabaseConnectionSetting> getDatabaseConnectionSettings() const;
+        std::shared_ptr<mdl::DatabaseConnectionSetting> getDatabaseConnectionSettings() const;
 
         /**
         *  @brief Retrieves the current file logger settings.
         *  @return A shared pointer to the current FileLoggerSetting.
         */
-        std::shared_ptr<Model::FileLoggerSetting> getFileLoggerSettings() const;
+        std::shared_ptr<mdl::FileLoggerSetting> getFileLoggerSettings() const;
 
         /**
         *  @brief Retrieves the current RIS connection settings.
         *  @return A QVector of shared pointers to the current RisConnectionSetting.
         */
-        QVector< QSharedPointer<Model::RisConnectionSetting>> getRisSettings() const;
+        QVector<QSharedPointer<mdl::RisConnectionSetting>> getRisSettings() const;
 
     private:
-        std::shared_ptr<Model::DatabaseConnectionSetting> m_databaseSetting; ///< Database connection settings
-        std::shared_ptr<Model::FileLoggerSetting> m_fileLoggerSetting; ///< File logger settings
-        QVector< QSharedPointer<Model::RisConnectionSetting>> m_risSetting; ///< RIS connection settings
+        std::shared_ptr<mdl::DatabaseConnectionSetting> m_databaseSetting; ///< Database connection settings
+        std::shared_ptr<mdl::FileLoggerSetting> m_fileLoggerSetting; ///< File logger settings
+        QVector<QSharedPointer<mdl::RisConnectionSetting>> m_risSetting; ///< RIS connection settings
     };
 }
 

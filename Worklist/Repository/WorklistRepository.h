@@ -15,13 +15,13 @@
 #include "TranslationProvider.h"
 #include "AppLogger.h"
 
-using namespace Etrek::Worklist::Data::Entity;
-using namespace Etrek::Core::Log;
-using namespace Etrek::Core::Data::Model;
-
 namespace Etrek::Worklist::Repository {
 
-    using Etrek::Specification::Result;
+    namespace spc = Etrek::Specification;
+    namespace ent = Etrek::Worklist::Data::Entity;
+    namespace mdl = Etrek::Core::Data::Model;
+    namespace lg = Etrek::Core::Log;
+    namespace glob = Etrek::Core::Globalization;
 
     /**
      * @class WorklistRepository
@@ -41,34 +41,34 @@ namespace Etrek::Worklist::Repository {
          * @param connectionSetting Shared pointer to the database connection settings.
          * @param parent Optional QObject parent.
          */
-        explicit WorklistRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting, QObject* parent = nullptr);
+        explicit WorklistRepository(std::shared_ptr<mdl::DatabaseConnectionSetting> connectionSetting, QObject* parent = nullptr);
 
         /**
          * @brief Retrieves all worklist profiles.
          * @return Result containing a list of WorklistProfile objects.
          */
-        virtual Result<QList<WorklistProfile>> getProfiles() const;
+        virtual spc::Result<QList<ent::WorklistProfile>> getProfiles() const;
 
         /**
          * @brief Retrieves all DICOM tags associated with a profile.
          * @param profileId The profile ID.
          * @return Result containing a list of DicomTag objects.
          */
-        virtual Result<QList<DicomTag>> getTagsByProfile(int profileId) const;
+        virtual spc::Result<QList<ent::DicomTag>> getTagsByProfile(int profileId) const;
 
         /**
          * @brief Retrieves identifier tags for a profile.
          * @param profileId The profile ID.
          * @return Result containing a list of DicomTag objects.
          */
-        Result<QList<DicomTag>> getIdentifiersByProfile(int profileId) const;
+        spc::Result<QList<ent::DicomTag>> getIdentifiersByProfile(int profileId) const;
 
         /**
          * @brief Retrieves a worklist entry by its ID.
          * @param entryId The entry ID.
          * @return Result containing the WorklistEntry object.
          */
-        virtual Result<WorklistEntry> getWorklistEntryById(int entryId) const;
+        virtual spc::Result<ent::WorklistEntry> getWorklistEntryById(int entryId) const;
 
         /**
          * @brief Retrieves worklist entries within a date/time range.
@@ -76,21 +76,21 @@ namespace Etrek::Worklist::Repository {
          * @param to End date/time (optional).
          * @return Result containing a list of WorklistEntry objects.
          */
-        Result<QList<WorklistEntry>> getWorklistEntries(const QDateTime* from, const QDateTime* to) const;
+        spc::Result<QList<ent::WorklistEntry>> getWorklistEntries(const QDateTime* from, const QDateTime* to) const;
 
         /**
          * @brief Retrieves worklist entries by source.
          * @param source The source (e.g., LOCAL, RIS).
          * @return Result containing a list of WorklistEntry objects.
          */
-        Result<QList<WorklistEntry>> getWorklistEntries(Source source) const;
+        spc::Result<QList<ent::WorklistEntry>> getWorklistEntries(Source source) const;
 
         /**
          * @brief Retrieves worklist entries by procedure step status.
          * @param status The procedure step status.
          * @return Result containing a list of WorklistEntry objects.
          */
-        Result<QList<WorklistEntry>> getWorklistEntries(ProcedureStepStatus status) const;
+        spc::Result<QList<ent::WorklistEntry>> getWorklistEntries(ProcedureStepStatus status) const;
 
         /**
          * @brief Updates the status of a worklist entry.
@@ -98,28 +98,28 @@ namespace Etrek::Worklist::Repository {
          * @param newStatus The new procedure step status.
          * @return Result containing a status message.
          */
-        Result<QString> updateWorklistStatus(int entryId, ProcedureStepStatus newStatus);
+        spc::Result<QString> updateWorklistStatus(int entryId, ProcedureStepStatus newStatus);
 
         /**
          * @brief Deletes worklist entries before a specified date.
          * @param beforeDate The cutoff date.
          * @return Result indicating success or failure.
          */
-        Result<bool> deleteWorklistEntries(const QDateTime& beforeDate);
+        spc::Result<bool> deleteWorklistEntries(const QDateTime& beforeDate);
 
         /**
          * @brief Deletes worklist entries by their IDs.
          * @param entryIds List of entry IDs to delete.
          * @return Result indicating success or failure.
          */
-        Result<bool> deleteWorklistEntries(const QList<int>& entryIds);
+        spc::Result<bool> deleteWorklistEntries(const QList<int>& entryIds);
 
         /**
          * @brief Retrieves a worklist entry matching the given entry object.
          * @param entry The WorklistEntry to match.
          * @return Result containing the matching WorklistEntry.
          */
-        Result<WorklistEntry> getWorklistEntry(const WorklistEntry& entry) const;
+        spc::Result<ent::WorklistEntry> getWorklistEntry(const ent::WorklistEntry& entry) const;
 
         /**
          * @brief Retrieves a worklist entry matching the given entry and profile.
@@ -127,7 +127,7 @@ namespace Etrek::Worklist::Repository {
          * @param profile The WorklistProfile to match.
          * @return Result containing the matching WorklistEntry.
          */
-        Result<WorklistEntry> getWorklistEntry(const WorklistEntry& entry, const WorklistProfile& profile) const;
+        spc::Result<ent::WorklistEntry> getWorklistEntry(const ent::WorklistEntry& entry, const ent::WorklistProfile& profile) const;
 
         /**
          * @brief Finds a worklist entry by profile and tag values.
@@ -135,28 +135,28 @@ namespace Etrek::Worklist::Repository {
          * @param tagIdToValue Map of tag IDs to their values.
          * @return Result containing the entry ID if found.
          */
-        Result<int> findWorklistEntryByIdentifiers(int profileId, const QMap<int, QString>& tagIdToValue) const;
+        spc::Result<int> findWorklistEntryByIdentifiers(int profileId, const QMap<int, QString>& tagIdToValue) const;
 
         /**
          * @brief Creates a new worklist entry.
          * @param entry The WorklistEntry to create.
          * @return Result containing the new entry ID.
          */
-        virtual Result<int> createWorklistEntry(const WorklistEntry& entry);
+        virtual spc::Result<int> createWorklistEntry(const ent::WorklistEntry& entry);
 
         /**
          * @brief Updates an existing worklist entry.
          * @param entry The WorklistEntry to update.
          * @return Result containing the updated entry ID.
          */
-        virtual Result<int> updateWorklistEntry(const WorklistEntry& entry);
+        virtual spc::Result<int> updateWorklistEntry(const ent::WorklistEntry& entry);
 
         /**
          * @brief Adds a new DICOM tag.
          * @param tag The DicomTag to add.
          * @return Result containing the new tag ID.
          */
-        Result<int> addDicomTag(const DicomTag& tag);
+        spc::Result<int> addDicomTag(const ent::DicomTag& tag);
 
         /**
          * @brief Updates the active status of a DICOM tag.
@@ -164,7 +164,7 @@ namespace Etrek::Worklist::Repository {
          * @param isActive True to set active, false to set inactive.
          * @return Result indicating success or failure.
          */
-        Result<bool> updateDicomTagActiveStatus(int tagId, bool isActive);
+        spc::Result<bool> updateDicomTagActiveStatus(int tagId, bool isActive);
 
         /**
          * @brief Updates the retired status of a DICOM tag.
@@ -172,21 +172,21 @@ namespace Etrek::Worklist::Repository {
          * @param isRetired True to set retired, false to set not retired.
          * @return Result indicating success or failure.
          */
-        Result<bool> updateDicomTagRetiredStatus(int tagId, bool isRetired);
+        spc::Result<bool> updateDicomTagRetiredStatus(int tagId, bool isRetired);
 
         /**
          * @brief Retrieves active identifier tags for a profile.
          * @param profileId The profile ID.
          * @return Result containing a list of DicomTag objects.
          */
-        Result<QList<DicomTag>> getActiveIdentifierTags(int profileId) const;
+        spc::Result<QList<ent::DicomTag>> getActiveIdentifierTags(int profileId) const;
 
         /**
          * @brief Retrieves mandatory identifier tags for a profile.
          * @param profileId The profile ID.
          * @return Result containing a list of DicomTag objects.
          */
-        Result<QList<DicomTag>> getMandatoryIdentifierTags(int profileId) const;
+        spc::Result<QList<ent::DicomTag>> getMandatoryIdentifierTags(int profileId) const;
 
         /**
          * @brief Updates identifier flags for a tag in a profile.
@@ -196,7 +196,7 @@ namespace Etrek::Worklist::Repository {
          * @param isActive True if the tag is active.
          * @return Result indicating success or failure.
          */
-        Result<bool> updateIdentifierFlags(int profileId, int tagId, bool isPotential, bool isActive);
+        spc::Result<bool> updateIdentifierFlags(int profileId, int tagId, bool isPotential, bool isActive);
 
         /**
          * @brief Destructor for WorklistRepository.
@@ -208,13 +208,13 @@ namespace Etrek::Worklist::Repository {
          * @brief Emitted when a worklist entry is created.
          * @param entry The created WorklistEntry.
          */
-        void worklistEntryCreated(const WorklistEntry& entry);
+        void worklistEntryCreated(const ent::WorklistEntry& entry);
 
         /**
          * @brief Emitted when a worklist entry is updated.
          * @param entry The updated WorklistEntry.
          */
-        void worklistEntryUpdated(const WorklistEntry& entry);
+        void worklistEntryUpdated(const ent::WorklistEntry& entry);
 
         /**
          * @brief Emitted when a worklist entry is deleted.
@@ -229,14 +229,14 @@ namespace Etrek::Worklist::Repository {
          * @param db The database connection.
          * @return Map of entry IDs to their attributes.
          */
-        QMap<int, QList<WorklistAttribute>> loadAttributesForEntries(const QList<int>& entryIds, QSqlDatabase& db) const;
+        QMap<int, QList<ent::WorklistAttribute>> loadAttributesForEntries(const QList<int>& entryIds, QSqlDatabase& db) const;
 
         /**
          * @brief Retrieves detailed information for a worklist entry.
          * @param entryId The entry ID.
          * @return Result containing the WorklistEntry details.
          */
-        Result<WorklistEntry> getWorklistEntryDetails(int entryId) const;
+        spc::Result<ent::WorklistEntry> getWorklistEntryDetails(int entryId) const;
 
         /**
          * @brief Creates a new database connection with the specified name.
@@ -245,9 +245,9 @@ namespace Etrek::Worklist::Repository {
          */
         QSqlDatabase createConnection(const QString& connectionName) const;
 
-        std::shared_ptr<DatabaseConnectionSetting> m_connectionSetting;
-        TranslationProvider* translator;
-        std::shared_ptr<AppLogger> logger;
+        std::shared_ptr<mdl::DatabaseConnectionSetting> m_connectionSetting;
+        glob::TranslationProvider* translator;
+        std::shared_ptr<lg::AppLogger> logger;
     };
 
 } // namespace Etrek::Repository

@@ -117,10 +117,10 @@ namespace Etrek::Worklist::Delegate
         // proxyModel->setFilterFixedString(parts.join(" "));
     }
 
-    void WorkListPageDelegate::loadWorklistData(const QList<WorklistEntry>& entries) {
+    void WorkListPageDelegate::loadWorklistData(const QList<ent::WorklistEntry>& entries) {
         baseModel->clear();
 
-        const QList<DicomTag> tagList = getDisplayTagList();
+        const QList<ent::DicomTag> tagList = getDisplayTagList();
         if (tagList.isEmpty()) return;
 
         // Headers
@@ -136,15 +136,15 @@ namespace Etrek::Worklist::Delegate
             baseModel->appendRow(createRowForEntry(entry));
     }
 
-    void WorkListPageDelegate::onEntryCreated(const WorklistEntry& entry) {
-        const QList<DicomTag> tagList = getDisplayTagList();
+    void WorkListPageDelegate::onEntryCreated(const ent::WorklistEntry& entry) {
+        const QList<ent::DicomTag> tagList = getDisplayTagList();
         if (tagList.isEmpty()) return;
 
         QList<QStandardItem*> row = createRowForEntry(entry);
         baseModel->appendRow(row);
     }
 
-    void WorkListPageDelegate::onEntryUpdated(const WorklistEntry& entry) {
+    void WorkListPageDelegate::onEntryUpdated(const ent::WorklistEntry& entry) {
         // Find the row with matching entry ID
         int targetRow = -1;
         for (int row = 0; row < baseModel->rowCount(); ++row) {
@@ -202,27 +202,27 @@ namespace Etrek::Worklist::Delegate
     {
     }
 
-    QList<DicomTag> WorkListPageDelegate::getDisplayTagList() const {
+    QList<ent::DicomTag> WorkListPageDelegate::getDisplayTagList() const {
         auto mandatoryResult = repository->getMandatoryIdentifierTags(1);
         auto activeResult = repository->getActiveIdentifierTags(1);
 
         if (!mandatoryResult.isSuccess || !activeResult.isSuccess)
             return {};
 
-        QMap<QString, DicomTag> combinedTags;
+        QMap<QString, ent::DicomTag> combinedTags;
         for (const auto& tag : mandatoryResult.value) combinedTags.insert(tag.Name, tag);
         for (const auto& tag : activeResult.value) combinedTags.insert(tag.Name, tag);
 
-        QList<DicomTag> tagList = combinedTags.values();
-        std::sort(tagList.begin(), tagList.end(), [](const DicomTag& a, const DicomTag& b) {
+        QList<ent::DicomTag> tagList = combinedTags.values();
+        std::sort(tagList.begin(), tagList.end(), [](const ent::DicomTag& a, const ent::DicomTag& b) {
             return a.DisplayName.toLower() < b.DisplayName.toLower();
             });
 
         return tagList;
     }
 
-    QList<QStandardItem*> WorkListPageDelegate::createRowForEntry(const WorklistEntry& entry) const {
-        const QList<DicomTag> tagList = getDisplayTagList();
+    QList<QStandardItem*> WorkListPageDelegate::createRowForEntry(const ent::WorklistEntry& entry) const {
+        const QList<ent::DicomTag> tagList = getDisplayTagList();
         if (tagList.isEmpty()) return {};
 
         QMap<QString, QString> tagMap;
@@ -230,7 +230,7 @@ namespace Etrek::Worklist::Delegate
             tagMap[attr.Tag.Name] = attr.TagValue;
 
         QList<QStandardItem*> row;
-        for (const DicomTag& tag : tagList) {
+        for (const ent::DicomTag& tag : tagList) {
             QString value = tagMap.value(tag.Name, "");
             QStandardItem* item = new QStandardItem(value);
             item->setData(QColor(208, 208, 208), Qt::ForegroundRole);

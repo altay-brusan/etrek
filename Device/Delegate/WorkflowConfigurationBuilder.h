@@ -7,17 +7,20 @@
 #include "DelegateParameter.h"
 #include <memory>
 
-class WorkflowConfigurationBuilder :
-    public IWidgetDelegateBuilder<WorkflowConfigurationWidget, WorkflowConfigurationDelegate>
+namespace Etrek::Device::Delegate
 {
-public:
-    WorkflowConfigurationBuilder();
-    ~WorkflowConfigurationBuilder();
+    class WorkflowConfigurationBuilder :
+        public IWidgetDelegateBuilder<WorkflowConfigurationWidget, WorkflowConfigurationDelegate>
+    {
+    public:
+        WorkflowConfigurationBuilder();
+        ~WorkflowConfigurationBuilder();
 
-    std::pair<WorkflowConfigurationWidget*, WorkflowConfigurationDelegate*>
-        build(const DelegateParameter& params,
-            QWidget* parentWidget = nullptr,
-            QObject* parentDelegate = nullptr) override;
-};
+        std::pair<WorkflowConfigurationWidget*, WorkflowConfigurationDelegate*>
+            build(const DelegateParameter& params,
+                QWidget* parentWidget = nullptr,
+                QObject* parentDelegate = nullptr) override;
+    };
+}
 
 #endif // WORKFLOWCONFIGURATIONBUILDER_H

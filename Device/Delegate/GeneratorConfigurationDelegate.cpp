@@ -2,6 +2,8 @@
 
 namespace Etrek::Device::Delegate
 {
+	using Etrek::Device::Repository::DeviceRepository;
+
 	GeneratorConfigurationDelegate::GeneratorConfigurationDelegate(GeneratorConfigurationWidget* widget, std::shared_ptr<DeviceRepository> repository, QObject* parent)
 		: QObject(parent), m_widget(widget), m_repository(repository)
 	{

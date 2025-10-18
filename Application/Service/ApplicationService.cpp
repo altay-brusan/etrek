@@ -37,7 +37,8 @@ namespace Etrek::Application::Service
     using namespace Etrek::Application::Authentication;
     using namespace Etrek::Worklist::Connectivity;
     using namespace Etrek::Specification;
-
+    using namespace Etrek::Core::Globalization;
+	using namespace Etrek::Worklist::Repository;
     ApplicationService::ApplicationService(QObject* parent)
         : QObject{ parent }
     {
@@ -67,7 +68,7 @@ namespace Etrek::Application::Service
         }
     }
 
-    std::optional<Entity::User> ApplicationService::authenticateUser()
+    std::optional<User> ApplicationService::authenticateUser()
     {
         if (!m_authService) {
             if (logger) logger->LogError("Auth service is not initialized.");

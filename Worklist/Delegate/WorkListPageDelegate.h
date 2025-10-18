@@ -39,8 +39,8 @@ namespace Etrek::Worklist::Delegate {
         void onClearFilters();
         void onSearchChanged();
        
-        void onEntryCreated(const WorklistEntry& entry);
-        void onEntryUpdated(const WorklistEntry& entry);
+        void onEntryCreated(const Etrek::Worklist::Data::Entity::WorklistEntry& entry);
+        void onEntryUpdated(const Etrek::Worklist::Data::Entity::WorklistEntry& entry);
         void onEntryDeleted(int entryId);
 
         void onSearchName(const QString& name);
@@ -53,13 +53,13 @@ namespace Etrek::Worklist::Delegate {
     private:
         void applyFilters();
         void applySearch();
-        void loadWorklistData(const QList<WorklistEntry>& entries);
+        void loadWorklistData(const QList<ent::WorklistEntry>& entries);
         void onClearSearch();
  
 
         WorkListPage* ui;
-        QList<DicomTag> getDisplayTagList() const;
-        QList<QStandardItem*> createRowForEntry(const WorklistEntry& entry) const;
+        QList<ent::DicomTag> getDisplayTagList() const;
+        QList<QStandardItem*> createRowForEntry(const Etrek::Worklist::Data::Entity::WorklistEntry& entry) const;
         QPointer<QStandardItemModel> baseModel;
         QPointer<QSortFilterProxyModel> proxyModel;
         std::shared_ptr<WorklistRepository> repository;

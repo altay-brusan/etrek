@@ -1,8 +1,6 @@
 #ifndef WORKLISTQUERYSERVICE_H
 #define WORKLISTQUERYSERVICE_H
 
-#pragma once
-
 #include <QVector>
 #include <QList>
 #include <QTimer>
@@ -16,70 +14,78 @@
 #include "DicomTag.h"
 #include "WorklistEntry.h"
 #include "WorklistPresentationContext.h"
+#include "RisConnectionSetting.h"
 #include <QMutex>
 
-using namespace Etrek::Core::Log;
-using namespace Etrek::Core::Data::Model;
-using namespace Etrek::Worklist::Data::Entity;
+namespace Etrek::Worklist::Connectivity 
+{
+    namespace lg = Etrek::Core::Log;
+    namespace mdl = Etrek::Core::Data::Model;
+    namespace ent = Etrek::Worklist::Data::Entity;
+	namespace glob = Etrek::Core::Globalization;
+
+    class WorklistQueryServiceTest;
 
 
-class WorklistQueryServiceTest;
 
-class WorklistQueryService : public QObject {
-    Q_OBJECT
-
-    friend class WorklistQueryServiceTest;
-
-public:
-    explicit WorklistQueryService(QObject* parent = nullptr);
-    WorklistQueryService(const WorklistQueryService&) = delete;
-    WorklistQueryService(WorklistQueryService&& other) noexcept;
-
-    ~WorklistQueryService();
-
-    void setWorklistTags(const QList<DicomTag>& tags);
-    void setIdentifierTags(const QList<DicomTag>& identifiers);
-    void setPresentationContext(const WorklistPresentationContext& context);
-    void setSettings(std::shared_ptr<RisConnectionSetting> settings);
-
-    // Explicitly prepare the DICOM association (add contexts + negotiate)
-    Etrek::Specification::Result<QString> prepareAssociation();
-
-    // Release association explicitly
-    Etrek::Specification::Result<QString> releaseAssociation();
-
-    QList<WorklistEntry> getWorklistEntries();
-    Etrek::Specification::Result<QString> echoRis();
-
-signals:
-    void worklistEntriesReceived(const QList<WorklistEntry>& worklistEntries);
-
-private:
-    std::unique_ptr<DcmDataset> createWorklistQuery(const QList<DicomTag>& queryTags) noexcept;
+    class WorklistQueryService : public QObject {
 
 
-    Etrek::Specification::Result<QString> initNetwork();
-    Etrek::Specification::Result<QString> negotiateTheAssociation();
+        Q_OBJECT
 
-    // Adds a single presentation context (for echo or find)
-    Etrek::Specification::Result<int> addPresentationContextForOperation(const QString& operation);
+            friend class WorklistQueryServiceTest;
 
-    void setupTheConnectionParameters();
-    bool isConnected();
+    public:
+        explicit WorklistQueryService(QObject* parent = nullptr);
+        WorklistQueryService(const WorklistQueryService&) = delete;
+        WorklistQueryService(WorklistQueryService&& other) noexcept;
 
-    WorklistEntry parseDatasetToWorklist(DcmDataset* dataset, const QVector<DicomTag>& dicomTags);
+        ~WorklistQueryService();
 
-    void reconnect();
+        void setWorklistTags(const QList<ent::DicomTag>& tags);
+        void setIdentifierTags(const QList<ent::DicomTag>& identifiers);
+        void setPresentationContext(const ent::WorklistPresentationContext& context);
+        void setSettings(std::shared_ptr<mdl::RisConnectionSetting> settings);
 
-    // Members
-    QList<DicomTag> m_identifierTags;
-    QList<DicomTag> m_worklistTags;
-    std::shared_ptr<RisConnectionSetting> m_settings = nullptr;
-    WorklistPresentationContext m_presentationContext;
-    TranslationProvider* translator;
-    QMutex m_scuMutex;
-    std::unique_ptr<DcmSCU> m_dcmScu;
-    std::shared_ptr<AppLogger> logger;
-};
+        // Explicitly prepare the DICOM association (add contexts + negotiate)
+        Etrek::Specification::Result<QString> prepareAssociation();
 
+        // Release association explicitly
+        Etrek::Specification::Result<QString> releaseAssociation();
+
+        QList<ent::WorklistEntry> getWorklistEntries();
+        Etrek::Specification::Result<QString> echoRis();
+
+    signals:
+        void worklistEntriesReceived(const QList<ent::WorklistEntry>& worklistEntries);
+
+    private:
+        std::unique_ptr<DcmDataset> createWorklistQuery(const QList<ent::DicomTag>& queryTags) noexcept;
+
+
+        Etrek::Specification::Result<QString> initNetwork();
+        Etrek::Specification::Result<QString> negotiateTheAssociation();
+
+        // Adds a single presentation context (for echo or find)
+        Etrek::Specification::Result<int> addPresentationContextForOperation(const QString& operation);
+
+        void setupTheConnectionParameters();
+        bool isConnected();
+
+        ent::WorklistEntry parseDatasetToWorklist(DcmDataset* dataset, const QVector<ent::DicomTag>& dicomTags);
+
+        void reconnect();
+
+        // Members
+        QList<ent::DicomTag> m_identifierTags;
+        QList<ent::DicomTag> m_worklistTags;
+        std::shared_ptr<mdl::RisConnectionSetting> m_settings = nullptr;
+        ent::WorklistPresentationContext m_presentationContext;
+        glob::TranslationProvider* translator;
+        QMutex m_scuMutex;
+        std::unique_ptr<DcmSCU> m_dcmScu;
+        std::shared_ptr<lg::AppLogger> logger;
+    };
+
+}
 #endif // WORKLISTQUERYSERVICE_H

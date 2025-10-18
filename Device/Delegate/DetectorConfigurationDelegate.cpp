@@ -1,9 +1,5 @@
 #include "DetectorConfigurationDelegate.h"
-#include "DetectorConfigurationDelegate.h"
-#include "DetectorConfigurationDelegate.h"
-#include "DetectorConfigurationDelegate.h"
-#include "DetectorConfigurationDelegate.h"
-#include "DetectorConfigurationDelegate.h"
+
 
 namespace Etrek::Device::Delegate
 {

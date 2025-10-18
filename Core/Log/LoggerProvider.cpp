@@ -12,6 +12,7 @@
 namespace Etrek::Core::Log {
 
     using Etrek::Specification::Result;
+	using Etrek::Core::Globalization::TranslationProvider;
     LoggerProvider& LoggerProvider::Instance()
     {
         static LoggerProvider instance;
@@ -21,7 +22,7 @@ namespace Etrek::Core::Log {
     LoggerProvider::LoggerProvider()
     {}
 
-    Result<QString> LoggerProvider::InitializeFileLogger(const QString& logDir, size_t fileSizeMB, size_t fileCount, TranslationProvider* translator)
+    Result<QString> LoggerProvider::InitializeFileLogger(const QString& logDir, size_t fileSizeMB, size_t fileCount, glob::TranslationProvider* translator)
     {
         if(fileSizeMB > 1)
         {
@@ -51,8 +52,8 @@ namespace Etrek::Core::Log {
             return Result<QString>::Failure(translator->getErrorMessage(LOG_DIR_NOT_EXIST_AFTER_CREATION_ERROR).arg(logDir));
         }
         
-        m_logDirectory = logDir;    
-        return Result<QString>::Failure(translator->getInfoMessage(LOG_FILE_LOGGER_INIT_SUCCEED_MSG));
+        m_logDirectory = logDir;
+        return Result<QString>::Success(translator->getInfoMessage(LOG_FILE_LOGGER_INIT_SUCCEED_MSG));
     }
 
     std::shared_ptr<spdlog::logger> LoggerProvider::GetFileLogger(const std::string& serviceName, LogLevel level)
@@ -101,7 +102,12 @@ namespace Etrek::Core::Log {
 
     void LoggerProvider::Shutdown()
     {
+        QWriteLocker locker(&lock);
+        if (m_loggerMap.empty()) {
+            return; // Already shut down
+        }
         m_loggerMap.clear();
+        locker.unlock();
         spdlog::shutdown();
     }
 }

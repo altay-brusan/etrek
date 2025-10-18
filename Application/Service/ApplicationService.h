@@ -39,7 +39,7 @@ namespace Etrek::Application::Service
     namespace aut = Etrek::Application::Authentication;
     namespace cnc = Etrek::Worklist::Connectivity;
     namespace spc = Etrek::Specification;
-
+    namespace glb = Etrek::Core::Globalization;
     class ApplicationService : public QObject
     {
         Q_OBJECT
@@ -66,15 +66,15 @@ namespace Etrek::Application::Service
 
         std::unique_ptr<MainWindow> m_mainWindow;
         dlg::MainWindowDelegate* m_mainWindowDelegate = nullptr;
-        std::shared_ptr<AppLogger> logger;
+        std::shared_ptr<lg::AppLogger> logger;
         set::SettingProvider m_settingProvider;
-        TranslationProvider* translator;
+        glb::TranslationProvider* translator;
         std::shared_ptr<rpo::AuthenticationRepository> m_authRepository;
         sec::CryptoManager m_securityService;
         aut::AuthenticationService* m_authService = nullptr;
-        std::shared_ptr<Model::DatabaseConnectionSetting> m_databaseConnectionSetting;
-        std::shared_ptr<Model::FileLoggerSetting> m_fileLoggerSetting;
-        QVector< QSharedPointer<Model::RisConnectionSetting>> m_risConnectionSettingList;
+        std::shared_ptr<mdl::DatabaseConnectionSetting> m_databaseConnectionSetting;
+        std::shared_ptr<mdl::FileLoggerSetting> m_fileLoggerSetting;
+        QVector< QSharedPointer<mdl::RisConnectionSetting>> m_risConnectionSettingList;
         cnc::ModalityWorklistManager* m_modalityWorklistManager = nullptr;
     };
 }
