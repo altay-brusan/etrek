@@ -11,35 +11,33 @@ namespace Ui {
 class UserMangerDialog;
 }
 
-using namespace Etrek::Core::Data;
-using namespace Etrek::Core::Globalization;
 class UserMangerDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit UserMangerDialog(const QVector<Entity::User>& activeUsers,
-                              const QVector<Entity::User>& deactivatedUsers,
-                              const QVector<Entity::Role>& roles,
-                              TranslationProvider* translationProvider,
+    explicit UserMangerDialog(const QVector<Etrek::Core::Data::Entity::User>& activeUsers,
+                              const QVector<Etrek::Core::Data::Entity::User>& deactivatedUsers,
+                              const QVector<Etrek::Core::Data::Entity::Role>& roles,
+                              Etrek::Core::Globalization::TranslationProvider* translationProvider,
                               QWidget *parent = nullptr);
     void DisplayManager();
     ~UserMangerDialog();
-    Entity::Role GetSelectedRole() const;
-    Entity::User GetSelectedUser() const;
+    Etrek::Core::Data::Entity::Role GetSelectedRole() const;
+    Etrek::Core::Data::Entity::User GetSelectedUser() const;
 
 signals:
-    void AddUserRequested(Entity::User& user, const QString& password);
-    void UpdateUserRequested(Entity::User& user, const QString& password);
-    void DeleteUserRequested(Entity::User& user);
+    void AddUserRequested(Etrek::Core::Data::Entity::User& user, const QString& password);
+    void UpdateUserRequested(Etrek::Core::Data::Entity::User& user, const QString& password);
+    void DeleteUserRequested(Etrek::Core::Data::Entity::User& user);
 
 public slots:
-    void onUserCreated(const Entity::User& user);
-    void onUserCreationFailed(const Entity::User& user,QString& failReason);
-    void onUserUpdated(const Entity::User& user);
-    void onUserUpdateFailed(const Entity::User& user,QString& failReason);
-    void onUserDeleted(const Entity::User& user);
-    void onUserDeletionFailed(const Entity::User& user,QString& failReason);
+    void onUserCreated(const Etrek::Core::Data::Entity::User& user);
+    void onUserCreationFailed(const Etrek::Core::Data::Entity::User& user,QString& failReason);
+    void onUserUpdated(const Etrek::Core::Data::Entity::User& user);
+    void onUserUpdateFailed(const Etrek::Core::Data::Entity::User& user,QString& failReason);
+    void onUserDeleted(const Etrek::Core::Data::Entity::User& user);
+    void onUserDeletionFailed(const Etrek::Core::Data::Entity::User& user,QString& failReason);
 
 private slots:
     void onAddUserBtnClicked();
@@ -58,10 +56,10 @@ private:
     void initStyles();
 
     Ui::UserMangerDialog *ui;
-    QVector<Entity::User> m_activeUsers;
-    QVector<Entity::User> m_deactivatedUsers;
-    QVector<Entity::Role> m_roles;
-    TranslationProvider* translator;
+    QVector<Etrek::Core::Data::Entity::User> m_activeUsers;
+    QVector<Etrek::Core::Data::Entity::User> m_deactivatedUsers;
+    QVector<Etrek::Core::Data::Entity::Role> m_roles;
+    Etrek::Core::Globalization::TranslationProvider* translator;
 };
 
 #endif // USERMANGERDIALOG_H

@@ -1,60 +1,72 @@
 #ifndef AUTHENTICATIONSERVICE_H
 #define AUTHENTICATIONSERVICE_H
+
 #include <QObject>
-#include "AuthenticationRepository.h"
-#include "TranslationProvider.h"
-#include "AppLogger.h"
+#include <QString>
+#include <memory>
+#include <optional>
 #include "CryptoManager.h"
+#include "AuthenticationRepository.h"
 
+// Forward declarations - no heavy includes needed
+namespace Etrek::Core::Repository {
+    class AuthenticationRepository;
+}
 
-using namespace Etrek::Core::Log;
-using namespace Etrek::Core::Data;
-using namespace Etrek::Core::Security;
-using namespace Etrek::Core::Repository;
+namespace Etrek::Core::Data::Entity {
+    class User;
+}
+
+namespace Etrek::Specification {
+    template<typename T> class Result;
+}
+
+namespace Etrek::Core::Globalization {
+    class TranslationProvider;
+}
+
+namespace Etrek::Core::Log {
+    class AppLogger;
+}
 
 namespace Etrek::Application::Authentication {
-
-    using Etrek::Specification::Result;
 
     class AuthenticationService : public QObject
     {
         Q_OBJECT
-
     public:
-        explicit AuthenticationService(const AuthenticationRepository& repository,
-            const CryptoManager& securityService,
+        explicit AuthenticationService(
+            const Etrek::Core::Repository::AuthenticationRepository& repository,
+            const Etrek::Core::Security::CryptoManager& securityService,
             QObject* parent = nullptr);
 
-
-        Result<std::optional<Entity::User>> authenticateUser() const;
-
+        Etrek::Specification::Result<std::optional<Etrek::Core::Data::Entity::User>>
+            authenticateUser() const;
 
     signals:
-        void userCreatedSuccessfully(User& user);
-        void failedToCreateUser(User& user, QString& failReason);
-        void userUpdatedSuccessfully(User& user);
-        void failedToUpdateUser(User& user, QString& failReason);
-        void userDeletedSuccessfully(User& user);
-        void failedToDeleteUser(User& user, QString& failReason);
+        void userCreatedSuccessfully(Etrek::Core::Data::Entity::User& user);
+        void failedToCreateUser(Etrek::Core::Data::Entity::User& user, QString& failReason);
+        void userUpdatedSuccessfully(Etrek::Core::Data::Entity::User& user);
+        void failedToUpdateUser(Etrek::Core::Data::Entity::User& user, QString& failReason);
+        void userDeletedSuccessfully(Etrek::Core::Data::Entity::User& user);
+        void failedToDeleteUser(Etrek::Core::Data::Entity::User& user, QString& failReason);
 
     private slots:
-        void onAddUserRequested(User& user, const QString& password);
-        void onUpdateUserRequested(User& user, const QString& password);
-        void onDeleteUserRequested(User& user);
-
+        void onAddUserRequested(Etrek::Core::Data::Entity::User& user, const QString& password);
+        void onUpdateUserRequested(Etrek::Core::Data::Entity::User& user, const QString& password);
+        void onDeleteUserRequested(Etrek::Core::Data::Entity::User& user);
 
     private:
         void displayUserManagerDialog() const;
-        Result<std::optional<Entity::User>> displayLoginDialog() const;
+        Etrek::Specification::Result<std::optional<Etrek::Core::Data::Entity::User>>
+            displayLoginDialog() const;
 
-
-        CryptoManager m_securityService;
-        AuthenticationRepository m_repository;
-        TranslationProvider* translator;
-        std::shared_ptr<AppLogger> logger;
+        Etrek::Core::Security::CryptoManager m_securityService;
+        Etrek::Core::Repository::AuthenticationRepository m_repository;
+        Etrek::Core::Globalization::TranslationProvider* translator;  // non-owning
+        std::shared_ptr<Etrek::Core::Log::AppLogger> logger;
     };
 
-}
-
+} // namespace Etrek::Application::Authentication
 
 #endif // AUTHENTICATIONSERVICE_H

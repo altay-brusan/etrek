@@ -1,8 +1,12 @@
 #include "PacsNodeRepository.h"
+#include "PacsNode.h"
+#include "PacsEntityConfigurationWidget.h"
 #include "PacsEntityConfigurationBuilder.h"
 
 namespace Etrek::Pacs::Delegate
 {
+    using Etrek::Pacs::Repository::PacsNodeRepository;
+
     PacsEntityConfigurationBuilder::PacsEntityConfigurationBuilder()
     {
     }

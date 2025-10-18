@@ -5,8 +5,6 @@
 #include <QVector>
 #include "Detector.h"
 
-
-using namespace Etrek::Device::Data::Entity;
 namespace Ui {
 class DetectorConfigurationWidget;
 }
@@ -16,12 +14,12 @@ class DetectorConfigurationWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit DetectorConfigurationWidget(const QVector<Detector>& nodes, QWidget *parent = nullptr);
+    explicit DetectorConfigurationWidget(const QVector<Etrek::Device::Data::Entity::Detector>& nodes, QWidget *parent = nullptr);
     ~DetectorConfigurationWidget();
 
 private:
     Ui::DetectorConfigurationWidget *ui;
-    QVector<Detector> m_nodes;
+    QVector<Etrek::Device::Data::Entity::Detector> m_nodes;
 };
 
 #endif // DETECTORCONFIGURATIONWIDGET_H

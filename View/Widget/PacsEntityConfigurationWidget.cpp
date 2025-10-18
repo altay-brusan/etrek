@@ -1,7 +1,4 @@
-﻿#include "PacsEntityConfigurationWidget.h"
-#include "ui_PacsEntityConfigurationWidget.h"
-
-#include <QComboBox>
+﻿#include <QComboBox>
 #include <QListView>
 #include <QItemSelectionModel>
 #include <QRegularExpression>
@@ -12,7 +9,14 @@
 #include <QPoint>
 #include <QEvent>
 
+#include "ui_PacsEntityConfigurationWidget.h"
+#include "PacsEntityConfigurationWidget.h"
+#include "PacsEntityType.h"
+#include "PacsNode.h"
 
+
+using namespace Etrek::Pacs::Data::Entity;
+using namespace Etrek::Pacs;
 bool PacsEntityConfigurationWidget::eventFilter(QObject* obj, QEvent* ev)
 {
     if (obj == ui->hostIPLineEdit && ev->type() == QEvent::FocusOut) {

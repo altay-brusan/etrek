@@ -1,9 +1,11 @@
-#include "WorklistPage.h"
-#include "WorklistPage.h"
-#include "WorklistPage.h"
-#include "ui_WorklistPage.h"
 #include <QStandardItemModel>
 #include <qpointer.h>
+
+#include "WorklistPage.h"
+#include "IWorklistRepository.h"
+#include "ui_WorklistPage.h"
+
+using namespace Etrek::Worklist::Repository;
 
 WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWidget *parent)
     : QWidget(parent)

@@ -9,8 +9,6 @@
 #include <QVariant>
 #include "Generator.h"
 
-using namespace Etrek::Device::Data::Entity;
-
 class GeneratorTableModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -35,8 +33,8 @@ public:
 
     explicit GeneratorTableModel(QObject* parent = nullptr);
 
-    void setDataSource(const QVector<Generator>& gens);
-    const QVector<Generator>& rows() const;
+    void setDataSource(const QVector<Etrek::Device::Data::Entity::Generator>& gens);
+    const QVector<Etrek::Device::Data::Entity::Generator>& rows() const;
 
     // QAbstractTableModel overrides
     int rowCount(const QModelIndex& parent = {}) const override;
@@ -47,7 +45,7 @@ public:
     bool setData(const QModelIndex& idx, const QVariant& value, int role) override;
 
 private:
-    QVector<Generator> m_rows;
+    QVector<Etrek::Device::Data::Entity::Generator> m_rows;
 
     static QString tubeName(int v);
     static QString fmtDate(const QDate& d) { return d.isValid() ? d.toString("yyyy-MM-dd") : QString(); }

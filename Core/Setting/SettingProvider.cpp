@@ -8,15 +8,18 @@
 #include "RisConnectionSetting.h"
 
 
-using namespace Etrek::Core::Data;
-using namespace Etrek::Core::Security;
-
 namespace Etrek::Core::Setting {
+
+	using Etrek::Core::Security::CryptoManager;
+	using Etrek::Core::Data::Model::DatabaseConnectionSetting;
+	using Etrek::Core::Data::Model::FileLoggerSetting;
+	using Etrek::Core::Data::Model::RisConnectionSetting;
+
     SettingProvider::SettingProvider(QObject *parent)
         : QObject{parent},
-        m_databaseSetting(std::make_shared<Model::DatabaseConnectionSetting>()),
-        m_fileLoggerSetting(std::make_shared<Model::FileLoggerSetting>()),
-        m_risSetting(QVector<QSharedPointer<Model::RisConnectionSetting>>())
+        m_databaseSetting(std::make_shared<DatabaseConnectionSetting>()),
+        m_fileLoggerSetting(std::make_shared<FileLoggerSetting>()),
+        m_risSetting(QVector<QSharedPointer<RisConnectionSetting>>())
         {}
 
     bool SettingProvider::loadSettingsFile(QIODevice& device)
@@ -68,7 +71,7 @@ namespace Etrek::Core::Setting {
             for (const QJsonValue& value : modalityArray) {
                 if (value.isObject()) {
                     QJsonObject dbObj = value.toObject();
-                    auto connection = QSharedPointer<Model::RisConnectionSetting>::create();
+                    auto connection = QSharedPointer<RisConnectionSetting>::create();
                     connection->setConnectionName(dbObj["ConnectionName"].toString());
                     connection->setCallingAETitle(dbObj["CallingAETitle"].toString());
                     connection->setCalledAETitle(dbObj["CalledAETitle"].toString());
@@ -98,17 +101,17 @@ namespace Etrek::Core::Setting {
         return loadSettingsFile(file); // Passing by reference
     }
 
-    std::shared_ptr<Model::DatabaseConnectionSetting> SettingProvider::getDatabaseConnectionSettings() const
+    std::shared_ptr<DatabaseConnectionSetting> SettingProvider::getDatabaseConnectionSettings() const
     {
         return m_databaseSetting;
     }
 
-    std::shared_ptr<Model::FileLoggerSetting> SettingProvider::getFileLoggerSettings() const
+    std::shared_ptr<FileLoggerSetting> SettingProvider::getFileLoggerSettings() const
     {
         return m_fileLoggerSetting;
     }
 
-    QVector< QSharedPointer<Model::RisConnectionSetting>> SettingProvider::getRisSettings() const
+    QVector< QSharedPointer<RisConnectionSetting>> SettingProvider::getRisSettings() const
     {
         return m_risSetting;
     }

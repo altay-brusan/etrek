@@ -7,10 +7,10 @@
 #include "DeviceRepository.h"
 #include "GeneratorConfigurationWidget.h"
 
-using namespace Etrek::Device::Repository;
-
 namespace Etrek::Device::Delegate
 {
+	namespace rpo = Etrek::Device::Repository;
+
 	class GeneratorConfigurationDelegate :
 	public QObject,
 	public IDelegate,
@@ -20,7 +20,7 @@ namespace Etrek::Device::Delegate
 		Q_INTERFACES(IDelegate IPageAction)
 
 	public:
-		GeneratorConfigurationDelegate(GeneratorConfigurationWidget* widget, std::shared_ptr<DeviceRepository> repository,QObject* parent);
+		GeneratorConfigurationDelegate(GeneratorConfigurationWidget* widget, std::shared_ptr<rpo::DeviceRepository> repository,QObject* parent);
 
 		QString name() const override;
 		void attachDelegates(const QVector<QObject*>& delegates) override;
@@ -28,7 +28,7 @@ namespace Etrek::Device::Delegate
 		~GeneratorConfigurationDelegate();
 	private:
 		GeneratorConfigurationWidget* m_widget;
-		std::shared_ptr<DeviceRepository> m_repository;
+		std::shared_ptr<rpo::DeviceRepository> m_repository;
 
 		// Inherited via IPageAction
 		void apply() override;

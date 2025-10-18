@@ -4,6 +4,7 @@
 #include "EnvironmentSettingUtils.h" 
 
 using namespace Etrek::Device;
+using namespace Etrek::Device::Data::Entity;
 
 WorkflowConfigurationWidget::WorkflowConfigurationWidget(const EnvironmentSetting& environmentSetting,const QVector<GeneralEquipment>& equipments, const QVector<Institution>& institutes,QWidget *parent)
     : QWidget(parent)

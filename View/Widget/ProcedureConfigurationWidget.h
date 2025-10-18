@@ -10,8 +10,6 @@
 #include "Procedure.h"
 #include "BodyPart.h"
 #include "AnatomicRegion.h"
-using namespace Etrek::ScanProtocol;
-using namespace Etrek::ScanProtocol::Data::Entity;
 
 namespace Ui { class ProcedureConfigurationWidget; }
 
@@ -20,10 +18,10 @@ class ProcedureConfigurationWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit ProcedureConfigurationWidget(const QVector<Procedure>& procedures,
-        const QVector<BodyPart>& bodyParts,
-        const QVector<AnatomicRegion>& anatomicRegions,
-        const QVector<View>& views,
+    explicit ProcedureConfigurationWidget(const QVector<Etrek::ScanProtocol::Data::Entity::Procedure>& procedures,
+        const QVector<Etrek::ScanProtocol::Data::Entity::BodyPart>& bodyParts,
+        const QVector<Etrek::ScanProtocol::Data::Entity::AnatomicRegion>& anatomicRegions,
+        const QVector<Etrek::ScanProtocol::Data::Entity::View>& views,
         QWidget* parent = nullptr);
     ~ProcedureConfigurationWidget();
 
@@ -31,10 +29,10 @@ private:
     Ui::ProcedureConfigurationWidget* ui;
 
     // Data
-    QVector<Procedure>     m_procedures;
-    QVector<View>          m_views;
-    QVector<BodyPart>      m_bodyParts;
-    QVector<AnatomicRegion> m_anatomicRegions;
+    QVector<Etrek::ScanProtocol::Data::Entity::Procedure>     m_procedures;
+    QVector<Etrek::ScanProtocol::Data::Entity::View>          m_views;
+    QVector<Etrek::ScanProtocol::Data::Entity::BodyPart>      m_bodyParts;
+    QVector<Etrek::ScanProtocol::Data::Entity::AnatomicRegion> m_anatomicRegions;
 
     // Models
     QStandardItemModel* m_procModel = nullptr; // for table view (names)
@@ -56,7 +54,7 @@ private:
 
     // Helpers
     int findComboIndexById(QComboBox* cb, int id) const;    // match stored id in UserRole
-    int findViewIndexById(const QVector<View>& src, int id) const;
+    int findViewIndexById(const QVector<Etrek::ScanProtocol::Data::Entity::View>& src, int id) const;
     int findProcedureIndexById(int id) const;
 private slots:
     void onProcedureTableCurrentChanged(const QModelIndex& current, const QModelIndex& previous);

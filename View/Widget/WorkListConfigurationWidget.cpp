@@ -13,10 +13,11 @@
 #include <QRegularExpressionValidator>
 
 #include "WorkListConfigurationWidget.h"
+#include "DicomTag.h"
 #include "ui_WorkListConfigurationWidget.h"
 
 
-
+using namespace Etrek::Worklist::Data::Entity;
 
 class Ipv4Validator : public QValidator {
 public:

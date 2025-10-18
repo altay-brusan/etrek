@@ -12,8 +12,13 @@
 namespace Etrek::Core::Repository {
 
     using Etrek::Specification::Result;
-
-    DatabaseSetupManager::DatabaseSetupManager(std::shared_ptr<Model::DatabaseConnectionSetting> connectionSetting)
+    using Etrek::Core::Data::Model::DatabaseConnectionSetting;
+	using Etrek::Core::Globalization::TranslationProvider;
+	using Etrek::Core::Log::AppLoggerFactory;
+	using Etrek::Core::Log::LoggerProvider;
+	//namespace glb = Etrek::Core::Globalization;
+    
+    DatabaseSetupManager::DatabaseSetupManager(std::shared_ptr<DatabaseConnectionSetting> connectionSetting)
         :m_connectionSetting(std::move(connectionSetting))
         {
             translator = &TranslationProvider::Instance();

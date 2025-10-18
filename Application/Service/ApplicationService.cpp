@@ -1,86 +1,127 @@
 #include "ApplicationService.h"
+#include "LaunchMode.h"
+#include "ILaunchStrategy.h"
+#include "User.h"
+#include "DatabaseConnectionSetting.h"
+#include "FileloggerSetting.h"
+#include "RisConnectionSetting.h"
+#include "AppLogger.h"
+#include "SettingProvider.h"
+#include "CryptoManager.h"
+#include "TranslationProvider.h"
+#include "AuthenticationService.h"
+#include "AuthenticationRepository.h"
+#include "ModalityWorklistManager.h"
 
-#include <QTimer>
-#include <functional>
-#include <QApplication>
-#include <QCoreApplication>
+#include "MainWindowDelegate.h"
+#include "ILaunchStrategy.h"
 #include "MessageKey.h"
 #include "LoggerProvider.h"
 #include "AppLoggerFactory.h"
-
 #include "DatabaseSetupManager.h"
 #include "UserManagerLaunchStrategy.h"
 #include "SettingManagerLaunchStrategy.h"
 #include "DemoLaunchStrategy.h"
 #include "DeveloperLaunchStrategy.h"
 #include "MainAppLaunchStrategy.h"
-#include "ModalityWorklistManager.h"
 #include "WorklistRepository.h"
 #include "WorklistFieldConfigurationRepository.h"
 #include "MainWindowBuilder.h"
+#include "DelegateParameter.h"
 
-using namespace Etrek::Application::Authentication;
-using namespace Etrek::Application::Delegate;
+#include <QTimer>
+#include <QApplication>
+#include <QCoreApplication>
 
 namespace Etrek::Application::Service
 {
+    // Using declarations - safe and clean in .cpp files
     using Etrek::Specification::LaunchMode;
     using Etrek::Specification::Result;
+    using Etrek::Core::Data::Entity::User;
+    using Etrek::Core::Data::Entity::Role;
+    using Etrek::Core::Data::Model::DatabaseConnectionSetting;
+    using Etrek::Core::Data::Model::FileLoggerSetting;
+    using Etrek::Core::Data::Model::RisConnectionSetting;
+    using Etrek::Core::Log::AppLogger;
+    using Etrek::Core::Log::LoggerProvider;
+    using Etrek::Core::Log::AppLoggerFactory;
+    using Etrek::Core::Setting::SettingProvider;
+    using Etrek::Core::Security::CryptoManager;
+    using Etrek::Core::Globalization::TranslationProvider;
+    using Etrek::Application::Authentication::AuthenticationService;
+    using Etrek::Core::Repository::AuthenticationRepository;
+    using Etrek::Core::Repository::DatabaseSetupManager;
+    using Etrek::Worklist::Connectivity::ModalityWorklistManager;
+    using Etrek::Worklist::Repository::WorklistRepository;
+    using Etrek::Worklist::Repository::WorklistFieldConfigurationRepository;
+    using Etrek::Application::Delegate::MainWindowDelegate;
+    using Etrek::Application::Delegate::MainWindowBuilder;
 
-    using namespace Etrek::Core::Log;
-    using namespace Etrek::Core::Setting;
-    using namespace Etrek::Core::Data::Model;
-    using namespace Etrek::Core::Data::Entity;
-    using namespace Etrek::Core::Repository;
-    using namespace Etrek::Core::Security;
-    using namespace Etrek::Application::Delegate;
-    using namespace Etrek::Application::Authentication;
-    using namespace Etrek::Worklist::Connectivity;
-    using namespace Etrek::Specification;
 
     ApplicationService::ApplicationService(QObject* parent)
-        : QObject{ parent }
+        : QObject(parent)
+        , m_mainWindowDelegate(nullptr)
+        , translator(nullptr)
+        , m_authService(nullptr)
+        , m_modalityWorklistManager(nullptr)
     {
-        translator = &TranslationProvider::Instance();		
+        translator = &TranslationProvider::Instance();
     }
 
+    ApplicationService::~ApplicationService()
+    {
+        // Qt parent-child ownership handles m_mainWindowDelegate, m_authService, m_modalityWorklistManager
+        if (m_mainWindow) {
+            m_mainWindow->close();
+            m_mainWindow.reset();
+        }
+    }
 
     void ApplicationService::initialize(LaunchMode launchMode)
-    {        
-
+    {
         qRegisterMetaType<Role>("Role");
         qRegisterMetaType<User>("User");
 
         auto strategy = createLaunchStrategy(launchMode);
         strategy->launch(this);
-
     }
 
-    std::unique_ptr<ILaunchStrategy> ApplicationService::createLaunchStrategy(LaunchMode mode) {
+    std::unique_ptr<ILaunchStrategy> ApplicationService::createLaunchStrategy(LaunchMode mode)
+    {
         switch (mode) {
-        case LaunchMode::UserManager: return std::make_unique<UserManagerLaunchStrategy>(this);
-        case LaunchMode::SettingManager: return std::make_unique<SettingManagerLaunchStrategy>(this);
-        case LaunchMode::Demo: return std::make_unique<DemoLaunchStrategy>(this);
-        case LaunchMode::Developer: return std::make_unique<DeveloperLaunchStrategy>(this);
+        case LaunchMode::UserManager:
+            return std::make_unique<UserManagerLaunchStrategy>(this);
+        case LaunchMode::SettingManager:
+            return std::make_unique<SettingManagerLaunchStrategy>(this);
+        case LaunchMode::Demo:
+            return std::make_unique<DemoLaunchStrategy>(this);
+        case LaunchMode::Developer:
+            return std::make_unique<DeveloperLaunchStrategy>(this);
         case LaunchMode::MainApp:
-        default: return std::make_unique<MainAppLaunchStrategy>(this);
+        default:
+            return std::make_unique<MainAppLaunchStrategy>(this);
         }
     }
 
-    std::optional<Entity::User> ApplicationService::authenticateUser()
+    std::optional<User> ApplicationService::authenticateUser()
     {
         if (!m_authService) {
-            if (logger) logger->LogError("Auth service is not initialized.");
+            if (logger) {
+                logger->LogError("Auth service is not initialized.");
+            }
             return std::nullopt;
         }
 
         logger->LogInfo(translator->getInfoMessage(AUTH_START_MSG));
         const auto authenticationResult = m_authService->authenticateUser();
+
         if (!authenticationResult.isSuccess) {
             return std::nullopt;
         }
+
         logger->LogInfo(translator->getInfoMessage(AUTH_SUCCEED));
-		return authenticationResult.value;
+        return authenticationResult.value;
     }
 
     void ApplicationService::setupLogger(std::function<void(const QString&, int)> progressCallback)
@@ -88,30 +129,33 @@ namespace Etrek::Application::Service
         if (progressCallback) {
             progressCallback("Setup logging system...", 10);
         }
+
         if (!m_fileLoggerSetting) {
-            // Either call loadSettings() earlier or bail out
             throw std::runtime_error("File logger settings not loaded.");
         }
-		// Initialize the logger with file settings for all systems
-        LoggerProvider::Instance().InitializeFileLogger(m_fileLoggerSetting->getLogDirectory(),
+
+        // Initialize the logger with file settings for all systems
+        LoggerProvider::Instance().InitializeFileLogger(
+            m_fileLoggerSetting->getLogDirectory(),
             m_fileLoggerSetting->getFileSize(),
             m_fileLoggerSetting->getFileCount(),
-            translator);
+            translator
+        );
 
-		// Initialize the logger for logging the applicationService events
+        // Initialize the logger for logging the applicationService events
         AppLoggerFactory factory(LoggerProvider::Instance(), translator);
-        logger = factory.CreateLogger("applicationService");
+        logger = factory.CreateLogger("ApplicationService");
 
         logger->LogInfo(translator->getInfoMessage(LOG_FILE_LOGGER_INIT_SUCCEED_MSG));
-
     }
 
     void ApplicationService::connectSignalsAndSlots()
     {
         if (!m_mainWindowDelegate) {
-            logger->LogError("Main window is not initialized. Cannot connect signals.");
+            logger->LogError("Main window delegate is not initialized. Cannot connect signals.");
             return;
         }
+
         if (!m_modalityWorklistManager) {
             logger->LogWarning("ModalityWorklistManager not ready; skipping connections.");
             return;
@@ -124,13 +168,10 @@ namespace Etrek::Application::Service
         );
     }
 
-    
     void ApplicationService::closeApplication()
     {
-        if (m_mainWindowDelegate) {
-            m_mainWindowDelegate->deleteLater();
-            m_mainWindowDelegate = nullptr;
-        }
+        // Qt parent-child ownership will handle deletion
+        m_mainWindowDelegate = nullptr;
 
         if (m_mainWindow) {
             m_mainWindow->close();
@@ -141,26 +182,25 @@ namespace Etrek::Application::Service
 
         // Defer quit until event loop starts
         QTimer::singleShot(0, qApp, &QCoreApplication::quit);
-
     }
 
     void ApplicationService::constructMainWindow()
-	{
-
-        auto worklistRepo = std::make_shared<WorklistFieldConfigurationRepository>(m_databaseConnectionSetting);
-        //MainWindowDelegateBuilder builder(worklistRepo);
-        //auto mainWindowDelegate = builder.build(nullptr);
-
+    {
+        auto worklistRepo = std::make_shared<WorklistFieldConfigurationRepository>(
+            m_databaseConnectionSetting
+        );
+        // TODO: Implement main window construction logic
     }
-        
+
     void ApplicationService::loadMainWindow(std::function<void(const QString&, int)> progressCallback)
     {
-        logger->LogInfo("loading main window");
+        logger->LogInfo("Loading main window");
 
         if (progressCallback) {
             progressCallback("Loading screens...", 10);
         }
 
+        // Clean up existing instances
         if (m_mainWindowDelegate) {
             m_mainWindowDelegate->deleteLater();
             m_mainWindowDelegate = nullptr;
@@ -176,6 +216,7 @@ namespace Etrek::Application::Service
 
         MainWindowBuilder builder;
         auto result = builder.build(params, nullptr, this);
+
         m_mainWindow.reset(result.first);
         m_mainWindowDelegate = result.second;
 
@@ -183,15 +224,15 @@ namespace Etrek::Application::Service
             logger->LogError("Failed to build main window or delegate.");
             return;
         }
-
     }
 
     void ApplicationService::showMainWindow()
     {
-		if (!m_mainWindowDelegate) {
-			logger->LogError("loading main window failed!");
-			return;
-		}
+        if (!m_mainWindowDelegate) {
+            logger->LogError("Loading main window failed!");
+            return;
+        }
+
         if (!m_mainWindow) {
             logger->LogError("Main window instance is not available for display.");
             return;
@@ -201,10 +242,14 @@ namespace Etrek::Application::Service
         m_mainWindowDelegate->show();
     }
 
-    void ApplicationService::initializeRisConnections(std::function<void(const QString&, int)> progressCallback)
+    void ApplicationService::initializeRisConnections(
+        std::function<void(const QString&, int)> progressCallback)
     {
         logger->LogInfo(translator->getInfoMessage(RIS_START_NETWORK_INIT_MSG));
-        if (progressCallback) progressCallback("Initializing RIS connections...", 20);
+
+        if (progressCallback) {
+            progressCallback("Initializing RIS connections...", 20);
+        }
 
         if (m_risConnectionSettingList.isEmpty()) {
             logger->LogWarning("No RIS connections configured.");
@@ -219,13 +264,17 @@ namespace Etrek::Application::Service
 
         auto worklistRepository = std::make_shared<WorklistRepository>(m_databaseConnectionSetting);
 
-        // Bridge QSharedPointer -> std::shared_ptr while keeping the Qt ref alive.
+        // Bridge QSharedPointer -> std::shared_ptr while keeping the Qt ref alive
         std::shared_ptr<RisConnectionSetting> risStd(
             risQ.data(),
-            [keepAlive = risQ](RisConnectionSetting*) mutable { keepAlive.clear(); } // hold ref
+            [keepAlive = risQ](RisConnectionSetting*) mutable { keepAlive.clear(); }
         );
 
-        m_modalityWorklistManager = new ModalityWorklistManager(worklistRepository, risStd, this);
+        m_modalityWorklistManager = new ModalityWorklistManager(
+            worklistRepository,
+            risStd,
+            this  // Qt parent manages lifetime
+        );
 
         const auto profiles = worklistRepository->getProfiles();
         if (profiles.isSuccess && !profiles.value.isEmpty()) {
@@ -240,47 +289,55 @@ namespace Etrek::Application::Service
         logger->LogInfo(translator->getInfoMessage(RIS_NETWORK_INIT_SUCCEED));
     }
 
-
-    void ApplicationService::intializeAuthentication(std::function<void(const QString&, int)> progressCallback)
+    void ApplicationService::intializeAuthentication(
+        std::function<void(const QString&, int)> progressCallback)
     {
         logger->LogInfo(translator->getInfoMessage(AUTH_START_INIT_AUTH_MSG));
 
         if (progressCallback) {
             progressCallback("Initializing authentication system...", 30);
         }
+
         AuthenticationRepository authRepository(m_databaseConnectionSetting, translator);
-        m_authService = new AuthenticationService(authRepository, m_securityService, this);
+        m_authService = new AuthenticationService(
+            authRepository,
+            m_securityService,
+            this  // Qt parent manages lifetime
+        );
 
         logger->LogInfo(translator->getInfoMessage(AUTH_INIT_AUTH_SUCCEED));
     }
 
-    void ApplicationService::intializeDevices(std::function<void(const QString&, int)> progressCallback)
+    void ApplicationService::intializeDevices(
+        std::function<void(const QString&, int)> progressCallback)
     {
         logger->LogInfo(translator->getInfoMessage(DEV_START_INIT_DEVICE_MSG));
         // TODO: device drivers should be controlled here!
         logger->LogInfo(translator->getInfoMessage(DEV_INIT_DEVICE_SUCCEED));
     }
 
-    bool ApplicationService::initializeDatabase(std::function<void(const QString&, int)> progressCallback)
+    bool ApplicationService::initializeDatabase(
+        std::function<void(const QString&, int)> progressCallback)
     {
         logger->LogInfo(translator->getInfoMessage(DB_START_INIT_MSG));
 
-		if (progressCallback) {
-			progressCallback("Initializing database...", 15);
-		}
+        if (progressCallback) {
+            progressCallback("Initializing database...", 15);
+        }
 
         DatabaseSetupManager initializer(m_databaseConnectionSetting);
         Result<QString> result = initializer.initializeDatabase();
-        if (!result.isSuccess)
+
+        if (!result.isSuccess) {
             return false;
+        }
 
         logger->LogInfo(translator->getInfoMessage(DB_INIT_SUCCESS_MSG));
-
-		return true;
-
+        return true;
     }
 
-    bool ApplicationService::loadSettings(std::function<void(const QString&, int)> progressCallback)
+    bool ApplicationService::loadSettings(
+        std::function<void(const QString&, int)> progressCallback)
     {
         if (progressCallback) {
             progressCallback("Loading settings...", 10);
@@ -288,28 +345,16 @@ namespace Etrek::Application::Service
 
         auto settingProvider = std::make_unique<SettingProvider>();
         bool result = settingProvider->loadSettingsFile("./setting/Settings.json");
-        if(result == false)
-			return false;
+
+        if (!result) {
+            return false;
+        }
 
         m_databaseConnectionSetting = settingProvider->getDatabaseConnectionSettings();
         m_risConnectionSettingList = settingProvider->getRisSettings();
         m_fileLoggerSetting = settingProvider->getFileLoggerSettings();
 
-		return true;
+        return true;
     }
 
-    ApplicationService::~ApplicationService()
-    {
-        if (m_mainWindowDelegate) {
-            m_mainWindowDelegate->deleteLater();
-            m_mainWindowDelegate = nullptr;
-        }
-
-        if (m_mainWindow) {
-            m_mainWindow->close();
-            m_mainWindow.reset();
-        }
-    }
-
-}
-
+} // namespace Etrek::Application::Service

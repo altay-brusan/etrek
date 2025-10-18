@@ -11,9 +11,11 @@
 #include "TechniqueConfigurationWidget.h"
 #include "ScanProtocolRepository.h"
 
-using namespace Etrek::ScanProtocol::Data::Entity;
-using namespace Etrek::ScanProtocol::Repository;
 namespace Etrek::ScanProtocol::Delegate {
+
+    namespace sp = Etrek::ScanProtocol;
+    namespace ent = Etrek::ScanProtocol::Data::Entity;
+    namespace repo = Etrek::ScanProtocol::Repository;
 
     class TechniqueConfigurationDelegate :
         public QObject,
@@ -25,7 +27,7 @@ namespace Etrek::ScanProtocol::Delegate {
 
     public:
         TechniqueConfigurationDelegate(TechniqueConfigurationWidget* widget,
-            std::shared_ptr<ScanProtocolRepository> repo,
+            std::shared_ptr<repo::ScanProtocolRepository> repo,
             QObject* parent = nullptr);
         ~TechniqueConfigurationDelegate() override;
 
@@ -38,14 +40,14 @@ namespace Etrek::ScanProtocol::Delegate {
         void reject() override;
 
         TechniqueConfigurationWidget* m_widget = nullptr; // global-scope class
-        std::shared_ptr<ScanProtocolRepository> m_repo;
+        std::shared_ptr<repo::ScanProtocolRepository> m_repo;
 
         // Cache for diffing deletes:
-        QHash<QString, Etrek::ScanProtocol::Data::Entity::TechniqueParameter> m_lastPersistedByKey;
+        QHash<QString, ent::TechniqueParameter> m_lastPersistedByKey;
 
         static QString makeKey(int bodyPartId,
-            Etrek::ScanProtocol::TechniqueProfile p,
-            Etrek::ScanProtocol::BodySize s);
+            sp::TechniqueProfile p,
+            sp::BodySize s);
         void refreshPersistedCacheFor(int bodyPartId);
         bool saveCurrentBodyPart();
     };

@@ -1,11 +1,13 @@
-#include "LoginDialog.h"
-#include "ui_LoginDialog.h"
 #include <QStringListModel>
 
+#include "LoginDialog.h"
+#include "ui_LoginDialog.h"
+#include "User.h"
+
+using namespace Etrek::Core::Data::Entity;
 
 
-
-LoginDialog::LoginDialog(const QVector<Entity::User>& users, QWidget *parent)
+LoginDialog::LoginDialog(const QVector<User>& users, QWidget *parent)
     : QDialog(parent), ui(new Ui::LoginDialog), m_users(users)
 {
     ui->setupUi(this);
@@ -33,13 +35,13 @@ LoginDialog::LoginDialog(const QVector<Entity::User>& users, QWidget *parent)
     }
 }
 
-std::optional<std::pair<Entity::User, QString>> LoginDialog::getLoginCredentials() const
+std::optional<std::pair<User, QString>> LoginDialog::getLoginCredentials() const
 {
     const int index = ui->userNameComboBox->currentIndex();
     if (index < 0)                 // nothing selected
         return std::nullopt;
 
-    Entity::User  user = ui->userNameComboBox->currentData().value<Entity::User>();
+    User  user = ui->userNameComboBox->currentData().value<User>();
     QString password = ui->passwordLineEdit->text();
 
     return std::make_pair(std::move(user), std::move(password));

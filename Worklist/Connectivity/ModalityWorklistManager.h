@@ -8,28 +8,27 @@
 #include "WorklistRepository.h"
 #include "WorklistQueryService.h"
 #include "WorklistProfile.h"
+#include "RisConnectionSetting.h"
 #include <QElapsedTimer>
-
-using namespace Etrek::Worklist::Repository;
-
 
 namespace Etrek::Worklist::Connectivity
 {
 
+    namespace rep = Etrek::Worklist::Repository;
     class ModalityWorklistManager : public QObject
     {
         Q_OBJECT
 
         public:
-            explicit ModalityWorklistManager(std::shared_ptr<WorklistRepository> repository,
-                std::shared_ptr<RisConnectionSetting> settings,
+            explicit ModalityWorklistManager(std::shared_ptr<rep::WorklistRepository> repository,
+                std::shared_ptr<mdl::RisConnectionSetting> settings,
                 QObject* parent = nullptr);
 
-            void setActiveProfile(const WorklistProfile& profile);
+            void setActiveProfile(const ent::WorklistProfile& profile);
             void changeQueryRisServerPeriod(int period);
             void startWorklistQueryFromRis();
             void stopWorklistQueryFromRis();
-            QList<WorklistEntry> getEntities();
+            QList<ent::WorklistEntry> getEntities();
             ~ModalityWorklistManager();
 
         signals:
@@ -40,17 +39,17 @@ namespace Etrek::Worklist::Connectivity
 			void onAboutToCloseApplication();
 
         private slots:
-            void handleNewQueryResults(const QList<WorklistEntry>& entries);
+            void handleNewQueryResults(const QList<ent::WorklistEntry>& entries);
             void performWorklistQuery();  // Called when the thread is ready or timer ticks
 
         private:
             void prepareQueryService();  // Sets up thread & service safely
 
-            std::shared_ptr<WorklistRepository> m_repository;
-            std::shared_ptr<RisConnectionSetting> settings;
+            std::shared_ptr<rep::WorklistRepository> m_repository;
+            std::shared_ptr<mdl::RisConnectionSetting> settings;
 
             std::unique_ptr<WorklistQueryService> m_queryService;
-            WorklistProfile m_profile;
+            ent::WorklistProfile m_profile;
 
             QThread* m_queryThread = nullptr;
             QTimer* m_echoTimer = nullptr;

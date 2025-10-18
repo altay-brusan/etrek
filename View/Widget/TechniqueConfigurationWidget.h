@@ -11,17 +11,15 @@
 
 namespace Ui { class TechniqueConfigurationWidget; }
 
-using namespace Etrek::ScanProtocol::Data::Entity;
-
 class TechniqueConfigurationWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit TechniqueConfigurationWidget(const QVector<TechniqueParameter>& parameters,
+    explicit TechniqueConfigurationWidget(const QVector<Etrek::ScanProtocol::Data::Entity::TechniqueParameter>& parameters,
         QWidget* parent = nullptr);
     int currentBodyPartId() const;
-    BodyPart currentBodyPart() const;
-    QVector<TechniqueParameter>  collectCurrentBodyPartParameters() const;
+    Etrek::ScanProtocol::Data::Entity::BodyPart currentBodyPart() const;
+    QVector<Etrek::ScanProtocol::Data::Entity::TechniqueParameter>  collectCurrentBodyPartParameters() const;
     ~TechniqueConfigurationWidget();
 
 signals:
@@ -36,8 +34,8 @@ private:
     enum Roles { BodyPartIdRole = Qt::UserRole + 1 };
 
     Ui::TechniqueConfigurationWidget* ui;
-    QVector<TechniqueParameter> m_parameters;
+    QVector<Etrek::ScanProtocol::Data::Entity::TechniqueParameter> m_parameters;
     QStandardItemModel* m_bodyPartModel = nullptr;
-    QHash<int, BodyPart> m_bodyPartById;
+    QHash<int, Etrek::ScanProtocol::Data::Entity::BodyPart> m_bodyPartById;
 };
 #endif // TECHNIQUECONFIGURATIONWIDGET_H

@@ -7,11 +7,8 @@
 #include <QVector>
 #include <QDate>
 #include <QDateTime>
-#include "XRayTube.h"                  
+#include "XRayTube.h"
 #include "DevicePosition.h"
-
-using namespace Etrek::Device::Data::Entity;
-using namespace Etrek::Device;
 
 class TubeTableModel : public QAbstractTableModel {
     Q_OBJECT
@@ -40,8 +37,8 @@ public:
 
     explicit TubeTableModel(QObject* parent = nullptr);
 
-    void setDataSource(const QVector<XRayTube>& tubes);
-    const QVector<XRayTube>& rows() const { return m_rows; }
+    void setDataSource(const QVector<Etrek::Device::Data::Entity::XRayTube>& tubes);
+    const QVector<Etrek::Device::Data::Entity::XRayTube>& rows() const { return m_rows; }
 
     // TubeOrder helpers
     int tubeOrder(int row) const;            // 0 = none, 1 = Tube 1, 2 = Tube 2
@@ -55,7 +52,7 @@ public:
     bool setData(const QModelIndex& idx, const QVariant& value, int role) override;
 
 private:
-    // virtual “TubeOrder” column state (per row)
+    // virtual ï¿½TubeOrderï¿½ column state (per row)
     // values: 0 (none), 1 (Tube 1), 2 (Tube 2)
     QVector<int> m_tubeOrder;
 
@@ -63,7 +60,7 @@ private:
     // if false => show empty for Position and treat as NULL
     QVector<bool> m_hasPosition;
 
-    QVector<XRayTube> m_rows;
+    QVector<Etrek::Device::Data::Entity::XRayTube> m_rows;
 
     // helpers
     static QString devicePositionToDisplay(std::optional<Etrek::Device::DevicePosition> pos);

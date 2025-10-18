@@ -1,11 +1,12 @@
 #ifndef MAINWINDOWDELEGATE_H
 #define MAINWINDOWDELEGATE_H
+#include <QObject>
+#include <memory>
 
 #include "DelegateParameter.h"
 #include "MainWindow.h"
 #include "SystemSettingPageDelegate.h"
-#include <QObject>
-#include <memory>
+
 
 namespace Etrek::Application::Delegate {
 class MainWindowDelegate : public QObject {

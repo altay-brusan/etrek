@@ -1,11 +1,15 @@
-#include "ImageCommentConfigurationWidget.h"
-#include "ui_ImageCommentConfigurationWidget.h"
 
 #include <QComboBox>
 #include <QPlainTextEdit>
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QVariant>
+
+#include "ImageCommentConfigurationWidget.h"
+#include "ui_ImageCommentConfigurationWidget.h"
+#include "ImageComment.h"
+
+using namespace Etrek::Dicom::Data::Entity;
 
 static bool parseIsReject(const QString& s)
 {

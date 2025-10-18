@@ -6,7 +6,9 @@
 
 namespace Etrek::Core::Log {
 
-    AppLogger::AppLogger(const QString& serviceName, LoggerProvider& provider, TranslationProvider* translator)
+	using Etrek::Core::Globalization::TranslationProvider;
+
+    AppLogger::AppLogger(const QString& serviceName, LoggerProvider& provider, glb::TranslationProvider* translator)
 		: m_serviceName(serviceName), m_provider(&provider), translator(translator)
     {
     }

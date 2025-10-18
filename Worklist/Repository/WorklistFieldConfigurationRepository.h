@@ -12,31 +12,32 @@
 
 namespace Etrek::Worklist::Repository
 {
-    using namespace Etrek::Core::Globalization;
-    using namespace Etrek::Core::Log;
-    using namespace Etrek::Core::Data::Model;
-    using namespace Etrek::Worklist::Data::Entity;
-    using Etrek::Specification::Result;
+    namespace spc = Etrek::Specification;
+    namespace ent = Etrek::Worklist::Data::Entity;
+    namespace mdl = Etrek::Core::Data::Model;
+    namespace glob = Etrek::Core::Globalization;
+    namespace lg = Etrek::Core::Log;
+
     class WorklistFieldConfigurationRepository
     {
     public:
-        explicit WorklistFieldConfigurationRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting);
+        explicit WorklistFieldConfigurationRepository(std::shared_ptr<mdl::DatabaseConnectionSetting> connectionSetting);
 
         // Get all field configurations
-        Result<QVector<WorklistFieldConfiguration>> getAll() const;
+        spc::Result<QVector<ent::WorklistFieldConfiguration>> getAll() const;
 
         // Get configuration by field name
-        Result<WorklistFieldConfiguration> getByFieldName(WorklistFieldName fieldName) const;
+        spc::Result<ent::WorklistFieldConfiguration> getByFieldName(WorklistFieldName fieldName) const;
 
         // Update is_enabled for a field
-        Result<bool> updateIsEnabled(WorklistFieldName fieldName, bool isEnabled);
+        spc::Result<bool> updateIsEnabled(WorklistFieldName fieldName, bool isEnabled);
 
     private:
         QSqlDatabase createConnection(const QString& connectionName) const;
 
-        std::shared_ptr<DatabaseConnectionSetting> m_connectionSetting;
-        TranslationProvider* translator;
-        std::shared_ptr<AppLogger> logger;
+        std::shared_ptr<mdl::DatabaseConnectionSetting> m_connectionSetting;
+        glob::TranslationProvider* translator;
+        std::shared_ptr<lg::AppLogger> logger;
     };
 
 }

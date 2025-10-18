@@ -5,10 +5,17 @@
 #include <QDebug>
 #include "AppLoggerFactory.h"
 #include "MessageKey.h"
+#include "DatabaseConnectionSetting.h"
 
 namespace Etrek::Core::Repository {
 
     using Etrek::Specification::Result;
+    using Etrek::Core::Data::Entity::User;
+    using Etrek::Core::Data::Entity::Role;
+    using Etrek::Core::Data::Model::DatabaseConnectionSetting;
+    using Etrek::Core::Globalization::TranslationProvider;
+	using Etrek::Core::Log::AppLoggerFactory;
+	using Etrek::Core::Log::LoggerProvider;
 
     AuthenticationRepository::AuthenticationRepository(std::shared_ptr<DatabaseConnectionSetting> connectionSetting, TranslationProvider* tr)
         : m_connectionSetting(std::move(connectionSetting)),
@@ -32,7 +39,7 @@ namespace Etrek::Core::Repository {
         return db;
     }
 
-    Result<User> AuthenticationRepository::createUser(Entity::User& user)
+    Result<User> AuthenticationRepository::createUser(User& user)
     {
         int newId = -1;
         QString connectionName = "auth_connection_create_user";
@@ -110,7 +117,7 @@ namespace Etrek::Core::Repository {
         return Result<User>::Success(user);
     }
 
-    Result<User> AuthenticationRepository::updateUser(Entity::User& user)
+    Result<User> AuthenticationRepository::updateUser(User& user)
     {
         QString connectionName = "auth_connection_update_user";
 
@@ -220,7 +227,7 @@ namespace Etrek::Core::Repository {
         return Result<User>::Success(user);
     }
 
-    Result<User> AuthenticationRepository::deleteUser(Entity::User& user)
+    Result<User> AuthenticationRepository::deleteUser(User& user)
     {
         QString connectionName = "auth_connection_delete_user";
 
@@ -544,8 +551,8 @@ namespace Etrek::Core::Repository {
         return Result<QVector<User>>::Success(users);
     }
 
-    Result<QVector<Entity::Role>> AuthenticationRepository::getAllRoles() const {
-        QVector<Entity::Role> roles;
+    Result<QVector<Role>> AuthenticationRepository::getAllRoles() const {
+        QVector<Role> roles;
         QString connectionName = "auth_connection_get_all_roles";
 
         QString err;
@@ -563,7 +570,7 @@ namespace Etrek::Core::Repository {
                 }
                 else {
                     while (query.next()) {
-                        Entity::Role role;
+                        Role role;
                         role.Id = query.value("id").toInt();
                         role.Name = query.value("name").toString();
                         roles.append(role);
@@ -574,8 +581,8 @@ namespace Etrek::Core::Repository {
         }
 
         QSqlDatabase::removeDatabase(connectionName);
-        if (!ok) return Result<QVector<Entity::Role>>::Failure(err);
-        return Result<QVector<Entity::Role>>::Success(roles);
+        if (!ok) return Result<QVector<Role>>::Failure(err);
+        return Result<QVector<Role>>::Success(roles);
     }
 
 

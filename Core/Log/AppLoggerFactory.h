@@ -7,6 +7,7 @@
 
 namespace  Etrek::Core::Log {
 
+	namespace glb = Etrek::Core::Globalization;
     /**
      * @class AppLoggerFactory
      * @brief Factory for creating application-specific loggers.
@@ -25,7 +26,7 @@ namespace  Etrek::Core::Log {
          * @brief Constructs the factory with a reference to a LoggerProvider.
          * @param provider Reference to the logger provider.
          */
-        explicit AppLoggerFactory(LoggerProvider& provider,TranslationProvider* translator);
+        explicit AppLoggerFactory(LoggerProvider& provider,glb::TranslationProvider* translator);
 
         /**
          * @brief Creates an AppLogger for the specified service.
@@ -36,7 +37,7 @@ namespace  Etrek::Core::Log {
 
     private:
         LoggerProvider& m_provider;
-		TranslationProvider* translator;
+		glb::TranslationProvider* translator;
 
     };
 

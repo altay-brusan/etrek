@@ -9,6 +9,7 @@
 
 namespace  Etrek::Core::Log{
 
+    namespace glb = Etrek::Core::Globalization;
     /**
      * @class AppLogger
      * @brief Facade for application-level logging.
@@ -29,7 +30,7 @@ namespace  Etrek::Core::Log{
          * @param provider Reference to the LoggerProvider.
          * @param translator Reference to the translator.
          */
-        AppLogger(const QString& serviceName, LoggerProvider& provider, TranslationProvider* translator);
+        AppLogger(const QString& serviceName, LoggerProvider& provider, glb::TranslationProvider* translator);
 
         /**
          * @brief Logs a message at the specified log level.
@@ -71,7 +72,7 @@ namespace  Etrek::Core::Log{
 
     private:
         QString m_serviceName;
-		TranslationProvider* translator = nullptr; // Pointer to the translation provider for localized messages
+		glb::TranslationProvider* translator = nullptr; // Pointer to the translation provider for localized messages
         LoggerProvider* m_provider = nullptr;
     };
 

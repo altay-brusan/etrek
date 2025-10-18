@@ -1,7 +1,10 @@
 #include "AppLoggerFactory.h"
 
 namespace Etrek::Core::Log {
-    AppLoggerFactory::AppLoggerFactory(LoggerProvider& provider, TranslationProvider* translator)
+
+	using Etrek::Core::Globalization::TranslationProvider;
+
+    AppLoggerFactory::AppLoggerFactory(LoggerProvider& provider, glb::TranslationProvider* translator)
 		:m_provider(provider), translator(translator)
     {
     }

@@ -7,7 +7,7 @@
 namespace Ui {
 class ExposureDetailWidget;
 }
-using namespace Etrek::ScanProtocol::Data::Entity;
+
 class ExposureDetailWidget : public QWidget
 {
     Q_OBJECT
