@@ -1,12 +1,13 @@
 #ifndef SYSTEMSETTINGPAGEDELEGATE_H
 #define SYSTEMSETTINGPAGEDELEGATE_H
 
-#include "IDelegate.h"
-#include "IPageAction.h"
-#include "SystemSettingPage.h"
 #include <QObject>
 #include <QPointer>
 #include <memory>
+#include "IDelegate.h"
+#include "IPageAction.h"
+#include "SystemSettingPage.h"
+
 
 namespace Etrek::Application::Delegate {
 class SystemSettingPageDelegate : public QObject,
