@@ -13,9 +13,6 @@
 
 namespace Etrek::Core::Log {
 
-    namespace spc = Etrek::Specification;
-    namespace glob = Etrek::Core::Globalization;
-
     /**
      * @class LoggerProvider
      * @brief Provides file-based logging services for the application.
@@ -43,7 +40,7 @@ namespace Etrek::Core::Log {
          * @param translationProvider Pointer to the translation provider for error messages.
          * @return Result indicating success or failure with a message.
          */
-        spc::Result<QString> InitializeFileLogger(const QString& logDir, size_t fileSizeMB, size_t fileCount, glob::TranslationProvider* translationProvider);
+        Etrek::Specification::Result<QString> InitializeFileLogger(const QString& logDir, size_t fileSizeMB, size_t fileCount, Etrek::Core::Globalization::TranslationProvider* translationProvider);
 
         /**
          * @brief Retrieves a file logger for the specified service.
@@ -64,7 +61,7 @@ namespace Etrek::Core::Log {
 
         QReadWriteLock lock;
         QString m_logDirectory;
-        glob::TranslationProvider* translator; // non-owning, must outlive LoggerProvider
+        Etrek::Core::Globalization::TranslationProvider* translator; // non-owning, must outlive LoggerProvider
         size_t m_fileSizeBytes = 1 * 1024 * 1024;
         size_t m_fileCount = 5;
         QMap<QString, std::shared_ptr<spdlog::logger>> m_loggerMap;

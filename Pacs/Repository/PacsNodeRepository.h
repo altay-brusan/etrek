@@ -17,22 +17,16 @@
 
 namespace Etrek::Pacs::Repository {
 
-    namespace spc = Etrek::Specification;
-    namespace ent = Etrek::Pacs::Data::Entity;
-    namespace mdl = Etrek::Core::Data::Model;
-    namespace glob = Etrek::Core::Globalization;
-    namespace lg = Etrek::Core::Log;
-    using namespace Etrek::Pacs::Repository;
     class PacsNodeRepository
     {
     public:
-        explicit PacsNodeRepository(std::shared_ptr<mdl::DatabaseConnectionSetting> connectionSetting);
+        explicit PacsNodeRepository(std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> connectionSetting);
 
-        spc::Result<ent::PacsNode> addPacsNode(const ent::PacsNode& node) const;
-        spc::Result<bool>     removePacsNode(const ent::PacsNode& node) const;
-        spc::Result<ent::PacsNode> updatePacsNode(const ent::PacsNode& node) const;
+        Etrek::Specification::Result<Etrek::Pacs::Data::Entity::PacsNode> addPacsNode(const Etrek::Pacs::Data::Entity::PacsNode& node) const;
+        Etrek::Specification::Result<bool>     removePacsNode(const Etrek::Pacs::Data::Entity::PacsNode& node) const;
+        Etrek::Specification::Result<Etrek::Pacs::Data::Entity::PacsNode> updatePacsNode(const Etrek::Pacs::Data::Entity::PacsNode& node) const;
 
-        QVector<ent::PacsNode> getPacsNodes() const;
+        QVector<Etrek::Pacs::Data::Entity::PacsNode> getPacsNodes() const;
 
         ~PacsNodeRepository() = default;
 
@@ -43,9 +37,9 @@ namespace Etrek::Pacs::Repository {
         static QString toEntityTypeString(PacsEntityType t);  // "Archive"/"MPPS"
         static PacsEntityType parseEntityTypeString(const QString& s);
 
-        std::shared_ptr<mdl::DatabaseConnectionSetting> m_connectionSetting;
-        glob::TranslationProvider* translator = nullptr;
-        std::shared_ptr<lg::AppLogger> logger;
+        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> m_connectionSetting;
+        Etrek::Core::Globalization::TranslationProvider* translator = nullptr;
+        std::shared_ptr<Etrek::Core::Log::AppLogger> logger;
     };
 
 } // namespace Etrek::Pacs::Repository

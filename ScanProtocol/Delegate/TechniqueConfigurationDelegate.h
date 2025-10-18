@@ -13,7 +13,6 @@
 
 namespace Etrek::ScanProtocol::Delegate {
 
-    namespace sp = Etrek::ScanProtocol;
     namespace ent = Etrek::ScanProtocol::Data::Entity;
     namespace repo = Etrek::ScanProtocol::Repository;
 
@@ -43,11 +42,11 @@ namespace Etrek::ScanProtocol::Delegate {
         std::shared_ptr<repo::ScanProtocolRepository> m_repo;
 
         // Cache for diffing deletes:
-        QHash<QString, ent::TechniqueParameter> m_lastPersistedByKey;
+        QHash<QString, Etrek::ScanProtocol::Data::Entity::TechniqueParameter> m_lastPersistedByKey;
 
         static QString makeKey(int bodyPartId,
-            sp::TechniqueProfile p,
-            sp::BodySize s);
+            Etrek::ScanProtocol::TechniqueProfile p,
+            Etrek::ScanProtocol::BodySize s);
         void refreshPersistedCacheFor(int bodyPartId);
         bool saveCurrentBodyPart();
     };

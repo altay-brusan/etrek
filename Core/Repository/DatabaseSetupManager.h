@@ -11,11 +11,6 @@
 
 namespace Etrek::Core::Repository {
 
-    namespace spc = Etrek::Specification;
-    namespace mdl = Etrek::Core::Data::Model;
-    namespace glob = Etrek::Core::Globalization;
-    namespace lg = Etrek::Core::Log;
-
     /**
      * @class DatabaseSetupManager
      * @brief Manages the initialization and setup of the database.
@@ -31,7 +26,7 @@ namespace Etrek::Core::Repository {
          * @brief Constructs a DatabaseSetupManager with the given connection settings.
          * @param connectionSetting Shared pointer to the database connection settings.
          */
-        explicit DatabaseSetupManager(std::shared_ptr<mdl::DatabaseConnectionSetting> connectionSetting);
+        explicit DatabaseSetupManager(std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> connectionSetting);
 
         /**
          * @brief Initializes the database using the provided setup script file.
@@ -39,14 +34,14 @@ namespace Etrek::Core::Repository {
          *        If nullptr, a default resource script will be used.
          * @return Result containing a success or error message.
          */
-        spc::Result<QString> initializeDatabase(std::unique_ptr<QFile> setupScript = nullptr);
+        Etrek::Specification::Result<QString> initializeDatabase(std::unique_ptr<QFile> setupScript = nullptr);
 
         /**
          * @brief Initializes the database using the setup script at the given file path.
          * @param setupScriptPath Path to the SQL setup script file.
          * @return Result containing a success or error message.
          */
-        spc::Result<QString> initializeDatabase(const QString& setupScriptPath);
+        Etrek::Specification::Result<QString> initializeDatabase(const QString& setupScriptPath);
 
     private:
         /**
@@ -62,7 +57,7 @@ namespace Etrek::Core::Repository {
          *        If nullptr, a default resource script will be used.
          * @return Result containing a success or error message.
          */
-        spc::Result<QString> runSetupScript(QSqlDatabase& db, std::unique_ptr<QFile> setupScript = nullptr);
+        Etrek::Specification::Result<QString> runSetupScript(QSqlDatabase& db, std::unique_ptr<QFile> setupScript = nullptr);
 
         /**
          * @brief Creates a new database connection with the specified database and connection name.
@@ -75,17 +70,17 @@ namespace Etrek::Core::Repository {
         /**
          * @brief Pointer to the translation provider for localized messages (non-owning).
          */
-        glob::TranslationProvider* translator;
+        Etrek::Core::Globalization::TranslationProvider* translator;
 
         /**
          * @brief Shared pointer to the application logger.
          */
-        std::shared_ptr<lg::AppLogger> logger;
+        std::shared_ptr<Etrek::Core::Log::AppLogger> logger;
 
         /**
          * @brief Shared pointer to the database connection settings.
          */
-        std::shared_ptr<mdl::DatabaseConnectionSetting> m_connectionSetting;
+        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> m_connectionSetting;
     };
 
 } // namespace Etrek::Core::Repository

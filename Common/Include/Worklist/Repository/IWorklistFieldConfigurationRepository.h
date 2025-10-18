@@ -10,21 +10,18 @@
 namespace Etrek::Worklist::Repository
 {
 
-    namespace spc = Etrek::Specification;
-    namespace ent = Etrek::Worklist::Data::Entity;
-
     class IWorklistFieldConfigurationRepository
     {
     public:
 
         // Get all field configurations
-        virtual spc::Result<QVector<ent::WorklistFieldConfiguration>> getAll() const = 0;
+        virtual Etrek::Specification::Result<QVector<Etrek::Worklist::Data::Entity::WorklistFieldConfiguration>> getAll() const = 0;
 
         // Get configuration by field name
-        virtual spc::Result<ent::WorklistFieldConfiguration> getByFieldName(ent::WorklistFieldName fieldName) const = 0;
+        virtual Etrek::Specification::Result<Etrek::Worklist::Data::Entity::WorklistFieldConfiguration> getByFieldName(Etrek::Worklist::Data::Entity::WorklistFieldName fieldName) const = 0;
 
         // Update is_enabled for a field
-        virtual spc::Result<bool> updateIsEnabled(ent::WorklistFieldName fieldName, bool isEnabled) = 0;
+        virtual Etrek::Specification::Result<bool> updateIsEnabled(Etrek::Worklist::Data::Entity::WorklistFieldName fieldName, bool isEnabled) = 0;
 
     };
 

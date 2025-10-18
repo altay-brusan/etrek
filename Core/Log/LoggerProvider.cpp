@@ -9,10 +9,12 @@
 #include "LogLevel.h"
 
 
+
 namespace Etrek::Core::Log {
 
     using Etrek::Specification::Result;
 	using Etrek::Core::Globalization::TranslationProvider;
+
     LoggerProvider& LoggerProvider::Instance()
     {
         static LoggerProvider instance;
@@ -22,7 +24,7 @@ namespace Etrek::Core::Log {
     LoggerProvider::LoggerProvider()
     {}
 
-    Result<QString> LoggerProvider::InitializeFileLogger(const QString& logDir, size_t fileSizeMB, size_t fileCount, glob::TranslationProvider* translator)
+    Result<QString> LoggerProvider::InitializeFileLogger(const QString& logDir, size_t fileSizeMB, size_t fileCount, TranslationProvider* translator)
     {
         if(fileSizeMB > 1)
         {

@@ -11,8 +11,6 @@
 
 namespace Etrek::Core::Setting {
 
-    namespace mdl = Etrek::Core::Data::Model;
-
     /**
     *  @file SettingProvider.h
     *  @brief Declaration of the SettingProvider class for managing application settings.
@@ -54,24 +52,24 @@ namespace Etrek::Core::Setting {
         *   @brief Retrieves the current database connection settings.
         *   @return A shared pointer to the current DatabaseConnectionSetting.
         */
-        std::shared_ptr<mdl::DatabaseConnectionSetting> getDatabaseConnectionSettings() const;
+        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> getDatabaseConnectionSettings() const;
 
         /**
         *  @brief Retrieves the current file logger settings.
         *  @return A shared pointer to the current FileLoggerSetting.
         */
-        std::shared_ptr<mdl::FileLoggerSetting> getFileLoggerSettings() const;
+        std::shared_ptr<Etrek::Core::Data::Model::FileLoggerSetting> getFileLoggerSettings() const;
 
         /**
         *  @brief Retrieves the current RIS connection settings.
         *  @return A QVector of shared pointers to the current RisConnectionSetting.
         */
-        QVector<QSharedPointer<mdl::RisConnectionSetting>> getRisSettings() const;
+        QVector<QSharedPointer<Etrek::Core::Data::Model::RisConnectionSetting>> getRisSettings() const;
 
     private:
-        std::shared_ptr<mdl::DatabaseConnectionSetting> m_databaseSetting; ///< Database connection settings
-        std::shared_ptr<mdl::FileLoggerSetting> m_fileLoggerSetting; ///< File logger settings
-        QVector<QSharedPointer<mdl::RisConnectionSetting>> m_risSetting; ///< RIS connection settings
+        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> m_databaseSetting; ///< Database connection settings
+        std::shared_ptr<Etrek::Core::Data::Model::FileLoggerSetting> m_fileLoggerSetting; ///< File logger settings
+        QVector<QSharedPointer<Etrek::Core::Data::Model::RisConnectionSetting>> m_risSetting; ///< RIS connection settings
     };
 }
 

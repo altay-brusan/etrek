@@ -5,17 +5,22 @@
 #include "MappingProfile.h"
 #include "DicomTag.h"
 
-using namespace Etrek::Worklist::Data::Entity;
+
 
 namespace Etrek::Worklist::Connectivity
 {
+    using namespace Etrek::Worklist::Data::Entity;
+	using namespace Etrek::Core::Globalization;
+	using namespace Etrek::Core::Log;
+	using namespace Etrek::Core::Data::Model;
+	using namespace Etrek::Specification;
 
     WorklistQueryService::WorklistQueryService(QObject* parent)
         : QObject(parent)
     {
 
-        translator = &glob::TranslationProvider::Instance();
-        lg::AppLoggerFactory factory(lg::LoggerProvider::Instance(), translator);
+        translator = &TranslationProvider::Instance();
+        AppLoggerFactory factory(LoggerProvider::Instance(), translator);
 
         logger = factory.CreateLogger("WorklistQueryService");
 
@@ -57,7 +62,7 @@ namespace Etrek::Worklist::Connectivity
         m_presentationContext = context;
     }
 
-    void WorklistQueryService::setSettings(std::shared_ptr<mdl::RisConnectionSetting> settings)
+    void WorklistQueryService::setSettings(std::shared_ptr<RisConnectionSetting> settings)
     {
         m_settings = settings;
         setupTheConnectionParameters();
