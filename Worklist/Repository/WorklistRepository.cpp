@@ -492,7 +492,7 @@ namespace Etrek::Worklist::Repository {
             selectIds.bindValue(":beforeDate", beforeDate);
 
             if (!selectIds.exec()) {
-                QString error = "Failed to fetch IDs before deletion: " + selectIds.lastError().text();
+                QString error = translator->getErrorMessage(DB_FETCH_IDS_BEFORE_DELETE_FAILED_ERROR).arg(selectIds.lastError().text());
                 logger->LogError(error);
                 qDebug() << error;
                 return Result<bool>::Failure(error);
@@ -531,7 +531,10 @@ namespace Etrek::Worklist::Repository {
             }
 
             if (!db.commit()) {
-                return Result<bool>::Failure("Failed to commit transaction");
+                QString error = translator->getErrorMessage(DB_COMMIT_TRANSACTION_FAILED_ERROR).arg(db.lastError().text());
+                logger->LogError(error);
+                qDebug() << error;
+                return Result<bool>::Failure(error);
             }
         }
 
@@ -766,7 +769,8 @@ namespace Etrek::Worklist::Repository {
         }
 
         QSqlDatabase::removeDatabase(connName);
-        return Result<QString>::Success("Status updated");
+        QString success = translator->getInfoMessage(MWL_ENTRY_UPDATE_SUCCEED_MSG);
+        return Result<QString>::Success(success);
     }
 
     Result<int> WorklistRepository::createWorklistEntry(const  WorklistEntry& entry) {
@@ -785,7 +789,10 @@ namespace Etrek::Worklist::Repository {
             }
 
             if (!db.transaction()) {
-                return Result<int>::Failure("Failed to start transaction: " + db.lastError().text());
+                QString error = translator->getErrorMessage(MWL_FAILED_TO_START_TRANSACTION_MSG).arg(db.lastError().text());
+                logger->LogError(error);
+                qDebug()<<error;
+                return Result<int>::Failure(error);
             }
 
             // Insert worklist entry
@@ -802,8 +809,10 @@ namespace Etrek::Worklist::Repository {
 
             if (!query.exec()) {
                 db.rollback();
-                QString error = query.lastError().text();
-                return Result<int>::Failure("Insert failed: " + error);
+                QString error = translator->getErrorMessage(DB_INSERT_FAILED_ERROR).arg(query.lastError().text());
+                logger->LogError(error);
+                qDebug()<<error;
+                return Result<int>::Failure(error);
             }
 
             newId = query.lastInsertId().toInt();
@@ -823,8 +832,10 @@ namespace Etrek::Worklist::Repository {
 
                     if (!attrQuery.exec()) {
                         db.rollback();
-                        QString error = query.lastError().text();
-                        return Result<int>::Failure("Insert attribute failed: " + error);
+                        QString error = translator->getErrorMessage(DB_INSERT_ATTRIBUTE_FAILED_ERROR).arg(attrQuery.lastError().text());
+                        logger->LogError(error);
+                        qDebug()<<error;
+                        return Result<int>::Failure(error);
                     }
                 }
             }
@@ -912,10 +923,10 @@ namespace Etrek::Worklist::Repository {
 
                     if (!attrQuery.exec()) {
                         db.rollback();
-                        QString error = translator->getErrorMessage(MWL_FAILED_TO_INSERT_ATTRIBUTES_MSG).arg(attrQuery.lastError().text());
+                        QString error = translator->getErrorMessage(DB_INSERT_ATTRIBUTE_FAILED_ERROR).arg(attrQuery.lastError().text());
                         logger->LogError(error);
                         qDebug()<<error;
-                        return Result<int>::Failure("Insert attribute failed: " + error);
+                        return Result<int>::Failure(error);
                     }
                 }
             }
@@ -956,7 +967,7 @@ namespace Etrek::Worklist::Repository {
 
         // If no active identifier tags were found for the entry, return empty result
         if (tagIdToValue.isEmpty()) {
-            QString warning = translator->getWarningMessage(MWL_FAILED_TO_FIND_ACTIVE_IDENTIFIER_FOR_ENTRY_MSG);
+            QString warning = translator->getWarningMessage(MWL_NO_ACTIVE_IDENTIFIER_FOUND_FOR_ENTRY_MSG);
             logger->LogError(warning);
             qDebug()<<warning;
             return Result< WorklistEntry>::Failure(warning);
@@ -988,10 +999,10 @@ namespace Etrek::Worklist::Repository {
         // Get active identifiers tags for profile
         auto activeTagsResult = getActiveIdentifierTags(profile.Id);
         if (!activeTagsResult.isSuccess) {
-            QString error = translator->getWarningMessage(MWL_FAILED_TO_GET_ACTIVE_IDENTIFIERS_MSG).arg(activeTagsResult.message);
+            QString error = translator->getErrorMessage(MWL_FAILED_TO_GET_ACTIVE_IDENTIFIERS_MSG).arg(activeTagsResult.message);
             logger->LogError(error);
             qDebug()<<error;
-            return Result< WorklistEntry>::Failure("Failed to get active identifier tags");
+            return Result< WorklistEntry>::Failure(error);
         }
 
         // Build tagId to value map for provided entry only for active identifier tags
@@ -1005,7 +1016,7 @@ namespace Etrek::Worklist::Repository {
 
         // If no active identifier tags were found for the entry, return empty result
         if (tagIdToValue.isEmpty()) {
-            QString warning = translator->getWarningMessage(MWL_FAILED_TO_FIND_ACTIVE_IDENTIFIER_FOR_ENTRY_MSG);
+            QString warning = translator->getWarningMessage(MWL_NO_ACTIVE_IDENTIFIER_FOUND_FOR_ENTRY_MSG);
             logger->LogError(warning);
             qDebug()<<warning;
             return Result< WorklistEntry>::Failure(warning);
@@ -1166,7 +1177,10 @@ namespace Etrek::Worklist::Repository {
 
     Result<int> WorklistRepository::findWorklistEntryByIdentifiers(int profileId, const QMap<int, QString>& tagIdToValue) const {
         if (tagIdToValue.isEmpty()) {
-            return Result<int>::Failure("No identifiers provided");
+            QString error = translator->getErrorMessage(DB_NO_IDENTIFIERS_PROVIDED_ERROR);
+            logger->LogError(error);
+            qDebug()<<error;
+            return Result<int>::Failure(error);
         }
 
         QString connName = "conn_find_entry_" + QString::number(QRandomGenerator::global()->generate());
