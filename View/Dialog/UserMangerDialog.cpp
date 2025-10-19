@@ -132,7 +132,7 @@ void UserMangerDialog::onAddUserBtnClicked()
     QString password = ui->passwordLineEdit->text();
     QString confirmPassword = ui->confirmPasswordLineEdit->text();
 
-    QString messageBoxTitle = translator->getWarningMessage(AUTH_VALIDIATION_FAILED_TITLE_MSG);
+    QString messageBoxTitle = translator->getWarningMessage(AUTH_VALIDATION_FAILED_TITLE_MSG);
 
     if (username.isEmpty()) {
         QString warningMessage = translator->getWarningMessage(AUTH_EMPTY_USER_NAME_WARNING_MSG);
@@ -203,7 +203,7 @@ void UserMangerDialog::onUserCreated(const User& user)
 {
     // Show success message
     QString infoMessage = translator->getInfoMessage(AUTH_USER_CREATION_SUCCEED_MSG).arg(user.Username);
-    QString messageBoxTitle = translator->getInfoMessage(AUTH_USER_CREATION_SUCCEED_TITLE_MSG);
+    QString messageBoxTitle = translator->getInfoMessage(AUTH_USER_CREATION_SUCCEEDED_TITLE_MSG);
     QMessageBox::information(this, messageBoxTitle, infoMessage);
 
     // Clear input fields
@@ -316,7 +316,7 @@ void UserMangerDialog::onUserUpdated(const User& user)
 {
     // Show success message
     QString infoMessage = translator->getInfoMessage(AUTH_USER_UPDATE_SUCCEED_MSG).arg(user.Username);
-    QString messageBoxTitle = translator->getInfoMessage(AUTH_USER_UPDATE_SUCCEED_TITLE_MSG);
+    QString messageBoxTitle = translator->getInfoMessage(AUTH_USER_UPDATE_SUCCEEDED_TITLE_MSG);
     QMessageBox::information(this, messageBoxTitle, infoMessage);
 
     // Clear input fields
@@ -380,7 +380,7 @@ void UserMangerDialog::onUserDeleted(const User& user)
 {
     // Show success message
     QString infoMessage = translator->getInfoMessage(AUTH_USER_DELETE_SUCCEED_MSG).arg(user.Username);
-    QString messageBoxTitle = translator->getInfoMessage(AUTH_USER_DELETE_SUCCEED_TITLE_MSG);
+    QString messageBoxTitle = translator->getInfoMessage(AUTH_USER_DELETE_SUCCEEDED_TITLE_MSG);
     QMessageBox::information(this, messageBoxTitle, infoMessage);
 
     // Find user in m_activeUsers and remove
@@ -416,7 +416,7 @@ void UserMangerDialog::onUserDeleted(const User& user)
 void UserMangerDialog::onUserDeletionFailed(const User& user,QString& failReason)
 {
     QString infoMessage = translator->getErrorMessage(AUTH_USER_DELETE_FAILED_ERROR).arg(user.Username).arg(failReason);
-    QString messageBoxTitle = translator->getInfoMessage(AUTH_USER_DELETE_SUCCEED_TITLE_MSG);
+    QString messageBoxTitle = translator->getInfoMessage(AUTH_USER_DELETE_SUCCEEDED_TITLE_MSG);
     QMessageBox::information(this, messageBoxTitle, infoMessage);
 
 }
