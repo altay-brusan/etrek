@@ -30,7 +30,7 @@ public:
 
 signals:
 	void LoadSystemPageAction();
-	void LoadWorklistPage();
+	void LoadWorklistPageAction();
 	void LoadExamPage();
 	void LoadViewPage();
 	void LoadOutputPage();

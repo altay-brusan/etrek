@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget* parent)
         emit LoadSystemPageAction();
         });
     connect(ui->actionLoadWorklist, &QAction::triggered, this, [this]() {
-        emit LoadWorklistPage();
+        emit LoadWorklistPageAction();
         });
     connect(ui->actionLoadExamPage, &QAction::triggered, this, [this]() {
         emit LoadExamPage();

@@ -1,8 +1,10 @@
 #include "WorkListConfigurationBuilder.h"
 #include "WorklistRepository.h"
 
-using namespace Etrek::Worklist::Repository;
+
 namespace Etrek::Worklist::Delegate {
+    
+    using namespace Etrek::Worklist::Repository;
 
     WorkListConfigurationBuilder::WorkListConfigurationBuilder()
     {

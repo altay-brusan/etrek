@@ -33,6 +33,9 @@ namespace Etrek::Worklist::Delegate {
         void attachDelegates(const QVector<QObject*>& delegates) override;
 
 		~WorkListPageDelegate();
+    
+    signals:
+        void closeWorklist();
 
     private slots:
         void onFilterDateRangeChanged(const DateTimeSpan& date);
@@ -50,6 +53,7 @@ namespace Etrek::Worklist::Delegate {
         void onSearchPatientDate(const QDate& acquisionNo);
         void onSearchStudyId(const QString& studyId);
 
+		
 
     private:
         void applyFilters();

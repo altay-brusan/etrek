@@ -6,6 +6,7 @@
 #include "DelegateParameter.h"
 #include "MainWindow.h"
 #include "SystemSettingPageDelegate.h"
+#include "WorkListPageDelegate.h"
 
 
 namespace Etrek::Application::Delegate {
@@ -24,10 +25,12 @@ signals:
   void aboutToClose();
 
 private slots:
-  void onLoadSystemPageAction();
+    void onLoadSystemPageAction();
+    void onLoadWorklistPageAction();
 
 private:
-  SystemSettingPageDelegate *m_systemSettingPageDelegate{nullptr};
+    SystemSettingPageDelegate* m_systemSettingPageDelegate{ nullptr };
+    Etrek::Worklist::Delegate::WorkListPageDelegate *m_worklistPageDelegate{nullptr};
   MainWindow *m_mainWindow{nullptr};
   DelegateParameter m_params;
 };

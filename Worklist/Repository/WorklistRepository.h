@@ -14,6 +14,7 @@
 #include "WorklistProfile.h"
 #include "TranslationProvider.h"
 #include "AppLogger.h"
+#include "IWorklistRepository.h"
 
 namespace Etrek::Worklist::Repository {
 
@@ -26,7 +27,7 @@ namespace Etrek::Worklist::Repository {
      * It supports querying by profile, status, source, and time, and provides signals for entry changes.
      * Logging and translation support are integrated for error handling and diagnostics.
      */
-    class WorklistRepository : public QObject {
+    class WorklistRepository final : public IWorklistRepository {
         Q_OBJECT
 
     public:
