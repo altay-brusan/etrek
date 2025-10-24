@@ -37,6 +37,7 @@ private:
 
     void clearAllFilterBtnClicked();
     void clearAllSearchBtnClicked();
+    void setStile();
     Ui::WorkListPage *ui;
 };
 

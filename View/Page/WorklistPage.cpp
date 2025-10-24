@@ -12,6 +12,7 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
     , ui(new Ui::WorkListPage)
 {
     ui->setupUi(this);
+    setStile();
 
     auto emitDateSpan = [this]() {
         DateTimeSpan span;
@@ -68,6 +69,83 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
             });
                
 }
+
+void WorkListPage::setStile()
+{
+    const char* lineCss =
+        "QLineEdit {"
+        "  border:1px solid rgb(120,120,120); border-radius:4px;"
+        "  background:rgb(74,74,74); min-height:20px; padding:2px 6px; }"
+        "QLineEdit:focus { border-color: rgb(160,160,160); }";
+
+    const char* dateCss =
+        "QDateEdit {"
+        "  border:1px solid rgb(120,120,120); border-radius:4px;"
+        "  background:rgb(74,74,74); min-height:20px; padding:2px 6px; }"
+        "QDateEdit:focus { border-color: rgb(160,160,160); }"
+        "QDateEdit::drop-down { width:20px; border-left:1px solid rgb(120,120,120); margin:0; }";
+
+    const char* tabCss =
+        "QTabBar::tab { "
+        "background-color: rgb(83, 83, 83); "
+        "color: rgb(208, 208, 208); "
+        "} "
+        "QTabBar::tab:selected { "
+        "background-color: rgb(60, 60, 60); "
+        "color: rgb(255, 255, 255); "
+        "}";
+
+    const char* buttonCss =
+        "QPushButton {"
+        "  border:1px solid rgb(120,120,120);"
+        "  border-radius:4px;"
+        "  background:rgb(74,74,74);"
+        "  min-height:20px;"
+        "  padding:4px 12px;"
+        "  color: rgb(230,230,230);"
+        "}"
+        "QPushButton:hover { border-color: rgb(160,160,160); background:rgb(92,92,92); }"
+        "QPushButton:pressed { background:rgb(64,64,64); }"
+        "QPushButton:focus { border-color: rgb(180,180,180); }"
+        "QPushButton:disabled { border-color: rgb(80,80,80); background:rgb(60,60,60); color: rgb(130,130,130); }";
+
+    const char* groupCss =
+        "QGroupBox {"
+        "  border:1px solid rgb(120,120,120); border-radius:6px; margin-top:18px; }"
+        "QGroupBox::title { subcontrol-origin: margin; left:10px; padding:0 6px; }";
+
+    const char* tableCss =
+        "QTableView {"
+        "  border:1px solid rgb(120,120,120);"
+        "  border-radius:4px;"
+        "  background: rgb(54,54,54);"
+        "  gridline-color: rgb(80,80,80);"
+        "  selection-background-color: rgb(92,92,92);"
+        "}"
+        "QHeaderView::section { background: rgb(64,64,64); padding:4px; border:1px solid rgb(90,90,90); }";
+
+    // Apply guarded (pointer-checked) to avoid crashes if UI changed
+    if (ui->filterSourceLineEdit) ui->filterSourceLineEdit->setStyleSheet(lineCss);
+    if (ui->searchNameLineEdit) ui->searchNameLineEdit->setStyleSheet(lineCss);
+    if (ui->searchPatientIdLineEdit) ui->searchPatientIdLineEdit->setStyleSheet(lineCss);
+    if (ui->searchAcquisionNoLineEdit) ui->searchAcquisionNoLineEdit->setStyleSheet(lineCss);
+    if (ui->searchStudyIdTextEdit) ui->searchStudyIdTextEdit->setStyleSheet(lineCss);
+
+    if (ui->filterStartDateEdit) ui->filterStartDateEdit->setStyleSheet(dateCss);
+    if (ui->filterDueDateEdit) ui->filterDueDateEdit->setStyleSheet(dateCss);
+    if (ui->searchPatientBirthDateDateEdit) ui->searchPatientBirthDateDateEdit->setStyleSheet(dateCss);
+
+    if (ui->clearAllFilterFieldsBtn) ui->clearAllFilterFieldsBtn->setStyleSheet(buttonCss);
+    if (ui->clearAllSearchFieldsBtn) ui->clearAllSearchFieldsBtn->setStyleSheet(buttonCss);
+
+    if (ui->tableViewWorklist) ui->tableViewWorklist->setStyleSheet(tableCss);
+	if (ui->tabWidgetQueueList) ui->tabWidgetQueueList->setStyleSheet(tabCss);
+	
+    if (ui->filterGroupBox) ui->filterGroupBox->setStyleSheet(groupCss);
+    if (ui->searchGroupBox) ui->searchGroupBox->setStyleSheet(groupCss);
+    if (ui->worklistGroupBox) ui->worklistGroupBox->setStyleSheet(groupCss);
+}
+
 
 void WorkListPage::setProxyModel(QPointer<QStandardItemModel> proxyModel)
 {
