@@ -33,6 +33,9 @@ namespace Etrek::Worklist::Delegate
         connect(ui, &WorkListPage::searchPatientDate, this, &WorkListPageDelegate::onSearchPatientDate);
         connect(ui, &WorkListPage::searchStudyId, this, &WorkListPageDelegate::onSearchStudyId);
 
+        connect(ui, &WorkListPage::closeWorklistPage, this, [this]() {
+            if (this->ui) this->closeWorklist();
+            });
 
         // connect(repository.get(), &WorklistRepository::worklistEntryCreated,
         //     this, &WorkListPageDelegate::onEntryCreated);

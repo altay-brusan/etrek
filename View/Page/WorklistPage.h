@@ -18,6 +18,7 @@ class WorkListPage : public QWidget
 public:
     explicit WorkListPage(std::shared_ptr<Etrek::Worklist::Repository::IWorklistRepository> repository,QWidget *parent = nullptr);
     void setProxyModel(QPointer<QStandardItemModel> proxyModel);
+    void closePage();
     ~WorkListPage();
 
 signals:
@@ -25,6 +26,8 @@ signals:
 	void filterSourceChanged(const QString& source);
     void clearAllFilters();
     void clearAllSearch();
+
+    void closeWorklistPage();
 
     void searchName(const QString& name);
     void searchPatientId(const QString& patientId);

@@ -144,8 +144,20 @@ void WorkListPage::setStile()
     if (ui->filterGroupBox) ui->filterGroupBox->setStyleSheet(groupCss);
     if (ui->searchGroupBox) ui->searchGroupBox->setStyleSheet(groupCss);
     if (ui->worklistGroupBox) ui->worklistGroupBox->setStyleSheet(groupCss);
+
+    // Option 1: If you used the standard Close button in the QDialogButtonBox:
+    if (auto btn = ui->buttonBox->button(QDialogButtonBox::Close)) {
+        connect(btn, &QPushButton::clicked, this, [this]() {
+            emit closeWorklistPage();
+        });
+    }
+
 }
 
+void WorkListPage::closePage()
+{
+    hide();  // or setVisible(false);
+}
 
 void WorkListPage::setProxyModel(QPointer<QStandardItemModel> proxyModel)
 {
