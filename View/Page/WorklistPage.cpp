@@ -175,8 +175,10 @@ WorkListPage::~WorkListPage()
 
 void WorkListPage::clearAllFilterBtnClicked()
 {
-     ui->filterStartDateEdit->clear();
-     ui->filterDueDateEdit->clear();
+     // Reset "From" date to today
+     ui->filterStartDateEdit->setDate(QDate::currentDate());
+     // Reset "To" date to today
+     ui->filterDueDateEdit->setDate(QDate::currentDate());
      ui->filterSourceLineEdit->clear();
 
 }
@@ -186,7 +188,8 @@ void WorkListPage::clearAllSearchBtnClicked()
 	ui->searchNameLineEdit->clear();
 	ui->searchPatientIdLineEdit->clear();
 	ui->searchAcquisionNoLineEdit->clear();
-	ui->searchPatientBirthDateDateEdit->clear();
+	// Reset birth date to a reasonable default (e.g., today or leave as is)
+	ui->searchPatientBirthDateDateEdit->setDate(QDate::currentDate());
 	ui->searchStudyIdTextEdit->clear();
 
 
