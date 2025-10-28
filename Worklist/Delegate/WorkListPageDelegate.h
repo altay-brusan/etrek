@@ -9,6 +9,7 @@
 #include <QDateTime>
 #include "WorklistRepository.h"
 #include "WorkListPage.h"
+#include "../../ScanProtocol/Repository/ScanProtocolRepository.h"
 #include "DateTimeSpan.h"
 #include "IDelegate.h"
 #include "IPageAction.h"
@@ -27,7 +28,10 @@ namespace Etrek::Worklist::Delegate {
         Q_INTERFACES(IDelegate IPageAction)
 
     public:
-        explicit WorkListPageDelegate(WorkListPage* ui, std::shared_ptr<repo::WorklistRepository> repository, QObject* parent = nullptr);
+        explicit WorkListPageDelegate(WorkListPage* ui,
+            std::shared_ptr<repo::WorklistRepository> repository,
+            std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
+            QObject* parent = nullptr);
         
         QString name() const override;
         void attachDelegates(const QVector<QObject*>& delegates) override;
@@ -38,6 +42,7 @@ namespace Etrek::Worklist::Delegate {
         void closeWorklist();
 
     private slots:
+        void onAddNewPatient();
         void onFilterDateRangeChanged(const DateTimeSpan& date);
         void onSourceChanged(const QString& source);
         void onClearFilters();
@@ -68,6 +73,7 @@ namespace Etrek::Worklist::Delegate {
         QPointer<QStandardItemModel> baseModel;
         QPointer<QSortFilterProxyModel> proxyModel;
         std::shared_ptr<repo::WorklistRepository> repository;
+        std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository;
 
         void apply() override;
         void accept() override;

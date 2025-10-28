@@ -64,6 +64,7 @@ target_link_libraries(Worklist
     Core
     Common
     View
+    ScanProtocol
 )
 
 target_include_directories(Worklist
@@ -83,6 +84,9 @@ target_include_directories(Worklist
     ${COMMON_INCLUDE_DIR}/Specification
     ${COMMON_INCLUDE_DIR}/Worklist/Data/Entity
     ${COMMON_INCLUDE_DIR}/Worklist/Repository
+
+    ${COMMON_INCLUDE_DIR}/ScanProtocol
+    ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Entity
 
 
     ${CMAKE_VIEW_DIRECTORY}/Page

@@ -67,7 +67,12 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
         connect(ui->searchStudyIdTextEdit, &QLineEdit::textChanged, this, [this](const QString& text) {
             emit searchStudyId(text);
             });
-               
+
+        // Emit signal for delegate to handle Add New Patient dialog
+        connect(ui->addNewPatientBtn, &QPushButton::clicked, this, [this]() {
+            emit addNewPatient();
+        });
+
 }
 
 void WorkListPage::setStile()
@@ -194,3 +199,5 @@ void WorkListPage::clearAllSearchBtnClicked()
 
 
 }
+
+// Removed: onAddNewPatientClicked. Dialog is launched elsewhere in workflow.
