@@ -7,14 +7,19 @@
 
 #include "WorkListPageDelegate.h"
 #include "WorklistRepository.h"
+#include "../../ScanProtocol/Repository/ScanProtocolRepository.h"
+#include "../../View/Dialog/AddPatientDialog.h"
 
 
 using namespace Etrek::Worklist::Repository;
 
 namespace Etrek::Worklist::Delegate
 {
-    WorkListPageDelegate::WorkListPageDelegate(WorkListPage* ui, std::shared_ptr<WorklistRepository> repository, QObject* parent)
-        : QObject(parent), ui(ui), repository(repository) {
+    WorkListPageDelegate::WorkListPageDelegate(WorkListPage* ui,
+        std::shared_ptr<WorklistRepository> repository,
+        std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
+        QObject* parent)
+        : QObject(parent), ui(ui), repository(repository), scanRepository(scanRepository) {
          
         baseModel = new QStandardItemModel(this);
         proxyModel = new QSortFilterProxyModel(this);
@@ -22,6 +27,7 @@ namespace Etrek::Worklist::Delegate
         proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
         proxyModel->setFilterKeyColumn(-1);
 
+        connect(ui, &WorkListPage::addNewPatient, this, &WorkListPageDelegate::onAddNewPatient);
         connect(ui, &WorkListPage::filterDateSpanChanged, this, &WorkListPageDelegate::onFilterDateRangeChanged);
         connect(ui, &WorkListPage::filterSourceChanged, this, &WorkListPageDelegate::onSourceChanged);
         connect(ui, &WorkListPage::clearAllFilters, this, &WorkListPageDelegate::onClearFilters);
@@ -48,6 +54,21 @@ namespace Etrek::Worklist::Delegate
 
 
         onClearFilters();
+    }
+
+    void WorkListPageDelegate::onAddNewPatient()
+    {
+        if (!scanRepository)
+            return;
+
+        auto regionsRes = scanRepository->getAllAnatomicRegions();
+        auto partsRes = scanRepository->getAllBodyParts();
+        if (!regionsRes.isSuccess || !partsRes.isSuccess)
+            return;
+
+        // Construct dialog with injected entities
+        AddPatientDialog dlg(regionsRes.value, partsRes.value, ui);
+        dlg.exec();
     }
 
     void WorkListPageDelegate::onFilterDateRangeChanged(const DateTimeSpan& date) {
