@@ -7,8 +7,8 @@
 
 #include "WorkListPageDelegate.h"
 #include "WorklistRepository.h"
-#include "../../ScanProtocol/Repository/ScanProtocolRepository.h"
-#include "../../View/Dialog/AddPatientDialog.h"
+#include "ScanProtocolRepository.h "
+#include "AddPatientDialog.h"
 
 
 using namespace Etrek::Worklist::Repository;
