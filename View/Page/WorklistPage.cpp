@@ -67,7 +67,9 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
         connect(ui->searchStudyIdTextEdit, &QLineEdit::textChanged, this, [this](const QString& text) {
             emit searchStudyId(text);
             });
-               
+
+        // Removed direct dialog invocation; view should not create AddPatientDialog
+
 }
 
 void WorkListPage::setStile()
@@ -194,3 +196,5 @@ void WorkListPage::clearAllSearchBtnClicked()
 
 
 }
+
+// Removed: onAddNewPatientClicked. Dialog is launched elsewhere in workflow.
