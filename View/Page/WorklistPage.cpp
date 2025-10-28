@@ -68,7 +68,10 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
             emit searchStudyId(text);
             });
 
-        // Removed direct dialog invocation; view should not create AddPatientDialog
+        // Emit signal for delegate to handle Add New Patient dialog
+        connect(ui->addNewPatientBtn, &QPushButton::clicked, this, [this]() {
+            emit addNewPatient();
+        });
 
 }
 

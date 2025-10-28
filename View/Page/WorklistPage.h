@@ -23,6 +23,7 @@ public:
     ~WorkListPage();
 
 signals:
+    void addNewPatient();
     void filterDateSpanChanged(const DateTimeSpan& date);
 	void filterSourceChanged(const QString& source);
     void clearAllFilters();
