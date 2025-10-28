@@ -11,42 +11,12 @@
 #include <QLineEdit>
 #include "AnatomicRegion.h"
 #include "BodyPart.h"
+#include "ScanProtocolUtil.h"
+#include "PatientModel.h"
 
 namespace Ui {
 class AddPatientDialog;
 }
-
-enum class Gender
-{
-    Male,
-    Female,
-    Other
-};
-
-struct PatientData
-{
-    QString firstName;
-    QString middleName;
-    QString lastName;
-    QString patientId;
-    QDate dateOfBirth;
-    int age;
-    Gender gender;
-    QString referringPhysician;
-    QString patientLocation;
-    QString admissionNumber;
-    QString accessionNumber;
-    Etrek::ScanProtocol::Data::Entity::AnatomicRegion selectedRegion;
-    Etrek::ScanProtocol::Data::Entity::BodyPart selectedBodyPart;
-
-    bool isValid() const
-    {
-        return !firstName.isEmpty() &&
-               !lastName.isEmpty() &&
-               !patientId.isEmpty() &&
-               dateOfBirth.isValid();
-    }
-};
 
 class AddPatientDialog : public QDialog
 {
@@ -59,7 +29,7 @@ public:
         QWidget *parent = nullptr);
     ~AddPatientDialog();
 
-    PatientData getPatientData() const;
+    Etrek::ScanProtocol::Data::Model::PatientModel getPatientModel() const;
     void clearForm();
 
 signals:
@@ -79,6 +49,7 @@ private:
     void initializeFromEntities();
     void updateAge();
     void updateSaveButtonState();
+    void updateImagesForRegion(const Etrek::ScanProtocol::Data::Entity::AnatomicRegion& ar);
     void updateRegionDisplay();
     void updateBodyPartListForRegion(int regionIndex);
 
@@ -88,7 +59,7 @@ private:
     const QVector<Etrek::ScanProtocol::Data::Entity::BodyPart>& m_bodyParts;
     int m_currentRegionIndex = -1;
     bool m_isFrontView = true; // deprecated visual state, kept for styling if needed
-    PatientData m_patientData;
+    Etrek::ScanProtocol::Data::Model::PatientModel m_patient;
 };
 
 #endif // ADDPATIENTDIALOG_H

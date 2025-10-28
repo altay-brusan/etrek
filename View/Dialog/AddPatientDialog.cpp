@@ -21,6 +21,7 @@ AddPatientDialog::AddPatientDialog(
 
     // Defaults
     ui->dateOfBirthDateEdit->setDate(QDate::currentDate());
+    ui->dateOfBirthDateEdit->setMaximumDate(QDate::currentDate());
     ui->ageLineEdit->setReadOnly(true);
     ui->bodyPartsComboBox->setVisible(false);
     ui->bodyPartsLabel->setVisible(false);
@@ -131,7 +132,7 @@ void AddPatientDialog::initializeFromEntities()
     // Start at first active region if available
     if (!m_regions.isEmpty()) {
         m_currentRegionIndex = 0;
-        m_patientData.selectedRegion = m_regions[m_currentRegionIndex];
+        m_patient.selectedRegion = m_regions[m_currentRegionIndex];
         updateRegionDisplay();
         updateBodyPartListForRegion(m_currentRegionIndex);
     } else {
@@ -204,10 +205,13 @@ void AddPatientDialog::updateAge()
 
 void AddPatientDialog::validateForm()
 {
+    const bool hasBodyPart = ui->bodyPartsComboBox->count() > 0 && ui->bodyPartsComboBox->currentIndex() >= 0;
+    const bool dobOk = ui->dateOfBirthDateEdit->date().isValid() && ui->dateOfBirthDateEdit->date() <= QDate::currentDate();
     bool isValid = !ui->firstNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->lastNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->patientIdLineEdit->text().trimmed().isEmpty() &&
-                   ui->dateOfBirthDateEdit->date().isValid();
+                   dobOk &&
+                   hasBodyPart;
 
     updateSaveButtonState();
     emit patientDataChanged(isValid);
@@ -215,10 +219,13 @@ void AddPatientDialog::validateForm()
 
 void AddPatientDialog::updateSaveButtonState()
 {
+    const bool hasBodyPart = ui->bodyPartsComboBox->count() > 0 && ui->bodyPartsComboBox->currentIndex() >= 0;
+    const bool dobOk = ui->dateOfBirthDateEdit->date().isValid() && ui->dateOfBirthDateEdit->date() <= QDate::currentDate();
     bool isValid = !ui->firstNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->lastNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->patientIdLineEdit->text().trimmed().isEmpty() &&
-                   ui->dateOfBirthDateEdit->date().isValid();
+                   dobOk &&
+                   hasBodyPart;
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(isValid);
 }
@@ -230,10 +237,61 @@ void AddPatientDialog::updateRegionDisplay()
     if (m_currentRegionIndex >= 0 && m_currentRegionIndex < m_regions.size()) {
         const auto& ar = m_regions[m_currentRegionIndex];
         if (m_selectedRegionLineEdit) m_selectedRegionLineEdit->setText(ar.Name);
-        m_patientData.selectedRegion = ar;
+        m_patient.selectedRegion = ar;
+        updateImagesForRegion(ar);
     } else {
         if (m_selectedRegionLineEdit) m_selectedRegionLineEdit->clear();
     }
+}
+
+void AddPatientDialog::updateImagesForRegion(const AnatomicRegion& ar)
+{
+    const QString name = ar.Name.trimmed().toUpper();
+    QString front = ":/Images/Asset/Image/blank-front.jpg";
+    QString back  = ":/Images/Asset/Image/blank-back.jpg";
+
+    auto setThorax = [&]() { front = ":/Images/Asset/Image/thorax-front.JPG"; back = ":/Images/Asset/Image/thorax-back.JPG"; };
+
+    if (name.contains("HEAD")) {
+        front = ":/Images/Asset/Image/head-front.JPG";
+        back  = ":/Images/Asset/Image/head-back.JPG";
+    } else if (name.contains("NECK")) {
+        front = ":/Images/Asset/Image/neck-front.JPG";
+        back  = ":/Images/Asset/Image/neck-back.JPG";
+    } else if (name.contains("THORAX") || name.contains("CHEST")) {
+        setThorax();
+    } else if (name.contains("ABDOMEN")) {
+        // Note: asset spelling is 'abdoman'
+        front = ":/Images/Asset/Image/abdoman-front.JPG";
+        back  = ":/Images/Asset/Image/abdoman-back.JPG";
+    } else if (name.contains("PELVIS")) {
+        front = ":/Images/Asset/Image/pelvis-front.JPG";
+        back  = ":/Images/Asset/Image/pelvis-back.JPG";
+    } else if (name.contains("SPINE")) {
+        front = ":/Images/Asset/Image/spine.JPG";
+        back  = ":/Images/Asset/Image/spine.JPG";
+    } else if (name.contains("UPPER") || name.contains("UPPER EXTREMITY")) {
+        front = ":/Images/Asset/Image/upper-extremity-front.JPG";
+        back  = ":/Images/Asset/Image/upper-extremity-back.JPG";
+    } else if (name.contains("LOWER") || name.contains("LOWER EXTREMITY")) {
+        // Note: asset spelling uses 'font' for front
+        front = ":/Images/Asset/Image/lower-extremity-font.JPG";
+        back  = ":/Images/Asset/Image/lower-extremity-back.JPG";
+    }
+
+    const QSize boxSizeF = ui->frontViewLabel->size();
+    const QSize boxSizeB = ui->backViewLabel->size();
+
+    QPixmap pmFront(front);
+    QPixmap pmBack(back);
+
+    if (!pmFront.isNull())
+        pmFront = pmFront.scaled(boxSizeF, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    if (!pmBack.isNull())
+        pmBack = pmBack.scaled(boxSizeB, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    ui->frontViewLabel->setPixmap(pmFront);
+    ui->backViewLabel->setPixmap(pmBack);
 }
 
 void AddPatientDialog::updateBodyPartListForRegion(int regionIndex)
@@ -266,11 +324,13 @@ void AddPatientDialog::updateBodyPartListForRegion(int regionIndex)
 
     if (hasParts) {
         // Default select first
-        m_patientData.selectedBodyPart = partsForRegion.first();
+        m_patient.selectedBodyPart = partsForRegion.first();
         ui->bodyPartsComboBox->setCurrentIndex(0);
     } else {
-        m_patientData.selectedBodyPart = BodyPart{};
+        m_patient.selectedBodyPart = BodyPart{};
     }
+    // Re-validate when region/body part changes
+    validateForm();
 }
 
 void AddPatientDialog::onPrevRegionClicked()
@@ -292,13 +352,14 @@ void AddPatientDialog::onNextRegionClicked()
 void AddPatientDialog::onBodyPartSelectedIndex(int index)
 {
     if (index >= 0) {
-        m_patientData.selectedBodyPart = ui->bodyPartsComboBox->currentData().value<BodyPart>();
+        m_patient.selectedBodyPart = ui->bodyPartsComboBox->currentData().value<BodyPart>();
     }
+    validateForm();
 }
 
-PatientData AddPatientDialog::getPatientData() const
+Etrek::ScanProtocol::Data::Model::PatientModel AddPatientDialog::getPatientModel() const
 {
-    PatientData data;
+    Etrek::ScanProtocol::Data::Model::PatientModel data;
     data.firstName = ui->firstNameLineEdit->text().trimmed();
     data.middleName = ui->middleNameLineEdit->text().trimmed();
     data.lastName = ui->lastNameLineEdit->text().trimmed();
@@ -306,8 +367,9 @@ PatientData AddPatientDialog::getPatientData() const
     data.dateOfBirth = ui->dateOfBirthDateEdit->date();
     data.age = ui->ageLineEdit->text().toInt();
 
-    int genderIndex = ui->genderComboBox->currentIndex();
-    data.gender = static_cast<Gender>(genderIndex);
+    // Robust gender mapping via util
+    if (auto g = Etrek::ScanProtocol::ScanProtocolUtil::parseGender(ui->genderComboBox->currentText()))
+        data.gender = *g;
 
     data.referringPhysician = ui->referringPhysicianLineEdit->text().trimmed();
     data.patientLocation = ui->patientLocationLineEdit->text().trimmed();
