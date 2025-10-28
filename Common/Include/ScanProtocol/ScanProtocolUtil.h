@@ -124,6 +124,16 @@ namespace Etrek::ScanProtocol {
     enum class PrintFormat { STANDARD_1_1, STANDARD_1_2, STANDARD_2_1, STANDARD_2_2 };
     /** @} */
 
+    /** @name Patient / Demographics enums
+     *  @brief Basic patient demographics related enums.
+     *  @{ */
+    /**
+     * @enum Gender
+     * @brief Patient gender enumeration.
+     */
+    enum class Gender { Male, Female, Other };
+    /** @} */
+
     /**
      * @class ScanProtocolUtil
      * @brief Utility functions for converting enums to/from strings.
@@ -231,6 +241,25 @@ namespace Etrek::ScanProtocol {
         /** @brief All GridType strings in canonical order. */
         static QVector<QString> allGridTypeStrings() {
             return { "Parallel", "Focused", "Crossed", "Moving", "Virtual" };
+        }
+
+        // ===================== PATIENT UTILS =====================
+        static QString toString(Gender g) {
+            switch (g) {
+            case Gender::Male:   return QStringLiteral("Male");
+            case Gender::Female: return QStringLiteral("Female");
+            case Gender::Other:  return QStringLiteral("Other");
+            }
+            return QStringLiteral("Male");
+        }
+        static std::optional<Gender> parseGender(const QString& s) {
+            if (s.compare(QStringLiteral("Male"), Qt::CaseInsensitive) == 0)   return Gender::Male;
+            if (s.compare(QStringLiteral("Female"), Qt::CaseInsensitive) == 0) return Gender::Female;
+            if (s.compare(QStringLiteral("Other"), Qt::CaseInsensitive) == 0)  return Gender::Other;
+            return std::nullopt;
+        }
+        static QVector<QString> allGenderStrings() {
+            return { QStringLiteral("Male"), QStringLiteral("Female"), QStringLiteral("Other") };
         }
 
         // ---------- TechniqueParameterRole ----------
