@@ -41,12 +41,15 @@ private slots:
     void onPrevRegionClicked();
     void onNextRegionClicked();
     void onBodyPartSelectedIndex(int index);
+    void onAddPartClicked();
+    void onRemovePartClicked();
     void validateForm();
 
 private:
     void initializeStyles();
     void setupConnections();
     void initializeFromEntities();
+    void initializeSelectedPartsTable();
     void updateAge();
     void updateSaveButtonState();
     void updateImagesForRegion(const Etrek::ScanProtocol::Data::Entity::AnatomicRegion& ar);

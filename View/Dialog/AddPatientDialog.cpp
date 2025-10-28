@@ -2,6 +2,8 @@
 #include "ui_AddPatientDialog.h"
 #include <QMessageBox>
 #include <QDate>
+#include <QHeaderView>
+#include <QStyle>
 
 using namespace Etrek::ScanProtocol::Data::Entity;
 
@@ -33,6 +35,8 @@ AddPatientDialog::AddPatientDialog(
 
     // Initialize region/body part data from injected entities
     initializeFromEntities();
+    initializeSelectedPartsTable();
+
 
     validateForm();
 }
@@ -53,6 +57,7 @@ void AddPatientDialog::initializeStyles()
         "  padding: 2px 6px;"
         "  color: rgb(230,230,230);"
         "}"
+        "QLineEdit[invalid=\"true\"] { border: 1px solid rgb(200,60,60); }"
         "QLineEdit:focus { border-color: rgb(160,160,160); }"
         "QLineEdit:read-only { background: rgb(60,60,60); color: rgb(180,180,180); }";
 
@@ -65,6 +70,7 @@ void AddPatientDialog::initializeStyles()
         "  padding: 2px 6px;"
         "  color: rgb(230,230,230);"
         "}"
+        "QDateEdit[invalid=\"true\"] { border: 1px solid rgb(200,60,60); }"
         "QDateEdit:focus { border-color: rgb(160,160,160); }"
         "QDateEdit::drop-down { width: 20px; border-left: 1px solid rgb(120,120,120); margin: 0; }";
 
@@ -77,6 +83,7 @@ void AddPatientDialog::initializeStyles()
         "  padding: 2px 6px;"
         "  color: rgb(230,230,230);"
         "}"
+        "QComboBox[invalid=\"true\"] { border: 1px solid rgb(200,60,60); }"
         "QComboBox:focus { border-color: rgb(160,160,160); }"
         "QComboBox::drop-down { width: 20px; border-left: 1px solid rgb(120,120,120); }";
 
@@ -125,6 +132,39 @@ void AddPatientDialog::initializeStyles()
 
     ui->demographicsGroupBox->setStyleSheet(groupCss);
     ui->bodyMapGroupBox->setStyleSheet(groupCss);
+    if (ui->selectedPartsGroupBox) ui->selectedPartsGroupBox->setStyleSheet(groupCss);
+    if (ui->addPartButton) ui->addPartButton->setStyleSheet(buttonCss);
+    if (ui->removePartButton) ui->removePartButton->setStyleSheet(buttonCss);
+}
+
+void AddPatientDialog::initializeSelectedPartsTable()
+{
+    if (!ui->selectedPartsTable) return;
+    auto* table = ui->selectedPartsTable;
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    table->setSelectionMode(QAbstractItemView::SingleSelection);
+    if (table->horizontalHeader()) {
+        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    }
+    table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    table->setStyleSheet(R"(
+        QTableView {
+            background-color: rgb(83, 83, 83);
+            color: white;
+            gridline-color: #a0a0a0;
+            selection-background-color: #4a90e2;
+            selection-color: white;
+        }
+        QHeaderView::section {
+            background-color: #eaffea;  /* very light green */
+            color: black;
+            font-weight: bold;
+            border: 1px solid #c0c0c0;
+            padding: 4px;
+        }
+        QTableView[invalid=\"true\"] { border: 1px solid rgb(200,60,60); }
+    )");
 }
 
 void AddPatientDialog::initializeFromEntities()
@@ -157,6 +197,17 @@ void AddPatientDialog::setupConnections()
             this, &AddPatientDialog::onFormFieldChanged);
 
     // No view toggle buttons; labels only
+    
+    // Selected parts add/remove
+    if (ui->addPartButton)
+        connect(ui->addPartButton, &QPushButton::clicked, this, &AddPatientDialog::onAddPartClicked);
+    if (ui->removePartButton)
+        connect(ui->removePartButton, &QPushButton::clicked, this, &AddPatientDialog::onRemovePartClicked);
+    if (ui->selectedPartsTable)
+        connect(ui->selectedPartsTable, &QTableWidget::itemSelectionChanged, this, [this]() {
+            if (!ui->removePartButton || !ui->selectedPartsTable) return;
+            ui->removePartButton->setEnabled(ui->selectedPartsTable->currentRow() >= 0);
+        });
 
     // Body parts combo box
     connect(ui->bodyPartsComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -207,11 +258,29 @@ void AddPatientDialog::validateForm()
 {
     const bool hasBodyPart = ui->bodyPartsComboBox->count() > 0 && ui->bodyPartsComboBox->currentIndex() >= 0;
     const bool dobOk = ui->dateOfBirthDateEdit->date().isValid() && ui->dateOfBirthDateEdit->date() <= QDate::currentDate();
+    const bool hasAccession = !ui->accessionNumberLineEdit->text().trimmed().isEmpty();
+    const bool hasAnySelectedRow = ui->selectedPartsTable && ui->selectedPartsTable->rowCount() > 0;
     bool isValid = !ui->firstNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->lastNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->patientIdLineEdit->text().trimmed().isEmpty() &&
+                   hasAccession &&
                    dobOk &&
-                   hasBodyPart;
+                   hasBodyPart &&
+                   hasAnySelectedRow;
+
+    auto mark = [](QWidget* w, bool invalid) {
+        if (!w) return;
+        w->setProperty("invalid", invalid);
+        if (w->style()) { w->style()->unpolish(w); w->style()->polish(w); }
+        w->update();
+    };
+    mark(ui->firstNameLineEdit, ui->firstNameLineEdit->text().trimmed().isEmpty());
+    mark(ui->lastNameLineEdit, ui->lastNameLineEdit->text().trimmed().isEmpty());
+    mark(ui->patientIdLineEdit, ui->patientIdLineEdit->text().trimmed().isEmpty());
+    mark(ui->accessionNumberLineEdit, !hasAccession);
+    mark(ui->dateOfBirthDateEdit, !dobOk);
+    mark(ui->bodyPartsComboBox, !hasBodyPart);
+    mark(ui->selectedPartsTable, !hasAnySelectedRow);
 
     updateSaveButtonState();
     emit patientDataChanged(isValid);
@@ -221,11 +290,15 @@ void AddPatientDialog::updateSaveButtonState()
 {
     const bool hasBodyPart = ui->bodyPartsComboBox->count() > 0 && ui->bodyPartsComboBox->currentIndex() >= 0;
     const bool dobOk = ui->dateOfBirthDateEdit->date().isValid() && ui->dateOfBirthDateEdit->date() <= QDate::currentDate();
+    const bool hasAccession = !ui->accessionNumberLineEdit->text().trimmed().isEmpty();
+    const bool hasAnySelectedRow = ui->selectedPartsTable && ui->selectedPartsTable->rowCount() > 0;
     bool isValid = !ui->firstNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->lastNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->patientIdLineEdit->text().trimmed().isEmpty() &&
+                   hasAccession &&
                    dobOk &&
-                   hasBodyPart;
+                   hasBodyPart &&
+                   hasAnySelectedRow;
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(isValid);
 }
@@ -355,6 +428,61 @@ void AddPatientDialog::onBodyPartSelectedIndex(int index)
         m_patient.selectedBodyPart = ui->bodyPartsComboBox->currentData().value<BodyPart>();
     }
     validateForm();
+}
+
+void AddPatientDialog::onAddPartClicked()
+{
+    if (m_currentRegionIndex < 0 || m_currentRegionIndex >= m_regions.size()) return;
+    if (!ui->bodyPartsComboBox || ui->bodyPartsComboBox->currentIndex() < 0) return;
+    if (!ui->selectedPartsTable) return;
+
+    const auto& ar = m_regions[m_currentRegionIndex];
+    const auto bp = ui->bodyPartsComboBox->currentData().value<BodyPart>();
+    if (bp.Id < 0) return;
+
+    // Avoid duplicates: check existing rows for same region/bodyPart ids
+    for (int r = 0; r < ui->selectedPartsTable->rowCount(); ++r) {
+        const auto rid = ui->selectedPartsTable->item(r, 0)->data(Qt::UserRole).toInt();
+        const auto bpid = ui->selectedPartsTable->item(r, 1)->data(Qt::UserRole).toInt();
+        if (rid == ar.Id && bpid == bp.Id)
+            return;
+    }
+
+    int row = ui->selectedPartsTable->rowCount();
+    ui->selectedPartsTable->insertRow(row);
+
+    auto* regionItem = new QTableWidgetItem(ar.Name);
+    regionItem->setData(Qt::UserRole, ar.Id);
+    auto* bodyItem = new QTableWidgetItem(bp.Name);
+    bodyItem->setData(Qt::UserRole, bp.Id);
+
+    ui->selectedPartsTable->setItem(row, 0, regionItem);
+    ui->selectedPartsTable->setItem(row, 1, bodyItem);
+    ui->selectedPartsTable->setCurrentCell(row, 0);
+    if (ui->removePartButton)
+        ui->removePartButton->setEnabled(true);
+}
+
+void AddPatientDialog::onRemovePartClicked()
+{
+    if (!ui->selectedPartsTable) return;
+    int row = ui->selectedPartsTable->currentRow();
+    if (row < 0) {
+        if (ui->selectedPartsTable->rowCount() == 0) {
+            if (ui->removePartButton) ui->removePartButton->setEnabled(false);
+            return;
+        }
+        row = ui->selectedPartsTable->rowCount() - 1;
+    }
+    ui->selectedPartsTable->removeRow(row);
+    const int rows = ui->selectedPartsTable->rowCount();
+    if (rows > 0) {
+        const int newRow = (row >= rows) ? rows - 1 : row;
+        ui->selectedPartsTable->setCurrentCell(newRow, 0);
+        if (ui->removePartButton) ui->removePartButton->setEnabled(true);
+    } else {
+        if (ui->removePartButton) ui->removePartButton->setEnabled(false);
+    }
 }
 
 Etrek::ScanProtocol::Data::Model::PatientModel AddPatientDialog::getPatientModel() const
