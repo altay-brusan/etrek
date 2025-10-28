@@ -43,6 +43,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${COMMON_INCLUDE_DIR}/Dicom/Data/Entity/*.h
     ${COMMON_INCLUDE_DIR}/Pacs/*.h
     ${COMMON_INCLUDE_DIR}/Pacs/Data/Entity/*.h
+    ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Model/*.h
    
 )
 
@@ -93,6 +94,7 @@ target_include_directories(View
         ${COMMON_INCLUDE_DIR}/Pacs/Data/Entity
         ${COMMON_INCLUDE_DIR}/ScanProtocol
         ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Entity
+        ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Model
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
