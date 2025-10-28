@@ -1,5 +1,5 @@
 #include "WorkListPageBuilder.h"
-#include "../../ScanProtocol/Repository/ScanProtocolRepository.h"
+#include "ScanProtocolRepository.h"
 
 namespace Etrek::Worklist::Delegate {
 	using namespace Etrek::Worklist::Repository;
