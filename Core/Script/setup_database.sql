@@ -369,9 +369,30 @@ CREATE TABLE mwl_attributes (
 
 -- section DICOM: https://dicom.nema.org/medical/dicom/2023c/output/chtml/part03/sect_A.26.3.html
 
+-- Stores Patient-level DICOM metadata with hierarchical status tracking.
+CREATE TABLE patients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id VARCHAR(64) NOT NULL,  -- (0010,0020): Patient ID
+    patient_name VARCHAR(255) DEFAULT NULL,  -- (0010,0010): Patient Name
+    patient_birth_date DATE DEFAULT NULL,  -- (0010,0030): Patient Birth Date
+    patient_sex ENUM('M', 'F', 'O', 'U') DEFAULT NULL,  -- (0010,0040): Patient Sex (M=Male, F=Female, O=Other, U=Unknown)
+    issuer_of_patient_id VARCHAR(64) DEFAULT NULL,  -- (0010,0021): Issuer of Patient ID
+    other_patient_ids VARCHAR(255) DEFAULT NULL,  -- (0010,1000): Other Patient IDs
+    patient_comments TEXT DEFAULT NULL,  -- (0010,4000): Patient Comments
+    status ENUM('SCHEDULED', 'PENDING', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'ABORTED') DEFAULT 'PENDING',
+    status_reason TEXT DEFAULT NULL,
+    status_updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    create_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_date DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_patient_id_issuer (patient_id, issuer_of_patient_id),
+    INDEX idx_patient_status (status),
+    INDEX idx_patient_status_updated (status_updated_at)
+);
+
 -- Stores Study-level DICOM metadata and links to MWL entries.
 CREATE TABLE studies (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT DEFAULT NULL,
     study_instance_uid VARCHAR(64) NOT NULL,
     study_id VARCHAR(64) DEFAULT NULL,  -- (0020,0010): User or equipment generated Study identifier.
     accession_number VARCHAR(64) DEFAULT NULL,  -- (0008,0050)
@@ -382,7 +403,13 @@ CREATE TABLE studies (
     study_description VARCHAR(255) DEFAULT NULL,  -- (0008,1030)
     patient_age INT DEFAULT NULL,  -- (0010,1010)
     patient_size INT DEFAULT NULL,  -- (0010,1020)
-    allergy VARCHAR(255) DEFAULT NULL  -- (0010,2110)
+    allergy VARCHAR(255) DEFAULT NULL,  -- (0010,2110)
+    status ENUM('SCHEDULED', 'PENDING', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'ABORTED') DEFAULT 'PENDING',
+    status_reason TEXT DEFAULT NULL,
+    status_updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE SET NULL,
+    INDEX idx_study_status (status),
+    INDEX idx_study_status_updated (status_updated_at)
 );
 
 -- Stores Series-level metadata linked to a Study.
@@ -400,8 +427,13 @@ CREATE TABLE series (
     image_laterality ENUM('R', 'L', 'B', 'U') DEFAULT NULL,  -- (0020,0062)
     acquisition_device_id INT DEFAULT NULL,
     presentation_intent_type ENUM('FOR PRESENTATION', 'FOR PROCESSING') DEFAULT NULL,  -- (0008,0060)
+    status ENUM('SCHEDULED', 'PENDING', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'ABORTED') DEFAULT 'PENDING',
+    status_reason TEXT DEFAULT NULL,
+    status_updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (acquisition_device_id) REFERENCES general_equipments(id),
-    FOREIGN KEY (study_id) REFERENCES studies(id) ON DELETE CASCADE
+    FOREIGN KEY (study_id) REFERENCES studies(id) ON DELETE CASCADE,
+    INDEX idx_series_status (status),
+    INDEX idx_series_status_updated (status_updated_at)
 );
 
 -- Stores dynamic settings and processing information for each image, such as patient orientation, contrast agents, image compression, and processing steps.
@@ -445,8 +477,13 @@ CREATE TABLE images (
     frame_increment_pointer VARCHAR(64) DEFAULT NULL,  -- (0028,0009)
     frame_label_vector TEXT DEFAULT NULL,  -- (0018,2002)
     kvp INT DEFAULT NULL, -- (0018,0060)
+    status ENUM('SCHEDULED', 'PENDING', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'ABORTED') DEFAULT 'PENDING',
+    status_reason TEXT DEFAULT NULL,
+    status_updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (study_id) REFERENCES studies(id) ON DELETE CASCADE,
-    FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE
+    FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE,
+    INDEX idx_image_status (status),
+    INDEX idx_image_status_updated (status_updated_at)
 );
 
 -- SOP common module
@@ -3506,3 +3543,47 @@ VALUES
   ('Multi-Series Study', 'VOI LUT',
    14, 30, 60,
    1, 1, 1, 1);
+
+-- ================= Status Tracking Triggers =================
+-- These triggers automatically update status_updated_at when status changes
+
+DELIMITER $$
+
+CREATE TRIGGER trg_patients_status_update
+BEFORE UPDATE ON patients
+FOR EACH ROW
+BEGIN
+    IF NEW.status != OLD.status THEN
+        SET NEW.status_updated_at = CURRENT_TIMESTAMP;
+    END IF;
+END$$
+
+CREATE TRIGGER trg_studies_status_update
+BEFORE UPDATE ON studies
+FOR EACH ROW
+BEGIN
+    IF NEW.status != OLD.status THEN
+        SET NEW.status_updated_at = CURRENT_TIMESTAMP;
+    END IF;
+END$$
+
+CREATE TRIGGER trg_series_status_update
+BEFORE UPDATE ON series
+FOR EACH ROW
+BEGIN
+    IF NEW.status != OLD.status THEN
+        SET NEW.status_updated_at = CURRENT_TIMESTAMP;
+    END IF;
+END$$
+
+CREATE TRIGGER trg_images_status_update
+BEFORE UPDATE ON images
+FOR EACH ROW
+BEGIN
+    IF NEW.status != OLD.status THEN
+        SET NEW.status_updated_at = CURRENT_TIMESTAMP;
+    END IF;
+END$$
+
+DELIMITER ;
+
