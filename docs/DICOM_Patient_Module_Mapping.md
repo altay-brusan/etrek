@@ -104,6 +104,15 @@ The attribute "Other Patient ID" (0010,1000) is retired in DICOM but included fo
 
 The current implementation uses `ON DELETE RESTRICT` for referential integrity. If soft-delete functionality is needed later, consider adding `is_deleted` flag to the `patients` table similar to the `users` table pattern.
 
+### Legacy Fields in Studies Table
+
+The `studies` table contains a legacy `allergy` field (VARCHAR(255)) that duplicates the `patient_allergies` field in the `patients` table. Both map to DICOM tag (0010,2110). This field is retained for backward compatibility with existing code. New implementations should use `patients.patient_allergies` for allergies data.
+
+**Recommendation**: In future migrations, consider:
+1. Migrating existing `studies.allergy` data to `patients.patient_allergies`
+2. Deprecating and eventually removing `studies.allergy` field
+3. Updating application code to reference patient allergies through the FK relationship
+
 ## Schema Diagram
 
 ```

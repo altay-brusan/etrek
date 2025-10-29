@@ -406,7 +406,7 @@ CREATE TABLE studies (
     study_description VARCHAR(255) DEFAULT NULL,  -- (0008,1030)
     patient_age INT DEFAULT NULL,  -- (0010,1010)
     patient_size INT DEFAULT NULL,  -- (0010,1020)
-    allergy VARCHAR(255) DEFAULT NULL,  -- (0010,2110)
+    allergy VARCHAR(255) DEFAULT NULL,  -- (0010,2110) Legacy field, consider using patients.patient_allergies for new studies
     FOREIGN KEY (patient_ref_id) REFERENCES patients(id) ON DELETE RESTRICT
 );
 

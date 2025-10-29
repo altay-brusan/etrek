@@ -70,14 +70,20 @@ namespace Etrek::Dicom::Data::Entity {
         /**
          * @brief Issuer of Patient ID Qualifiers Sequence (0010,0024)
          *
-         * Stored as JSON string representing the sequence.
+         * Stored as JSON string representing the sequence. When persisting to database,
+         * this QString should contain valid JSON. Repository layer handles JSON serialization.
+         * 
+         * @note Consider using QJsonObject for type-safe manipulation before conversion to QString.
          */
         QString IssuerOfPatientIdQualifiers;
 
         /**
          * @brief Other Patient IDs (0010,1000)
          *
-         * Stored as JSON array of alternative patient identifiers.
+         * Stored as JSON array of alternative patient identifiers. When persisting to database,
+         * this QString should contain valid JSON array format.
+         * 
+         * @note Consider using QJsonArray or QStringList for type-safe manipulation before conversion to QString.
          */
         QString OtherPatientId;
 
