@@ -21,6 +21,7 @@ enum class ProcedureStepStatus {
 #include "Core/Data/Entity/Study.h"
 #include "Core/Data/Entity/Series.h"
 #include "Core/Data/Entity/Image.h"
+#include "Worklist/Specification/WorklistEnum.h"
 
 // Create a new patient with default PENDING status
 Etrek::Core::Data::Entity::Patient patient;
@@ -53,6 +54,7 @@ image.Status = ProcedureStepStatus::COMPLETED;
 
 ```cpp
 #include "Core/Repository/IStudyRepository.h"
+#include "Worklist/Specification/WorklistEnum.h"
 
 // Update study status (repository handles timestamp automatically)
 IStudyRepository* studyRepo = getStudyRepository();
