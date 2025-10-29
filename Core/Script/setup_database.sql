@@ -683,6 +683,7 @@ INSERT INTO dicom_tags (name, display_name, group_hex, element_hex, pgroup_hex, 
 ('PatientComments','Patient Comments', 0x0010, 0x4000, 0x0000, 0x0000, TRUE, FALSE),
 ('PatientAllergies','Patient Allergies', 0x0010, 0x2110, 0x0000, 0x0000, TRUE, FALSE), -- renamed
 ('RequestingPhysician','Requesting Physician', 0x0032, 0x1032, 0x0000, 0x0000, TRUE, FALSE),
+('PatientAddress','Patient Address', 0x0010, 0x1040, 0x0000, 0x0000, TRUE, FALSE),
 -- study modules
 ('PatientAge', 'Patient Age', 0x0010, 0x1010, 0x0000, 0x0000, TRUE, FALSE), 
 ('AccessionNumber','Accession Number', 0x0008, 0x0050, 0x0000, 0x0000, TRUE, FALSE),
