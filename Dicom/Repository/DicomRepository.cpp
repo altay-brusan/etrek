@@ -267,17 +267,17 @@ namespace Etrek::Dicom::Repository {
     {
         // First, try to find existing patient
         auto findResult = findPatientByIdAndIssuer(patient.PatientId, patient.IssuerOfPatientId);
-        if (!findResult.IsSuccess()) {
-            return Result<Patient>::Failure(findResult.GetErrorMessage());
+        if (!findResult.isSuccess) {
+            return Result<Patient>::Failure(findResult.message);
         }
 
-        auto existingPatient = findResult.GetValue();
+        auto existingPatient = findResult.value;
         if (existingPatient.has_value()) {
             // Patient exists - update it
             patient.Id = existingPatient->Id;
             auto updateResult = updatePatient(patient);
-            if (!updateResult.IsSuccess()) {
-                return Result<Patient>::Failure(updateResult.GetErrorMessage());
+            if (!updateResult.isSuccess) {
+                return Result<Patient>::Failure(updateResult.message);
             }
             return Result<Patient>::Success(patient);
         } else {
