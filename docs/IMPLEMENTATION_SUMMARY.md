@@ -213,8 +213,9 @@ mysql -u <username> -p <database_name> < Core/Script/setup_database.sql
 
 ### 2. For Existing Databases
 ```bash
-# Backup first!
+# Backup first! (uses bash command substitution - adjust for your shell if needed)
 mysqldump -u <username> -p <database_name> > backup_$(date +%Y%m%d).sql
+# Alternative for other shells: backup_YYYYMMDD.sql
 
 # Run migration
 mysql -u <username> -p <database_name> < Core/Script/migration_add_admission_id.sql
