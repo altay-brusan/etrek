@@ -7,22 +7,22 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools Sql Network)
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS
-    #${CMAKE_CURRENT_SOURCE_DIR}/Data    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Data
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository
 )
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-    #${CMAKE_CURRENT_SOURCE_DIR}/Data/*.cpp    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Data/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Repository/*.cpp    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Repository/*.cpp
 )
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
-    #${CMAKE_CURRENT_SOURCE_DIR}/Data/*.h    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Data/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Repository/*.h    
-    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Repository/*.h
+
     ${COMMON_INCLUDE_DIR}/*.h
     ${COMMON_INCLUDE_DIR}/Dicom/*.h
     ${COMMON_INCLUDE_DIR}/Dicom/Data/Entity/*.h
@@ -55,7 +55,6 @@ target_include_directories(Dicom
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository
     ${COMMON_INCLUDE_DIR}/Dicom/
     ${COMMON_INCLUDE_DIR}/Dicom/Data/Entity
-    ${COMMON_INCLUDE_DIR}/Core/Data/Entity
 )
 
 install(TARGETS Dicom
