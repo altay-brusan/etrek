@@ -11,6 +11,7 @@ class WorkListPage;
 }
 
 
+
 class WorkListPage : public QWidget
 {
     Q_OBJECT
@@ -22,6 +23,7 @@ public:
     ~WorkListPage();
 
 signals:
+    void addNewPatient();
     void filterDateSpanChanged(const DateTimeSpan& date);
 	void filterSourceChanged(const QString& source);
     void clearAllFilters();
@@ -36,8 +38,10 @@ signals:
     void searchStudyId(const QString& studyId);
 
 
-private:
+private slots:
+    // Removed: direct AddPatientDialog invocation
 
+private:
     void clearAllFilterBtnClicked();
     void clearAllSearchBtnClicked();
     void setStile();
