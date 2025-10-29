@@ -364,7 +364,7 @@ CREATE TABLE mwl_attributes (
     dicom_tag_id INT NOT NULL,               -- Foreign key to dicom_tags.id (the actual DICOM tag)
     tag_value VARCHAR(512) DEFAULT NULL,       -- Value of the tag (as a string)
     FOREIGN KEY (mwl_entry_id) REFERENCES mwl_entries(id) ON DELETE CASCADE,  -- Cascade deletes with worklist entry
-    FOREIGN KEY (dicom_tag_id) REFERENCES dicom_tags(id) ON DELETE CASCADE   -- Cascade deletes with dicom tag
+    FOREIGN KEY (dicom_tag_id) REFERENCES dicom_tags(id) ON DELETE RESTRICT   -- Restrict deletion of referenced tags
 );
 
 -- section DICOM: https://dicom.nema.org/medical/dicom/2023c/output/chtml/part03/sect_A.26.3.html
