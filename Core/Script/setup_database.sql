@@ -369,9 +369,33 @@ CREATE TABLE mwl_attributes (
 
 -- section DICOM: https://dicom.nema.org/medical/dicom/2023c/output/chtml/part03/sect_A.26.3.html
 
+-- Stores Patient-level DICOM metadata (DICOM Patient Module).
+-- Represents a unique patient identity combining patient_id and issuer.
+CREATE TABLE patients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_name VARCHAR(255) DEFAULT NULL,  -- (0010,0010): Patient's Name
+    patient_id VARCHAR(64) DEFAULT NULL,  -- (0010,0020): Patient ID
+    issuer_of_patient_id VARCHAR(128) DEFAULT NULL,  -- (0010,0021): Issuer of Patient ID
+    type_of_patient_id VARCHAR(64) DEFAULT NULL,  -- (0010,0022): Type of Patient ID (TEXT, RFID, BARCODE)
+    issuer_of_patient_id_qualifiers JSON DEFAULT NULL,  -- (0010,0024): Issuer of Patient ID Qualifiers Sequence (stored as JSON)
+    other_patient_id JSON DEFAULT NULL,  -- (0010,1000): Other Patient IDs (stored as JSON array)
+    patient_sex VARCHAR(16) DEFAULT NULL,  -- (0010,0040): Patient's Sex
+    patient_birth_date DATE DEFAULT NULL,  -- (0010,0030): Patient's Birth Date
+    patient_comments TEXT DEFAULT NULL,  -- (0010,4000): Patient Comments
+    patient_allergies TEXT DEFAULT NULL,  -- (0010,2110): Allergies
+    requesting_physician VARCHAR(255) DEFAULT NULL,  -- (0032,1032): Requesting Physician
+    patient_address TEXT DEFAULT NULL,  -- (0010,1040): Patient's Address
+    create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -- Composite unique constraint: patient_id + issuer_of_patient_id must be unique
+    -- This allows different issuers to have the same patient_id
+    UNIQUE KEY uq_patient_identity (patient_id, issuer_of_patient_id)
+);
+
 -- Stores Study-level DICOM metadata and links to MWL entries.
 CREATE TABLE studies (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_ref_id INT DEFAULT NULL,  -- Foreign key to patients table
     study_instance_uid VARCHAR(64) NOT NULL,
     study_id VARCHAR(64) DEFAULT NULL,  -- (0020,0010): User or equipment generated Study identifier.
     accession_number VARCHAR(64) DEFAULT NULL,  -- (0008,0050)
@@ -382,7 +406,8 @@ CREATE TABLE studies (
     study_description VARCHAR(255) DEFAULT NULL,  -- (0008,1030)
     patient_age INT DEFAULT NULL,  -- (0010,1010)
     patient_size INT DEFAULT NULL,  -- (0010,1020)
-    allergy VARCHAR(255) DEFAULT NULL  -- (0010,2110)
+    allergy VARCHAR(255) DEFAULT NULL,  -- (0010,2110)
+    FOREIGN KEY (patient_ref_id) REFERENCES patients(id) ON DELETE RESTRICT
 );
 
 -- Stores Series-level metadata linked to a Study.
