@@ -9,7 +9,7 @@
 #include <QDateTime>
 #include "WorklistRepository.h"
 #include "WorkListPage.h"
-#include "../../ScanProtocol/Repository/ScanProtocolRepository.h"
+#include "ScanProtocolRepository.h"
 #include "DateTimeSpan.h"
 #include "IDelegate.h"
 #include "IPageAction.h"
