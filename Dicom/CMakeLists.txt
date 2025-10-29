@@ -55,6 +55,7 @@ target_include_directories(Dicom
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository
     ${COMMON_INCLUDE_DIR}/Dicom/
     ${COMMON_INCLUDE_DIR}/Dicom/Data/Entity
+    ${COMMON_INCLUDE_DIR}/Core/Data/Entity
 )
 
 install(TARGETS Dicom
