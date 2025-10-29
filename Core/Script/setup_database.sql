@@ -382,7 +382,9 @@ CREATE TABLE studies (
     study_description VARCHAR(255) DEFAULT NULL,  -- (0008,1030)
     patient_age INT DEFAULT NULL,  -- (0010,1010)
     patient_size INT DEFAULT NULL,  -- (0010,1020)
-    allergy VARCHAR(255) DEFAULT NULL  -- (0010,2110)
+    allergy VARCHAR(255) DEFAULT NULL,  -- (0010,2110)
+    admission_id VARCHAR(64) DEFAULT NULL,  -- (0038,0010): Admission ID from Patient Study module
+    INDEX idx_admission_id (admission_id)
 );
 
 -- Stores Series-level metadata linked to a Study.
