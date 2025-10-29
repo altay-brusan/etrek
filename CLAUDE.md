@@ -220,6 +220,21 @@ Parse arguments with `Etrek::Specification::ParseLaunchMode()`:
 - Configuration stored in `RisConnectionSetting` entities
 - Mapping profiles convert DICOM tags to application entities
 
+### Database Schema & Migrations
+- MySQL database backend via Qt SQL driver
+- Schema defined in `Core/Script/setup_database.sql`
+- Migration scripts located in `Core/Script/` directory
+- Migrations are idempotent and transaction-safe
+- See `Core/Script/README.md` for migration workflow
+
+**Recent Schema Changes**:
+- **Admission ID Support** (Issue #29): Added `admission_id` column to `studies` table
+  - DICOM tag (0038,0010) mapping
+  - Non-unique index for query performance
+  - Migration: `migration_add_admission_id.sql`
+  - Backfill: `backfill_admission_id.sql`
+  - See `docs/admission_id_schema.md` for details
+
 ## Current Refactoring Efforts
 
 The branch `refactor/namespace-standardization-and-header-hygiene` is actively improving:
