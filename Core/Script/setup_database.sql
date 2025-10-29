@@ -1,4 +1,47 @@
-﻿-- ******************[section: authntication and autherization tables]******************
+﻿SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `acquisitions`;
+DROP TABLE IF EXISTS `anatomic_regions`;
+DROP TABLE IF EXISTS `body_parts`;
+DROP TABLE IF EXISTS `detector_setup`;
+DROP TABLE IF EXISTS `detectors`;
+DROP TABLE IF EXISTS `device_connections`;
+DROP TABLE IF EXISTS `dicom_tags`;
+DROP TABLE IF EXISTS `environment_settings`;
+DROP TABLE IF EXISTS `general_equipments`;
+DROP TABLE IF EXISTS `generators`;
+DROP TABLE IF EXISTS `image_comments`;
+DROP TABLE IF EXISTS `images`;
+DROP TABLE IF EXISTS `institutions`;
+DROP TABLE IF EXISTS `mwl_attributes`;
+DROP TABLE IF EXISTS `mwl_entries`;
+DROP TABLE IF EXISTS `mwl_presentation_contexts`;
+DROP TABLE IF EXISTS `mwl_profiles`;
+DROP TABLE IF EXISTS `mwl_task_mapping`;
+DROP TABLE IF EXISTS `pacs_nodes`;
+DROP TABLE IF EXISTS `positioner_steps`;
+DROP TABLE IF EXISTS `positioners`;
+DROP TABLE IF EXISTS `procedure_views`;
+DROP TABLE IF EXISTS `procedures`;
+DROP TABLE IF EXISTS `profile_tag_association`;
+DROP TABLE IF EXISTS `roles`;
+DROP TABLE IF EXISTS `series`;
+DROP TABLE IF EXISTS `sop_commons`;
+DROP TABLE IF EXISTS `studies`;
+DROP TABLE IF EXISTS `technique_parameters`;
+DROP TABLE IF EXISTS `user_roles`;
+DROP TABLE IF EXISTS `view_techniques`;
+DROP TABLE IF EXISTS `views`;
+DROP TABLE IF EXISTS `worklist_field_configurations`;
+DROP TABLE IF EXISTS `xray_tube_setup`;
+DROP TABLE IF EXISTS `xray_tubes`;
+DROP TABLE IF EXISTS `patients`;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+-- ******************[section: authntication and autherization tables]******************
 
 -- Stores user login and audit information.
 CREATE TABLE users (
@@ -400,7 +443,6 @@ CREATE UNIQUE INDEX idx_patients_patient_id_issuer ON patients (patient_id, issu
 
 -- Index for efficient patient lookup by ID alone
 CREATE INDEX idx_patients_patient_id ON patients (patient_id);
-
 -- Index for patient name searches
 CREATE INDEX idx_patients_patient_name ON patients (patient_name);
 
@@ -424,10 +466,10 @@ CREATE TABLE studies (
 );
 
 -- Index to support efficient filtering by Admission ID (non-unique)
-CREATE INDEX IF NOT EXISTS idx_studies_admission_id ON studies (admission_id);
+CREATE INDEX idx_studies_admission_id ON studies (admission_id);
 
 -- Index to support efficient patient -> studies lookups
-CREATE INDEX IF NOT EXISTS idx_studies_patient_id ON studies (patient_id);
+CREATE INDEX idx_studies_patient_id ON studies (patient_id);
 
 -- Stores Series-level metadata linked to a Study.
 CREATE TABLE series (
