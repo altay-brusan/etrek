@@ -374,6 +374,7 @@ CREATE TABLE studies (
     id INT AUTO_INCREMENT PRIMARY KEY,
     study_instance_uid VARCHAR(64) NOT NULL,
     study_id VARCHAR(64) DEFAULT NULL,  -- (0020,0010): User or equipment generated Study identifier.
+    admission_id VARCHAR(64) DEFAULT NULL,  -- (0038,0010): Admission ID (Patient Study Module)
     accession_number VARCHAR(64) DEFAULT NULL,  -- (0008,0050)
     issuer_of_accession_number VARCHAR(128) DEFAULT NULL,  -- (0008,0051)
     referring_physician_name VARCHAR(128) DEFAULT NULL,  -- (0008,0090)
@@ -384,6 +385,9 @@ CREATE TABLE studies (
     patient_size INT DEFAULT NULL,  -- (0010,1020)
     allergy VARCHAR(255) DEFAULT NULL  -- (0010,2110)
 );
+
+-- Index to support efficient filtering by Admission ID (non-unique)
+CREATE INDEX IF NOT EXISTS idx_studies_admission_id ON studies (admission_id);
 
 -- Stores Series-level metadata linked to a Study.
 CREATE TABLE series (
@@ -683,6 +687,7 @@ INSERT INTO dicom_tags (name, display_name, group_hex, element_hex, pgroup_hex, 
 ('PatientComments','Patient Comments', 0x0010, 0x4000, 0x0000, 0x0000, TRUE, FALSE),
 ('PatientAllergies','Patient Allergies', 0x0010, 0x2110, 0x0000, 0x0000, TRUE, FALSE), -- renamed
 ('RequestingPhysician','Requesting Physician', 0x0032, 0x1032, 0x0000, 0x0000, TRUE, FALSE),
+('PatientAddress','Patient Address', 0x0010, 0x1040, 0x0000, 0x0000, TRUE, FALSE),
 -- study modules
 ('PatientAge', 'Patient Age', 0x0010, 0x1010, 0x0000, 0x0000, TRUE, FALSE), 
 ('AccessionNumber','Accession Number', 0x0008, 0x0050, 0x0000, 0x0000, TRUE, FALSE),
