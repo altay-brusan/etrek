@@ -1,13 +1,14 @@
-#ifndef ETREK_CORE_DATA_ENTITY_STUDY_H
-#define ETREK_CORE_DATA_ENTITY_STUDY_H
+#ifndef ETREK_DICOM_DATA_ENTITY_STUDY_H
+#define ETREK_DICOM_DATA_ENTITY_STUDY_H
 
 #include <QString>
 
-namespace Etrek::Core::Data::Entity {
+namespace Etrek::Dicom::Data::Entity {
 
     class Study {
     public:
         int Id = -1;
+        int PatientId = -1;       // Foreign key to patients table
         QString StudyInstanceUID;
         QString StudyId;          // DICOM (0020,0010)
         QString AdmissionId;      // DICOM (0038,0010)
@@ -22,7 +23,7 @@ namespace Etrek::Core::Data::Entity {
         QString Allergy;
     };
 
-} // namespace Etrek::Core::Data::Entity
+} // namespace Etrek::Dicom::Data::Entity
 
-#endif // ETREK_CORE_DATA_ENTITY_STUDY_H
+#endif // ETREK_DICOM_DATA_ENTITY_STUDY_H
 

@@ -369,9 +369,40 @@ CREATE TABLE mwl_attributes (
 
 -- section DICOM: https://dicom.nema.org/medical/dicom/2023c/output/chtml/part03/sect_A.26.3.html
 
+-- Stores Patient-level DICOM metadata aligned with DICOM Patient Module.
+-- Reference: DICOM PS3.3 C.7.1.1 Patient Module
+CREATE TABLE patients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_name VARCHAR(255) DEFAULT NULL,  -- (0010,0010): Patient's Name
+    patient_id VARCHAR(64) NOT NULL,  -- (0010,0020): Primary identifier for the patient
+    issuer_of_patient_id VARCHAR(64) DEFAULT NULL,  -- (0010,0021): Organization that issued the Patient ID
+    type_of_patient_id VARCHAR(64) DEFAULT NULL,  -- (0010,0022): Type of identifier (e.g., text, barcode, RFID)
+    issuer_of_patient_id_qualifiers JSON DEFAULT NULL,  -- (0010,0024): Sequence of issuer qualifiers (Universal Entity ID, etc.)
+    other_patient_id JSON DEFAULT NULL,  -- (0010,1000): Array of other patient identifiers
+    patient_sex ENUM('M', 'F', 'O', 'U') DEFAULT NULL,  -- (0010,0040): Patient's sex (Male, Female, Other, Unknown)
+    patient_birth_date DATE DEFAULT NULL,  -- (0010,0030): Patient's date of birth
+    patient_comments TEXT DEFAULT NULL,  -- (0010,4000): Additional patient information
+    patient_allergies VARCHAR(512) DEFAULT NULL,  -- (0010,2110): Patient allergies or adverse reactions
+    requesting_physician VARCHAR(255) DEFAULT NULL,  -- (0032,1032): Requesting/referring physician
+    patient_address TEXT DEFAULT NULL,  -- (0010,1040): Patient's mailing address
+    create_date DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+    update_date DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6)
+);
+
+-- Composite unique index: A patient is uniquely identified by patient_id + issuer combination
+-- Allows same patient_id from different issuers to coexist
+CREATE UNIQUE INDEX idx_patients_patient_id_issuer ON patients (patient_id, issuer_of_patient_id);
+
+-- Index for efficient patient lookup by ID alone
+CREATE INDEX idx_patients_patient_id ON patients (patient_id);
+
+-- Index for patient name searches
+CREATE INDEX idx_patients_patient_name ON patients (patient_name);
+
 -- Stores Study-level DICOM metadata and links to MWL entries.
 CREATE TABLE studies (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,  -- Foreign key to patients table (one patient -> many studies)
     study_instance_uid VARCHAR(64) NOT NULL,
     study_id VARCHAR(64) DEFAULT NULL,  -- (0020,0010): User or equipment generated Study identifier.
     admission_id VARCHAR(64) DEFAULT NULL,  -- (0038,0010): Admission ID (Patient Study Module)
@@ -383,11 +414,15 @@ CREATE TABLE studies (
     study_description VARCHAR(255) DEFAULT NULL,  -- (0008,1030)
     patient_age INT DEFAULT NULL,  -- (0010,1010)
     patient_size INT DEFAULT NULL,  -- (0010,1020)
-    allergy VARCHAR(255) DEFAULT NULL  -- (0010,2110)
+    allergy VARCHAR(255) DEFAULT NULL,  -- (0010,2110)
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE RESTRICT  -- Protect study integrity; patient cannot be deleted if studies exist
 );
 
 -- Index to support efficient filtering by Admission ID (non-unique)
 CREATE INDEX IF NOT EXISTS idx_studies_admission_id ON studies (admission_id);
+
+-- Index to support efficient patient -> studies lookups
+CREATE INDEX IF NOT EXISTS idx_studies_patient_id ON studies (patient_id);
 
 -- Stores Series-level metadata linked to a Study.
 CREATE TABLE series (
