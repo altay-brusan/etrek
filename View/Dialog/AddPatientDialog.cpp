@@ -118,9 +118,10 @@ void AddPatientDialog::initializeStyles()
     ui->middleNameLineEdit->setStyleSheet(lineCss);
     ui->lastNameLineEdit->setStyleSheet(lineCss);
     ui->patientIdLineEdit->setStyleSheet(lineCss);
+    ui->otherPatientIdLineEdit->setStyleSheet(lineCss);
     ui->ageLineEdit->setStyleSheet(lineCss);
     ui->referringPhysicianLineEdit->setStyleSheet(lineCss);
-    ui->patientLocationLineEdit->setStyleSheet(lineCss);
+    ui->patientAddressLineEdit->setStyleSheet(lineCss);
     ui->admissionNumberLineEdit->setStyleSheet(lineCss);
     ui->accessionNumberLineEdit->setStyleSheet(lineCss);
 
@@ -492,6 +493,7 @@ Etrek::ScanProtocol::Data::Model::PatientModel AddPatientDialog::getPatientModel
     data.middleName = ui->middleNameLineEdit->text().trimmed();
     data.lastName = ui->lastNameLineEdit->text().trimmed();
     data.patientId = ui->patientIdLineEdit->text().trimmed();
+    data.otherPatientId = ui->otherPatientIdLineEdit->text().trimmed();
     data.dateOfBirth = ui->dateOfBirthDateEdit->date();
     data.age = ui->ageLineEdit->text().toInt();
 
@@ -500,7 +502,7 @@ Etrek::ScanProtocol::Data::Model::PatientModel AddPatientDialog::getPatientModel
         data.gender = *g;
 
     data.referringPhysician = ui->referringPhysicianLineEdit->text().trimmed();
-    data.patientLocation = ui->patientLocationLineEdit->text().trimmed();
+    data.patientAddress = ui->patientAddressLineEdit->text().trimmed();
     data.admissionNumber = ui->admissionNumberLineEdit->text().trimmed();
     data.accessionNumber = ui->accessionNumberLineEdit->text().trimmed();
     if (m_currentRegionIndex >= 0 && m_currentRegionIndex < m_regions.size())
@@ -519,11 +521,12 @@ void AddPatientDialog::clearForm()
     ui->middleNameLineEdit->clear();
     ui->lastNameLineEdit->clear();
     ui->patientIdLineEdit->clear();
+    ui->otherPatientIdLineEdit->clear();
     ui->dateOfBirthDateEdit->setDate(QDate::currentDate());
     ui->ageLineEdit->clear();
     ui->genderComboBox->setCurrentIndex(0);
     ui->referringPhysicianLineEdit->clear();
-    ui->patientLocationLineEdit->clear();
+    ui->patientAddressLineEdit->clear();
     ui->admissionNumberLineEdit->clear();
     ui->accessionNumberLineEdit->clear();
     ui->bodyPartsComboBox->clear();

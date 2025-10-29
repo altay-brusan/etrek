@@ -15,11 +15,12 @@ namespace Etrek::ScanProtocol::Data::Model {
         QString middleName;
         QString lastName;
         QString patientId;
+        QString otherPatientId;
         QDate   dateOfBirth;
         int     age = 0;
         Etrek::ScanProtocol::Gender gender = Etrek::ScanProtocol::Gender::Male;
         QString referringPhysician;
-        QString patientLocation;
+        QString patientAddress;
         QString admissionNumber;
         QString accessionNumber;
         Etrek::ScanProtocol::Data::Entity::AnatomicRegion selectedRegion;
