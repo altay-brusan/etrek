@@ -322,6 +322,11 @@ CREATE TABLE mwl_presentation_contexts (
 );
 
 -- DICOM tag dictionary with tag identifiers and metadata.
+-- This is a global/admin-managed reference table that defines all DICOM tags.
+-- IMPORTANT: All foreign keys referencing dicom_tags must use ON DELETE RESTRICT
+-- to prevent accidental deletion of tag definitions when instance data is removed.
+-- Child tables (profile_tag_association, mwl_attributes) use RESTRICT to ensure
+-- tags cannot be deleted while they are referenced by any data.
 CREATE TABLE dicom_tags (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,     -- Tag standard name (e.g. 'AccessionNumber')
@@ -341,8 +346,8 @@ CREATE TABLE profile_tag_association (
     is_identifier BOOLEAN DEFAULT FALSE,    -- This tag is being used for identification (active)
     is_mandatory BOOLEAN DEFAULT FALSE,     -- If true, must be in is_identifier = true
     PRIMARY KEY (profile_id, tag_id),
-    FOREIGN KEY (profile_id) REFERENCES mwl_profiles(id) ON DELETE CASCADE,
-    FOREIGN KEY (tag_id) REFERENCES dicom_tags(id) ON DELETE CASCADE
+    FOREIGN KEY (profile_id) REFERENCES mwl_profiles(id) ON DELETE CASCADE,  -- Profile deletion removes associations
+    FOREIGN KEY (tag_id) REFERENCES dicom_tags(id) ON DELETE RESTRICT        -- Prevent deletion of globally managed DICOM tags
 );
 
 -- Stores each Modality Worklist (MWL) entry received (queue).
@@ -364,7 +369,7 @@ CREATE TABLE mwl_attributes (
     dicom_tag_id INT NOT NULL,               -- Foreign key to dicom_tags.id (the actual DICOM tag)
     tag_value VARCHAR(512) DEFAULT NULL,       -- Value of the tag (as a string)
     FOREIGN KEY (mwl_entry_id) REFERENCES mwl_entries(id) ON DELETE CASCADE,  -- Cascade deletes with worklist entry
-    FOREIGN KEY (dicom_tag_id) REFERENCES dicom_tags(id) ON DELETE CASCADE   -- Cascade deletes with dicom tag
+    FOREIGN KEY (dicom_tag_id) REFERENCES dicom_tags(id) ON DELETE RESTRICT  -- Prevent deletion of globally managed DICOM tags
 );
 
 -- section DICOM: https://dicom.nema.org/medical/dicom/2023c/output/chtml/part03/sect_A.26.3.html
