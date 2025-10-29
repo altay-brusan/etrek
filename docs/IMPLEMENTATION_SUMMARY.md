@@ -96,15 +96,15 @@ This implementation adds comprehensive support for DICOM Admission ID (tag 0038,
 
 ## Files Created/Modified
 
-### Created (9 files):
+### Created (8 files):
 1. `Core/Script/migration_add_admission_id.sql`
 2. `Core/Script/backfill_admission_id.sql`
 3. `Core/Script/README.md`
 4. `docs/admission_id_schema.md`
-5. `RELEASE_NOTES.md`
-6. `Test/tst_AdmissionIdSchema.cpp`
-7. `Test/README_ADMISSION_ID_TEST.md`
-8. `docs/` (directory)
+5. `docs/IMPLEMENTATION_SUMMARY.md`
+6. `RELEASE_NOTES.md`
+7. `Test/tst_AdmissionIdSchema.cpp`
+8. `Test/README_ADMISSION_ID_TEST.md`
 
 ### Modified (2 files):
 1. `Core/Script/setup_database.sql`
@@ -207,32 +207,36 @@ These items require study management functionality that should be implemented se
 
 ### 1. For New Databases
 ```bash
-mysql -u username -p -e "CREATE DATABASE etrek_db;"
-mysql -u username -p etrek_db < Core/Script/setup_database.sql
+mysql -u <username> -p -e "CREATE DATABASE <database_name>;"
+mysql -u <username> -p <database_name> < Core/Script/setup_database.sql
 ```
 
 ### 2. For Existing Databases
 ```bash
 # Backup first!
-mysqldump -u username -p etrek_db > backup.sql
+mysqldump -u <username> -p <database_name> > backup_$(date +%Y%m%d).sql
 
 # Run migration
-mysql -u username -p etrek_db < Core/Script/migration_add_admission_id.sql
+mysql -u <username> -p <database_name> < Core/Script/migration_add_admission_id.sql
 
 # Optionally backfill from worklist
-mysql -u username -p etrek_db < Core/Script/backfill_admission_id.sql
+mysql -u <username> -p <database_name> < Core/Script/backfill_admission_id.sql
 ```
 
 ### 3. Run Tests
+
+**Note**: Test commands assume the default Qt preset and build structure. Adjust paths based on your actual build configuration.
+
 ```bash
-# Configure and build
+# Configure and build (adjust preset name if different)
 cmake --preset Qt-Debug
 cmake --build out/build/debug --target tst_AdmissionIdSchema
 
-# Set environment
-export ETREK_TEST_DB_PASS="password"
+# Set environment variables
+export ETREK_TEST_DB_NAME="etrek_test"  # or your test database name
+export ETREK_TEST_DB_PASS="your_password"
 
-# Run test
+# Run test (adjust path based on your build directory)
 ./out/build/debug/Test/tst_AdmissionIdSchema
 ```
 
