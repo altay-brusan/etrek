@@ -2,6 +2,7 @@
 #define ETREK_DICOM_DATA_ENTITY_STUDY_H
 
 #include <QString>
+#include <QDateTime>
 
 namespace Etrek::Dicom::Data::Entity {
 
@@ -21,6 +22,9 @@ namespace Etrek::Dicom::Data::Entity {
         int PatientAge = 0;
         int PatientSize = 0;
         QString Allergy;
+
+        Study() = default;
+        bool IsValid() const { return Id >= 0; }
     };
 
 } // namespace Etrek::Dicom::Data::Entity
