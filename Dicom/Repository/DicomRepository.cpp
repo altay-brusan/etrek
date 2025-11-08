@@ -10,6 +10,10 @@ namespace Etrek::Dicom::Repository {
     using Etrek::Specification::Result;
     using Etrek::Dicom::Data::Entity::Study;
     using Etrek::Dicom::Data::Entity::Patient;
+    using Etrek::Dicom::Data::Entity::EntityStatus;
+    using Etrek::Dicom::Data::Entity::EntityType;
+    using Etrek::Dicom::Data::Entity::WorkflowStatus;
+    using Etrek::Dicom::Data::Entity::Priority;
     using Etrek::Core::Data::Model::DatabaseConnectionSetting;
     using Etrek::Core::Globalization::TranslationProvider;
     using Etrek::Core::Log::AppLoggerFactory;
@@ -284,6 +288,273 @@ namespace Etrek::Dicom::Repository {
             // Patient doesn't exist - insert new
             return insertPatient(patient);
         }
+    }
+
+    Result<EntityStatus> DicomRepository::insertEntityStatus(EntityStatus& status)
+    {
+        const QString cx = "dicom_conn_insert_status_" + QString::number(QRandomGenerator::global()->generate());
+        {
+            QSqlDatabase db = createConnection(cx);
+            if (!db.open()) {
+                const auto err = QString("Failed to open database: %1").arg(db.lastError().text());
+                logger->LogError(err);
+                return Result<EntityStatus>::Failure(err);
+            }
+
+            QSqlQuery q(db);
+            q.prepare(R"(
+                INSERT INTO entity_status (
+                    entity_type, entity_id, status, status_reason, priority,
+                    assigned_to, transitioned_by, transitioned_at, notes
+                ) VALUES (
+                    :entity_type, :entity_id, :status, :status_reason, :priority,
+                    :assigned_to, :transitioned_by, :transitioned_at, :notes
+                )
+            )");
+
+            q.bindValue(":entity_type", EntityStatus::EntityTypeToString(status.Type));
+            q.bindValue(":entity_id", status.EntityId);
+            q.bindValue(":status", EntityStatus::WorkflowStatusToString(status.Status));
+            q.bindValue(":status_reason", status.StatusReason.isEmpty() ? QVariant(QVariant::String) : status.StatusReason);
+            q.bindValue(":priority", EntityStatus::PriorityToString(status.PriorityLevel));
+            q.bindValue(":assigned_to", status.AssignedTo >= 0 ? status.AssignedTo : QVariant(QVariant::Int));
+            q.bindValue(":transitioned_by", status.TransitionedBy >= 0 ? status.TransitionedBy : QVariant(QVariant::Int));
+            q.bindValue(":transitioned_at", status.TransitionedAt.isValid() ? status.TransitionedAt : QDateTime::currentDateTime());
+            q.bindValue(":notes", status.Notes.isEmpty() ? QVariant(QVariant::String) : status.Notes);
+
+            if (!q.exec()) {
+                const auto err = QString("Failed to insert entity status: %1").arg(q.lastError().text());
+                logger->LogError(err);
+                return Result<EntityStatus>::Failure(err);
+            }
+
+            status.Id = q.lastInsertId().toInt();
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(cx);
+        return Result<EntityStatus>::Success(status);
+    }
+
+    Result<std::optional<EntityStatus>> DicomRepository::getCurrentStatus(EntityType entityType, int entityId) const
+    {
+        const QString cx = "dicom_conn_get_current_status_" + QString::number(QRandomGenerator::global()->generate());
+        {
+            QSqlDatabase db = createConnection(cx);
+            if (!db.open()) {
+                const auto err = QString("Failed to open database: %1").arg(db.lastError().text());
+                logger->LogError(err);
+                return Result<std::optional<EntityStatus>>::Failure(err);
+            }
+
+            QSqlQuery q(db);
+            q.prepare(R"(
+                SELECT id, entity_type, entity_id, status, status_reason, priority,
+                       assigned_to, transitioned_by, transitioned_at, notes
+                FROM entity_status
+                WHERE entity_type = :entity_type AND entity_id = :entity_id
+                ORDER BY id DESC
+                LIMIT 1
+            )");
+
+            q.bindValue(":entity_type", EntityStatus::EntityTypeToString(entityType));
+            q.bindValue(":entity_id", entityId);
+
+            if (!q.exec()) {
+                const auto err = QString("Failed to get current status: %1").arg(q.lastError().text());
+                logger->LogError(err);
+                return Result<std::optional<EntityStatus>>::Failure(err);
+            }
+
+            if (q.next()) {
+                EntityStatus status;
+                status.Id = q.value("id").toInt();
+                status.Type = EntityStatus::StringToEntityType(q.value("entity_type").toString());
+                status.EntityId = q.value("entity_id").toInt();
+                status.Status = EntityStatus::StringToWorkflowStatus(q.value("status").toString());
+                status.StatusReason = q.value("status_reason").toString();
+                status.PriorityLevel = EntityStatus::StringToPriority(q.value("priority").toString());
+                status.AssignedTo = q.value("assigned_to").toInt();
+                status.TransitionedBy = q.value("transitioned_by").toInt();
+                status.TransitionedAt = q.value("transitioned_at").toDateTime();
+                status.Notes = q.value("notes").toString();
+
+                db.close();
+                QSqlDatabase::removeDatabase(cx);
+                return Result<std::optional<EntityStatus>>::Success(status);
+            }
+
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(cx);
+        return Result<std::optional<EntityStatus>>::Success(std::nullopt);
+    }
+
+    Result<QVector<EntityStatus>> DicomRepository::getStatusHistory(EntityType entityType, int entityId) const
+    {
+        QVector<EntityStatus> history;
+        const QString cx = "dicom_conn_status_history_" + QString::number(QRandomGenerator::global()->generate());
+        {
+            QSqlDatabase db = createConnection(cx);
+            if (!db.open()) {
+                const auto err = QString("Failed to open database: %1").arg(db.lastError().text());
+                logger->LogError(err);
+                return Result<QVector<EntityStatus>>::Failure(err);
+            }
+
+            QSqlQuery q(db);
+            q.prepare(R"(
+                SELECT id, entity_type, entity_id, status, status_reason, priority,
+                       assigned_to, transitioned_by, transitioned_at, notes
+                FROM entity_status
+                WHERE entity_type = :entity_type AND entity_id = :entity_id
+                ORDER BY transitioned_at DESC, id DESC
+            )");
+
+            q.bindValue(":entity_type", EntityStatus::EntityTypeToString(entityType));
+            q.bindValue(":entity_id", entityId);
+
+            if (!q.exec()) {
+                const auto err = QString("Failed to get status history: %1").arg(q.lastError().text());
+                logger->LogError(err);
+                return Result<QVector<EntityStatus>>::Failure(err);
+            }
+
+            while (q.next()) {
+                EntityStatus status;
+                status.Id = q.value("id").toInt();
+                status.Type = EntityStatus::StringToEntityType(q.value("entity_type").toString());
+                status.EntityId = q.value("entity_id").toInt();
+                status.Status = EntityStatus::StringToWorkflowStatus(q.value("status").toString());
+                status.StatusReason = q.value("status_reason").toString();
+                status.PriorityLevel = EntityStatus::StringToPriority(q.value("priority").toString());
+                status.AssignedTo = q.value("assigned_to").toInt();
+                status.TransitionedBy = q.value("transitioned_by").toInt();
+                status.TransitionedAt = q.value("transitioned_at").toDateTime();
+                status.Notes = q.value("notes").toString();
+                history.push_back(std::move(status));
+            }
+
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(cx);
+        return Result<QVector<EntityStatus>>::Success(history);
+    }
+
+    Result<QVector<EntityStatus>> DicomRepository::getEntitiesByStatus(EntityType entityType, WorkflowStatus status) const
+    {
+        QVector<EntityStatus> entities;
+        const QString cx = "dicom_conn_entities_by_status_" + QString::number(QRandomGenerator::global()->generate());
+        {
+            QSqlDatabase db = createConnection(cx);
+            if (!db.open()) {
+                const auto err = QString("Failed to open database: %1").arg(db.lastError().text());
+                logger->LogError(err);
+                return Result<QVector<EntityStatus>>::Failure(err);
+            }
+
+            QSqlQuery q(db);
+            q.prepare(R"(
+                SELECT es.id, es.entity_type, es.entity_id, es.status, es.status_reason, es.priority,
+                       es.assigned_to, es.transitioned_by, es.transitioned_at, es.notes
+                FROM entity_status es
+                INNER JOIN (
+                    SELECT entity_type, entity_id, MAX(id) as max_id
+                    FROM entity_status
+                    WHERE entity_type = :entity_type
+                    GROUP BY entity_type, entity_id
+                ) latest ON es.entity_type = latest.entity_type
+                        AND es.entity_id = latest.entity_id
+                        AND es.id = latest.max_id
+                WHERE es.status = :status
+                ORDER BY es.transitioned_at DESC
+            )");
+
+            q.bindValue(":entity_type", EntityStatus::EntityTypeToString(entityType));
+            q.bindValue(":status", EntityStatus::WorkflowStatusToString(status));
+
+            if (!q.exec()) {
+                const auto err = QString("Failed to get entities by status: %1").arg(q.lastError().text());
+                logger->LogError(err);
+                return Result<QVector<EntityStatus>>::Failure(err);
+            }
+
+            while (q.next()) {
+                EntityStatus entityStatus;
+                entityStatus.Id = q.value("id").toInt();
+                entityStatus.Type = EntityStatus::StringToEntityType(q.value("entity_type").toString());
+                entityStatus.EntityId = q.value("entity_id").toInt();
+                entityStatus.Status = EntityStatus::StringToWorkflowStatus(q.value("status").toString());
+                entityStatus.StatusReason = q.value("status_reason").toString();
+                entityStatus.PriorityLevel = EntityStatus::StringToPriority(q.value("priority").toString());
+                entityStatus.AssignedTo = q.value("assigned_to").toInt();
+                entityStatus.TransitionedBy = q.value("transitioned_by").toInt();
+                entityStatus.TransitionedAt = q.value("transitioned_at").toDateTime();
+                entityStatus.Notes = q.value("notes").toString();
+                entities.push_back(std::move(entityStatus));
+            }
+
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(cx);
+        return Result<QVector<EntityStatus>>::Success(entities);
+    }
+
+    Result<QVector<EntityStatus>> DicomRepository::getAssignedEntities(int userId, WorkflowStatus status) const
+    {
+        QVector<EntityStatus> entities;
+        const QString cx = "dicom_conn_assigned_entities_" + QString::number(QRandomGenerator::global()->generate());
+        {
+            QSqlDatabase db = createConnection(cx);
+            if (!db.open()) {
+                const auto err = QString("Failed to open database: %1").arg(db.lastError().text());
+                logger->LogError(err);
+                return Result<QVector<EntityStatus>>::Failure(err);
+            }
+
+            QSqlQuery q(db);
+            q.prepare(R"(
+                SELECT es.id, es.entity_type, es.entity_id, es.status, es.status_reason, es.priority,
+                       es.assigned_to, es.transitioned_by, es.transitioned_at, es.notes
+                FROM entity_status es
+                INNER JOIN (
+                    SELECT entity_type, entity_id, MAX(id) as max_id
+                    FROM entity_status
+                    GROUP BY entity_type, entity_id
+                ) latest ON es.entity_type = latest.entity_type
+                        AND es.entity_id = latest.entity_id
+                        AND es.id = latest.max_id
+                WHERE es.assigned_to = :user_id AND es.status = :status
+                ORDER BY es.priority DESC, es.transitioned_at ASC
+            )");
+
+            q.bindValue(":user_id", userId);
+            q.bindValue(":status", EntityStatus::WorkflowStatusToString(status));
+
+            if (!q.exec()) {
+                const auto err = QString("Failed to get assigned entities: %1").arg(q.lastError().text());
+                logger->LogError(err);
+                return Result<QVector<EntityStatus>>::Failure(err);
+            }
+
+            while (q.next()) {
+                EntityStatus entityStatus;
+                entityStatus.Id = q.value("id").toInt();
+                entityStatus.Type = EntityStatus::StringToEntityType(q.value("entity_type").toString());
+                entityStatus.EntityId = q.value("entity_id").toInt();
+                entityStatus.Status = EntityStatus::StringToWorkflowStatus(q.value("status").toString());
+                entityStatus.StatusReason = q.value("status_reason").toString();
+                entityStatus.PriorityLevel = EntityStatus::StringToPriority(q.value("priority").toString());
+                entityStatus.AssignedTo = q.value("assigned_to").toInt();
+                entityStatus.TransitionedBy = q.value("transitioned_by").toInt();
+                entityStatus.TransitionedAt = q.value("transitioned_at").toDateTime();
+                entityStatus.Notes = q.value("notes").toString();
+                entities.push_back(std::move(entityStatus));
+            }
+
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(cx);
+        return Result<QVector<EntityStatus>>::Success(entities);
     }
 }
 

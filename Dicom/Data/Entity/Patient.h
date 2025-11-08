@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QDate>
+#include <QDateTime>
 
 namespace Etrek::Dicom::Data::Entity {
 
