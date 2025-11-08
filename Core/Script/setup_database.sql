@@ -443,6 +443,7 @@ CREATE UNIQUE INDEX idx_patients_patient_id_issuer ON patients (patient_id, issu
 
 -- Index for efficient patient lookup by ID alone
 CREATE INDEX idx_patients_patient_id ON patients (patient_id);
+
 -- Index for patient name searches
 CREATE INDEX idx_patients_patient_name ON patients (patient_name);
 
@@ -533,6 +534,32 @@ CREATE TABLE images (
     kvp INT DEFAULT NULL, -- (0018,0060)
     FOREIGN KEY (study_id) REFERENCES studies(id) ON DELETE CASCADE,
     FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE
+);
+
+-- Unified status tracking table for all DICOM entities (patients, studies, series, images)
+-- Stores status history with full audit trail for workflow tracking
+CREATE TABLE entity_status (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    entity_type ENUM('PATIENT', 'STUDY', 'SERIES', 'IMAGE') NOT NULL,  -- Type of entity being tracked
+    entity_id INT NOT NULL,  -- ID of the entity (patient.id, study.id, series.id, or image.id)
+    status ENUM('SCHEDULED', 'PENDING', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'ABORTED') NOT NULL,  -- Current status
+    status_reason TEXT DEFAULT NULL,  -- Optional reason for status (e.g., cancellation reason, delay explanation)
+    priority ENUM('URGENT', 'HIGH', 'NORMAL', 'LOW') DEFAULT 'NORMAL',  -- Priority level for workflow management
+    assigned_to INT DEFAULT NULL,  -- FK to users table - who is assigned to this task
+    transitioned_by INT DEFAULT NULL,  -- FK to users table - who made this status change
+    transitioned_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),  -- When status changed
+    notes TEXT DEFAULT NULL,  -- Additional notes from technician/user
+
+    -- Indexes for efficient queries
+    INDEX idx_entity_status_lookup (entity_type, entity_id, transitioned_at DESC),  -- Get status history for an entity
+    INDEX idx_entity_status_current (entity_type, entity_id, id DESC),  -- Get current (latest) status
+    INDEX idx_status_assigned (assigned_to, status),  -- Find all tasks assigned to a user by status
+    INDEX idx_status_priority (priority, status, transitioned_at),  -- Priority-based workflow queries
+    INDEX idx_status_type (entity_type, status),  -- Status queries by entity type (e.g., all pending studies)
+
+    -- Foreign keys
+    FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (transitioned_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- SOP common module
