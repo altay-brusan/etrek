@@ -12,6 +12,7 @@
 #include "AppLogger.h"
 #include "Study.h"
 #include "Patient.h"
+#include "EntityStatus.h"
 
 namespace Etrek::Dicom::Repository {
 
@@ -35,6 +36,23 @@ namespace Etrek::Dicom::Repository {
 
         Etrek::Specification::Result<Etrek::Dicom::Data::Entity::Patient>
             upsertPatient(Etrek::Dicom::Data::Entity::Patient& patient);
+
+        // Status management methods
+        Etrek::Specification::Result<Etrek::Dicom::Data::Entity::EntityStatus>
+            insertEntityStatus(Etrek::Dicom::Data::Entity::EntityStatus& status);
+
+        Etrek::Specification::Result<std::optional<Etrek::Dicom::Data::Entity::EntityStatus>>
+            getCurrentStatus(Etrek::Dicom::Data::Entity::EntityType entityType, int entityId) const;
+
+        Etrek::Specification::Result<QVector<Etrek::Dicom::Data::Entity::EntityStatus>>
+            getStatusHistory(Etrek::Dicom::Data::Entity::EntityType entityType, int entityId) const;
+
+        Etrek::Specification::Result<QVector<Etrek::Dicom::Data::Entity::EntityStatus>>
+            getEntitiesByStatus(Etrek::Dicom::Data::Entity::EntityType entityType,
+                                Etrek::Dicom::Data::Entity::WorkflowStatus status) const;
+
+        Etrek::Specification::Result<QVector<Etrek::Dicom::Data::Entity::EntityStatus>>
+            getAssignedEntities(int userId, Etrek::Dicom::Data::Entity::WorkflowStatus status) const;
 
         ~DicomRepository();
 
