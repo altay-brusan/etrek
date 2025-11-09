@@ -19,7 +19,6 @@
 namespace Etrek::Dicom::Repository {
 
     namespace wle = Etrek::Worklist::Data::Entity;
-    namespace wls = Etrek::Worklist::Specification;
 
     class DicomRepository
     {

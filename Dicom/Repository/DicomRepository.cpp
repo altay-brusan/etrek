@@ -16,10 +16,6 @@ namespace Etrek::Dicom::Repository {
     using Etrek::Dicom::Data::Entity::Priority;
     using Etrek::Worklist::Data::Entity::WorklistEntry;
     using Etrek::Worklist::Data::Entity::WorklistAttribute;
-    using Etrek::Worklist::Specification::Source;
-    using Etrek::Worklist::Specification::ProcedureStepStatus;
-    using Etrek::Worklist::Specification::SourceToString;
-    using Etrek::Worklist::Specification::ProcedureStepStatusToString;
     using Etrek::Core::Data::Model::DatabaseConnectionSetting;
     using Etrek::Core::Globalization::TranslationProvider;
     using Etrek::Core::Log::AppLoggerFactory;
