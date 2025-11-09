@@ -172,7 +172,6 @@ void AddPatientDialog::initializeFromEntities()
     // Start at first active region if available
     if (!m_regions.isEmpty()) {
         m_currentRegionIndex = 0;
-        m_patient.selectedRegion = m_regions[m_currentRegionIndex];
         updateRegionDisplay();
         updateBodyPartListForRegion(m_currentRegionIndex);
     } else {
@@ -310,7 +309,6 @@ void AddPatientDialog::updateRegionDisplay()
     if (m_currentRegionIndex >= 0 && m_currentRegionIndex < m_regions.size()) {
         const auto& ar = m_regions[m_currentRegionIndex];
         if (m_selectedRegionLineEdit) m_selectedRegionLineEdit->setText(ar.Name);
-        m_patient.selectedRegion = ar;
         updateImagesForRegion(ar);
     } else {
         if (m_selectedRegionLineEdit) m_selectedRegionLineEdit->clear();
@@ -397,10 +395,7 @@ void AddPatientDialog::updateBodyPartListForRegion(int regionIndex)
 
     if (hasParts) {
         // Default select first
-        m_patient.selectedBodyPart = partsForRegion.first();
         ui->bodyPartsComboBox->setCurrentIndex(0);
-    } else {
-        m_patient.selectedBodyPart = BodyPart{};
     }
     // Re-validate when region/body part changes
     validateForm();
@@ -424,9 +419,7 @@ void AddPatientDialog::onNextRegionClicked()
 
 void AddPatientDialog::onBodyPartSelectedIndex(int index)
 {
-    if (index >= 0) {
-        m_patient.selectedBodyPart = ui->bodyPartsComboBox->currentData().value<BodyPart>();
-    }
+    // Body part selection is now managed via the table, not m_patient directly
     validateForm();
 }
 
@@ -503,12 +496,37 @@ Etrek::ScanProtocol::Data::Model::PatientModel AddPatientDialog::getPatientModel
     data.patientLocation = ui->patientLocationLineEdit->text().trimmed();
     data.admissionNumber = ui->admissionNumberLineEdit->text().trimmed();
     data.accessionNumber = ui->accessionNumberLineEdit->text().trimmed();
-    if (m_currentRegionIndex >= 0 && m_currentRegionIndex < m_regions.size())
-        data.selectedRegion = m_regions[m_currentRegionIndex];
-    else
-        data.selectedRegion = AnatomicRegion{};
 
-    data.selectedBodyPart = ui->bodyPartsComboBox->currentData().value<BodyPart>();
+    // Build selectedBodyParts from table
+    if (ui->selectedPartsTable) {
+        for (int row = 0; row < ui->selectedPartsTable->rowCount(); ++row) {
+            const int regionId = ui->selectedPartsTable->item(row, 0)->data(Qt::UserRole).toInt();
+            const int bodyPartId = ui->selectedPartsTable->item(row, 1)->data(Qt::UserRole).toInt();
+
+            // Find the region and body part entities by ID
+            AnatomicRegion region;
+            for (const auto& r : m_regions) {
+                if (r.Id == regionId) {
+                    region = r;
+                    break;
+                }
+            }
+
+            BodyPart bodyPart;
+            for (const auto& bp : m_bodyParts) {
+                if (bp.Id == bodyPartId) {
+                    bodyPart = bp;
+                    break;
+                }
+            }
+
+            // Create BodyPartSelection and add to list
+            Etrek::ScanProtocol::Data::Model::BodyPartSelection selection;
+            selection.region = region;
+            selection.bodyPart = bodyPart;
+            data.selectedBodyParts.append(selection);
+        }
+    }
 
     return data;
 }
