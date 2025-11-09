@@ -37,10 +37,6 @@ signals:
     void searchPatientDate(const QDate& acquisionNo);
     void searchStudyId(const QString& studyId);
 
-
-private slots:
-    // Removed: direct AddPatientDialog invocation
-
 private:
     void clearAllFilterBtnClicked();
     void clearAllSearchBtnClicked();
