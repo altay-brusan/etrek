@@ -10,12 +10,15 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Connectivity/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.cpp
+    ${COMMON_INCLUDE_DIR}/Dicom/Repository/*.cpp
 )
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/Connectivity/*.h    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Connectivity/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Repository/*.h        
+    ${CMAKE_CURRENT_SOURCE_DIR}/Repository/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Mapping/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Utility/*.h
 
@@ -29,6 +32,8 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${COMMON_INCLUDE_DIR}/Specification/*.h
     ${COMMON_INCLUDE_DIR}/Worklist/Data/Entity/*.h
     ${COMMON_INCLUDE_DIR}/Worklist/Repository/*.h
+    
+    ${COMMON_INCLUDE_DIR}/Dicom/Repository/*.h
 
 
     ${CMAKE_VIEW_DIRECTORY}/Page/*.h
@@ -65,12 +70,14 @@ target_link_libraries(Worklist
     Common
     View
     ScanProtocol
+    Dicom
 )
 
 target_include_directories(Worklist
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service
     ${CMAKE_CURRENT_SOURCE_DIR}/Mapping
     ${CMAKE_CURRENT_SOURCE_DIR}/Utility
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -84,6 +91,7 @@ target_include_directories(Worklist
     ${COMMON_INCLUDE_DIR}/Specification
     ${COMMON_INCLUDE_DIR}/Worklist/Data/Entity
     ${COMMON_INCLUDE_DIR}/Worklist/Repository
+    ${COMMON_INCLUDE_DIR}/Dicom/Repository
 
     ${COMMON_INCLUDE_DIR}/ScanProtocol
     ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Entity
