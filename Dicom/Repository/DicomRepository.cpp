@@ -14,6 +14,12 @@ namespace Etrek::Dicom::Repository {
     using Etrek::Dicom::Data::Entity::EntityType;
     using Etrek::Dicom::Data::Entity::WorkflowStatus;
     using Etrek::Dicom::Data::Entity::Priority;
+    using Etrek::Worklist::Data::Entity::WorklistEntry;
+    using Etrek::Worklist::Data::Entity::WorklistAttribute;
+    using Etrek::Worklist::Specification::Source;
+    using Etrek::Worklist::Specification::ProcedureStepStatus;
+    using Etrek::Worklist::Specification::SourceToString;
+    using Etrek::Worklist::Specification::ProcedureStepStatusToString;
     using Etrek::Core::Data::Model::DatabaseConnectionSetting;
     using Etrek::Core::Globalization::TranslationProvider;
     using Etrek::Core::Log::AppLoggerFactory;
@@ -555,6 +561,150 @@ namespace Etrek::Dicom::Repository {
         }
         QSqlDatabase::removeDatabase(cx);
         return Result<QVector<EntityStatus>>::Success(entities);
+    }
+
+    Result<WorklistEntry> DicomRepository::insertWorklistEntry(WorklistEntry& entry)
+    {
+        const QString cx = "dicom_conn_insert_mwl_entry_" + QString::number(QRandomGenerator::global()->generate());
+        {
+            QSqlDatabase db = createConnection(cx);
+            if (!db.open()) {
+                const auto err = QString("Failed to open database: %1").arg(db.lastError().text());
+                logger->LogError(err);
+                return Result<WorklistEntry>::Failure(err);
+            }
+
+            QSqlQuery q(db);
+            q.prepare(R"(
+                INSERT INTO mwl_entries (
+                    source, profile_id, status, created_at, updated_at
+                ) VALUES (
+                    :source, :profile_id, :status, :created_at, :updated_at
+                )
+            )");
+
+            q.bindValue(":source", SourceToString(entry.Source));
+            q.bindValue(":profile_id", entry.Profile.Id >= 0 ? entry.Profile.Id : QVariant(QVariant::Int));
+            q.bindValue(":status", ProcedureStepStatusToString(entry.Status));
+            q.bindValue(":created_at", entry.CreatedAt.isValid() ? entry.CreatedAt : QDateTime::currentDateTime());
+            q.bindValue(":updated_at", entry.UpdatedAt.isValid() ? entry.UpdatedAt : QVariant(QVariant::DateTime));
+
+            if (!q.exec()) {
+                const auto err = QString("Failed to insert MWL entry: %1").arg(q.lastError().text());
+                logger->LogError(err);
+                db.close();
+                QSqlDatabase::removeDatabase(cx);
+                return Result<WorklistEntry>::Failure(err);
+            }
+
+            entry.Id = q.lastInsertId().toInt();
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(cx);
+        return Result<WorklistEntry>::Success(entry);
+    }
+
+    Result<WorklistAttribute> DicomRepository::insertWorklistAttribute(WorklistAttribute& attribute)
+    {
+        // Validate: must have valid entry ID and tag ID
+        if (attribute.EntryId < 0 || attribute.Tag.Id < 0) {
+            const auto err = QString("Cannot insert worklist attribute: invalid MWL entry ID or DICOM tag ID");
+            logger->LogError(err);
+            return Result<WorklistAttribute>::Failure(err);
+        }
+
+        const QString cx = "dicom_conn_insert_mwl_attr_" + QString::number(QRandomGenerator::global()->generate());
+        {
+            QSqlDatabase db = createConnection(cx);
+            if (!db.open()) {
+                const auto err = QString("Failed to open database: %1").arg(db.lastError().text());
+                logger->LogError(err);
+                return Result<WorklistAttribute>::Failure(err);
+            }
+
+            QSqlQuery q(db);
+            q.prepare(R"(
+                INSERT INTO mwl_attributes (
+                    mwl_entry_id, dicom_tag_id, tag_value
+                ) VALUES (
+                    :mwl_entry_id, :dicom_tag_id, :tag_value
+                )
+            )");
+
+            q.bindValue(":mwl_entry_id", attribute.EntryId);
+            q.bindValue(":dicom_tag_id", attribute.Tag.Id);
+            q.bindValue(":tag_value", attribute.TagValue.isEmpty() ? QVariant(QVariant::String) : attribute.TagValue);
+
+            if (!q.exec()) {
+                const auto err = QString("Failed to insert MWL attribute: %1").arg(q.lastError().text());
+                logger->LogError(err);
+                db.close();
+                QSqlDatabase::removeDatabase(cx);
+                return Result<WorklistAttribute>::Failure(err);
+            }
+
+            attribute.id = q.lastInsertId().toInt();
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(cx);
+        return Result<WorklistAttribute>::Success(attribute);
+    }
+
+    Result<QVector<WorklistAttribute>> DicomRepository::insertWorklistAttributes(
+        int mwlEntryId, const QVector<WorklistAttribute>& attributes)
+    {
+        QVector<WorklistAttribute> insertedAttributes;
+
+        const QString cx = "dicom_conn_insert_mwl_attrs_" + QString::number(QRandomGenerator::global()->generate());
+        {
+            QSqlDatabase db = createConnection(cx);
+            if (!db.open()) {
+                const auto err = QString("Failed to open database: %1").arg(db.lastError().text());
+                logger->LogError(err);
+                return Result<QVector<WorklistAttribute>>::Failure(err);
+            }
+
+            // Prepare query once, execute multiple times
+            QSqlQuery q(db);
+            q.prepare(R"(
+                INSERT INTO mwl_attributes (
+                    mwl_entry_id, dicom_tag_id, tag_value
+                ) VALUES (
+                    :mwl_entry_id, :dicom_tag_id, :tag_value
+                )
+            )");
+
+            for (const auto& attr : attributes) {
+                // Skip attributes without valid tag ID
+                if (attr.Tag.Id < 0) {
+                    logger->LogWarning(QString("Skipping attribute with invalid tag ID (Tag:%1)")
+                        .arg(attr.Tag.Id));
+                    continue;
+                }
+
+                q.bindValue(":mwl_entry_id", mwlEntryId);
+                q.bindValue(":dicom_tag_id", attr.Tag.Id);
+                q.bindValue(":tag_value", attr.TagValue.isEmpty() ? QVariant(QVariant::String) : attr.TagValue);
+
+                if (!q.exec()) {
+                    const auto err = QString("Failed to insert MWL attribute (tag_id=%1): %2")
+                        .arg(attr.Tag.Id).arg(q.lastError().text());
+                    logger->LogError(err);
+                    db.close();
+                    QSqlDatabase::removeDatabase(cx);
+                    return Result<QVector<WorklistAttribute>>::Failure(err);
+                }
+
+                WorklistAttribute inserted = attr;
+                inserted.id = q.lastInsertId().toInt();
+                inserted.EntryId = mwlEntryId;
+                insertedAttributes.push_back(inserted);
+            }
+
+            db.close();
+        }
+        QSqlDatabase::removeDatabase(cx);
+        return Result<QVector<WorklistAttribute>>::Success(insertedAttributes);
     }
 }
 
