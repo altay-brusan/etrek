@@ -4,11 +4,13 @@
 #include <QPushButton>
 #include <QDateTime>
 #include <QStandardItem>
+#include <QMessageBox>
 
 #include "WorkListPageDelegate.h"
 #include "WorklistRepository.h"
-#include "ScanProtocolRepository.h "
+#include "ScanProtocolRepository.h"
 #include "AddPatientDialog.h"
+#include "LocalMwlRegistrationService.h"
 
 
 using namespace Etrek::Worklist::Repository;
@@ -18,8 +20,15 @@ namespace Etrek::Worklist::Delegate
     WorkListPageDelegate::WorkListPageDelegate(WorkListPage* ui,
         std::shared_ptr<WorklistRepository> repository,
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
+        std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository,
+        std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
         QObject* parent)
-        : QObject(parent), ui(ui), repository(repository), scanRepository(scanRepository) {
+        : QObject(parent)
+        , ui(ui)
+        , repository(repository)
+        , scanRepository(scanRepository)
+        , dicomRepository(dicomRepository)
+        , dicomTagRepository(dicomTagRepository) {
          
         baseModel = new QStandardItemModel(this);
         proxyModel = new QSortFilterProxyModel(this);
@@ -58,7 +67,7 @@ namespace Etrek::Worklist::Delegate
 
     void WorkListPageDelegate::onAddNewPatient()
     {
-        if (!scanRepository)
+        if (!scanRepository || !dicomRepository || !dicomTagRepository)
             return;
 
         auto regionsRes = scanRepository->getAllAnatomicRegions();
@@ -68,7 +77,39 @@ namespace Etrek::Worklist::Delegate
 
         // Construct dialog with injected entities
         AddPatientDialog dlg(regionsRes.value, partsRes.value, ui);
-        dlg.exec();
+
+        if (dlg.exec() == QDialog::Accepted) {
+            // Get patient data from dialog
+            auto patientData = dlg.getPatientModel();
+
+            // Validate patient data
+            if (!patientData.isValid()) {
+                QMessageBox::warning(ui, "Invalid Data",
+                    "Please ensure all required fields are filled and at least one body part is selected.");
+                return;
+            }
+
+            // Create registration service
+            Etrek::Worklist::Service::LocalMwlRegistrationService registrationService(
+                dicomRepository, dicomTagRepository);
+
+            // Register patient and create MWL entries
+            auto result = registrationService.registerPatient(patientData);
+
+            if (result.isSuccess) {
+                // Success - show message and refresh the worklist
+                QString message = QString("Successfully registered patient with %1 MWL entry(ies).")
+                    .arg(result.value.size());
+                QMessageBox::information(ui, "Patient Registered", message);
+
+                // Refresh the worklist display
+                onClearFilters();
+            } else {
+                // Error - show error message
+                QMessageBox::critical(ui, "Registration Failed",
+                    QString("Failed to register patient:\n%1").arg(result.message));
+            }
+        }
     }
 
     void WorkListPageDelegate::onFilterDateRangeChanged(const DateTimeSpan& date) {

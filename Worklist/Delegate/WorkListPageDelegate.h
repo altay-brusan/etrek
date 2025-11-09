@@ -13,6 +13,7 @@
 #include "DateTimeSpan.h"
 #include "IDelegate.h"
 #include "IPageAction.h"
+#include "DicomRepository.h"
 
 namespace Etrek::Worklist::Delegate {
 
@@ -31,6 +32,8 @@ namespace Etrek::Worklist::Delegate {
         explicit WorkListPageDelegate(WorkListPage* ui,
             std::shared_ptr<repo::WorklistRepository> repository,
             std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
+            std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository,
+            std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
             QObject* parent = nullptr);
         
         QString name() const override;
@@ -74,6 +77,8 @@ namespace Etrek::Worklist::Delegate {
         QPointer<QSortFilterProxyModel> proxyModel;
         std::shared_ptr<repo::WorklistRepository> repository;
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository;
+        std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository;
+        std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository;
 
         void apply() override;
         void accept() override;
