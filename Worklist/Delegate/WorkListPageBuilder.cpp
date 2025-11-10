@@ -1,5 +1,7 @@
 #include "WorkListPageBuilder.h"
 #include "ScanProtocolRepository.h"
+#include "DicomRepository.h"
+#include "DicomTagRepository.h"
 
 namespace Etrek::Worklist::Delegate {
 	using namespace Etrek::Worklist::Repository;
@@ -18,10 +20,12 @@ namespace Etrek::Worklist::Delegate {
     {
         auto repository = std::make_shared<WorklistRepository>(params.dbConnection);
         auto scanRepository = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(params.dbConnection);
+        auto dicomRepository = std::make_shared<Etrek::Dicom::Repository::DicomRepository>(params.dbConnection);
+        auto dicomTagRepository = std::make_shared<Etrek::Dicom::Repository::DicomTagRepository>(params.dbConnection);
         std::shared_ptr<IWorklistRepository> irepository = std::static_pointer_cast<IWorklistRepository>(repository);
         auto* widget = new WorkListPage(irepository, parentWidget);
 
-        auto* delegate = new WorkListPageDelegate(widget, repository, scanRepository, parentDelegate);
+        auto* delegate = new WorkListPageDelegate(widget, repository, scanRepository, dicomRepository, dicomTagRepository, parentDelegate);
 
         // If you need to attach other delegates:
         // if (delegate) delegate->AttachDelegates(params.delegates.values());
