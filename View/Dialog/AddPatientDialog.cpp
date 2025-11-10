@@ -189,6 +189,7 @@ void AddPatientDialog::setupConnections()
     connect(ui->firstNameLineEdit, &QLineEdit::textChanged, this, &AddPatientDialog::onFormFieldChanged);
     connect(ui->lastNameLineEdit, &QLineEdit::textChanged, this, &AddPatientDialog::onFormFieldChanged);
     connect(ui->patientIdLineEdit, &QLineEdit::textChanged, this, &AddPatientDialog::onFormFieldChanged);
+    connect(ui->accessionNumberLineEdit, &QLineEdit::textChanged, this, &AddPatientDialog::onFormFieldChanged);
     connect(ui->dateOfBirthDateEdit, &QDateEdit::dateChanged, this, &AddPatientDialog::onDateOfBirthChanged);
 
     // Gender combo box
@@ -257,10 +258,12 @@ void AddPatientDialog::validateForm()
 {
     const bool hasBodyPart = ui->bodyPartsComboBox->count() > 0 && ui->bodyPartsComboBox->currentIndex() >= 0;
     const bool dobOk = ui->dateOfBirthDateEdit->date().isValid() && ui->dateOfBirthDateEdit->date() <= QDate::currentDate();
+    const bool hasAccession = !ui->accessionNumberLineEdit->text().trimmed().isEmpty();
     const bool hasAnySelectedRow = ui->selectedPartsTable && ui->selectedPartsTable->rowCount() > 0;
     bool isValid = !ui->firstNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->lastNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->patientIdLineEdit->text().trimmed().isEmpty() &&
+                   hasAccession &&
                    dobOk &&
                    hasBodyPart &&
                    hasAnySelectedRow;
@@ -274,6 +277,7 @@ void AddPatientDialog::validateForm()
     mark(ui->firstNameLineEdit, ui->firstNameLineEdit->text().trimmed().isEmpty());
     mark(ui->lastNameLineEdit, ui->lastNameLineEdit->text().trimmed().isEmpty());
     mark(ui->patientIdLineEdit, ui->patientIdLineEdit->text().trimmed().isEmpty());
+    mark(ui->accessionNumberLineEdit, !hasAccession);
     mark(ui->dateOfBirthDateEdit, !dobOk);
     mark(ui->bodyPartsComboBox, !hasBodyPart);
     mark(ui->selectedPartsTable, !hasAnySelectedRow);
@@ -286,10 +290,12 @@ void AddPatientDialog::updateSaveButtonState()
 {
     const bool hasBodyPart = ui->bodyPartsComboBox->count() > 0 && ui->bodyPartsComboBox->currentIndex() >= 0;
     const bool dobOk = ui->dateOfBirthDateEdit->date().isValid() && ui->dateOfBirthDateEdit->date() <= QDate::currentDate();
+    const bool hasAccession = !ui->accessionNumberLineEdit->text().trimmed().isEmpty();
     const bool hasAnySelectedRow = ui->selectedPartsTable && ui->selectedPartsTable->rowCount() > 0;
     bool isValid = !ui->firstNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->lastNameLineEdit->text().trimmed().isEmpty() &&
                    !ui->patientIdLineEdit->text().trimmed().isEmpty() &&
+                   hasAccession &&
                    dobOk &&
                    hasBodyPart &&
                    hasAnySelectedRow;
@@ -449,6 +455,9 @@ void AddPatientDialog::onAddPartClicked()
     ui->selectedPartsTable->setCurrentCell(row, 0);
     if (ui->removePartButton)
         ui->removePartButton->setEnabled(true);
+
+    // Trigger validation to update OK button state
+    validateForm();
 }
 
 void AddPatientDialog::onRemovePartClicked()
@@ -471,6 +480,9 @@ void AddPatientDialog::onRemovePartClicked()
     } else {
         if (ui->removePartButton) ui->removePartButton->setEnabled(false);
     }
+
+    // Trigger validation to update OK button state
+    validateForm();
 }
 
 Etrek::ScanProtocol::Data::Model::PatientModel AddPatientDialog::getPatientModel() const
