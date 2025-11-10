@@ -4,6 +4,7 @@
 #include <QRandomGenerator>
 #include "AppLoggerFactory.h"
 #include "DicomNameFormatter.h"
+#include "WorklistEnum.h"
 
 namespace Etrek::Worklist::Service {
 
@@ -13,11 +14,10 @@ namespace Etrek::Worklist::Service {
     using Etrek::Worklist::Data::Entity::WorklistEntry;
     using Etrek::Worklist::Data::Entity::WorklistAttribute;
     using Etrek::Worklist::Data::Entity::DicomTag;
-    using Etrek::Worklist::Specification::Source;
-    using Etrek::Worklist::Specification::ProcedureStepStatus;
     using Etrek::Core::Log::AppLoggerFactory;
     using Etrek::Core::Log::LoggerProvider;
     using Etrek::Core::Globalization::TranslationProvider;
+    // Note: Source and ProcedureStepStatus are global enums from WorklistEnum.h
 
     static inline QString kServiceName() { return "LocalMwlRegistrationService"; }
 
