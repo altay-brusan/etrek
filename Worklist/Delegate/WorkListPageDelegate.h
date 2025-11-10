@@ -14,6 +14,7 @@
 #include "IDelegate.h"
 #include "IPageAction.h"
 #include "DicomRepository.h"
+#include "DicomTagRepository.h"
 
 namespace Etrek::Worklist::Delegate {
 
