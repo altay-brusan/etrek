@@ -48,9 +48,10 @@ target_link_libraries(Dicom
 
 
 target_include_directories(Dicom
-    PRIVATE
+    PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Data/Entity
     ${CMAKE_CURRENT_SOURCE_DIR}/Data
+    ${CMAKE_CURRENT_SOURCE_DIR}/Data/Util
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository
     ${COMMON_INCLUDE_DIR}/Dicom/

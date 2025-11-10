@@ -13,8 +13,12 @@
 #include "Study.h"
 #include "Patient.h"
 #include "EntityStatus.h"
+#include "WorklistEntry.h"  // From Common/Include/Worklist/Data/Entity/
+#include "WorklistAttribute.h"  // From Common/Include/Worklist/Data/Entity/
 
 namespace Etrek::Dicom::Repository {
+
+    namespace wle = Etrek::Worklist::Data::Entity;
 
     class DicomRepository
     {
@@ -53,6 +57,16 @@ namespace Etrek::Dicom::Repository {
 
         Etrek::Specification::Result<QVector<Etrek::Dicom::Data::Entity::EntityStatus>>
             getAssignedEntities(int userId, Etrek::Dicom::Data::Entity::WorkflowStatus status) const;
+
+        // Modality Worklist methods
+        Etrek::Specification::Result<wle::WorklistEntry>
+            insertWorklistEntry(wle::WorklistEntry& entry);
+
+        Etrek::Specification::Result<wle::WorklistAttribute>
+            insertWorklistAttribute(wle::WorklistAttribute& attribute);
+
+        Etrek::Specification::Result<QVector<wle::WorklistAttribute>>
+            insertWorklistAttributes(int mwlEntryId, const QVector<wle::WorklistAttribute>& attributes);
 
         ~DicomRepository();
 

@@ -36,7 +36,7 @@ DROP TABLE IF EXISTS `worklist_field_configurations`;
 DROP TABLE IF EXISTS `xray_tube_setup`;
 DROP TABLE IF EXISTS `xray_tubes`;
 DROP TABLE IF EXISTS `patients`;
-
+DROP TABLE IF EXISTS `users`;
 SET FOREIGN_KEY_CHECKS = 1;
 
 
