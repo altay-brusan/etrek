@@ -14,8 +14,6 @@
 
 namespace Etrek::Dicom::Repository {
 
-    namespace wle = Etrek::Worklist::Data::Entity;
-
     /**
      * @brief Repository for DICOM tag dictionary lookups with caching
      *
@@ -35,7 +33,7 @@ namespace Etrek::Dicom::Repository {
          * @param keyword Standard tag name (e.g., "PatientName", "AccessionNumber")
          * @return Result containing shared pointer to DicomTag, or nullopt if not found
          */
-        Etrek::Specification::Result<std::shared_ptr<wle::DicomTag>>
+        Etrek::Specification::Result<std::shared_ptr<Etrek::Worklist::Data::Entity::DicomTag>>
             getByKeyword(const QString& keyword);
 
         /**
@@ -44,7 +42,7 @@ namespace Etrek::Dicom::Repository {
          * @param element Element part of DICOM tag (e.g., 0x0050, 0x0010)
          * @return Result containing shared pointer to DicomTag, or nullopt if not found
          */
-        Etrek::Specification::Result<std::shared_ptr<wle::DicomTag>>
+        Etrek::Specification::Result<std::shared_ptr<Etrek::Worklist::Data::Entity::DicomTag>>
             getByTag(uint16_t group, uint16_t element);
 
         /**
@@ -74,10 +72,10 @@ namespace Etrek::Dicom::Repository {
         std::shared_ptr<Etrek::Core::Log::AppLogger> logger;
 
         // Cache: keyword -> DicomTag
-        QMap<QString, std::shared_ptr<wle::DicomTag>> keywordCache;
+        QMap<QString, std::shared_ptr<Etrek::Worklist::Data::Entity::DicomTag>> keywordCache;
 
         // Cache: "GGGG,EEEE" -> DicomTag
-        QMap<QString, std::shared_ptr<wle::DicomTag>> tagCache;
+        QMap<QString, std::shared_ptr<Etrek::Worklist::Data::Entity::DicomTag>> tagCache;
 
         bool cacheLoaded = false;
     };
