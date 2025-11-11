@@ -164,9 +164,9 @@ void WorkListPage::closePage()
     hide();  // or setVisible(false);
 }
 
-void WorkListPage::setProxyModel(QPointer<QStandardItemModel> proxyModel)
+void WorkListPage::setProxyModel(QAbstractItemModel* model)
 {
-   ui->tableViewWorklist->setModel(proxyModel);
+   ui->tableViewWorklist->setModel(model);
    ui->tableViewWorklist->setEditTriggers(QAbstractItemView::NoEditTriggers);
    ui->tableViewWorklist->horizontalHeader()->setStretchLastSection(true);
    ui->tableViewWorklist->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);

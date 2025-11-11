@@ -188,16 +188,23 @@ namespace Etrek::Worklist::Delegate
     void WorkListPageDelegate::loadWorklistData(const QList<ent::WorklistEntry>& entries) {
         baseModel->clear();
 
-        const QList<ent::DicomTag> tagList = getDisplayTagList();
-        if (tagList.isEmpty()) return;
-
-        // Headers
+        // Fixed column headers for consistent worklist display
         QStringList headers;
-        for (const auto& tag : tagList)
-            headers << (tag.DisplayName.isEmpty() ? tag.Name : tag.DisplayName);
+        headers << "Patient Name"
+                << "Patient ID"
+                << "Study Name"
+                << "Gender"
+                << "Birth Date"
+                << "Accession Number"
+                << "Admission ID"
+                << "Status"
+                << "Source"
+                << "Created At";
 
-        headers << "Status" << "Created At" << "Source";
         baseModel->setHorizontalHeaderLabels(headers);
+
+        // Set model to the view (ensure table is connected)
+        ui->setProxyModel(proxyModel);
 
         // Populate rows
         for (const auto& entry : entries)
@@ -205,11 +212,11 @@ namespace Etrek::Worklist::Delegate
     }
 
     void WorkListPageDelegate::onEntryCreated(const ent::WorklistEntry& entry) {
-        const QList<ent::DicomTag> tagList = getDisplayTagList();
-        if (tagList.isEmpty()) return;
-
+        // Simply create and append the new row using fixed column structure
         QList<QStandardItem*> row = createRowForEntry(entry);
-        baseModel->appendRow(row);
+        if (!row.isEmpty()) {
+            baseModel->appendRow(row);
+        }
     }
 
     void WorkListPageDelegate::onEntryUpdated(const ent::WorklistEntry& entry) {
@@ -290,33 +297,60 @@ namespace Etrek::Worklist::Delegate
     }
 
     QList<QStandardItem*> WorkListPageDelegate::createRowForEntry(const ent::WorklistEntry& entry) const {
-        const QList<ent::DicomTag> tagList = getDisplayTagList();
-        if (tagList.isEmpty()) return {};
-
+        // Build tag map from entry attributes for quick lookup
         QMap<QString, QString> tagMap;
         for (const auto& attr : entry.Attributes)
             tagMap[attr.Tag.Name] = attr.TagValue;
 
-        QList<QStandardItem*> row;
-        for (const ent::DicomTag& tag : tagList) {
-            QString value = tagMap.value(tag.Name, "");
-            QStandardItem* item = new QStandardItem(value);
+        // Helper lambda to create styled item
+        auto createItem = [&entry](const QString& text) -> QStandardItem* {
+            QStandardItem* item = new QStandardItem(text);
             item->setData(QColor(208, 208, 208), Qt::ForegroundRole);
-            item->setData(entry.Id, Qt::UserRole);  // Store WorklistEntry ID
-            row << item;
+            item->setData(entry.Id, Qt::UserRole);  // Store WorklistEntry ID for selection/updates
+            return item;
+        };
+
+        QList<QStandardItem*> row;
+
+        // Column 0: Patient Name (DICOM tag: PatientName)
+        row << createItem(tagMap.value("PatientName", ""));
+
+        // Column 1: Patient ID (DICOM tag: PatientID)
+        row << createItem(tagMap.value("PatientID", ""));
+
+        // Column 2: Study Name (DICOM tag: StudyDescription or StudyID as fallback)
+        QString studyName = tagMap.value("StudyDescription", "");
+        if (studyName.isEmpty()) studyName = tagMap.value("StudyID", "");
+        row << createItem(studyName);
+
+        // Column 3: Gender (DICOM tag: PatientSex)
+        row << createItem(tagMap.value("PatientSex", ""));
+
+        // Column 4: Birth Date (DICOM tag: PatientBirthDate) - format as readable date
+        QString birthDate = tagMap.value("PatientBirthDate", "");
+        if (!birthDate.isEmpty() && birthDate.length() == 8) {
+            // Convert DICOM DA format (YYYYMMDD) to display format (YYYY-MM-DD)
+            birthDate = QString("%1-%2-%3")
+                .arg(birthDate.mid(0, 4))
+                .arg(birthDate.mid(4, 2))
+                .arg(birthDate.mid(6, 2));
         }
+        row << createItem(birthDate);
 
-        QStandardItem* statusItem = new QStandardItem(ProcedureStepStatusToString(entry.Status));
-        statusItem->setData(QColor(208, 208, 208), Qt::ForegroundRole);
-        row << statusItem;
+        // Column 5: Accession Number (DICOM tag: AccessionNumber)
+        row << createItem(tagMap.value("AccessionNumber", ""));
 
-        QStandardItem* createdAtItem = new QStandardItem(entry.CreatedAt.toString("yyyy-MM-dd"));
-        createdAtItem->setData(QColor(208, 208, 208), Qt::ForegroundRole);
-        row << createdAtItem;
+        // Column 6: Admission ID (DICOM tag: AdmissionID)
+        row << createItem(tagMap.value("AdmissionID", ""));
 
-        QStandardItem* sourceItem = new QStandardItem(SourceToString(entry.Source));
-        sourceItem->setData(QColor(208, 208, 208), Qt::ForegroundRole);
-        row << sourceItem;
+        // Column 7: Status (from WorklistEntry.Status enum)
+        row << createItem(ProcedureStepStatusToString(entry.Status));
+
+        // Column 8: Source (from WorklistEntry.Source enum)
+        row << createItem(SourceToString(entry.Source));
+
+        // Column 9: Created At (from WorklistEntry.CreatedAt timestamp)
+        row << createItem(entry.CreatedAt.toString("yyyy-MM-dd HH:mm"));
 
         return row;
     }
