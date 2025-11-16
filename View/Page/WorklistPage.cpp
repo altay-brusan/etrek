@@ -171,6 +171,10 @@ void WorkListPage::setProxyModel(QAbstractItemModel* model)
    ui->tableViewWorklist->horizontalHeader()->setStretchLastSection(true);
    ui->tableViewWorklist->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
    ui->tableViewWorklist->horizontalHeader()->setStretchLastSection(true);
+
+   // Configure row selection behavior
+   ui->tableViewWorklist->setSelectionBehavior(QAbstractItemView::SelectRows);
+   ui->tableViewWorklist->setSelectionMode(QAbstractItemView::SingleSelection);
 }
 
 WorkListPage::~WorkListPage()
