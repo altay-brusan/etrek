@@ -193,13 +193,12 @@ namespace Etrek::Worklist::Delegate
         headers << "Patient Name"
                 << "Patient ID"
                 << "Study Name"
+                << "Status"
+                << "Source"
                 << "Gender"
                 << "Birth Date"
                 << "Accession Number"
-                << "Admission ID"
-                << "Status"
-                << "Source"
-                << "Created At";
+                << "Admission ID";
 
         baseModel->setHorizontalHeaderLabels(headers);
 
@@ -323,10 +322,16 @@ namespace Etrek::Worklist::Delegate
         if (studyName.isEmpty()) studyName = tagMap.value("StudyID", "");
         row << createItem(studyName);
 
-        // Column 3: Gender (DICOM tag: PatientSex)
+        // Column 3: Status (from WorklistEntry.Status enum)
+        row << createItem(ProcedureStepStatusToString(entry.Status));
+
+        // Column 4: Source (from WorklistEntry.Source enum)
+        row << createItem(SourceToString(entry.Source));
+
+        // Column 5: Gender (DICOM tag: PatientSex)
         row << createItem(tagMap.value("PatientSex", ""));
 
-        // Column 4: Birth Date (DICOM tag: PatientBirthDate) - format as readable date
+        // Column 6: Birth Date (DICOM tag: PatientBirthDate) - format as readable date
         QString birthDate = tagMap.value("PatientBirthDate", "");
         if (!birthDate.isEmpty() && birthDate.length() == 8) {
             // Convert DICOM DA format (YYYYMMDD) to display format (YYYY-MM-DD)
@@ -337,20 +342,11 @@ namespace Etrek::Worklist::Delegate
         }
         row << createItem(birthDate);
 
-        // Column 5: Accession Number (DICOM tag: AccessionNumber)
+        // Column 7: Accession Number (DICOM tag: AccessionNumber)
         row << createItem(tagMap.value("AccessionNumber", ""));
 
-        // Column 6: Admission ID (DICOM tag: AdmissionID)
+        // Column 8: Admission ID (DICOM tag: AdmissionID)
         row << createItem(tagMap.value("AdmissionID", ""));
-
-        // Column 7: Status (from WorklistEntry.Status enum)
-        row << createItem(ProcedureStepStatusToString(entry.Status));
-
-        // Column 8: Source (from WorklistEntry.Source enum)
-        row << createItem(SourceToString(entry.Source));
-
-        // Column 9: Created At (from WorklistEntry.CreatedAt timestamp)
-        row << createItem(entry.CreatedAt.toString("yyyy-MM-dd HH:mm"));
 
         return row;
     }

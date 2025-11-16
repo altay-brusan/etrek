@@ -168,9 +168,9 @@ void WorkListPage::setProxyModel(QAbstractItemModel* model)
 {
    ui->tableViewWorklist->setModel(model);
    ui->tableViewWorklist->setEditTriggers(QAbstractItemView::NoEditTriggers);
+   ui->tableViewWorklist->setSortingEnabled(true);
    ui->tableViewWorklist->horizontalHeader()->setStretchLastSection(true);
    ui->tableViewWorklist->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-   ui->tableViewWorklist->horizontalHeader()->setStretchLastSection(true);
 
    // Configure row selection behavior
    ui->tableViewWorklist->setSelectionBehavior(QAbstractItemView::SelectRows);
