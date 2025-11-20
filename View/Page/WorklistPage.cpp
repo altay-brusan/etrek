@@ -73,6 +73,16 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
             emit addNewPatient();
         });
 
+        // Emit signal for delegate to handle Update Patient dialog
+        connect(ui->updatePatientBtn, &QPushButton::clicked, this, [this]() {
+            emit updatePatient();
+        });
+
+        // Disable Update button by default (enabled when row is selected)
+        if (ui->updatePatientBtn) {
+            ui->updatePatientBtn->setEnabled(false);
+        }
+
 }
 
 void WorkListPage::setStile()
@@ -175,6 +185,22 @@ void WorkListPage::setProxyModel(QAbstractItemModel* model)
    // Configure row selection behavior
    ui->tableViewWorklist->setSelectionBehavior(QAbstractItemView::SelectRows);
    ui->tableViewWorklist->setSelectionMode(QAbstractItemView::SingleSelection);
+
+   // Connect selection change to enable/disable Update button
+   if (ui->tableViewWorklist->selectionModel()) {
+       connect(ui->tableViewWorklist->selectionModel(), &QItemSelectionModel::selectionChanged,
+           this, [this](const QItemSelection& selected, const QItemSelection& deselected) {
+               bool hasSelection = !selected.isEmpty();
+               if (ui->updatePatientBtn) {
+                   ui->updatePatientBtn->setEnabled(hasSelection);
+               }
+           });
+   }
+}
+
+QTableView* WorkListPage::getWorklistTableView() const
+{
+    return ui->tableViewWorklist;
 }
 
 WorkListPage::~WorkListPage()
