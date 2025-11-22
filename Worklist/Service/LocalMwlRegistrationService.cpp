@@ -188,8 +188,26 @@ namespace Etrek::Worklist::Service {
                 attr.EntryId = entry.Id;
             }
 
-            // TODO: Add body part specific attributes (BodyPartExamined, etc.)
-            // This will be added when we implement the full DICOM hierarchy
+            // Add body part specific attributes
+            // BodyPartExamined (0018,0015) - The examined body part
+            if (!bodyPartSelection.bodyPart.Name.isEmpty()) {
+                addAttributeIfNotEmpty(entryAttributes, "BodyPartExamined", bodyPartSelection.bodyPart.Name);
+            }
+
+            // RequestedProcedureDescription (0032,1060) - Description of the requested procedure
+            // Format: "Region - BodyPart" for clarity
+            QString procedureDescription = QString("%1 - %2")
+                .arg(bodyPartSelection.region.Name)
+                .arg(bodyPartSelection.bodyPart.Name);
+            addAttributeIfNotEmpty(entryAttributes, "RequestedProcedureDescription", procedureDescription);
+
+            // StudyDescription (0008,1030) - Description of the study
+            addAttributeIfNotEmpty(entryAttributes, "StudyDescription", bodyPartSelection.bodyPart.Name);
+
+            // Set EntryId for newly added body part attributes
+            for (auto& attr : entryAttributes) {
+                attr.EntryId = entry.Id;
+            }
 
             // Insert attributes
             auto attrsResult = dicomRepository->insertWorklistAttributes(entry.Id, entryAttributes);
