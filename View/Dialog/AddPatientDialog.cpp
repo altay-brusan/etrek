@@ -560,3 +560,70 @@ void AddPatientDialog::clearForm()
 
     validateForm();
 }
+
+void AddPatientDialog::setPatientModel(const Etrek::ScanProtocol::Data::Model::PatientModel& patient)
+{
+    // Set demographic fields
+    ui->firstNameLineEdit->setText(patient.firstName);
+    ui->middleNameLineEdit->setText(patient.middleName);
+    ui->lastNameLineEdit->setText(patient.lastName);
+    ui->patientIdLineEdit->setText(patient.patientId);
+    ui->dateOfBirthDateEdit->setDate(patient.dateOfBirth);
+    ui->ageLineEdit->setText(QString::number(patient.age));
+    ui->referringPhysicianLineEdit->setText(patient.referringPhysician);
+    ui->patientLocationLineEdit->setText(patient.patientLocation);
+    ui->admissionNumberLineEdit->setText(patient.admissionNumber);
+    ui->accessionNumberLineEdit->setText(patient.accessionNumber);
+
+    // Set gender
+    int genderIndex = static_cast<int>(patient.gender);
+    if (genderIndex >= 0 && genderIndex < ui->genderComboBox->count()) {
+        ui->genderComboBox->setCurrentIndex(genderIndex);
+    }
+
+    // Populate selected parts table
+    if (ui->selectedPartsTable) {
+        ui->selectedPartsTable->setRowCount(0); // Clear existing rows
+
+        for (const auto& selection : patient.selectedBodyParts) {
+            int row = ui->selectedPartsTable->rowCount();
+            ui->selectedPartsTable->insertRow(row);
+
+            auto* regionItem = new QTableWidgetItem(selection.region.Name);
+            regionItem->setData(Qt::UserRole, selection.region.Id);
+            auto* bodyItem = new QTableWidgetItem(selection.bodyPart.Name);
+            bodyItem->setData(Qt::UserRole, selection.bodyPart.Id);
+
+            ui->selectedPartsTable->setItem(row, 0, regionItem);
+            ui->selectedPartsTable->setItem(row, 1, bodyItem);
+        }
+
+        // Set current region based on first selected part if available
+        if (!patient.selectedBodyParts.isEmpty()) {
+            int firstRegionId = patient.selectedBodyParts.first().region.Id;
+            for (int i = 0; i < m_regions.size(); ++i) {
+                if (m_regions[i].Id == firstRegionId) {
+                    m_currentRegionIndex = i;
+                    updateRegionDisplay();
+                    updateBodyPartListForRegion(m_currentRegionIndex);
+                    break;
+                }
+            }
+        }
+    }
+
+    // Update age display
+    updateAge();
+
+    // Validate form with prefilled data
+    validateForm();
+}
+
+void AddPatientDialog::setDialogMode(const QString& title, const QString& buttonText)
+{
+    setWindowTitle(title);
+
+    if (auto okButton = ui->buttonBox->button(QDialogButtonBox::Ok)) {
+        okButton->setText(buttonText);
+    }
+}
