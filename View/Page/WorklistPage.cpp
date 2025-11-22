@@ -175,6 +175,19 @@ void WorkListPage::setProxyModel(QAbstractItemModel* model)
    // Configure row selection behavior
    ui->tableViewWorklist->setSelectionBehavior(QAbstractItemView::SelectRows);
    ui->tableViewWorklist->setSelectionMode(QAbstractItemView::SingleSelection);
+
+   // Connect double-click signal
+   connect(ui->tableViewWorklist, &QTableView::doubleClicked, this, [this](const QModelIndex& index) {
+       if (index.isValid()) {
+           int entryId = index.data(Qt::UserRole).toInt();
+           emit worklistItemDoubleClicked(entryId);
+       }
+   });
+}
+
+QTableView* WorkListPage::getWorklistTableView() const
+{
+    return ui->tableViewWorklist;
 }
 
 WorkListPage::~WorkListPage()

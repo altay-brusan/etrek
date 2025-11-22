@@ -15,6 +15,11 @@
 #include "IPageAction.h"
 #include "DicomRepository.h"
 #include "DicomTagRepository.h"
+#include "PatientModel.h"
+
+namespace Etrek::Context {
+    class IContextManager;
+}
 
 namespace Etrek::Worklist::Delegate {
 
@@ -35,6 +40,7 @@ namespace Etrek::Worklist::Delegate {
             std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
             std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository,
             std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
+            std::weak_ptr<Etrek::Context::IContextManager> contextManager = std::weak_ptr<Etrek::Context::IContextManager>(),
             QObject* parent = nullptr);
         
         QString name() const override;
@@ -44,8 +50,15 @@ namespace Etrek::Worklist::Delegate {
     
     signals:
         void closeWorklist();
+        /**
+         * @brief Emitted when user double-clicks a worklist item to start examination.
+         * @param entryId The ID of the selected worklist entry.
+         */
+        void startExamination(int entryId);
 
     private slots:
+        void onWorklistItemDoubleClicked(int entryId);
+        void onUpdatePatient();
         void onAddNewPatient();
         void onFilterDateRangeChanged(const DateTimeSpan& date);
         void onSourceChanged(const QString& source);
@@ -80,6 +93,9 @@ namespace Etrek::Worklist::Delegate {
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository;
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository;
         std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository;
+        std::weak_ptr<Etrek::Context::IContextManager> contextManager;
+
+        Etrek::ScanProtocol::Data::Model::PatientModel worklistEntryToPatientModel(const ent::WorklistEntry& entry) const;
 
         void apply() override;
         void accept() override;

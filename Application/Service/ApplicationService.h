@@ -53,6 +53,14 @@ namespace Etrek::Worklist::Connectivity {
     class ModalityWorklistManager;
 }
 
+namespace Etrek::Application::Context {
+    class ContextManager;
+}
+
+namespace Etrek::Context {
+    class IContextManager;
+}
+
 namespace Etrek::Application::Service
 {
     class ILaunchStrategy;
@@ -79,6 +87,12 @@ namespace Etrek::Application::Service
         void constructMainWindow();
         void showMainWindow();
 
+        /**
+         * @brief Returns the context manager instance.
+         * @return Shared pointer to the context manager.
+         */
+        std::shared_ptr<Etrek::Context::IContextManager> contextManager() const;
+
     private:
         std::unique_ptr<ILaunchStrategy> createLaunchStrategy(Etrek::Specification::LaunchMode mode);
 
@@ -93,6 +107,7 @@ namespace Etrek::Application::Service
         std::shared_ptr<Etrek::Core::Data::Model::FileLoggerSetting> m_fileLoggerSetting;
         QVector<QSharedPointer<Etrek::Core::Data::Model::RisConnectionSetting>> m_risConnectionSettingList;
         Etrek::Worklist::Connectivity::ModalityWorklistManager* m_modalityWorklistManager = nullptr;
+        std::shared_ptr<Etrek::Application::Context::ContextManager> m_contextManager;
 
         // Value members - MUST include headers
         Etrek::Core::Setting::SettingProvider m_settingProvider;

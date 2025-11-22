@@ -12,6 +12,9 @@
 #include "AuthenticationService.h"
 #include "AuthenticationRepository.h"
 #include "ModalityWorklistManager.h"
+#include "ContextManager.h"
+#include "SessionContext.h"
+#include "IContextManager.h"
 
 #include "MainWindowDelegate.h"
 #include "ILaunchStrategy.h"
@@ -65,6 +68,7 @@ namespace Etrek::Application::Service
         , translator(nullptr)
         , m_authService(nullptr)
         , m_modalityWorklistManager(nullptr)
+        , m_contextManager(std::make_shared<Etrek::Application::Context::ContextManager>())
     {
         translator = &TranslationProvider::Instance();
     }
@@ -118,6 +122,17 @@ namespace Etrek::Application::Service
 
         if (!authenticationResult.isSuccess) {
             return std::nullopt;
+        }
+
+        // Create and set session context after successful authentication
+        if (m_contextManager) {
+            auto sessionContext = std::make_shared<Etrek::Application::Context::SessionContext>(
+                authenticationResult.value,
+                QString()  // Workstation name will be auto-detected
+            );
+            m_contextManager->setSessionContext(sessionContext);
+            logger->LogInfo(QString("Session context created for user: %1")
+                .arg(authenticationResult.value.Username));
         }
 
         logger->LogInfo(translator->getInfoMessage(AUTH_SUCCEED));
@@ -213,6 +228,8 @@ namespace Etrek::Application::Service
 
         DelegateParameter params;
         params.dbConnection = m_databaseConnectionSetting;
+        params.contextManager = m_contextManager;
+        params.sessionContext = m_contextManager ? m_contextManager->sessionContext() : nullptr;
 
         MainWindowBuilder builder;
         auto result = builder.build(params, nullptr, this);
@@ -355,6 +372,11 @@ namespace Etrek::Application::Service
         m_fileLoggerSetting = settingProvider->getFileLoggerSettings();
 
         return true;
+    }
+
+    std::shared_ptr<Etrek::Context::IContextManager> ApplicationService::contextManager() const
+    {
+        return m_contextManager;
     }
 
 } // namespace Etrek::Application::Service

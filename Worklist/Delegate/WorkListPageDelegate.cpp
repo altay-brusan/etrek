@@ -11,25 +11,31 @@
 #include "ScanProtocolRepository.h"
 #include "AddPatientDialog.h"
 #include "LocalMwlRegistrationService.h"
+#include "IContextManager.h"
+#include "ExaminationContext.h"
 
 
 using namespace Etrek::Worklist::Repository;
 
 namespace Etrek::Worklist::Delegate
 {
+    namespace mdl = Etrek::ScanProtocol::Data::Model;
+
     WorkListPageDelegate::WorkListPageDelegate(WorkListPage* ui,
         std::shared_ptr<WorklistRepository> repository,
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository,
         std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
+        std::weak_ptr<Etrek::Context::IContextManager> contextManager,
         QObject* parent)
         : QObject(parent)
         , ui(ui)
         , repository(repository)
         , scanRepository(scanRepository)
         , dicomRepository(dicomRepository)
-        , dicomTagRepository(dicomTagRepository) {
-         
+        , dicomTagRepository(dicomTagRepository)
+        , contextManager(contextManager) {
+
         baseModel = new QStandardItemModel(this);
         proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setSourceModel(baseModel);
@@ -37,10 +43,12 @@ namespace Etrek::Worklist::Delegate
         proxyModel->setFilterKeyColumn(-1);
 
         connect(ui, &WorkListPage::addNewPatient, this, &WorkListPageDelegate::onAddNewPatient);
+        connect(ui, &WorkListPage::updatePatient, this, &WorkListPageDelegate::onUpdatePatient);
+        connect(ui, &WorkListPage::worklistItemDoubleClicked, this, &WorkListPageDelegate::onWorklistItemDoubleClicked);
         connect(ui, &WorkListPage::filterDateSpanChanged, this, &WorkListPageDelegate::onFilterDateRangeChanged);
         connect(ui, &WorkListPage::filterSourceChanged, this, &WorkListPageDelegate::onSourceChanged);
         connect(ui, &WorkListPage::clearAllFilters, this, &WorkListPageDelegate::onClearFilters);
-        
+
         connect(ui, &WorkListPage::clearAllSearch, this, &WorkListPageDelegate::onClearSearch);
         connect(ui, &WorkListPage::searchName, this, &WorkListPageDelegate::onSearchName);
         connect(ui, &WorkListPage::searchPatientId, this, &WorkListPageDelegate::onSearchPatientId);
@@ -378,6 +386,208 @@ namespace Etrek::Worklist::Delegate
 
     void Delegate::WorkListPageDelegate::reject()
     {
+    }
+
+    void WorkListPageDelegate::onWorklistItemDoubleClicked(int entryId)
+    {
+        // Find the WorklistEntry with this ID
+        auto result = repository->getWorklistEntries(nullptr, nullptr);
+        if (!result.isSuccess)
+            return;
+
+        ent::WorklistEntry selectedEntry;
+        bool found = false;
+        for (const auto& entry : result.value) {
+            if (entry.Id == entryId) {
+                selectedEntry = entry;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            return;
+
+        // Create and store ExaminationContext
+        if (auto ctxMgr = contextManager.lock()) {
+            auto examContext = std::make_shared<Etrek::Application::Context::ExaminationContext>(selectedEntry);
+            ctxMgr->setWorkflowContext("Examination", examContext);
+        }
+
+        // Emit signal to start examination
+        emit startExamination(entryId);
+    }
+
+    void WorkListPageDelegate::onUpdatePatient()
+    {
+        if (!scanRepository || !dicomRepository || !dicomTagRepository)
+            return;
+
+        // Get the worklist table view
+        auto* tableView = ui->getWorklistTableView();
+        if (!tableView || !tableView->selectionModel())
+            return;
+
+        // Get selected row
+        auto selectedIndexes = tableView->selectionModel()->selectedRows();
+        if (selectedIndexes.isEmpty())
+            return;
+
+        // Get the entry ID from the first column of the selected row
+        QModelIndex selectedIndex = selectedIndexes.first();
+        int entryId = selectedIndex.data(Qt::UserRole).toInt();
+
+        // Find the WorklistEntry with this ID
+        auto result = repository->getWorklistEntries(nullptr, nullptr);
+        if (!result.isSuccess)
+            return;
+
+        ent::WorklistEntry selectedEntry;
+        bool found = false;
+        for (const auto& entry : result.value) {
+            if (entry.Id == entryId) {
+                selectedEntry = entry;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            return;
+
+        // Convert WorklistEntry to PatientModel
+        auto patientData = worklistEntryToPatientModel(selectedEntry);
+
+        // Get regions and body parts
+        auto regionsRes = scanRepository->getAllAnatomicRegions();
+        auto partsRes = scanRepository->getAllBodyParts();
+        if (!regionsRes.isSuccess || !partsRes.isSuccess)
+            return;
+
+        // Construct dialog with injected entities
+        AddPatientDialog dlg(regionsRes.value, partsRes.value, ui);
+
+        // Set dialog mode for update
+        dlg.setDialogMode("Update Patient", "Update");
+
+        // Prefill with patient data
+        dlg.setPatientModel(patientData);
+
+        if (dlg.exec() == QDialog::Accepted) {
+            // Get updated patient data from dialog
+            auto updatedPatientData = dlg.getPatientModel();
+
+            // Validate patient data
+            if (!updatedPatientData.isValid()) {
+                QMessageBox::warning(ui, "Invalid Data",
+                    "Please ensure all required fields are filled and at least one body part is selected.");
+                return;
+            }
+
+            // Create registration service
+            Etrek::Worklist::Service::LocalMwlRegistrationService registrationService(
+                dicomRepository, dicomTagRepository);
+
+            // Update patient (similar to register, but could have different logic)
+            auto updateResult = registrationService.registerPatient(updatedPatientData);
+
+            if (updateResult.isSuccess) {
+                // Success - show message and refresh the worklist
+                QString message = QString("Successfully updated patient with %1 MWL entry(ies).")
+                    .arg(updateResult.value.size());
+                QMessageBox::information(ui, "Patient Updated", message);
+
+                // Refresh the worklist display
+                onClearFilters();
+            } else {
+                // Error - show error message
+                QMessageBox::critical(ui, "Update Failed",
+                    QString("Failed to update patient:\n%1").arg(updateResult.message));
+            }
+        }
+    }
+
+    mdl::PatientModel WorkListPageDelegate::worklistEntryToPatientModel(const ent::WorklistEntry& entry) const
+    {
+        using namespace Etrek::ScanProtocol::Data::Model;
+        using namespace Etrek::ScanProtocol::Data::Entity;
+
+        PatientModel patient;
+
+        // Build tag map from entry attributes for quick lookup
+        QMap<QString, QString> tagMap;
+        for (const auto& attr : entry.Attributes)
+            tagMap[attr.Tag.Name] = attr.TagValue;
+
+        // Extract patient name and split into components
+        QString patientName = tagMap.value("PatientName", "");
+        QStringList nameParts = patientName.split("^");
+        if (nameParts.size() > 0) patient.lastName = nameParts[0].trimmed();
+        if (nameParts.size() > 1) patient.firstName = nameParts[1].trimmed();
+        if (nameParts.size() > 2) patient.middleName = nameParts[2].trimmed();
+
+        // Extract other demographic fields
+        patient.patientId = tagMap.value("PatientID", "");
+        patient.accessionNumber = tagMap.value("AccessionNumber", "");
+        patient.admissionNumber = tagMap.value("AdmissionID", "");
+        patient.referringPhysician = tagMap.value("ReferringPhysicianName", "");
+
+        // Extract and parse birth date (DICOM DA format: YYYYMMDD)
+        QString birthDate = tagMap.value("PatientBirthDate", "");
+        if (!birthDate.isEmpty() && birthDate.length() == 8) {
+            int year = birthDate.mid(0, 4).toInt();
+            int month = birthDate.mid(4, 2).toInt();
+            int day = birthDate.mid(6, 2).toInt();
+            patient.dateOfBirth = QDate(year, month, day);
+
+            // Calculate age
+            QDate currentDate = QDate::currentDate();
+            patient.age = currentDate.year() - year;
+            if (currentDate.month() < month ||
+                (currentDate.month() == month && currentDate.day() < day)) {
+                patient.age--;
+            }
+        } else {
+            patient.dateOfBirth = QDate::currentDate();
+            patient.age = 0;
+        }
+
+        // Extract and parse gender
+        QString genderStr = tagMap.value("PatientSex", "M");
+        if (auto g = Etrek::ScanProtocol::ScanProtocolUtil::parseGender(genderStr))
+            patient.gender = *g;
+
+        // For body parts, try to extract from DICOM tags if available
+        QString bodyPartExamined = tagMap.value("BodyPartExamined", "");
+        QString requestedProcedure = tagMap.value("RequestedProcedureDescription", "");
+
+        // Try to match body parts from the scan repository
+        if (!bodyPartExamined.isEmpty() || !requestedProcedure.isEmpty()) {
+            auto regionsRes = scanRepository->getAllAnatomicRegions();
+            auto partsRes = scanRepository->getAllBodyParts();
+
+            if (regionsRes.isSuccess && partsRes.isSuccess) {
+                QString searchTerm = !bodyPartExamined.isEmpty() ? bodyPartExamined : requestedProcedure;
+
+                for (const auto& bodyPart : partsRes.value) {
+                    if (bodyPart.Name.contains(searchTerm, Qt::CaseInsensitive) ||
+                        searchTerm.contains(bodyPart.Name, Qt::CaseInsensitive)) {
+                        for (const auto& region : regionsRes.value) {
+                            if (region.Id == bodyPart.Region.Id) {
+                                BodyPartSelection selection;
+                                selection.region = region;
+                                selection.bodyPart = bodyPart;
+                                patient.selectedBodyParts.append(selection);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return patient;
     }
 
 }
