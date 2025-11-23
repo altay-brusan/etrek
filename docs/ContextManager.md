@@ -30,7 +30,7 @@ Common/Include/Context/
 ├── IExaminationContext.h   # Examination workflow interface
 └── IContextManager.h       # Context manager interface
 
-Application/Context/
+Core/Context/
 ├── ContextManager.h/.cpp   # Concrete context manager
 ├── SessionContext.h/.cpp   # Session context implementation
 └── ExaminationContext.h/.cpp # Examination context implementation
@@ -41,12 +41,12 @@ Application/Context/
 ```
 Common (interfaces only, no implementation)
     ↑
-Application (ContextManager, concrete contexts)
+Core (ContextManager, concrete contexts)
     ↑
-Worklist/View (uses context via injection)
+Application/Worklist/View (uses context via injection)
 ```
 
-This ensures no circular dependencies - lower-level modules depend on interfaces in Common, while Application provides implementations.
+This ensures no circular dependencies - lower-level modules depend on interfaces in Common, while Core provides implementations. Both Application and Worklist can depend on Core without creating circular dependencies.
 
 ## Usage
 
