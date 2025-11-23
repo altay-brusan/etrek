@@ -13,6 +13,7 @@
 #include "LocalMwlRegistrationService.h"
 #include "IContextManager.h"
 #include "ExaminationContext.h"
+#include "WorklistFilterProxyModel.h"
 
 
 using namespace Etrek::Worklist::Repository;
@@ -37,10 +38,8 @@ namespace Etrek::Application::Delegate
         , contextManager(contextManager) {
 
         baseModel = new QStandardItemModel(this);
-        proxyModel = new QSortFilterProxyModel(this);
+        proxyModel = new WorklistFilterProxyModel(this);
         proxyModel->setSourceModel(baseModel);
-        proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-        proxyModel->setFilterKeyColumn(-1);
 
         connect(ui, &WorkListPage::addNewPatient, this, &WorkListPageDelegate::onAddNewPatient);
         connect(ui, &WorkListPage::updatePatient, this, &WorkListPageDelegate::onUpdatePatient);
@@ -209,21 +208,38 @@ namespace Etrek::Application::Delegate
         }
     }
 
-    void WorkListPageDelegate::onFilterDateRangeChanged(const DateTimeSpan& date) {
-        //applyFilters();
+    void WorkListPageDelegate::onFilterDateRangeChanged(const DateTimeSpan& dateSpan) {
+        if (proxyModel) {
+            proxyModel->setDateRangeFilter(dateSpan.from.date(), dateSpan.to.date());
+        }
     }
 
 
     void WorkListPageDelegate::onSourceChanged(const QString& source)
     {
+        if (proxyModel) {
+            // Empty string or "All" means no source filter
+            QString filterValue = (source.isEmpty() || source.compare("All", Qt::CaseInsensitive) == 0)
+                ? QString()
+                : source;
+            proxyModel->setSourceFilter(filterValue);
+        }
     }
 
     void WorkListPageDelegate::onClearFilters() {
+        // Load all worklist data from repository
+        auto result = repository->getWorklistEntries(nullptr, nullptr);
+        if (result.isSuccess) {
+            loadWorklistData(result.value);
+        }
 
-         auto result = repository->getWorklistEntries(nullptr, nullptr);
-         if (result.isSuccess) {
-             loadWorklistData(result.value);
-         }
+        // Apply default filter: last 1 year to today, no source filter
+        if (proxyModel) {
+            QDate today = QDate::currentDate();
+            QDate oneYearAgo = today.addYears(-1);
+            proxyModel->setDateRangeFilter(oneYearAgo, today);
+            proxyModel->setSourceFilter(QString()); // Clear source filter
+        }
     }
 
     void WorkListPageDelegate::onSearchChanged() {

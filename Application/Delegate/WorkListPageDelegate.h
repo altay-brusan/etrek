@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QStandardItemModel>
-#include <QSortFilterProxyModel>
+#include "WorklistFilterProxyModel.h"
 #include <QDateTime>
 #include "WorklistRepository.h"
 #include "WorkListPage.h"
@@ -90,7 +90,7 @@ namespace Etrek::Application::Delegate {
         QList<ent::DicomTag> getDisplayTagList() const;
         QList<QStandardItem*> createRowForEntry(const ent::WorklistEntry& entry) const;
         QPointer<QStandardItemModel> baseModel;
-        QPointer<QSortFilterProxyModel> proxyModel;
+        QPointer<WorklistFilterProxyModel> proxyModel;
         std::shared_ptr<repo::WorklistRepository> repository;
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository;
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository;
