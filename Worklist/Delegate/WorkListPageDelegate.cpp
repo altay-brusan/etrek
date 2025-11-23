@@ -410,7 +410,7 @@ namespace Etrek::Worklist::Delegate
 
         // Create and store ExaminationContext
         if (auto ctxMgr = contextManager.lock()) {
-            auto examContext = std::make_shared<Etrek::Application::Context::ExaminationContext>(selectedEntry);
+            auto examContext = std::make_shared<Etrek::Core::Context::ExaminationContext>(selectedEntry);
             ctxMgr->setWorkflowContext("Examination", examContext);
         }
 
