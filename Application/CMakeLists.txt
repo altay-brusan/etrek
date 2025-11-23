@@ -24,6 +24,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${COMMON_INCLUDE_DIR}/Worklist/Repository/*.h
     ${COMMON_INCLUDE_DIR}/Worklist/Specification/*.h
     ${COMMON_INCLUDE_DIR}/Core/Globalization/*.h
+    ${COMMON_INCLUDE_DIR}/Context/*.h
     ${CMAKE_VIEW_DIRECTORY}/Page/*.h
     ${CMAKE_VIEW_DIRECTORY}/Widget/*.h
     ${CMAKE_VIEW_DIRECTORY}/Dialog/*.h
@@ -67,7 +68,7 @@ target_link_libraries(Application
 target_include_directories(Application
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Authentication
-        ${CMAKE_CURRENT_SOURCE_DIR}/Service 
+        ${CMAKE_CURRENT_SOURCE_DIR}/Service
         ${CMAKE_CURRENT_SOURCE_DIR}/Delegate 
         ${CMAKE_CURRENT_BINARY_DIR}
         ${CMAKE_VIEW_DIRECTORY}/Page

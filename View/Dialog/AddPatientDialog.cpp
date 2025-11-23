@@ -561,30 +561,37 @@ void AddPatientDialog::clearForm()
     validateForm();
 }
 
+void AddPatientDialog::setDialogMode(const QString& title, const QString& acceptButtonText)
+{
+    setWindowTitle(title);
+    if (auto* okButton = ui->buttonBox->button(QDialogButtonBox::Ok)) {
+        okButton->setText(acceptButtonText);
+    }
+}
+
 void AddPatientDialog::setPatientModel(const Etrek::ScanProtocol::Data::Model::PatientModel& patient)
 {
-    // Set demographic fields
+    // Set basic patient info
     ui->firstNameLineEdit->setText(patient.firstName);
     ui->middleNameLineEdit->setText(patient.middleName);
     ui->lastNameLineEdit->setText(patient.lastName);
     ui->patientIdLineEdit->setText(patient.patientId);
     ui->dateOfBirthDateEdit->setDate(patient.dateOfBirth);
-    ui->ageLineEdit->setText(QString::number(patient.age));
     ui->referringPhysicianLineEdit->setText(patient.referringPhysician);
     ui->patientLocationLineEdit->setText(patient.patientLocation);
     ui->admissionNumberLineEdit->setText(patient.admissionNumber);
     ui->accessionNumberLineEdit->setText(patient.accessionNumber);
 
     // Set gender
-    int genderIndex = static_cast<int>(patient.gender);
-    if (genderIndex >= 0 && genderIndex < ui->genderComboBox->count()) {
+    QString genderStr = Etrek::ScanProtocol::ScanProtocolUtil::toString(patient.gender);
+    int genderIndex = ui->genderComboBox->findText(genderStr, Qt::MatchFixedString);
+    if (genderIndex >= 0) {
         ui->genderComboBox->setCurrentIndex(genderIndex);
     }
 
-    // Populate selected parts table
+    // Clear and repopulate selected body parts table
     if (ui->selectedPartsTable) {
-        ui->selectedPartsTable->setRowCount(0); // Clear existing rows
-
+        ui->selectedPartsTable->setRowCount(0);
         for (const auto& selection : patient.selectedBodyParts) {
             int row = ui->selectedPartsTable->rowCount();
             ui->selectedPartsTable->insertRow(row);
@@ -597,33 +604,14 @@ void AddPatientDialog::setPatientModel(const Etrek::ScanProtocol::Data::Model::P
             ui->selectedPartsTable->setItem(row, 0, regionItem);
             ui->selectedPartsTable->setItem(row, 1, bodyItem);
         }
-
-        // Set current region based on first selected part if available
-        if (!patient.selectedBodyParts.isEmpty()) {
-            int firstRegionId = patient.selectedBodyParts.first().region.Id;
-            for (int i = 0; i < m_regions.size(); ++i) {
-                if (m_regions[i].Id == firstRegionId) {
-                    m_currentRegionIndex = i;
-                    updateRegionDisplay();
-                    updateBodyPartListForRegion(m_currentRegionIndex);
-                    break;
-                }
-            }
+        if (ui->removePartButton) {
+            ui->removePartButton->setEnabled(ui->selectedPartsTable->rowCount() > 0);
         }
     }
 
     // Update age display
     updateAge();
 
-    // Validate form with prefilled data
+    // Validate form
     validateForm();
-}
-
-void AddPatientDialog::setDialogMode(const QString& title, const QString& buttonText)
-{
-    setWindowTitle(title);
-
-    if (auto okButton = ui->buttonBox->button(QDialogButtonBox::Ok)) {
-        okButton->setText(buttonText);
-    }
 }

@@ -24,9 +24,16 @@ public:
     QTableView* getWorklistTableView() const;
     ~WorkListPage();
 
+    /**
+     * @brief Returns the worklist table view widget.
+     * @return Pointer to the table view.
+     */
+    QTableView* getWorklistTableView() const;
+
 signals:
     void addNewPatient();
     void updatePatient();
+    void worklistItemDoubleClicked(int entryId);
     void filterDateSpanChanged(const DateTimeSpan& date);
 	void filterSourceChanged(const QString& source);
     void clearAllFilters();

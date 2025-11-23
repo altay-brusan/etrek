@@ -16,6 +16,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Security/Authentication/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Security/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Setting/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Context/*.cpp
 )
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
@@ -28,6 +29,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Security/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Setting/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Specification/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Context/*.h
     #${COMMON_INCLUDE_DIR}/Data/Core/*.h
     #${COMMON_INCLUDE_DIR}/Data/Worklist/*.h
     #${COMMON_INCLUDE_DIR}/Globalization/*.h
@@ -38,6 +40,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${COMMON_INCLUDE_DIR}/Worklist/Data/*.h
     ${COMMON_INCLUDE_DIR}/Worklist/Repository/*.h
     ${COMMON_INCLUDE_DIR}/Worklist/Specification/*.h
+    ${COMMON_INCLUDE_DIR}/Context/*.h
 )
 
 qt_add_resources(MY_APP_RES "resources.qrc")
@@ -103,6 +106,7 @@ target_include_directories(Core
         ${CMAKE_CURRENT_SOURCE_DIR}/Service
         ${CMAKE_CURRENT_SOURCE_DIR}/Setting
         ${CMAKE_CURRENT_SOURCE_DIR}/Specification
+        ${CMAKE_CURRENT_SOURCE_DIR}/Context
         ${DCMTK_INCLUDE_DIR}
         ${SPDLOG_INCLUDE_DIR}
         ${OPENSSL_INCLUDE_DIR}
@@ -114,6 +118,8 @@ target_include_directories(Core
         ${COMMON_INCLUDE_DIR}/Worklist/Data
         ${COMMON_INCLUDE_DIR}/Worklist/Repository
         ${COMMON_INCLUDE_DIR}/Worklist/Specification
+        ${COMMON_INCLUDE_DIR}/Device/Data
+        ${COMMON_INCLUDE_DIR}/Context
 )
 
 

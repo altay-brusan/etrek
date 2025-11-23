@@ -32,6 +32,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${COMMON_INCLUDE_DIR}/Specification/*.h
     ${COMMON_INCLUDE_DIR}/Worklist/Data/Entity/*.h
     ${COMMON_INCLUDE_DIR}/Worklist/Repository/*.h
+    ${COMMON_INCLUDE_DIR}/Context/*.h
     
     ${COMMON_INCLUDE_DIR}/Dicom/Repository/*.h
 
@@ -89,6 +90,7 @@ target_include_directories(Worklist
     ${DCMTK_INCLUDE_DIR}
     ${COMMON_INCLUDE_DIR}/Globalization
     ${COMMON_INCLUDE_DIR}/Specification
+    ${COMMON_INCLUDE_DIR}/Context
     ${COMMON_INCLUDE_DIR}/Worklist/Data/Entity
     ${COMMON_INCLUDE_DIR}/Worklist/Repository
     ${COMMON_INCLUDE_DIR}/Dicom/Repository

@@ -25,7 +25,7 @@ namespace Etrek::Worklist::Delegate {
         std::shared_ptr<IWorklistRepository> irepository = std::static_pointer_cast<IWorklistRepository>(repository);
         auto* widget = new WorkListPage(irepository, parentWidget);
 
-        auto* delegate = new WorkListPageDelegate(widget, repository, scanRepository, dicomRepository, dicomTagRepository, parentDelegate);
+        auto* delegate = new WorkListPageDelegate(widget, repository, scanRepository, dicomRepository, dicomTagRepository, params.contextManager, parentDelegate);
 
         // If you need to attach other delegates:
         // if (delegate) delegate->AttachDelegates(params.delegates.values());
