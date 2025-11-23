@@ -7,7 +7,7 @@
 #include "DelegateParameter.h"
 #include <memory>
 
-namespace Etrek::Worklist::Delegate {
+namespace Etrek::Application::Delegate {
 
     class WorkListPageBuilder
         : public IWidgetDelegateBuilder<WorkListPage, WorkListPageDelegate>

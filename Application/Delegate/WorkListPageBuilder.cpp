@@ -2,9 +2,10 @@
 #include "ScanProtocolRepository.h"
 #include "DicomRepository.h"
 #include "DicomTagRepository.h"
+#include "WorklistRepository.h"
+#include "IWorklistRepository.h"
 
-namespace Etrek::Worklist::Delegate {
-	using namespace Etrek::Worklist::Repository;
+namespace Etrek::Application::Delegate {
 	WorkListPageBuilder::WorkListPageBuilder()
 	{
 	}
@@ -18,11 +19,11 @@ namespace Etrek::Worklist::Delegate {
             QWidget* parentWidget,
             QObject* parentDelegate)
     {
-        auto repository = std::make_shared<WorklistRepository>(params.dbConnection);
+        auto repository = std::make_shared<Etrek::Worklist::Repository::WorklistRepository>(params.dbConnection);
         auto scanRepository = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(params.dbConnection);
         auto dicomRepository = std::make_shared<Etrek::Dicom::Repository::DicomRepository>(params.dbConnection);
         auto dicomTagRepository = std::make_shared<Etrek::Dicom::Repository::DicomTagRepository>(params.dbConnection);
-        std::shared_ptr<IWorklistRepository> irepository = std::static_pointer_cast<IWorklistRepository>(repository);
+        std::shared_ptr<Etrek::Worklist::Repository::IWorklistRepository> irepository = std::static_pointer_cast<Etrek::Worklist::Repository::IWorklistRepository>(repository);
         auto* widget = new WorkListPage(irepository, parentWidget);
 
         auto* delegate = new WorkListPageDelegate(widget, repository, scanRepository, dicomRepository, dicomTagRepository, params.contextManager, parentDelegate);

@@ -30,7 +30,7 @@ private slots:
 
 private:
     SystemSettingPageDelegate* m_systemSettingPageDelegate{ nullptr };
-    Etrek::Worklist::Delegate::WorkListPageDelegate *m_worklistPageDelegate{nullptr};
+    WorkListPageDelegate *m_worklistPageDelegate{nullptr};
   MainWindow *m_mainWindow{nullptr};
   DelegateParameter m_params;
 };

@@ -17,7 +17,7 @@
 
 using namespace Etrek::Worklist::Repository;
 
-namespace Etrek::Worklist::Delegate
+namespace Etrek::Application::Delegate
 {
     namespace mdl = Etrek::ScanProtocol::Data::Model;
 
@@ -213,7 +213,7 @@ namespace Etrek::Worklist::Delegate
         //applyFilters();
     }
 
-     
+
     void WorkListPageDelegate::onSourceChanged(const QString& source)
     {
     }
@@ -230,8 +230,8 @@ namespace Etrek::Worklist::Delegate
         applySearch();
     }
 
-    void WorkListPageDelegate::onClearSearch() 
-    {		
+    void WorkListPageDelegate::onClearSearch()
+    {
         proxyModel->setFilterFixedString("");
     }
 
@@ -452,28 +452,28 @@ namespace Etrek::Worklist::Delegate
         return row;
     }
 
-    QString Delegate::WorkListPageDelegate::name() const
+    QString WorkListPageDelegate::name() const
     {
         return QString();
     }
 
-    void Delegate::WorkListPageDelegate::attachDelegates(const QVector<QObject*>& delegates)
+    void WorkListPageDelegate::attachDelegates(const QVector<QObject*>& delegates)
     {
     }
 
-    Delegate::WorkListPageDelegate::~WorkListPageDelegate()
+    WorkListPageDelegate::~WorkListPageDelegate()
     {
     }
 
-    void Delegate::WorkListPageDelegate::apply()
+    void WorkListPageDelegate::apply()
     {
     }
 
-    void Delegate::WorkListPageDelegate::accept()
+    void WorkListPageDelegate::accept()
     {
     }
 
-    void Delegate::WorkListPageDelegate::reject()
+    void WorkListPageDelegate::reject()
     {
     }
 

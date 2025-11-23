@@ -21,7 +21,7 @@ namespace Etrek::Context {
     class IContextManager;
 }
 
-namespace Etrek::Worklist::Delegate {
+namespace Etrek::Application::Delegate {
 
     namespace repo = Etrek::Worklist::Repository;
     namespace ent = Etrek::Worklist::Data::Entity;
@@ -43,12 +43,12 @@ namespace Etrek::Worklist::Delegate {
             std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
             std::weak_ptr<Etrek::Context::IContextManager> contextManager = std::weak_ptr<Etrek::Context::IContextManager>(),
             QObject* parent = nullptr);
-        
+
         QString name() const override;
         void attachDelegates(const QVector<QObject*>& delegates) override;
 
 		~WorkListPageDelegate();
-    
+
     signals:
         void closeWorklist();
         /**
@@ -76,7 +76,7 @@ namespace Etrek::Worklist::Delegate {
         void onSearchPatientDate(const QDate& acquisionNo);
         void onSearchStudyId(const QString& studyId);
 
-		
+
 
     private:
         void applyFilters();
