@@ -68,7 +68,7 @@ namespace Etrek::Application::Service
         , translator(nullptr)
         , m_authService(nullptr)
         , m_modalityWorklistManager(nullptr)
-        , m_contextManager(std::make_shared<Etrek::Application::Context::ContextManager>())
+        , m_contextManager(std::make_shared<Etrek::Core::Context::ContextManager>())
     {
         translator = &TranslationProvider::Instance();
     }
@@ -126,13 +126,13 @@ namespace Etrek::Application::Service
 
         // Create and set session context after successful authentication
         if (m_contextManager) {
-            auto sessionContext = std::make_shared<Etrek::Application::Context::SessionContext>(
-                authenticationResult.value,
+            auto sessionContext = std::make_shared<Etrek::Core::Context::SessionContext>(
+                *authenticationResult.value,
                 QString()  // Workstation name will be auto-detected
             );
             m_contextManager->setSessionContext(sessionContext);
             logger->LogInfo(QString("Session context created for user: %1")
-                .arg(authenticationResult.value.Username));
+                .arg(authenticationResult.value->Username));
         }
 
         logger->LogInfo(translator->getInfoMessage(AUTH_SUCCEED));

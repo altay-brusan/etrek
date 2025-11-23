@@ -53,7 +53,7 @@ namespace Etrek::Worklist::Connectivity {
     class ModalityWorklistManager;
 }
 
-namespace Etrek::Application::Context {
+namespace Etrek::Core::Context {
     class ContextManager;
 }
 
@@ -107,7 +107,7 @@ namespace Etrek::Application::Service
         std::shared_ptr<Etrek::Core::Data::Model::FileLoggerSetting> m_fileLoggerSetting;
         QVector<QSharedPointer<Etrek::Core::Data::Model::RisConnectionSetting>> m_risConnectionSettingList;
         Etrek::Worklist::Connectivity::ModalityWorklistManager* m_modalityWorklistManager = nullptr;
-        std::shared_ptr<Etrek::Application::Context::ContextManager> m_contextManager;
+        std::shared_ptr<Etrek::Core::Context::ContextManager> m_contextManager;
 
         // Value members - MUST include headers
         Etrek::Core::Setting::SettingProvider m_settingProvider;

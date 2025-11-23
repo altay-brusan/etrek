@@ -11,14 +11,12 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Authentication/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Context/*.cpp
 )
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Authentication/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Context/*.h
     
     ${COMMON_INCLUDE_DIR}/Core/Data/Entity/*.h
     ${COMMON_INCLUDE_DIR}/Core/Data/Model/*.h
@@ -71,8 +69,7 @@ target_include_directories(Application
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Authentication
         ${CMAKE_CURRENT_SOURCE_DIR}/Service
-        ${CMAKE_CURRENT_SOURCE_DIR}/Delegate
-        ${CMAKE_CURRENT_SOURCE_DIR}/Context 
+        ${CMAKE_CURRENT_SOURCE_DIR}/Delegate 
         ${CMAKE_CURRENT_BINARY_DIR}
         ${CMAKE_VIEW_DIRECTORY}/Page
         ${CMAKE_VIEW_DIRECTORY}/Widget
