@@ -560,3 +560,58 @@ void AddPatientDialog::clearForm()
 
     validateForm();
 }
+
+void AddPatientDialog::setDialogMode(const QString& title, const QString& acceptButtonText)
+{
+    setWindowTitle(title);
+    if (auto* okButton = ui->buttonBox->button(QDialogButtonBox::Ok)) {
+        okButton->setText(acceptButtonText);
+    }
+}
+
+void AddPatientDialog::setPatientModel(const Etrek::ScanProtocol::Data::Model::PatientModel& patient)
+{
+    // Set basic patient info
+    ui->firstNameLineEdit->setText(patient.firstName);
+    ui->middleNameLineEdit->setText(patient.middleName);
+    ui->lastNameLineEdit->setText(patient.lastName);
+    ui->patientIdLineEdit->setText(patient.patientId);
+    ui->dateOfBirthDateEdit->setDate(patient.dateOfBirth);
+    ui->referringPhysicianLineEdit->setText(patient.referringPhysician);
+    ui->patientLocationLineEdit->setText(patient.patientLocation);
+    ui->admissionNumberLineEdit->setText(patient.admissionNumber);
+    ui->accessionNumberLineEdit->setText(patient.accessionNumber);
+
+    // Set gender
+    QString genderStr = Etrek::ScanProtocol::ScanProtocolUtil::toString(patient.gender);
+    int genderIndex = ui->genderComboBox->findText(genderStr, Qt::MatchFixedString);
+    if (genderIndex >= 0) {
+        ui->genderComboBox->setCurrentIndex(genderIndex);
+    }
+
+    // Clear and repopulate selected body parts table
+    if (ui->selectedPartsTable) {
+        ui->selectedPartsTable->setRowCount(0);
+        for (const auto& selection : patient.selectedBodyParts) {
+            int row = ui->selectedPartsTable->rowCount();
+            ui->selectedPartsTable->insertRow(row);
+
+            auto* regionItem = new QTableWidgetItem(selection.region.Name);
+            regionItem->setData(Qt::UserRole, selection.region.Id);
+            auto* bodyItem = new QTableWidgetItem(selection.bodyPart.Name);
+            bodyItem->setData(Qt::UserRole, selection.bodyPart.Id);
+
+            ui->selectedPartsTable->setItem(row, 0, regionItem);
+            ui->selectedPartsTable->setItem(row, 1, bodyItem);
+        }
+        if (ui->removePartButton) {
+            ui->removePartButton->setEnabled(ui->selectedPartsTable->rowCount() > 0);
+        }
+    }
+
+    // Update age display
+    updateAge();
+
+    // Validate form
+    validateForm();
+}
