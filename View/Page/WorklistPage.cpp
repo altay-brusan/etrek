@@ -1,5 +1,6 @@
 #include <QStandardItemModel>
 #include <qpointer.h>
+#include <QComboBox>
 
 #include "WorklistPage.h"
 #include "IWorklistRepository.h"
@@ -14,24 +15,42 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
     ui->setupUi(this);
     setStile();
 
+    // Set default date range: 1 year ago to today
+    QDate today = QDate::currentDate();
+    QDate oneYearAgo = today.addYears(-1);
+
+    // filterDueDateEdit is the "From" field (start date)
+    // filterStartDateEdit is the "To" field (end date)
+    ui->filterDueDateEdit->setDate(oneYearAgo);
+    ui->filterStartDateEdit->setDate(today);
+
+    // Initialize source combo box with options
+    ui->filterSourceComboBox->addItem("All");
+    ui->filterSourceComboBox->addItem("LOCAL");
+    ui->filterSourceComboBox->addItem("RIS");
+    ui->filterSourceComboBox->setCurrentIndex(0); // Default to "All"
+
+    // Lambda to emit date span when either date changes
+    // Note: filterDueDateEdit = "From" date, filterStartDateEdit = "To" date
     auto emitDateSpan = [this]() {
         DateTimeSpan span;
-        span.from = ui->filterStartDateEdit->dateTime();
-        span.to = ui->filterDueDateEdit->dateTime();
+        span.from = ui->filterDueDateEdit->dateTime();   // "From" field
+        span.to = ui->filterStartDateEdit->dateTime();   // "To" field
         emit filterDateSpanChanged(span);
-        };
-    
-        connect(ui->filterStartDateEdit, &QDateEdit::dateChanged, this, [emitDateSpan](const QDate&) {
+    };
+
+    connect(ui->filterStartDateEdit, &QDateEdit::dateChanged, this, [emitDateSpan](const QDate&) {
         emitDateSpan();
-        });
-    
-        connect(ui->filterDueDateEdit, &QDateEdit::dateChanged, this, [emitDateSpan](const QDate&) {
+    });
+
+    connect(ui->filterDueDateEdit, &QDateEdit::dateChanged, this, [emitDateSpan](const QDate&) {
         emitDateSpan();
-        });
-      
-        connect(ui->filterSourceLineEdit, &QLineEdit::textChanged, this, [this](const QString& text) {  
-           emit filterSourceChanged(text);  
-        });
+    });
+
+    // Connect source combo box
+    connect(ui->filterSourceComboBox, &QComboBox::currentTextChanged, this, [this](const QString& text) {
+        emit filterSourceChanged(text);
+    });
 
         connect(ui->clearAllFilterFieldsBtn, &QPushButton::clicked, this, [this]() {
             clearAllFilterBtnClicked();
@@ -139,8 +158,16 @@ void WorkListPage::setStile()
         "}"
         "QHeaderView::section { background: rgb(64,64,64); padding:4px; border:1px solid rgb(90,90,90); }";
 
+    const char* comboCss =
+        "QComboBox {"
+        "  border:1px solid rgb(120,120,120); border-radius:4px;"
+        "  background:rgb(74,74,74); min-height:20px; padding:2px 6px; }"
+        "QComboBox:focus { border-color: rgb(160,160,160); }"
+        "QComboBox::drop-down { width:20px; border-left:1px solid rgb(120,120,120); margin:0; }"
+        "QComboBox QAbstractItemView { background: rgb(74,74,74); selection-background-color: rgb(92,92,92); }";
+
     // Apply guarded (pointer-checked) to avoid crashes if UI changed
-    if (ui->filterSourceLineEdit) ui->filterSourceLineEdit->setStyleSheet(lineCss);
+    if (ui->filterSourceComboBox) ui->filterSourceComboBox->setStyleSheet(comboCss);
     if (ui->searchNameLineEdit) ui->searchNameLineEdit->setStyleSheet(lineCss);
     if (ui->searchPatientIdLineEdit) ui->searchPatientIdLineEdit->setStyleSheet(lineCss);
     if (ui->searchAcquisionNoLineEdit) ui->searchAcquisionNoLineEdit->setStyleSheet(lineCss);
@@ -207,12 +234,17 @@ WorkListPage::~WorkListPage()
 
 void WorkListPage::clearAllFilterBtnClicked()
 {
-     // Reset "From" date to today
-     ui->filterStartDateEdit->setDate(QDate::currentDate());
-     // Reset "To" date to today
-     ui->filterDueDateEdit->setDate(QDate::currentDate());
-     ui->filterSourceLineEdit->clear();
+    // Reset to default: 1 year ago to today
+    QDate today = QDate::currentDate();
+    QDate oneYearAgo = today.addYears(-1);
 
+    // filterDueDateEdit is the "From" field (start date)
+    // filterStartDateEdit is the "To" field (end date)
+    ui->filterDueDateEdit->setDate(oneYearAgo);
+    ui->filterStartDateEdit->setDate(today);
+
+    // Reset source filter to "All"
+    ui->filterSourceComboBox->setCurrentIndex(0);
 }
 
 void WorkListPage::clearAllSearchBtnClicked()
