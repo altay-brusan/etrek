@@ -33,11 +33,7 @@ public:
     void clearForm();
     void setDialogMode(const QString& title, const QString& acceptButtonText);
     void setPatientModel(const Etrek::ScanProtocol::Data::Model::PatientModel& patient);
-
-    // Update mode support
-    void setPatientModel(const Etrek::ScanProtocol::Data::Model::PatientModel& patient);
-    void setDialogMode(const QString& title, const QString& buttonText);
-
+       
 signals:
     void patientDataChanged(bool isValid);
 

@@ -21,14 +21,12 @@ public:
     explicit WorkListPage(std::shared_ptr<Etrek::Worklist::Repository::IWorklistRepository> repository,QWidget *parent = nullptr);
     void setProxyModel(QAbstractItemModel* model);
     void closePage();
-    QTableView* getWorklistTableView() const;
-    ~WorkListPage();
-
     /**
      * @brief Returns the worklist table view widget.
      * @return Pointer to the table view.
      */
     QTableView* getWorklistTableView() const;
+    ~WorkListPage();
 
 signals:
     void addNewPatient();
