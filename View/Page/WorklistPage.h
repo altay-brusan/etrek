@@ -21,6 +21,7 @@ public:
     explicit WorkListPage(std::shared_ptr<Etrek::Worklist::Repository::IWorklistRepository> repository,QWidget *parent = nullptr);
     void setProxyModel(QAbstractItemModel* model);
     void closePage();
+    QTableView* getWorklistTableView() const;
     ~WorkListPage();
 
     /**

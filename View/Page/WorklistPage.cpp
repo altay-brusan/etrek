@@ -73,6 +73,16 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
             emit addNewPatient();
         });
 
+        // Emit signal for delegate to handle Update Patient dialog
+        connect(ui->updatePatientBtn, &QPushButton::clicked, this, [this]() {
+            emit updatePatient();
+        });
+
+        // Disable Update button by default (enabled when row is selected)
+        if (ui->updatePatientBtn) {
+            ui->updatePatientBtn->setEnabled(false);
+        }
+
 }
 
 void WorkListPage::setStile()

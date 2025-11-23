@@ -25,6 +25,7 @@ namespace Etrek::Worklist::Delegate {
 
     namespace repo = Etrek::Worklist::Repository;
     namespace ent = Etrek::Worklist::Data::Entity;
+    namespace mdl = Etrek::ScanProtocol::Data::Model;
 
     class WorkListPageDelegate :
 	public QObject,
@@ -60,6 +61,7 @@ namespace Etrek::Worklist::Delegate {
         void onWorklistItemDoubleClicked(int entryId);
         void onUpdatePatient();
         void onAddNewPatient();
+        void onUpdatePatient();
         void onFilterDateRangeChanged(const DateTimeSpan& date);
         void onSourceChanged(const QString& source);
         void onClearFilters();
@@ -82,6 +84,7 @@ namespace Etrek::Worklist::Delegate {
         void applySearch();
         void loadWorklistData(const QList<ent::WorklistEntry>& entries);
         void onClearSearch();
+        mdl::PatientModel worklistEntryToPatientModel(const ent::WorklistEntry& entry) const;
 
 
         WorkListPage* ui;

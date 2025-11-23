@@ -120,6 +120,95 @@ namespace Etrek::Worklist::Delegate
         }
     }
 
+    void WorkListPageDelegate::onUpdatePatient()
+    {
+        if (!scanRepository || !dicomRepository || !dicomTagRepository)
+            return;
+
+        // Get the worklist table view
+        auto* tableView = ui->getWorklistTableView();
+        if (!tableView || !tableView->selectionModel())
+            return;
+
+        // Get selected row
+        auto selectedIndexes = tableView->selectionModel()->selectedRows();
+        if (selectedIndexes.isEmpty())
+            return;
+
+        // Get the entry ID from the first column of the selected row
+        QModelIndex selectedIndex = selectedIndexes.first();
+        int entryId = selectedIndex.data(Qt::UserRole).toInt();
+
+        // Find the WorklistEntry with this ID
+        auto result = repository->getWorklistEntries(nullptr, nullptr);
+        if (!result.isSuccess)
+            return;
+
+        ent::WorklistEntry selectedEntry;
+        bool found = false;
+        for (const auto& entry : result.value) {
+            if (entry.Id == entryId) {
+                selectedEntry = entry;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            return;
+
+        // Convert WorklistEntry to PatientModel
+        auto patientData = worklistEntryToPatientModel(selectedEntry);
+
+        // Get regions and body parts
+        auto regionsRes = scanRepository->getAllAnatomicRegions();
+        auto partsRes = scanRepository->getAllBodyParts();
+        if (!regionsRes.isSuccess || !partsRes.isSuccess)
+            return;
+
+        // Construct dialog with injected entities
+        AddPatientDialog dlg(regionsRes.value, partsRes.value, ui);
+
+        // Set dialog mode for update
+        dlg.setDialogMode("Update Patient", "Update");
+
+        // Prefill with patient data
+        dlg.setPatientModel(patientData);
+
+        if (dlg.exec() == QDialog::Accepted) {
+            // Get updated patient data from dialog
+            auto updatedPatientData = dlg.getPatientModel();
+
+            // Validate patient data
+            if (!updatedPatientData.isValid()) {
+                QMessageBox::warning(ui, "Invalid Data",
+                    "Please ensure all required fields are filled and at least one body part is selected.");
+                return;
+            }
+
+            // Create registration service
+            Etrek::Worklist::Service::LocalMwlRegistrationService registrationService(
+                dicomRepository, dicomTagRepository);
+
+            // Update patient (similar to register, but could have different logic)
+            auto updateResult = registrationService.registerPatient(updatedPatientData);
+
+            if (updateResult.isSuccess) {
+                // Success - show message and refresh the worklist
+                QString message = QString("Successfully updated patient with %1 MWL entry(ies).")
+                    .arg(updateResult.value.size());
+                QMessageBox::information(ui, "Patient Updated", message);
+
+                // Refresh the worklist display
+                onClearFilters();
+            } else {
+                // Error - show error message
+                QMessageBox::critical(ui, "Update Failed",
+                    QString("Failed to update patient:\n%1").arg(updateResult.message));
+            }
+        }
+    }
+
     void WorkListPageDelegate::onFilterDateRangeChanged(const DateTimeSpan& date) {
         //applyFilters();
     }
