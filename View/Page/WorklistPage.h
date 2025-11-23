@@ -43,7 +43,7 @@ signals:
     void searchPatientId(const QString& patientId);
     void searchAcquisionNo(const QString& acquisionNo);
     void searchPatientDate(const QDate& acquisionNo);
-    void searchStudyId(const QString& studyId);
+    void searchStudyName(const QString& studyName);
 
 private:
     void clearAllFilterBtnClicked();

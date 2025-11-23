@@ -53,7 +53,7 @@ namespace Etrek::Application::Delegate
         connect(ui, &WorkListPage::searchPatientId, this, &WorkListPageDelegate::onSearchPatientId);
         connect(ui, &WorkListPage::searchAcquisionNo, this, &WorkListPageDelegate::onSearchAcquisionNo);
         connect(ui, &WorkListPage::searchPatientDate, this, &WorkListPageDelegate::onSearchPatientDate);
-        connect(ui, &WorkListPage::searchStudyId, this, &WorkListPageDelegate::onSearchStudyId);
+        connect(ui, &WorkListPage::searchStudyName, this, &WorkListPageDelegate::onSearchStudyName);
 
         connect(ui, &WorkListPage::closeWorklistPage, this, [this]() {
             if (this->ui) this->closeWorklist();
@@ -248,7 +248,9 @@ namespace Etrek::Application::Delegate
 
     void WorkListPageDelegate::onClearSearch()
     {
-        proxyModel->setFilterFixedString("");
+        if (proxyModel) {
+            proxyModel->clearSearch();
+        }
     }
 
     void WorkListPageDelegate::applyFilters() {
@@ -372,22 +374,37 @@ namespace Etrek::Application::Delegate
 
     void WorkListPageDelegate::onSearchName(const QString& name)
     {
+        if (proxyModel) {
+            proxyModel->setSearchName(name);
+        }
     }
 
     void WorkListPageDelegate::onSearchPatientId(const QString& patientId)
     {
+        if (proxyModel) {
+            proxyModel->setSearchPatientId(patientId);
+        }
     }
 
-    void WorkListPageDelegate::onSearchAcquisionNo(const QString& acquisionNo)
+    void WorkListPageDelegate::onSearchAcquisionNo(const QString& accessionNo)
     {
+        if (proxyModel) {
+            proxyModel->setSearchAccessionNo(accessionNo);
+        }
     }
 
-    void WorkListPageDelegate::onSearchPatientDate(const QDate& acquisionNo)
+    void WorkListPageDelegate::onSearchPatientDate(const QDate& birthDate)
     {
+        if (proxyModel) {
+            proxyModel->setSearchBirthDate(birthDate);
+        }
     }
 
-    void WorkListPageDelegate::onSearchStudyId(const QString& studyId)
+    void WorkListPageDelegate::onSearchStudyName(const QString& studyName)
     {
+        if (proxyModel) {
+            proxyModel->setSearchStudyName(studyName);
+        }
     }
 
     QList<ent::DicomTag> WorkListPageDelegate::getDisplayTagList() const {

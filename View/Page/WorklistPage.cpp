@@ -58,12 +58,7 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
             });
 
         connect(ui->clearAllSearchFieldsBtn, &QPushButton::clicked, this, [this]() {
-            clearAllFilterBtnClicked();
-            emit clearAllFilters();
-            });
-
-        connect(ui->clearAllSearchFieldsBtn, &QPushButton::clicked, this, [this]() {
-            clearAllFilterBtnClicked();
+            clearAllSearchBtnClicked();
             emit clearAllSearch();
             });
     
@@ -83,8 +78,8 @@ WorkListPage::WorkListPage(std::shared_ptr<IWorklistRepository> repository, QWid
             emit searchPatientDate(date);
             });
         
-        connect(ui->searchStudyIdTextEdit, &QLineEdit::textChanged, this, [this](const QString& text) {
-            emit searchStudyId(text);
+        connect(ui->searchStudyNameTextEdit, &QLineEdit::textChanged, this, [this](const QString& text) {
+            emit searchStudyName(text);
             });
 
         // Emit signal for delegate to handle Add New Patient dialog
@@ -171,7 +166,7 @@ void WorkListPage::setStile()
     if (ui->searchNameLineEdit) ui->searchNameLineEdit->setStyleSheet(lineCss);
     if (ui->searchPatientIdLineEdit) ui->searchPatientIdLineEdit->setStyleSheet(lineCss);
     if (ui->searchAcquisionNoLineEdit) ui->searchAcquisionNoLineEdit->setStyleSheet(lineCss);
-    if (ui->searchStudyIdTextEdit) ui->searchStudyIdTextEdit->setStyleSheet(lineCss);
+    if (ui->searchStudyNameTextEdit) ui->searchStudyNameTextEdit->setStyleSheet(lineCss);
 
     if (ui->filterStartDateEdit) ui->filterStartDateEdit->setStyleSheet(dateCss);
     if (ui->filterDueDateEdit) ui->filterDueDateEdit->setStyleSheet(dateCss);
@@ -249,14 +244,12 @@ void WorkListPage::clearAllFilterBtnClicked()
 
 void WorkListPage::clearAllSearchBtnClicked()
 {
-	ui->searchNameLineEdit->clear();
-	ui->searchPatientIdLineEdit->clear();
-	ui->searchAcquisionNoLineEdit->clear();
-	// Reset birth date to a reasonable default (e.g., today or leave as is)
-	ui->searchPatientBirthDateDateEdit->setDate(QDate::currentDate());
-	ui->searchStudyIdTextEdit->clear();
-
-
+    ui->searchNameLineEdit->clear();
+    ui->searchPatientIdLineEdit->clear();
+    ui->searchAcquisionNoLineEdit->clear();
+    // Clear birth date by setting to invalid/null date (empty search)
+    ui->searchPatientBirthDateDateEdit->clear();
+    ui->searchStudyNameTextEdit->clear();
 }
 
 // Removed: onAddNewPatientClicked. Dialog is launched elsewhere in workflow.
