@@ -61,7 +61,6 @@ namespace Etrek::Worklist::Delegate {
         void onWorklistItemDoubleClicked(int entryId);
         void onUpdatePatient();
         void onAddNewPatient();
-        void onUpdatePatient();
         void onFilterDateRangeChanged(const DateTimeSpan& date);
         void onSourceChanged(const QString& source);
         void onClearFilters();
@@ -97,8 +96,6 @@ namespace Etrek::Worklist::Delegate {
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository;
         std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository;
         std::weak_ptr<Etrek::Context::IContextManager> contextManager;
-
-        Etrek::ScanProtocol::Data::Model::PatientModel worklistEntryToPatientModel(const ent::WorklistEntry& entry) const;
 
         void apply() override;
         void accept() override;
