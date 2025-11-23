@@ -1,9 +1,4 @@
 #include "WorkListConfigurationDelegate.h"
-#include "WorkListConfigurationDelegate.h"
-#include "WorkListConfigurationDelegate.h"
-#include "WorkListConfigurationDelegate.h"
-#include "WorkListConfigurationDelegate.h"
-#include "WorkListConfigurationDelegate.h"
 
 namespace Etrek::Worklist::Delegate 
 {
