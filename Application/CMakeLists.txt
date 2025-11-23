@@ -69,7 +69,7 @@ target_include_directories(Application
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Authentication
         ${CMAKE_CURRENT_SOURCE_DIR}/Service
-        ${CMAKE_CURRENT_SOURCE_DIR}/Delegate 
+        ${CMAKE_CURRENT_SOURCE_DIR}/Delegate
         ${CMAKE_CURRENT_BINARY_DIR}
         ${CMAKE_VIEW_DIRECTORY}/Page
         ${CMAKE_VIEW_DIRECTORY}/Widget
@@ -77,6 +77,7 @@ target_include_directories(Application
         ${CMAKE_WORKLIST_DIRECTORY}/Connectivity
         ${CMAKE_WORKLIST_DIRECTORY}/Delegate
         ${CMAKE_WORKLIST_DIRECTORY}/Repository
+        ${CMAKE_WORKLIST_DIRECTORY}/Service
         ${CMAKE_DEVICE_DIRECTORY}/Delegate
         ${CMAKE_DICOM_DIRECTORY}/Delegate
         ${CMAKE_PACS_DIRECTORY}/Delegate

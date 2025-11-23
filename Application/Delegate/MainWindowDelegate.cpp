@@ -5,9 +5,8 @@
 #include "SystemSettingPageBuilder.h"
 #include "WorkListPageBuilder.h"
 
-namespace Etrek::Application::Delegate 
+namespace Etrek::Application::Delegate
 {
-	using namespace Worklist::Delegate;
 
     MainWindowDelegate::MainWindowDelegate(const DelegateParameter &params,
                                            MainWindow *widget, QObject *parent)
