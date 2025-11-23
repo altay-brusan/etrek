@@ -31,12 +31,54 @@ void WorklistFilterProxyModel::clearFilters()
     invalidateFilter();
 }
 
+void WorklistFilterProxyModel::setSearchName(const QString& name)
+{
+    m_searchName = name.trimmed();
+    invalidateFilter();
+}
+
+void WorklistFilterProxyModel::setSearchPatientId(const QString& patientId)
+{
+    m_searchPatientId = patientId.trimmed();
+    invalidateFilter();
+}
+
+void WorklistFilterProxyModel::setSearchStudyName(const QString& studyName)
+{
+    m_searchStudyName = studyName.trimmed();
+    invalidateFilter();
+}
+
+void WorklistFilterProxyModel::setSearchBirthDate(const QDate& birthDate)
+{
+    m_searchBirthDate = birthDate;
+    invalidateFilter();
+}
+
+void WorklistFilterProxyModel::setSearchAccessionNo(const QString& accessionNo)
+{
+    m_searchAccessionNo = accessionNo.trimmed();
+    invalidateFilter();
+}
+
+void WorklistFilterProxyModel::clearSearch()
+{
+    m_searchName.clear();
+    m_searchPatientId.clear();
+    m_searchStudyName.clear();
+    m_searchBirthDate = QDate();
+    m_searchAccessionNo.clear();
+    invalidateFilter();
+}
+
 bool WorklistFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
     // Get the source model
     QAbstractItemModel* model = sourceModel();
     if (!model)
         return true;
+
+    // ===== FILTER CHECKS =====
 
     // Check source filter (column 8)
     if (!m_sourceFilter.isEmpty()) {
@@ -73,6 +115,51 @@ bool WorklistFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
             if (m_toDate.isValid() && rowDate > m_toDate)
                 return false;
         }
+    }
+
+    // ===== SEARCH CHECKS (applied on top of filters) =====
+
+    // Check name search (column 0 - Patient Name) - contains match
+    if (!m_searchName.isEmpty()) {
+        QModelIndex nameIndex = model->index(sourceRow, PatientNameColumn, sourceParent);
+        QString nameValue = model->data(nameIndex).toString();
+        if (!nameValue.contains(m_searchName, Qt::CaseInsensitive))
+            return false;
+    }
+
+    // Check patient ID search (column 1) - contains match
+    if (!m_searchPatientId.isEmpty()) {
+        QModelIndex patientIdIndex = model->index(sourceRow, PatientIdColumn, sourceParent);
+        QString patientIdValue = model->data(patientIdIndex).toString();
+        if (!patientIdValue.contains(m_searchPatientId, Qt::CaseInsensitive))
+            return false;
+    }
+
+    // Check study name search (column 2) - contains match
+    if (!m_searchStudyName.isEmpty()) {
+        QModelIndex studyNameIndex = model->index(sourceRow, StudyNameColumn, sourceParent);
+        QString studyNameValue = model->data(studyNameIndex).toString();
+        if (!studyNameValue.contains(m_searchStudyName, Qt::CaseInsensitive))
+            return false;
+    }
+
+    // Check birth date search (column 4) - exact date match
+    if (m_searchBirthDate.isValid()) {
+        QModelIndex birthDateIndex = model->index(sourceRow, BirthDateColumn, sourceParent);
+        QString birthDateStr = model->data(birthDateIndex).toString();
+
+        // Parse the date from "yyyy-MM-dd" format
+        QDate rowBirthDate = QDate::fromString(birthDateStr, "yyyy-MM-dd");
+        if (!rowBirthDate.isValid() || rowBirthDate != m_searchBirthDate)
+            return false;
+    }
+
+    // Check accession number search (column 5) - contains match
+    if (!m_searchAccessionNo.isEmpty()) {
+        QModelIndex accessionNoIndex = model->index(sourceRow, AccessionNoColumn, sourceParent);
+        QString accessionNoValue = model->data(accessionNoIndex).toString();
+        if (!accessionNoValue.contains(m_searchAccessionNo, Qt::CaseInsensitive))
+            return false;
     }
 
     return true;

@@ -74,7 +74,7 @@ namespace Etrek::Application::Delegate {
         void onSearchPatientId(const QString& patientId);
         void onSearchAcquisionNo(const QString& acquisionNo);
         void onSearchPatientDate(const QDate& acquisionNo);
-        void onSearchStudyId(const QString& studyId);
+        void onSearchStudyName(const QString& studyName);
 
 
 
