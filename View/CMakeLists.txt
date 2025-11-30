@@ -6,10 +6,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 # Note: Qt is configured in ThirdPartyLibraries/CMakeLists.txt
-# VTK is configured here since it's only used by View module
+# VTK is configured in ThirdPartyLibraries/CMakeLists.txt (VTK_DIR is set there)
 
 # Find VTK with Qt support
-set(VTK_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/cmake/vtk-9.5")
 find_package(VTK 9.5 REQUIRED COMPONENTS
     CommonCore
     CommonDataModel

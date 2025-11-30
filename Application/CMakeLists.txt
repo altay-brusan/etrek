@@ -7,8 +7,7 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools Sql Network)
 
-# Find VTK (required because View module uses VTK)
-set(VTK_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/cmake/vtk-9.5")
+# Find VTK using the path configured in ThirdPartyLibraries
 find_package(VTK 9.5 REQUIRED COMPONENTS
     CommonCore
     CommonDataModel

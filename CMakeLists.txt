@@ -35,7 +35,7 @@ message(STATUS "✓ Qt ${Qt6_VERSION} configured")
 
 # --- Third-Party Library Paths ---
 # DCMTK, OpenSSL, Windows SDK paths are configured in ThirdPartyLibraries/
-add_subdirectory(ThirdPartyLibraries)
+include(ThirdPartyLibraries/CMakeLists.txt)
 
 # copy assets to each subdirectory that needs shared assets
 #if(NOT EXISTS "${CMAKE_SOURCE_DIR}/Core/Asset/Icon")

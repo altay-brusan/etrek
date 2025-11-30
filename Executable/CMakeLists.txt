@@ -38,37 +38,9 @@ target_include_directories(Etrek
         ${CMAKE_CURRENT_BINARY_DIR} 
 )
 
-# this section must be executed after executable is created
+# Configure third-party DLLs (OpenSSL, MySQL, VTK, etc.)
 if(WIN32)
-    # List of DLLs to copy to output directory
-    set(WIN_DRIVER_DLL
-        "${WIN_DRIVER_DIR}/libcrypto-3-x64.dll"
-        "${WIN_DRIVER_DIR}/libmysql.dll"
-        "${WIN_DRIVER_DIR}/libssl-3-x64.dll"
-    )
-
-    # Add the list to be copied post-build
-    foreach(dll ${WIN_DRIVER_DLL})
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${dll}"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-        )
-    endforeach()
-
-    # Copy VTK DLLs to output directory
-    set(VTK_BIN_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/bin")
-    file(GLOB VTK_DLLS "${VTK_BIN_DIR}/*.dll")
-
-    foreach(dll ${VTK_DLLS})
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${dll}"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-        )
-    endforeach()
-
-    message(STATUS "VTK DLLs will be copied from: ${VTK_BIN_DIR}")
+    configure_third_party_dlls(${PROJECT_NAME})
 endif()
 
 # Post-build step to copy all DLLs to the 'bin' folder
