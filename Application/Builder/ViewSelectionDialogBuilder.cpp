@@ -1,4 +1,5 @@
 #include "ViewSelectionDialogBuilder.h"
+#include "ScanProtocolRepository.h"
 
 namespace Etrek::Application::Delegate {
 
@@ -18,11 +19,13 @@ ViewSelectionDialogBuilder::build(const DelegateParameter& params,
     // Create the dialog widget
     auto* dialog = new ViewSelectionDialog(parentWidget);
 
-    // Use the scan protocol repository from params
-    // Create the delegate with dependencies
+    // Builder creates repository from dbConnection
+    auto scanRepository = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(params.dbConnection, nullptr);
+
+    // Create the delegate with dependencies (delegate receives repository)
     auto* delegate = new ViewSelectionDialogDelegate(
         dialog,
-        params.scanRepository,
+        scanRepository,
         params.contextManager,
         parentDelegate
     );
