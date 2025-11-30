@@ -21,6 +21,13 @@
 #include <vtkRenderWindow.h>
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkNew.h>
+#include <vtkSmartPointer.h>
+#include <vtkImageReader2.h>
+#include <vtkImageReader2Factory.h>
+#include <vtkImageActor.h>
+#include <vtkTextActor.h>
+#include <vtkTextProperty.h>
+#include <QFile>
 
 ViewSelectionDialog::ViewSelectionDialog(QWidget *parent)
     : QDialog(parent)
@@ -111,6 +118,17 @@ void ViewSelectionDialog::loadViewsForProcedure(int procedureIndex)
         return;
     }
 
+    // Create a container widget to hold the grid
+    QWidget* containerWidget = new QWidget();
+    containerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    
+    // Create a new grid layout for this container
+    QGridLayout* gridLayout = new QGridLayout(containerWidget);
+    gridLayout->setHorizontalSpacing(20);
+    gridLayout->setVerticalSpacing(20);
+    gridLayout->setContentsMargins(15, 15, 15, 15);
+    gridLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
     // Display views in a grid layout (3 columns)
     int row = 0;
     int col = 0;
@@ -118,7 +136,7 @@ void ViewSelectionDialog::loadViewsForProcedure(int procedureIndex)
 
     for (const auto& view : procedure.Views) {
         QWidget* viewWidget = createViewWidget(view);
-        ui->viewsGridLayout->addWidget(viewWidget, row, col);
+        gridLayout->addWidget(viewWidget, row, col, Qt::AlignTop | Qt::AlignLeft);
 
         col++;
         if (col >= maxColumns) {
@@ -126,6 +144,9 @@ void ViewSelectionDialog::loadViewsForProcedure(int procedureIndex)
             row++;
         }
     }
+    
+    // Add the container to the main layout (which is in the scroll area)
+    ui->viewsGridLayout->addWidget(containerWidget, 0, 0, Qt::AlignTop | Qt::AlignLeft);
 
     updateStartButtonState();
 }
@@ -138,55 +159,94 @@ QWidget* ViewSelectionDialog::createViewWidget(const Etrek::ScanProtocol::Data::
     frame->setFrameShadow(QFrame::Raised);
     frame->setLineWidth(2);
     frame->setStyleSheet("QFrame { border: 2px solid rgb(120, 120, 120); border-radius: 5px; padding: 10px; }");
-    frame->setMinimumSize(280, 200);
-    frame->setMaximumSize(350, 250);
+    frame->setFixedSize(320, 300);
+    frame->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QVBoxLayout* layout = new QVBoxLayout(frame);
+    layout->setSpacing(8);
+    layout->setContentsMargins(10, 10, 10, 10);
 
-    // View name checkbox
-    QCheckBox* checkbox = new QCheckBox(view.Name);
-    checkbox->setFont(QFont("Arial", 11, QFont::Bold));
-    checkbox->setStyleSheet("color: rgb(208, 208, 208);");
+    // View name with checkbox in horizontal layout
+    QHBoxLayout* headerLayout = new QHBoxLayout();
+    headerLayout->setSpacing(5);
+    
+    QCheckBox* checkbox = new QCheckBox();
+    checkbox->setMinimumSize(20, 20);
+    checkbox->setMaximumSize(20, 20);
     m_viewCheckboxes[view.Id] = checkbox;
 
     connect(checkbox, &QCheckBox::toggled, this, [this, viewId = view.Id](bool checked) {
         onViewCheckboxToggled(viewId, checked);
     });
+    
+    QLabel* nameLabel = new QLabel(view.Name);
+    nameLabel->setFont(QFont("Arial", 11, QFont::Bold));
+    nameLabel->setStyleSheet("color: rgb(208, 208, 208);");
+    nameLabel->setWordWrap(true);
+    nameLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    
+    headerLayout->addWidget(checkbox);
+    headerLayout->addWidget(nameLabel);
+    headerLayout->addStretch();
+    
+    layout->addLayout(headerLayout);
 
-    layout->addWidget(checkbox);
+    // VTK widget for 2D image display or text fallback
+    QVTKOpenGLNativeWidget* vtkWidget = new QVTKOpenGLNativeWidget();
+    vtkWidget->setMinimumSize(280, 160);
+    vtkWidget->setMaximumSize(280, 160);
+    vtkWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    
+    // Create VTK render window and renderer
+    vtkNew<vtkGenericOpenGLRenderWindow> renderWindow;
+    vtkWidget->setRenderWindow(renderWindow);
+    
+    vtkNew<vtkRenderer> renderer;
+    renderer->SetBackground(0.235, 0.235, 0.235); // rgb(60, 60, 60)
+    renderWindow->AddRenderer(renderer);
 
-    // View icon/image placeholder
-    QLabel* iconLabel = new QLabel();
-    iconLabel->setAlignment(Qt::AlignCenter);
-    iconLabel->setMinimumSize(200, 120);
-    iconLabel->setMaximumSize(300, 180);
-    iconLabel->setStyleSheet("background-color: rgb(60, 60, 60); border: 1px solid rgb(100, 100, 100);");
-
-    // Try to load icon from file, otherwise show placeholder
-    if (!view.IconFileLocation.isEmpty()) {
-        QPixmap pixmap(view.IconFileLocation);
-        if (!pixmap.isNull()) {
-            iconLabel->setPixmap(pixmap.scaled(iconLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        } else {
-            // Dummy placeholder text
-            iconLabel->setText(QString("Icon\n%1").arg(view.Name));
-            iconLabel->setAlignment(Qt::AlignCenter);
-            iconLabel->setStyleSheet("background-color: rgb(60, 60, 60); color: rgb(150, 150, 150); "
-                                    "border: 1px solid rgb(100, 100, 100); font-size: 10pt;");
+    // Try to load and display image
+    bool imageLoaded = false;
+    if (!view.IconFileLocation.isEmpty() && QFile::exists(view.IconFileLocation)) {
+        // Load image using VTK
+        vtkNew<vtkImageReader2Factory> readerFactory;
+        vtkSmartPointer<vtkImageReader2> imageReader;
+        imageReader.TakeReference(readerFactory->CreateImageReader2(view.IconFileLocation.toStdString().c_str()));
+        
+        if (imageReader) {
+            imageReader->SetFileName(view.IconFileLocation.toStdString().c_str());
+            imageReader->Update();
+            
+            // Create image actor for 2D display
+            vtkNew<vtkImageActor> imageActor;
+            imageActor->SetInputData(imageReader->GetOutput());
+            
+            renderer->AddActor(imageActor);
+            renderer->ResetCamera();
+            imageLoaded = true;
         }
-    } else {
-        // Dummy placeholder with view details
-        QString placeholderText = QString("%1\n%2")
-            .arg(view.Name)
-            .arg(view.ViewPosition.has_value() ?
-                 Etrek::ScanProtocol::ScanProtocolUtil::toString(view.ViewPosition.value()) : "");
-        iconLabel->setText(placeholderText);
-        iconLabel->setAlignment(Qt::AlignCenter);
-        iconLabel->setStyleSheet("background-color: rgb(60, 60, 60); color: rgb(150, 150, 150); "
-                                "border: 1px solid rgb(100, 100, 100); font-size: 9pt;");
     }
-
-    layout->addWidget(iconLabel);
+    
+    // If no image, display text using VTK
+    if (!imageLoaded) {
+        vtkNew<vtkTextActor> textActor;
+        QString displayText = view.Name;
+        if (view.ViewPosition.has_value()) {
+            displayText += QString("\n%1").arg(
+                Etrek::ScanProtocol::ScanProtocolUtil::toString(view.ViewPosition.value()));
+        }
+        
+        textActor->SetInput(displayText.toStdString().c_str());
+        textActor->GetTextProperty()->SetFontSize(16);
+        textActor->GetTextProperty()->SetColor(0.588, 0.588, 0.588); // rgb(150, 150, 150)
+        textActor->GetTextProperty()->SetJustificationToCentered();
+        textActor->GetTextProperty()->SetVerticalJustificationToCentered();
+        textActor->SetPosition(140, 80); // Center of widget
+        
+        renderer->AddActor2D(textActor);
+    }
+    
+    layout->addWidget(vtkWidget);
 
     // View details
     if (!view.Description.isEmpty()) {
@@ -194,8 +254,12 @@ QWidget* ViewSelectionDialog::createViewWidget(const Etrek::ScanProtocol::Data::
         descLabel->setWordWrap(true);
         descLabel->setStyleSheet("color: rgb(180, 180, 180); font-size: 9pt;");
         descLabel->setAlignment(Qt::AlignCenter);
+        descLabel->setMaximumHeight(60);
+        descLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         layout->addWidget(descLabel);
     }
+    
+    layout->addStretch();
 
     return frame;
 }
