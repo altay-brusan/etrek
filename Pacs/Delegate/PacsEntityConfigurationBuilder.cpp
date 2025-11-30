@@ -20,9 +20,14 @@ namespace Etrek::Pacs::Delegate
             QWidget* parentWidget,
             QObject* parentDelegate)
     {
-		auto repository = std::make_shared<PacsNodeRepository>(params.dbConnection);
-		const auto nodesResult = repository->getPacsNodes();
+        // Builder creates repository from dbConnection
+        auto repository = std::make_shared<PacsNodeRepository>(params.dbConnection);
+        
+        const auto nodesResult = repository->getPacsNodes();
         auto widget = new PacsEntityConfigurationWidget(nodesResult, parentWidget);
+        
+        // Delegate receives repository if it needs to perform CRUD operations
+        // In this case, delegate doesn't need repository (read-only widget)
         auto delegate = new PacsEntityConfigurationDelegate(widget, parentDelegate);
 
         // If you need to attach other delegates:
