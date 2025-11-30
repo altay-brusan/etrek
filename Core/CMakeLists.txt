@@ -3,8 +3,11 @@ project(Core LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools Sql Network)
+# Note: Qt and other third-party libraries are configured at root CMakeLists.txt
+# We just use the pre-configured variables here
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Data/Entity/*.cpp
@@ -66,27 +69,15 @@ set_target_properties(Core PROPERTIES
     WINDOWS_EXPORT_ALL_SYMBOLS TRUE  # Ensure that the import library is generated
 )
 
-# some of these libs might go to launch.
+# Link against centralized third-party libraries (configured at root)
 target_link_libraries(Core
-    PRIVATE 
-    #Qt::Core Qt::Widgets Qt::UiTools Qt::Sql Qt::Network
-    Qt6::Core Qt6::Sql Qt6::Network    
-    ${OPENSSL_LIB_DIR}/libcrypto.lib
-    ${OPENSSL_LIB_DIR}/libssl.lib
-    ${DCMTK_LIB_DIR}/dcmnet.lib
-    ${DCMTK_LIB_DIR}/dcmdata.lib
-    ${DCMTK_LIB_DIR}/oflog.lib
-    ${DCMTK_LIB_DIR}/ofstd.lib
-    ${DCMTK_LIB_DIR}/dcmimgle.lib
-    ${DCMTK_LIB_DIR}/dcmsr.lib
-    ${DCMTK_LIB_DIR}/dcmnet.lib
-    ${DCMTK_LIB_DIR}/dcmdata.lib
-    ${DCMTK_LIB_DIR}/oflog.lib
-    ${DCMTK_LIB_DIR}/ofstd.lib
-    ${DCMTK_LIB_DIR}/dcmimgle.lib
-    ${DCMTK_LIB_DIR}/dcmsr.lib
-    ${WIN_SDK_DIR}/Iphlpapi.lib
-    ${WIN_SDK_DIR}/Netapi32.lib
+    PRIVATE
+    Qt6::Core
+    Qt6::Sql
+    Qt6::Network
+    ${OPENSSL_LIBRARIES}
+    ${DCMTK_LIBRARIES}
+    ${WIN_SDK_LIBRARIES}
     PUBLIC
     SPDLOG
     Common
