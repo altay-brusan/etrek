@@ -6,25 +6,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 # Note: Qt is configured in ThirdPartyLibraries/CMakeLists.txt
-# VTK is configured in ThirdPartyLibraries/CMakeLists.txt (VTK_DIR is set there)
-
-# Find VTK with Qt support
-find_package(VTK 9.5 REQUIRED COMPONENTS
-    CommonCore
-    CommonDataModel
-    RenderingCore
-    RenderingOpenGL2
-    InteractionStyle
-    RenderingQt
-    GUISupportQt
-)
-
-if(NOT VTK_FOUND)
-    message(FATAL_ERROR "VTK not found. Please check ThirdPartyLibraries/vtk installation.")
-endif()
-
-message(STATUS "VTK ${VTK_VERSION} found")
-message(STATUS "VTK Qt Version: ${VTK_QT_VERSION}")
+# Note: VTK is configured in ThirdPartyLibraries/CMakeLists.txt (manual management like DCMTK)
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS    
     ${CMAKE_CURRENT_SOURCE_DIR}/Page    
@@ -96,12 +78,6 @@ target_link_libraries(View
     Common
 )
 
-# VTK autoinit (required for VTK 6.0+)
-vtk_module_autoinit(
-    TARGETS View
-    MODULES ${VTK_LIBRARIES}
-)
-
 target_include_directories(View
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Page
@@ -125,7 +101,7 @@ target_include_directories(View
         ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Entity
         ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Model
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${VTK_INCLUDE_DIRS}
+        ${VTK_INCLUDE_DIR}
 )
 
 # Ensure View DLL and LIB go to the correct folders as set by the root CMake
