@@ -46,7 +46,7 @@ if(WIN32)
         "${WIN_DRIVER_DIR}/libmysql.dll"
         "${WIN_DRIVER_DIR}/libssl-3-x64.dll"
     )
-    
+
     # Add the list to be copied post-build
     foreach(dll ${WIN_DRIVER_DLL})
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -55,6 +55,20 @@ if(WIN32)
             "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
         )
     endforeach()
+
+    # Copy VTK DLLs to output directory
+    set(VTK_BIN_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/bin")
+    file(GLOB VTK_DLLS "${VTK_BIN_DIR}/*.dll")
+
+    foreach(dll ${VTK_DLLS})
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${dll}"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+        )
+    endforeach()
+
+    message(STATUS "VTK DLLs will be copied from: ${VTK_BIN_DIR}")
 endif()
 
 # Post-build step to copy all DLLs to the 'bin' folder
