@@ -29,6 +29,9 @@
 #include "MainAppLaunchStrategy.h"
 #include "WorklistRepository.h"
 #include "WorklistFieldConfigurationRepository.h"
+#include "ScanProtocolRepository.h"
+#include "DicomRepository.h"
+#include "DicomTagRepository.h"
 #include "MainWindowBuilder.h"
 #include "DelegateParameter.h"
 
@@ -226,12 +229,22 @@ namespace Etrek::Application::Service
             m_mainWindow.reset();
         }
 
+        // Create commonly used repositories once and share them via DelegateParameter
+        auto worklistRepository = std::make_shared<Etrek::Worklist::Repository::WorklistRepository>(m_databaseConnectionSetting);
+        auto scanRepository = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(m_databaseConnectionSetting);
+        auto dicomRepository = std::make_shared<Etrek::Dicom::Repository::DicomRepository>(m_databaseConnectionSetting);
+        auto dicomTagRepository = std::make_shared<Etrek::Dicom::Repository::DicomTagRepository>(m_databaseConnectionSetting);
+
         DelegateParameter params;
-        params.dbConnection = m_databaseConnectionSetting;
+        params.worklistRepository = worklistRepository;
+        params.scanRepository = scanRepository;
+        params.dicomRepository = dicomRepository;
+        params.dicomTagRepository = dicomTagRepository;
+        params.dbConnection = m_databaseConnectionSetting;  // For builders to create additional repositories
         params.contextManager = m_contextManager;
         params.sessionContext = m_contextManager ? m_contextManager->sessionContext() : nullptr;
 
-        MainWindowBuilder builder;
+        Etrek::Application::Delegate::MainWindowBuilder builder;
         auto result = builder.build(params, nullptr, this);
 
         m_mainWindow.reset(result.first);
