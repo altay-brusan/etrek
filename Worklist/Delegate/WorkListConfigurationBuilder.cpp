@@ -19,10 +19,15 @@ namespace Etrek::Worklist::Delegate {
             QWidget* parentWidget,
             QObject* parentDelegate)
     {
+        // Builder creates repository from dbConnection
         auto repository = std::make_shared<WorklistRepository>(params.dbConnection);
-		// TODO: this is hardcoded profile id, need to make it dynamic
+        
+        // TODO: this is hardcoded profile id, need to make it dynamic
         auto tags = repository->getTagsByProfile(1);
-        auto* widget = new WorkListConfigurationWidget(tags.value,parentWidget);
+        auto* widget = new WorkListConfigurationWidget(tags.value, parentWidget);
+        
+        // Delegate receives repository if it needs to perform CRUD operations
+        // In this case, delegate doesn't need repository (read-only widget)
         auto* delegate = new WorkListConfigurationDelegate(widget, parentDelegate);
 
         // If you need to attach other delegates:
