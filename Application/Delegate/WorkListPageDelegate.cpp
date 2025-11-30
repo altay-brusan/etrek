@@ -14,6 +14,9 @@
 #include "IContextManager.h"
 #include "ExaminationContext.h"
 #include "WorklistFilterProxyModel.h"
+#include "ViewSelectionDialogBuilder.h"
+#include "ViewSelectionDialogDelegate.h"
+#include "DelegateParameter.h"
 
 
 using namespace Etrek::Worklist::Repository;
@@ -27,6 +30,7 @@ namespace Etrek::Application::Delegate
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository,
         std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
+        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection,
         std::weak_ptr<Etrek::Context::IContextManager> contextManager,
         QObject* parent)
         : QObject(parent)
@@ -35,6 +39,7 @@ namespace Etrek::Application::Delegate
         , scanRepository(scanRepository)
         , dicomRepository(dicomRepository)
         , dicomTagRepository(dicomTagRepository)
+        , dbConnection(dbConnection)
         , contextManager(contextManager) {
 
         baseModel = new QStandardItemModel(this);
@@ -534,10 +539,36 @@ namespace Etrek::Application::Delegate
         if (auto ctxMgr = contextManager.lock()) {
             auto examContext = std::make_shared<Etrek::Core::Context::ExaminationContext>(selectedEntry);
             ctxMgr->setWorkflowContext("Examination", examContext);
-        }
 
-        // Emit signal to start examination
-        emit startExamination(entryId);
+            // Show ViewSelectionDialog to allow user to select procedure and views
+            // Pass only dbConnection - ViewSelectionDialogBuilder will create its own repository
+            DelegateParameter params;
+            params.dbConnection = dbConnection;
+            params.contextManager = contextManager;
+
+            Etrek::Application::Delegate::ViewSelectionDialogBuilder builder;
+            auto [dialog, delegate] = builder.build(params, ui, this);
+
+            // Connect dialog signals
+            connect(delegate, &Etrek::Application::Delegate::ViewSelectionDialogDelegate::examinationReady,
+                    this, [this, entryId](int procedureId, const QVector<int>& viewIds) {
+                // TODO: Store selected procedure and view IDs in examination context or separate context
+                // For now, we'll just emit the startExamination signal
+                qDebug() << "Selected Procedure ID:" << procedureId;
+                qDebug() << "Selected View IDs:" << viewIds;
+                emit startExamination(entryId);
+            });
+
+            // Show dialog modally
+            dialog->exec();
+
+            // Clean up
+            dialog->deleteLater();
+            delegate->deleteLater();
+        } else {
+            QMessageBox::warning(ui, "Context Error",
+                               "Context manager is not available. Cannot proceed with examination.");
+        }
     }
 
     mdl::PatientModel WorkListPageDelegate::worklistEntryToPatientModel(const ent::WorklistEntry& entry) const

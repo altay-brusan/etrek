@@ -20,9 +20,14 @@ namespace Etrek::Device::Delegate
             QWidget* parentWidget,
             QObject* parentDelegate)
     {
+        // Builder creates repository from dbConnection
         auto repository = std::make_shared<DeviceRepository>(params.dbConnection);
-		const auto nodes = repository->getDetectorList();
+        
+        const auto nodes = repository->getDetectorList();
         auto widget = new DetectorConfigurationWidget(nodes.value, parentWidget);
+        
+        // Delegate receives repository if it needs to perform CRUD operations
+        // In this case, delegate doesn't need repository (read-only widget)
         auto delegate = new DetectorConfigurationDelegate(widget, parentDelegate);
 
         // If you need to attach other delegates:

@@ -15,13 +15,14 @@ namespace Etrek::Device::Delegate
             QWidget* parentWidget,
             QObject* parentDelegate)
     {
-		auto repository = std::make_shared<Etrek::Device::Repository::DeviceRepository>(
-			params.dbConnection, nullptr);
+        // Builder creates repository from dbConnection
+        auto repository = std::make_shared<Etrek::Device::Repository::DeviceRepository>(params.dbConnection, nullptr);
+        
         //auto generatorManufactures = repository->getManufacturersList(DeviceType::GENERATOR);
         //auto tubeManufactures = repository->getManufacturersList(DeviceType::TUBE);
-		auto generators = repository->getGeneratorList();
-		auto xRayTubes = repository->getXRayTubesList();
-		//auto generatorTubeConnections = repository->getActiveGeneratorTubes();
+        auto generators = repository->getGeneratorList();
+        auto xRayTubes = repository->getXRayTubesList();
+        //auto generatorTubeConnections = repository->getActiveGeneratorTubes();
 
         auto widget = new GeneratorConfigurationWidget( 
                                                        generators.value, 
@@ -29,6 +30,8 @@ namespace Etrek::Device::Delegate
                                                        xRayTubes.value,
                                                        
                                                        parentWidget);
+        
+        // Delegate receives repository because it needs to perform CRUD operations
         auto delegate = new GeneratorConfigurationDelegate(widget, repository, parentDelegate);
 
         // If you need to attach other delegates:

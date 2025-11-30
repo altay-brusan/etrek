@@ -7,16 +7,20 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools Sql Network)
 
+# Note: VTK is configured in ThirdPartyLibraries/CMakeLists.txt (manual management like DCMTK)
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Authentication/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Builder/*.cpp
 )
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Authentication/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Builder/*.h
     
     ${COMMON_INCLUDE_DIR}/Core/Data/Entity/*.h
     ${COMMON_INCLUDE_DIR}/Core/Data/Model/*.h
@@ -54,15 +58,16 @@ set_target_properties(Application PROPERTIES
 # some of these libs might go to launch.
 target_link_libraries(Application
     PRIVATE Qt6::Core Qt6::Widgets Qt6::UiTools Qt6::Sql Qt6::Network
-    PUBLIC 
-    Core 
-    Common 
-    View 
-    Worklist 
-    Device 
-    Dicom 
-    Pacs 
+    PUBLIC
+    Core
+    Common
+    View
+    Worklist
+    Device
+    Dicom
+    Pacs
     ScanProtocol
+    ${VTK_LIBRARIES}
 )
 
 target_include_directories(Application
@@ -70,6 +75,7 @@ target_include_directories(Application
         ${CMAKE_CURRENT_SOURCE_DIR}/Authentication
         ${CMAKE_CURRENT_SOURCE_DIR}/Service
         ${CMAKE_CURRENT_SOURCE_DIR}/Delegate
+        ${CMAKE_CURRENT_SOURCE_DIR}/Builder
         ${CMAKE_CURRENT_BINARY_DIR}
         ${CMAKE_VIEW_DIRECTORY}/Page
         ${CMAKE_VIEW_DIRECTORY}/Widget
