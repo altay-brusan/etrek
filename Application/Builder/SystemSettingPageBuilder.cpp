@@ -34,7 +34,13 @@ SystemSettingPageBuilder::build(const DelegateParameter &params,
 
   // Prepare delegate parameters for all sub-builders
   DelegateParameter delegateParameters;
-  delegateParameters.dbConnection = params.dbConnection;
+  delegateParameters.worklistRepository = params.worklistRepository;
+  delegateParameters.scanRepository = params.scanRepository;
+  delegateParameters.dicomRepository = params.dicomRepository;
+  delegateParameters.dicomTagRepository = params.dicomTagRepository;
+  delegateParameters.contextManager = params.contextManager;
+  delegateParameters.sessionContext = params.sessionContext;
+  delegateParameters.workflowContext = params.workflowContext;
 
   // WorkflowConfiguration
   WorkflowConfigurationBuilder workflowConfigurationBuilder;

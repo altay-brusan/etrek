@@ -31,7 +31,6 @@ namespace Etrek::Application::Delegate
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository,
         std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
         std::weak_ptr<Etrek::Context::IContextManager> contextManager,
-        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection,
         QObject* parent)
         : QObject(parent)
         , ui(ui)
@@ -39,8 +38,7 @@ namespace Etrek::Application::Delegate
         , scanRepository(scanRepository)
         , dicomRepository(dicomRepository)
         , dicomTagRepository(dicomTagRepository)
-        , contextManager(contextManager)
-        , m_dbConnection(dbConnection) {
+        , contextManager(contextManager) {
 
         baseModel = new QStandardItemModel(this);
         proxyModel = new WorklistFilterProxyModel(this);
@@ -542,7 +540,7 @@ namespace Etrek::Application::Delegate
 
             // Show ViewSelectionDialog to allow user to select procedure and views
             DelegateParameter params;
-            params.dbConnection = m_dbConnection;  // Use stored DB connection
+            params.scanRepository = scanRepository;
             params.contextManager = contextManager;
 
             Etrek::Application::Delegate::ViewSelectionDialogBuilder builder;
