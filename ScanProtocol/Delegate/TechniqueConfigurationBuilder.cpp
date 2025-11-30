@@ -20,11 +20,14 @@ TechniqueConfigurationBuilder::build(const DelegateParameter& params,
                                      QWidget* parentWidget,
                                      QObject* parentDelegate)
 {
-    auto repo = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(params.dbConnection, nullptr);
+    // Builder creates repository from dbConnection
+    auto repository = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(params.dbConnection, nullptr);
     
-    auto techniqueParameters = repo->getAllTechniqueParameters();
+    auto techniqueParameters = repository->getAllTechniqueParameters();
     auto* widget   = new TechniqueConfigurationWidget(techniqueParameters.value, parentWidget);
-    auto* delegate = new Etrek::ScanProtocol::Delegate::TechniqueConfigurationDelegate(widget, repo, parentDelegate);
+    
+    // Delegate receives repository because it needs to perform CRUD operations
+    auto* delegate = new Etrek::ScanProtocol::Delegate::TechniqueConfigurationDelegate(widget, repository, parentDelegate);
 
     return std::make_pair(widget, delegate); // MSVC: prefer make_pair
 }
