@@ -12,6 +12,8 @@
 #include "AuthenticationService.h"
 #include "AuthenticationRepository.h"
 #include "ModalityWorklistManager.h"
+#include "WorklistRepository.h"
+#include "WorklistFieldConfigurationRepository.h"
 #include "ContextManager.h"
 #include "SessionContext.h"
 #include "IContextManager.h"
@@ -27,11 +29,6 @@
 #include "DemoLaunchStrategy.h"
 #include "DeveloperLaunchStrategy.h"
 #include "MainAppLaunchStrategy.h"
-#include "WorklistRepository.h"
-#include "WorklistFieldConfigurationRepository.h"
-#include "ScanProtocolRepository.h"
-#include "DicomRepository.h"
-#include "DicomTagRepository.h"
 #include "MainWindowBuilder.h"
 #include "DelegateParameter.h"
 
@@ -229,18 +226,10 @@ namespace Etrek::Application::Service
             m_mainWindow.reset();
         }
 
-        // Create commonly used repositories once and share them via DelegateParameter
-        auto worklistRepository = std::make_shared<Etrek::Worklist::Repository::WorklistRepository>(m_databaseConnectionSetting);
-        auto scanRepository = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(m_databaseConnectionSetting);
-        auto dicomRepository = std::make_shared<Etrek::Dicom::Repository::DicomRepository>(m_databaseConnectionSetting);
-        auto dicomTagRepository = std::make_shared<Etrek::Dicom::Repository::DicomTagRepository>(m_databaseConnectionSetting);
-
+        // Create DelegateParameter with only dbConnection
+        // Builders are responsible for creating their own repository instances
         DelegateParameter params;
-        params.worklistRepository = worklistRepository;
-        params.scanRepository = scanRepository;
-        params.dicomRepository = dicomRepository;
-        params.dicomTagRepository = dicomTagRepository;
-        params.dbConnection = m_databaseConnectionSetting;  // For builders to create additional repositories
+        params.dbConnection = m_databaseConnectionSetting;
         params.contextManager = m_contextManager;
         params.sessionContext = m_contextManager ? m_contextManager->sessionContext() : nullptr;
 
