@@ -30,6 +30,7 @@ namespace Etrek::Application::Delegate
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository,
         std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
+        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection,
         std::weak_ptr<Etrek::Context::IContextManager> contextManager,
         QObject* parent)
         : QObject(parent)
@@ -38,6 +39,7 @@ namespace Etrek::Application::Delegate
         , scanRepository(scanRepository)
         , dicomRepository(dicomRepository)
         , dicomTagRepository(dicomTagRepository)
+        , dbConnection(dbConnection)
         , contextManager(contextManager) {
 
         baseModel = new QStandardItemModel(this);
@@ -539,8 +541,9 @@ namespace Etrek::Application::Delegate
             ctxMgr->setWorkflowContext("Examination", examContext);
 
             // Show ViewSelectionDialog to allow user to select procedure and views
+            // Pass only dbConnection - ViewSelectionDialogBuilder will create its own repository
             DelegateParameter params;
-            params.scanRepository = scanRepository;
+            params.dbConnection = dbConnection;
             params.contextManager = contextManager;
 
             Etrek::Application::Delegate::ViewSelectionDialogBuilder builder;

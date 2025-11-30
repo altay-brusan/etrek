@@ -41,6 +41,7 @@ namespace Etrek::Application::Delegate {
             std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
             std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository,
             std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
+            std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection,
             std::weak_ptr<Etrek::Context::IContextManager> contextManager = std::weak_ptr<Etrek::Context::IContextManager>(),
             QObject* parent = nullptr);
 
@@ -95,6 +96,7 @@ namespace Etrek::Application::Delegate {
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository;
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository;
         std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository;
+        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection;
         std::weak_ptr<Etrek::Context::IContextManager> contextManager;
 
         void apply() override;
