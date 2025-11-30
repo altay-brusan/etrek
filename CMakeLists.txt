@@ -18,21 +18,24 @@ set(CMAKE_PACS_DIRECTORY "${CMAKE_SOURCE_DIR}/Pacs")
 set(CMAKE_SCANPROTOCOL_DIRECTORY "${CMAKE_SOURCE_DIR}/ScanProtocol")
 
 
-# Define global (common) variables for all sub-projects
-if(WIN32)
+# ============================================================================
+# Common Include Directory
+# ============================================================================
+set(COMMON_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Common/Include")
 
-    set(WIN_DRIVER_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/Windows")
-    set(DCMTK_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/dcmtk/include")
-    set(DCMTK_LIB_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/dcmtk/lib")
-    set(SPDLOG_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/spdlog/include")
-    set(OPENSSL_LIB_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/openssl/lib")
-    set(OPENSSL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/openssl/include")
-    set(WIN_SDK_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/windows/sdk") 
+# ============================================================================
+# Third-Party Library Configuration
+# ============================================================================
+# find_package calls must be at root level to make targets available to all subdirectories
+# Library paths and configurations are organized in ThirdPartyLibraries/CMakeLists.txt
 
-endif()
+# --- Qt Configuration (root level for target visibility) ---
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools Sql Network OpenGL OpenGLWidgets)
+message(STATUS "✓ Qt ${Qt6_VERSION} configured")
 
-
- set(COMMON_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Common/Include")
+# --- Third-Party Library Paths ---
+# DCMTK, OpenSSL, Windows SDK paths are configured in ThirdPartyLibraries/
+add_subdirectory(ThirdPartyLibraries)
 
 # copy assets to each subdirectory that needs shared assets
 #if(NOT EXISTS "${CMAKE_SOURCE_DIR}/Core/Asset/Icon")
