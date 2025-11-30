@@ -42,11 +42,28 @@ if(WIN32)
         ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/windows/sdk/Netapi32.lib
     )
 
-    # VTK
-    set(VTK_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/cmake/vtk-9.5")
-    set(VTK_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/include")
+    # VTK (manually managed like DCMTK)
+    set(VTK_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/include/vtk-9.5")
     set(VTK_LIB_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib")
     set(VTK_BIN_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/bin")
+    set(VTK_LIBRARIES
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkCommonCore-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkCommonDataModel-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkCommonMath-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkCommonMisc-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkCommonSystem-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkCommonTransforms-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkCommonExecutionModel-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkRenderingCore-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkRenderingOpenGL2-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkRenderingFreeType-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkRenderingContext2D-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkInteractionStyle-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkRenderingQt-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkGUISupportQt-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtksys-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkglad-9.5d.lib
+    )
 
     # Windows Driver
     set(WIN_DRIVER_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/Windows")
