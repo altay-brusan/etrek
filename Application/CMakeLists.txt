@@ -7,20 +7,7 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools Sql Network)
 
-# Find VTK using the path configured in ThirdPartyLibraries
-find_package(VTK 9.5 REQUIRED COMPONENTS
-    CommonCore
-    CommonDataModel
-    RenderingCore
-    RenderingOpenGL2
-    InteractionStyle
-    RenderingQt
-    GUISupportQt
-)
-
-if (NOT VTK_FOUND)
-    message(FATAL_ERROR "VTK not found. Please check ThirdPartyLibraries/vtk installation.")
-endif()
+# Note: VTK is configured in ThirdPartyLibraries/CMakeLists.txt (manual management like DCMTK)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Authentication/*.cpp
@@ -81,12 +68,6 @@ target_link_libraries(Application
     Pacs
     ScanProtocol
     ${VTK_LIBRARIES}
-)
-
-# VTK autoinit (required for VTK 6.0+)
-vtk_module_autoinit(
-    TARGETS Application
-    MODULES ${VTK_LIBRARIES}
 )
 
 target_include_directories(Application
