@@ -16,13 +16,17 @@ namespace Etrek::ScanProtocol::Delegate
             QWidget* parentWidget,
             QObject* parentDelegate)
     {
-        auto repo = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(params.dbConnection, nullptr);
+        // Builder creates repository from dbConnection
+        auto repository = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(params.dbConnection, nullptr);
 
-        auto views = repo->getAllViews();
-		auto procedures = repo->getAllProcedures();
-        auto bodyParts = repo->getAllBodyParts();
-        auto anatomicalRegions = repo->getAllAnatomicRegions();
+        auto views = repository->getAllViews();
+        auto procedures = repository->getAllProcedures();
+        auto bodyParts = repository->getAllBodyParts();
+        auto anatomicalRegions = repository->getAllAnatomicRegions();
         auto widget = new ProcedureConfigurationWidget(procedures.value, bodyParts.value, anatomicalRegions.value, views.value, parentWidget);
+        
+        // Delegate receives repository if it needs to perform CRUD operations
+        // In this case, delegate doesn't need repository (read-only widget)
         auto delegate = new ProcedureConfigurationDelegate(widget, parentDelegate);
 
         // If you need to attach other delegates:
