@@ -7,6 +7,22 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools Sql Network)
 
+# Find VTK (required because View module uses VTK)
+set(VTK_DIR "${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/cmake/vtk-9.5")
+find_package(VTK 9.5 REQUIRED COMPONENTS
+    CommonCore
+    CommonDataModel
+    RenderingCore
+    RenderingOpenGL2
+    InteractionStyle
+    RenderingQt
+    GUISupportQt
+)
+
+if (NOT VTK_FOUND)
+    message(FATAL_ERROR "VTK not found. Please check ThirdPartyLibraries/vtk installation.")
+endif()
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Authentication/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.cpp
@@ -54,15 +70,22 @@ set_target_properties(Application PROPERTIES
 # some of these libs might go to launch.
 target_link_libraries(Application
     PRIVATE Qt6::Core Qt6::Widgets Qt6::UiTools Qt6::Sql Qt6::Network
-    PUBLIC 
-    Core 
-    Common 
-    View 
-    Worklist 
-    Device 
-    Dicom 
-    Pacs 
+    PUBLIC
+    Core
+    Common
+    View
+    Worklist
+    Device
+    Dicom
+    Pacs
     ScanProtocol
+    ${VTK_LIBRARIES}
+)
+
+# VTK autoinit (required for VTK 6.0+)
+vtk_module_autoinit(
+    TARGETS Application
+    MODULES ${VTK_LIBRARIES}
 )
 
 target_include_directories(Application
