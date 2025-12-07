@@ -162,4 +162,26 @@ QDate ExaminationContext::parseDicomDate(const QString& dicomDate) const
     return QDate(year, month, day);
 }
 
+// --- Procedure and View Selection (for LOCAL worklist entries) ---
+
+void ExaminationContext::setProcedureId(int procedureId)
+{
+    m_procedureId = procedureId;
+}
+
+int ExaminationContext::procedureId() const
+{
+    return m_procedureId;
+}
+
+void ExaminationContext::setViewIds(const QVector<int>& viewIds)
+{
+    m_viewIds = viewIds;
+}
+
+QVector<int> ExaminationContext::viewIds() const
+{
+    return m_viewIds;
+}
+
 } // namespace Etrek::Core::Context

@@ -69,6 +69,32 @@ public:
      */
     QMap<QString, QString> allAttributes() const;
 
+    // --- Procedure and View Selection (for LOCAL worklist entries) ---
+
+    /**
+     * @brief Sets the selected procedure ID.
+     * @param procedureId The ID of the selected procedure.
+     */
+    void setProcedureId(int procedureId);
+
+    /**
+     * @brief Gets the selected procedure ID.
+     * @return The procedure ID, or -1 if not set.
+     */
+    int procedureId() const;
+
+    /**
+     * @brief Sets the selected view IDs.
+     * @param viewIds Vector of view IDs selected for this examination.
+     */
+    void setViewIds(const QVector<int>& viewIds);
+
+    /**
+     * @brief Gets the selected view IDs.
+     * @return Vector of view IDs.
+     */
+    QVector<int> viewIds() const;
+
 private:
     void extractAttributesFromEntry();
     QString formatPatientNameForDisplay(const QString& dicomName) const;
@@ -78,6 +104,10 @@ private:
     QMap<QString, QString> m_attributes;
     QDateTime m_timestamp;
     bool m_isComplete;
+
+    // For LOCAL worklist entries: selected procedure and views
+    int m_procedureId = -1;
+    QVector<int> m_viewIds;
 };
 
 } // namespace Etrek::Core::Context
