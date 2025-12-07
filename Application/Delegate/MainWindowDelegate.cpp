@@ -4,6 +4,7 @@
 #include "MainWindowDelegate.h"
 #include "SystemSettingPageBuilder.h"
 #include "WorkListPageBuilder.h"
+#include "ExamPageBuilder.h"
 
 namespace Etrek::Application::Delegate
 {
@@ -91,6 +92,68 @@ namespace Etrek::Application::Delegate
                     if (m_mainWindow) {
                         m_mainWindow->closePage();
                     }
+                });
+
+            // Connect examination start signal
+            connect(m_worklistPageDelegate,
+                &WorkListPageDelegate::startExamination, this,
+                &MainWindowDelegate::onStartExamination);
+        }
+
+        if (m_mainWindow) {
+            m_mainWindow->loadPage(page);
+            m_mainWindow->finishLoadingPage();
+        }
+    }
+
+    void MainWindowDelegate::onStartExamination(int worklistEntryId) {
+        if (!m_mainWindow) {
+            qWarning() << "MainWindowDelegate::onStartExamination invoked without "
+                "a MainWindow instance.";
+            return;
+        }
+
+        qDebug() << "MainWindowDelegate: Starting examination for worklist entry" << worklistEntryId;
+
+        m_mainWindow->prepareLoadingPage();
+
+        // Clean up existing exam page delegate if any
+        if (m_examPageDelegate) {
+            m_examPageDelegate->deleteLater();
+            m_examPageDelegate = nullptr;
+        }
+
+        // Build examination page
+        ExamPageBuilder builder;
+        auto result = builder.build(m_params, nullptr, this);
+        auto* page = result.first;
+        m_examPageDelegate = result.second;
+
+        if (m_examPageDelegate) {
+            // Connect close examination signal
+            connect(m_examPageDelegate,
+                &ExamPageDelegate::closeExamination, this, [page, this]() {
+                    if (m_mainWindow) {
+                        m_mainWindow->closePage();
+                    }
+                });
+
+            // Connect examination completed signal
+            connect(m_examPageDelegate,
+                &ExamPageDelegate::examinationCompleted, this,
+                [this](int studyId) {
+                    qDebug() << "Examination completed, study ID:" << studyId;
+                    // Optionally refresh worklist or perform other actions
+                    if (m_mainWindow) {
+                        m_mainWindow->closePage();
+                    }
+                });
+
+            // Connect error signal
+            connect(m_examPageDelegate,
+                &ExamPageDelegate::errorOccurred, this,
+                [](const QString& message) {
+                    qWarning() << "Examination error:" << message;
                 });
         }
 
