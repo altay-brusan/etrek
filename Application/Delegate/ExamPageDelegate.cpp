@@ -10,6 +10,11 @@
 #include "WorklistEnum.h"
 #include "Result.h"
 
+// Widget includes
+#include "ExamTitleWidget.h"
+#include "StudyControlWidget.h"
+#include "ExposureControlWidget.h"
+
 #include <QMessageBox>
 #include <QDateTime>
 #include <QDebug>
@@ -153,6 +158,9 @@ void ExamPageDelegate::onPageLoaded()
     // Load views/series for this examination
     loadViews();
 
+    // Set default values (patient size to Normal, application to Diagnostic)
+    initializeDefaults();
+
     // Load technique parameters for first view
     if (!m_views.isEmpty()) {
         loadTechniqueParameters();
@@ -216,12 +224,16 @@ void ExamPageDelegate::loadPatientDemographics()
              << "Gender:" << patientGender
              << "Age:" << age;
 
-    // TODO: Update UI widgets with patient demographics
-    // ui->getExamTitleWidget()->setPatientName(patientName);
-    // ui->getExamTitleWidget()->setPatientId(patientId);
-    // ui->getExamTitleWidget()->setGender(patientGender);
-    // ui->getExamTitleWidget()->setAge(age);
-    // ui->getExamTitleWidget()->setAccessionNumber(accessionNumber);
+    // Update UI widgets with patient demographics
+    if (ui->getExamTitleWidget()) {
+        ui->getExamTitleWidget()->setPatientName(patientName);
+        ui->getExamTitleWidget()->setPatientId(patientId);
+        ui->getExamTitleWidget()->setGender(patientGender);
+        ui->getExamTitleWidget()->setAge(age);
+        ui->getExamTitleWidget()->setAccessionNumber(accessionNumber);
+    } else {
+        qWarning() << "[ExamPageDelegate] ExamTitleWidget not available";
+    }
 }
 
 void ExamPageDelegate::loadViews()
@@ -253,8 +265,223 @@ void ExamPageDelegate::loadViews()
         }
     }
 
-    // TODO: Update UI with view list/thumbnails
     qDebug() << "[ExamPageDelegate] Total views loaded:" << m_views.size();
+
+    // Update UI with view list
+    if (ui->getStudyControlWidget()) {
+        ui->getStudyControlWidget()->setViews(m_views);
+    } else {
+        qWarning() << "[ExamPageDelegate] StudyControlWidget not available";
+    }
+}
+
+void ExamPageDelegate::initializeDefaults()
+{
+    qDebug() << "[ExamPageDelegate] initializeDefaults()";
+
+    // Set default patient size to Normal
+    if (ui->getBodySizeWidget()) {
+        ui->getBodySizeWidget()->setPatientSize(PatientSize::Normal);
+        qDebug() << "[ExamPageDelegate] Set default patient size to Normal";
+
+        // Connect patient size change signal to update technical parameters
+        connect(ui->getBodySizeWidget(), &BodySizeWidget::patientSizeChanged,
+                this, &ExamPageDelegate::onPatientSizeChanged);
+    } else {
+        qWarning() << "[ExamPageDelegate] BodySizeWidget not available";
+    }
+
+    // Set default application mode to Diagnostic
+    if (ui->getExposureApplicationControlWidget()) {
+        ui->getExposureApplicationControlWidget()->setApplicationMode(ApplicationMode::Diagnostic);
+        qDebug() << "[ExamPageDelegate] Set default application mode to Diagnostic";
+    } else {
+        qWarning() << "[ExamPageDelegate] ExposureApplicationControlWidget not available";
+    }
+
+    // Load technical parameters for default patient size (Normal)
+    loadTechnicalParametersForPatientSize(PatientSize::Normal);
+}
+
+void ExamPageDelegate::loadTechnicalParametersForPatientSize(PatientSize size)
+{
+    qDebug() << "[ExamPageDelegate] ========== loadTechnicalParametersForPatientSize START ==========";
+    qDebug() << "[ExamPageDelegate] Requested PatientSize:" << static_cast<int>(size);
+
+    if (!ui->getExposureControlWidget()) {
+        qWarning() << "[ExamPageDelegate] ExposureControlWidget not available";
+        return;
+    }
+
+    // Check if we have views loaded
+    if (m_views.isEmpty()) {
+        qWarning() << "[ExamPageDelegate] No views available, cannot load technique parameters";
+        qWarning() << "[ExamPageDelegate] View count:" << m_views.size();
+        return;
+    }
+
+    // Validate current series index
+    if (m_currentSeriesIndex < 0 || m_currentSeriesIndex >= m_views.size()) {
+        qWarning() << "[ExamPageDelegate] Invalid series index:" << m_currentSeriesIndex
+                   << "View count:" << m_views.size();
+        return;
+    }
+
+    // Get current view
+    const auto& currentView = m_views[m_currentSeriesIndex];
+    qDebug() << "[ExamPageDelegate] Current view ID:" << currentView.Id
+             << "Name:" << currentView.Name
+             << "Body part ID:" << currentView.BodyPart.Id
+             << "Body part name:" << currentView.BodyPart.Name;
+
+    // Map PatientSize to BodySize
+    Etrek::ScanProtocol::BodySize bodySize = mapPatientSizeToBodySize(size);
+    qDebug() << "[ExamPageDelegate] Mapped to BodySize:" << static_cast<int>(bodySize)
+             << "(" << (bodySize == Etrek::ScanProtocol::BodySize::Paediatric ? "Paediatric" :
+                       bodySize == Etrek::ScanProtocol::BodySize::Thin ? "Thin" :
+                       bodySize == Etrek::ScanProtocol::BodySize::Medium ? "Medium" : "Fat") << ")";
+
+    // Get view techniques for the current view
+    auto viewTechniquesResult = m_scanProtocolRepo->getViewTechniques(currentView.Id);
+    if (!viewTechniquesResult.isSuccess) {
+        qWarning() << "[ExamPageDelegate] Failed to get view techniques:" << viewTechniquesResult.message;
+        return;
+    }
+
+    qDebug() << "[ExamPageDelegate] Found" << viewTechniquesResult.value.size() << "view techniques for view ID:" << currentView.Id;
+
+    // Check if view has any techniques defined
+    if (viewTechniquesResult.value.isEmpty()) {
+        qWarning() << "[ExamPageDelegate] ========== NO VIEW TECHNIQUES ==========";
+        qWarning() << "[ExamPageDelegate] View" << currentView.Name << "(ID:" << currentView.Id << ") has no technique parameters linked!";
+        qWarning() << "[ExamPageDelegate] Please configure technique parameters for this view in the database.";
+        qWarning() << "[ExamPageDelegate] Table: view_techniques should have entries linking this view to technique_parameters.";
+        return;
+    }
+
+    // Get all technique parameters
+    auto allParamsResult = m_scanProtocolRepo->getAllTechniqueParameters();
+    if (!allParamsResult.isSuccess) {
+        qWarning() << "[ExamPageDelegate] Failed to get technique parameters:" << allParamsResult.message;
+        return;
+    }
+
+    qDebug() << "[ExamPageDelegate] Total technique parameters in database:" << allParamsResult.value.size();
+
+    // Find the technique parameter that matches our view, body part, and body size
+    const auto& viewTechniques = viewTechniquesResult.value;
+    const auto& allParams = allParamsResult.value;
+
+    // Log all view techniques for debugging
+    qDebug() << "[ExamPageDelegate] View techniques details:";
+    for (const auto& vt : viewTechniques) {
+        qDebug() << "  - ViewTechnique: view_id=" << vt.view_id
+                 << "technique_parameter_id=" << vt.technique_parameter_id
+                 << "seq=" << vt.seq
+                 << "IsActive=" << vt.IsActive;
+    }
+
+    Etrek::ScanProtocol::Data::Entity::TechniqueParameter* matchedParam = nullptr;
+
+    // First, find technique parameter IDs from view techniques
+    qDebug() << "[ExamPageDelegate] Searching for matching technique parameter...";
+    qDebug() << "[ExamPageDelegate] Looking for: BodySize=" << static_cast<int>(bodySize)
+             << "BodyPartId=" << currentView.BodyPart.Id;
+
+    for (const auto& vt : viewTechniques) {
+        if (!vt.IsActive) {
+            qDebug() << "  - Skipping inactive view technique, param_id=" << vt.technique_parameter_id;
+            continue;
+        }
+
+        qDebug() << "  - Checking technique_parameter_id=" << vt.technique_parameter_id;
+
+        // Find the corresponding technique parameter
+        for (const auto& param : allParams) {
+            if (param.Id == vt.technique_parameter_id) {
+                qDebug() << "    Found param ID:" << param.Id
+                         << "Size:" << static_cast<int>(param.Size)
+                         << "BodyPartId:" << param.BodyPart.Id
+                         << "kVp:" << param.Kvp << "mA:" << param.Ma << "Ms:" << param.Ms;
+
+                if (param.Size == bodySize && param.BodyPart.Id == currentView.BodyPart.Id) {
+                    qDebug() << "    ✓ MATCH FOUND!";
+                    matchedParam = const_cast<Etrek::ScanProtocol::Data::Entity::TechniqueParameter*>(&param);
+                    break;
+                } else {
+                    qDebug() << "    ✗ No match - Size:" << (param.Size == bodySize ? "OK" : "MISMATCH")
+                             << "BodyPart:" << (param.BodyPart.Id == currentView.BodyPart.Id ? "OK" : "MISMATCH");
+                }
+            }
+        }
+
+        if (matchedParam) break;
+    }
+
+    if (!matchedParam) {
+        qWarning() << "[ExamPageDelegate] ========== NO MATCH FOUND ==========";
+        qWarning() << "[ExamPageDelegate] No technique parameter found for:";
+        qWarning() << "  - Body size:" << static_cast<int>(bodySize);
+        qWarning() << "  - Body part ID:" << currentView.BodyPart.Id;
+        qWarning() << "  - Body part name:" << currentView.BodyPart.Name;
+        qWarning() << "[ExamPageDelegate] Please check your database to ensure technique parameters exist for this combination";
+
+        // List all available technique parameters for this view's body part
+        qDebug() << "[ExamPageDelegate] Available technique parameters for body part" << currentView.BodyPart.Name << ":";
+        for (const auto& param : allParams) {
+            if (param.BodyPart.Id == currentView.BodyPart.Id) {
+                qDebug() << "  - Param ID:" << param.Id
+                         << "Size:" << static_cast<int>(param.Size)
+                         << "kVp:" << param.Kvp << "mA:" << param.Ma;
+            }
+        }
+
+        return;
+    }
+
+    // Apply the matched parameters to the UI
+    int calculatedMas = matchedParam->Ma * matchedParam->Ms / 1000;
+
+    qDebug() << "[ExamPageDelegate] ========== APPLYING PARAMETERS ==========";
+    qDebug() << "[ExamPageDelegate] Setting exposure parameters:";
+    qDebug() << "  - kVp:" << matchedParam->Kvp;
+    qDebug() << "  - mA:" << matchedParam->Ma;
+    qDebug() << "  - Time (Ms):" << matchedParam->Ms;
+    qDebug() << "  - mAs (calculated):" << calculatedMas;
+
+    ui->getExposureControlWidget()->setExposureParameters(
+        matchedParam->Kvp,
+        matchedParam->Ma,
+        matchedParam->Ms,
+        calculatedMas
+    );
+
+    qDebug() << "[ExamPageDelegate] ✓ Parameters successfully applied to ExposureControlWidget";
+    qDebug() << "[ExamPageDelegate] ========== loadTechnicalParametersForPatientSize END ==========";
+}
+
+Etrek::ScanProtocol::BodySize ExamPageDelegate::mapPatientSizeToBodySize(PatientSize patientSize) const
+{
+    switch (patientSize) {
+        case PatientSize::Infant:
+            return Etrek::ScanProtocol::BodySize::Paediatric;
+        case PatientSize::Small:
+            return Etrek::ScanProtocol::BodySize::Thin;
+        case PatientSize::Normal:
+            return Etrek::ScanProtocol::BodySize::Medium;
+        case PatientSize::Large:
+            return Etrek::ScanProtocol::BodySize::Fat;
+        default:
+            return Etrek::ScanProtocol::BodySize::Medium;
+    }
+}
+
+void ExamPageDelegate::onPatientSizeChanged(PatientSize size)
+{
+    qDebug() << "[ExamPageDelegate] onPatientSizeChanged() - New size:" << static_cast<int>(size);
+
+    // Reload technical parameters for the new patient size
+    loadTechnicalParametersForPatientSize(size);
 }
 
 void ExamPageDelegate::loadTechniqueParameters()

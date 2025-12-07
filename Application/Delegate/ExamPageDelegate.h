@@ -14,6 +14,8 @@
 #include "View.h"
 #include "TechniqueParameter.h"
 #include "Procedure.h"
+#include "BodySizeWidget.h"
+#include "ExposureApplicationControlWidget.h"
 
 // Forward declarations for VTK
 class vtkRenderer;
@@ -116,6 +118,8 @@ private slots:
     void loadExaminationContext();
     void loadPatientDemographics();
     void loadViews();
+    void initializeDefaults();
+    void loadTechnicalParametersForPatientSize(PatientSize size);
     void loadTechniqueParameters();
 
     // --- View/Series Management ---
@@ -130,6 +134,7 @@ private slots:
     void onAcquisitionComplete();
 
     // --- Technical Parameter Changes ---
+    void onPatientSizeChanged(PatientSize size);
     void onKvpChanged(int kvp);
     void onMaChanged(int ma);
     void onMasChanged(int mas);
@@ -168,6 +173,7 @@ private:
     void setTechniqueParameters(const Etrek::ScanProtocol::Data::Entity::TechniqueParameter& params);
 
     // --- Helper Methods ---
+    Etrek::ScanProtocol::BodySize mapPatientSizeToBodySize(PatientSize patientSize) const;
     void setupConnections();
     void displayErrorMessage(const QString& title, const QString& message);
     void displayInfoMessage(const QString& title, const QString& message);
