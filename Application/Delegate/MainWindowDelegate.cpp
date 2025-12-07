@@ -19,6 +19,8 @@ namespace Etrek::Application::Delegate
               &MainWindowDelegate::onLoadSystemPageAction);
       connect(m_mainWindow, &MainWindow::LoadWorklistPageAction, this,
           &MainWindowDelegate::onLoadWorklistPageAction);
+      connect(m_mainWindow, &MainWindow::LoadExamPage, this,
+          &MainWindowDelegate::onLoadExamPageAction);
 
       connect(m_mainWindow, &MainWindow::aboutToClose, this,
               &MainWindowDelegate::aboutToClose);
@@ -106,6 +108,23 @@ namespace Etrek::Application::Delegate
         }
     }
 
+    void MainWindowDelegate::onLoadExamPageAction() {
+        if (!m_mainWindow) {
+            qWarning() << "MainWindowDelegate::onLoadExamPageAction invoked without a MainWindow instance.";
+            return;
+        }
+
+        // If exam page delegate already exists, just show it
+        if (m_examPageDelegate) {
+            qDebug() << "MainWindowDelegate: Exam page already loaded, displaying it";
+            // The exam page should already be displayed, so just ensure it's active
+            return;
+        }
+
+        // If no exam page exists, user shouldn't be here (button should be disabled)
+        qWarning() << "MainWindowDelegate: Cannot load exam page - no active examination";
+    }
+
     void MainWindowDelegate::onStartExamination(int worklistEntryId) {
         if (!m_mainWindow) {
             qWarning() << "MainWindowDelegate::onStartExamination invoked without "
@@ -114,6 +133,9 @@ namespace Etrek::Application::Delegate
         }
 
         qDebug() << "MainWindowDelegate: Starting examination for worklist entry" << worklistEntryId;
+
+        // Uncheck worklist button when opening exam page
+        m_mainWindow->uncheckWorklistAction();
 
         m_mainWindow->prepareLoadingPage();
 
@@ -135,6 +157,8 @@ namespace Etrek::Application::Delegate
                 &ExamPageDelegate::closeExamination, this, [page, this]() {
                     if (m_mainWindow) {
                         m_mainWindow->closePage();
+                        // Disable exam page button when examination is closed
+                        m_mainWindow->setExamPageActionEnabled(false);
                     }
                 });
 
@@ -146,6 +170,8 @@ namespace Etrek::Application::Delegate
                     // Optionally refresh worklist or perform other actions
                     if (m_mainWindow) {
                         m_mainWindow->closePage();
+                        // Disable exam page button when examination is completed
+                        m_mainWindow->setExamPageActionEnabled(false);
                     }
                 });
 
@@ -160,6 +186,9 @@ namespace Etrek::Application::Delegate
         if (m_mainWindow) {
             m_mainWindow->loadPage(page);
             m_mainWindow->finishLoadingPage();
+
+            // Enable exam page action now that a worklist item has been selected
+            m_mainWindow->setExamPageActionEnabled(true);
         }
     }
 

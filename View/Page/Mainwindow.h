@@ -25,7 +25,11 @@ public:
     void loadPage(QWidget* widget);
     void finishLoadingPage();
 	void closePage();
-        
+
+    // Toolbar action control
+    void setExamPageActionEnabled(bool enabled);
+    void uncheckWorklistAction();
+
     ~MainWindow();
 
 signals:

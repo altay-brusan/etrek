@@ -28,6 +28,7 @@ signals:
 private slots:
     void onLoadSystemPageAction();
     void onLoadWorklistPageAction();
+    void onLoadExamPageAction();
     void onStartExamination(int worklistEntryId);
 
 private:
