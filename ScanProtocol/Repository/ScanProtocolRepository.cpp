@@ -814,7 +814,7 @@ namespace Etrek::ScanProtocol::Repository
 
             QSqlQuery q(db);
             q.prepare(R"(
-            SELECT view_id, technique_parameter_id, seq, role, is_active
+            SELECT view_id, technique_parameter_id, seq, role
             FROM view_techniques
             WHERE view_id = ?
             ORDER BY seq
@@ -834,7 +834,7 @@ namespace Etrek::ScanProtocol::Repository
                 vt.technique_parameter_id = q.value("technique_parameter_id").toInt();
                 vt.seq = static_cast<quint8>(q.value("seq").toUInt());
                 vt.role = ScanProtocolUtil::roleFromDbString(q.value("role").toString());
-                vt.IsActive = q.value("is_active").toBool();
+                //vt.IsActive = q.value("is_active").toBool();
                 rows.push_back(std::move(vt));
             }
         }
