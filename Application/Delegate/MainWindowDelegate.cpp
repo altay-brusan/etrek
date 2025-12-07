@@ -187,8 +187,9 @@ namespace Etrek::Application::Delegate
             m_mainWindow->loadPage(page);
             m_mainWindow->finishLoadingPage();
 
-            // Enable exam page action now that a worklist item has been selected
+            // Enable and check exam page action now that a worklist item has been selected
             m_mainWindow->setExamPageActionEnabled(true);
+            m_mainWindow->setExamPageActionChecked(true);
         }
     }
 

@@ -28,6 +28,7 @@ public:
 
     // Toolbar action control
     void setExamPageActionEnabled(bool enabled);
+    void setExamPageActionChecked(bool checked);
     void uncheckWorklistAction();
 
     ~MainWindow();

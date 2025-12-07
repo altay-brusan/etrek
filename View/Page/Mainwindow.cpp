@@ -141,6 +141,11 @@ void MainWindow::setExamPageActionEnabled(bool enabled)
     ui->actionLoadExamPage->setEnabled(enabled);
 }
 
+void MainWindow::setExamPageActionChecked(bool checked)
+{
+    ui->actionLoadExamPage->setChecked(checked);
+}
+
 void MainWindow::uncheckWorklistAction()
 {
     ui->actionLoadWorklist->setChecked(false);
