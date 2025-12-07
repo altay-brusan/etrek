@@ -23,8 +23,8 @@ ExamPage::ExamPage(QWidget *parent)
 {
     ui->setupUi(this);
     // Create instance of your custom widget
-    ExposureControlWidget *exposureWidget = new ExposureControlWidget(this);
-    BodySizeWidget *bodySizeWidget = new BodySizeWidget(this);
+    m_exposureControlWidget = new ExposureControlWidget(this);
+    m_bodySizeWidget = new BodySizeWidget(this);
     EndExposureControlWidget *endExposureControlWidget = new EndExposureControlWidget(this);
     AecControlWidget *aecControlWidget = new AecControlWidget(this);
     FocalPointControlWidget *focalPointControlWidget = new FocalPointControlWidget(this);
@@ -32,24 +32,24 @@ ExamPage::ExamPage(QWidget *parent)
     DetectorControlWidget *detectorControlWidget = new DetectorControlWidget(this);
     BuckyControlWidget *buckyControlWidget = new BuckyControlWidget(this);
     //ThumbnailImageListlWidget *thumbnailImageListlWidget = new ThumbnailImageListlWidget(this);
-    StudyControlWidget *studyControlWidget = new StudyControlWidget(this);
-    ExamTitleWidget *examTitleWidget = new ExamTitleWidget(this);
-    ExposureApplicationControlWidget *exposureApplicationControlWidget = new ExposureApplicationControlWidget(this);
+    m_studyControlWidget = new StudyControlWidget(this);
+    m_examTitleWidget = new ExamTitleWidget(this);
+    m_exposureApplicationControlWidget = new ExposureApplicationControlWidget(this);
 
 
     QVBoxLayout *layout = new QVBoxLayout(ui->studyPlaceholder);
     layout->setContentsMargins(0, 0, 0, 0); // Optional: removes spacing
-    layout->addWidget(studyControlWidget);
+    layout->addWidget(m_studyControlWidget);
 
     //Put it into the placeholder (replace or embed it)
     QVBoxLayout *layout1 = new QVBoxLayout(ui->exposurePlaceholder);
     layout1->setContentsMargins(0, 0, 0, 0); // Optional: removes spacing
-    layout1->addWidget(exposureWidget);
+    layout1->addWidget(m_exposureControlWidget);
 
 
      QVBoxLayout *layout2 = new QVBoxLayout(ui->bodySizePlaceholder);
     layout2->setContentsMargins(0, 0, 0, 0); // Optional: removes spacing
-    layout2->addWidget(bodySizeWidget);
+    layout2->addWidget(m_bodySizeWidget);
 
 
     QVBoxLayout *layout3 = new QVBoxLayout(ui->aecControlPlaceholder);
@@ -83,11 +83,11 @@ ExamPage::ExamPage(QWidget *parent)
 
     QVBoxLayout *layout10 = new QVBoxLayout(ui->titlePlaceholder);
     layout10->setContentsMargins(0, 0, 0, 0); // Optional: removes spacing
-    layout10->addWidget(examTitleWidget);
+    layout10->addWidget(m_examTitleWidget);
 
     QVBoxLayout *layout11 = new QVBoxLayout(ui->applicationControlGroupBox);
     layout11->setContentsMargins(0, 0, 0, 0); // Optional: removes spacing
-    layout11->addWidget(exposureApplicationControlWidget);
+    layout11->addWidget(m_exposureApplicationControlWidget);
 
 
 }
@@ -102,6 +102,31 @@ ExamPage::~ExamPage()
 QVTKOpenGLNativeWidget* ExamPage::getVtkImageViewer() const
 {
     return ui->vtkImageViewer;
+}
+
+ExamTitleWidget* ExamPage::getExamTitleWidget() const
+{
+    return m_examTitleWidget;
+}
+
+StudyControlWidget* ExamPage::getStudyControlWidget() const
+{
+    return m_studyControlWidget;
+}
+
+BodySizeWidget* ExamPage::getBodySizeWidget() const
+{
+    return m_bodySizeWidget;
+}
+
+ExposureApplicationControlWidget* ExamPage::getExposureApplicationControlWidget() const
+{
+    return m_exposureApplicationControlWidget;
+}
+
+ExposureControlWidget* ExamPage::getExposureControlWidget() const
+{
+    return m_exposureControlWidget;
 }
 
 QFrame* ExamPage::getTitlePlaceholder() const
