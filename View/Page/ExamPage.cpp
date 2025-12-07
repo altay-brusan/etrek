@@ -5,6 +5,8 @@
 #include "AecControlWidget.h"
 #include "FocalSpotControlWidget.h"
 #include <QVBoxLayout>
+#include <QFrame>
+#include <QGroupBox>
 #include "ui_ExamPage.h"
 #include "GeneratorControlWidget.h"
 #include "DetectorControlWidget.h"
@@ -13,6 +15,7 @@
 #include "StudyControlWidget.h"
 #include "ExamTitleWidget.h"
 #include "ExposureApplicationControlWidget.h"
+#include <QVTKOpenGLNativeWidget.h>
 
 ExamPage::ExamPage(QWidget *parent)
     : QWidget(parent)
@@ -92,4 +95,41 @@ ExamPage::ExamPage(QWidget *parent)
 ExamPage::~ExamPage()
 {
     delete ui;
+}
+
+// --- Accessor Methods ---
+
+QVTKOpenGLNativeWidget* ExamPage::getVtkImageViewer() const
+{
+    return ui->vtkImageViewer;
+}
+
+QFrame* ExamPage::getTitlePlaceholder() const
+{
+    return ui->titlePlaceholder;
+}
+
+QFrame* ExamPage::getThumbnailPlaceholder() const
+{
+    return ui->thumbnailImageListPlaceholder;
+}
+
+QGroupBox* ExamPage::getStudyPlaceholder() const
+{
+    return ui->studyPlaceholder;
+}
+
+QGroupBox* ExamPage::getExposurePlaceholder() const
+{
+    return ui->exposurePlaceholder;
+}
+
+QGroupBox* ExamPage::getBodySizePlaceholder() const
+{
+    return ui->bodySizePlaceholder;
+}
+
+QGroupBox* ExamPage::getGeneratorControlPlaceholder() const
+{
+    return ui->generatorControlPlaceholder;
 }
