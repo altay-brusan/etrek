@@ -9,6 +9,14 @@ StudyControlWidget::StudyControlWidget(QWidget *parent)
     , ui(new Ui::StudyControlWidget)
 {
     ui->setupUi(this);
+
+    // Connect delete view button
+    connect(ui->deleteViewBtn, &QPushButton::clicked,
+            this, &StudyControlWidget::onDeleteViewClicked);
+
+    // Connect cancel study button
+    connect(ui->cancelStudyBtn, &QPushButton::clicked,
+            this, &StudyControlWidget::cancelStudyRequested);
 }
 
 StudyControlWidget::~StudyControlWidget()
@@ -58,5 +66,27 @@ void StudyControlWidget::setViews(const QVector<Etrek::ScanProtocol::Data::Entit
     // Select first row by default if views exist
     if (!views.isEmpty()) {
         ui->tableView->selectRow(0);
+    }
+}
+
+int StudyControlWidget::getSelectedViewIndex() const
+{
+    if (!ui->tableView->selectionModel()) {
+        return -1;
+    }
+
+    QModelIndexList selectedIndexes = ui->tableView->selectionModel()->selectedRows();
+    if (selectedIndexes.isEmpty()) {
+        return -1;
+    }
+
+    return selectedIndexes.first().row();
+}
+
+void StudyControlWidget::onDeleteViewClicked()
+{
+    int selectedIndex = getSelectedViewIndex();
+    if (selectedIndex >= 0) {
+        emit deleteViewRequested(selectedIndex);
     }
 }
