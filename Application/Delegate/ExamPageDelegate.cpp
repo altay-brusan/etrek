@@ -308,6 +308,10 @@ void ExamPageDelegate::loadTechnicalParametersForPatientSize(PatientSize size)
     qDebug() << "[ExamPageDelegate] ========== loadTechnicalParametersForPatientSize START ==========";
     qDebug() << "[ExamPageDelegate] Requested PatientSize:" << static_cast<int>(size);
 
+    // TEMPORARY: Visual confirmation that this method is called
+    // Remove this after debugging
+    // QMessageBox::information(nullptr, "Debug", QString("Loading parameters for patient size: %1").arg(static_cast<int>(size)));
+
     if (!ui->getExposureControlWidget()) {
         qWarning() << "[ExamPageDelegate] ExposureControlWidget not available";
         return;
