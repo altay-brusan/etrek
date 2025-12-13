@@ -75,6 +75,9 @@ namespace Etrek::Application::Delegate
 
 
         onClearFilters();
+
+        // Setup periodic refresh timer
+        setupRefreshTimer();
     }
 
     void WorkListPageDelegate::onAddNewPatient()
@@ -306,9 +309,17 @@ namespace Etrek::Application::Delegate
     }
 
     void WorkListPageDelegate::loadWorklistData(const QList<ent::WorklistEntry>& entries) {
-        baseModel->clear();
+        qDebug() << "[WorkListPageDelegate] ========== loadWorklistData START ==========";
+        qDebug() << "[WorkListPageDelegate] Loading" << entries.size() << "entries from database";
+        qDebug() << "[WorkListPageDelegate] Current model row count:" << baseModel->rowCount();
 
-        // Fixed column headers for consistent worklist display
+        // Remove all existing rows but keep the model structure
+        if (baseModel->rowCount() > 0) {
+            baseModel->removeRows(0, baseModel->rowCount());
+            qDebug() << "[WorkListPageDelegate] Removed all existing rows";
+        }
+
+        // Set headers (needed after first clear or if model was empty)
         QStringList headers;
         headers << "Patient Name"
                 << "Patient ID"
@@ -321,14 +332,41 @@ namespace Etrek::Application::Delegate
                 << "Source"
                 << "Created At";
 
-        baseModel->setHorizontalHeaderLabels(headers);
+        if (baseModel->columnCount() != headers.size()) {
+            baseModel->setHorizontalHeaderLabels(headers);
+            qDebug() << "[WorkListPageDelegate] Headers set, column count:" << baseModel->columnCount();
+        }
 
-        // Set model to the view (ensure table is connected)
-        ui->setProxyModel(proxyModel);
+        // Set model to the view only on first call (initialization)
+        if (!modelInitialized) {
+            ui->setProxyModel(proxyModel);
+            modelInitialized = true;
+            qDebug() << "[WorkListPageDelegate] Model initialized and connected to view";
+        }
 
         // Populate rows
-        for (const auto& entry : entries)
+        int rowsAdded = 0;
+        for (const auto& entry : entries) {
             baseModel->appendRow(createRowForEntry(entry));
+            rowsAdded++;
+
+            // Log first entry and every entry with non-PENDING status for debugging
+            if (rowsAdded == 1 || entry.Status != ProcedureStepStatus::PENDING) {
+                qDebug() << "[WorkListPageDelegate] Row" << rowsAdded << "- Entry ID:" << entry.Id
+                         << "Status:" << ProcedureStepStatusToString(entry.Status);
+            }
+        }
+
+        qDebug() << "[WorkListPageDelegate] Added" << rowsAdded << "rows to base model";
+        qDebug() << "[WorkListPageDelegate] Base model now has" << baseModel->rowCount() << "rows";
+
+        // Force proxy model to re-filter and update
+        if (proxyModel) {
+            proxyModel->invalidate();
+            qDebug() << "[WorkListPageDelegate] Proxy model invalidated, visible rows:" << proxyModel->rowCount();
+        }
+
+        qDebug() << "[WorkListPageDelegate] ========== loadWorklistData END ==========";
     }
 
     void WorkListPageDelegate::onEntryCreated(const ent::WorklistEntry& entry) {
@@ -501,6 +539,65 @@ namespace Etrek::Application::Delegate
 
     WorkListPageDelegate::~WorkListPageDelegate()
     {
+        // Stop and clean up the refresh timer
+        if (refreshTimer) {
+            refreshTimer->stop();
+            qDebug() << "[WorkListPageDelegate] Refresh timer stopped";
+        }
+    }
+
+    void WorkListPageDelegate::refreshWorklistData()
+    {
+        // Safety check: ensure UI is valid before accessing
+        if (!ui) {
+            // UI has been destroyed - this is normal when navigating away from the page
+            // The timer will continue running but won't update the non-existent view
+            return;
+        }
+
+        qDebug() << "";
+        qDebug() << "#################### REFRESH TRIGGERED ####################";
+        qDebug() << "[WorkListPageDelegate] Timer-triggered refresh at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+
+        // Get table view reference
+        auto* tableView = ui->getWorklistTableView();
+        if (!tableView) {
+            qWarning() << "[WorkListPageDelegate] TableView is null, cannot refresh";
+            return;
+        }
+
+        qDebug() << "[WorkListPageDelegate] Current view row count:" << (tableView->model() ? tableView->model()->rowCount() : -1);
+
+        // Reload all worklist entries from the database
+        auto result = repository->getWorklistEntries(nullptr, nullptr);
+        if (result.isSuccess) {
+            qDebug() << "[WorkListPageDelegate] Successfully loaded" << result.value.size() << "entries from database";
+
+            // Load the data into the model
+            loadWorklistData(result.value);
+
+            // Additional forced updates to ensure view refreshes
+            if (proxyModel) {
+                // Reset the proxy model to force complete refresh
+                proxyModel->invalidate();
+
+                qDebug() << "[WorkListPageDelegate] After refresh - Proxy model row count:" << proxyModel->rowCount();
+            }
+
+            // Force the view to repaint
+            tableView->reset();
+            tableView->viewport()->update();
+            tableView->update();
+
+            qDebug() << "[WorkListPageDelegate] View reset and repainted";
+            qDebug() << "[WorkListPageDelegate] Final view row count:" << tableView->model()->rowCount();
+            qDebug() << "#################### REFRESH COMPLETE ####################";
+            qDebug() << "";
+        } else {
+            qWarning() << "[WorkListPageDelegate] Failed to refresh worklist:" << result.message;
+            qDebug() << "#################### REFRESH FAILED ####################";
+            qDebug() << "";
+        }
     }
 
     void WorkListPageDelegate::apply()
@@ -552,10 +649,29 @@ namespace Etrek::Application::Delegate
             // Connect dialog signals
             connect(delegate, &Etrek::Application::Delegate::ViewSelectionDialogDelegate::examinationReady,
                     this, [this, entryId](int procedureId, const QVector<int>& viewIds) {
-                // TODO: Store selected procedure and view IDs in examination context or separate context
-                // For now, we'll just emit the startExamination signal
                 qDebug() << "Selected Procedure ID:" << procedureId;
                 qDebug() << "Selected View IDs:" << viewIds;
+
+                // Update ExaminationContext with selected procedure and view IDs
+                if (auto ctxMgr = contextManager.lock()) {
+                    auto workflowCtx = ctxMgr->workflowContext("Examination");
+                    auto examCtx = std::dynamic_pointer_cast<Etrek::Core::Context::ExaminationContext>(workflowCtx);
+
+                    if (examCtx) {
+                        examCtx->setProcedureId(procedureId);
+                        examCtx->setViewIds(viewIds);
+                        qDebug() << "[WorkListPageDelegate] Updated ExaminationContext with procedure and views";
+                    }
+                }
+
+                // Update worklist status to IN_PROGRESS
+                auto statusResult = repository->updateWorklistStatus(entryId, ProcedureStepStatus::IN_PROGRESS);
+                if (statusResult.isSuccess) {
+                    qDebug() << "[WorkListPageDelegate] Updated worklist entry to IN_PROGRESS";
+                } else {
+                    qWarning() << "[WorkListPageDelegate] Failed to update status:" << statusResult.message;
+                }
+
                 emit startExamination(entryId);
             });
 
@@ -652,6 +768,23 @@ namespace Etrek::Application::Delegate
         }
 
         return patient;
+    }
+
+    void WorkListPageDelegate::setupRefreshTimer()
+    {
+        // Create timer for periodic worklist refresh
+        refreshTimer = new QTimer(this);
+
+        // Set refresh interval to 5 seconds (5000 milliseconds)
+        refreshTimer->setInterval(5000);
+
+        // Connect timer timeout to refresh method
+        connect(refreshTimer, &QTimer::timeout, this, &WorkListPageDelegate::refreshWorklistData);
+
+        // Start the timer
+        refreshTimer->start();
+
+        qDebug() << "[WorkListPageDelegate] Periodic refresh timer started (5 second interval)";
     }
 
 
