@@ -28,7 +28,7 @@ namespace {
 
     void handleSignal(int sig) {
         g_lastSignal.store(sig, std::memory_order_relaxed);
-        // _Exit is the safe “get out now” button.
+        // _Exit is the safe ï¿½get out nowï¿½ button.
         std::_Exit(EXIT_FAILURE);
     }
 
@@ -36,7 +36,7 @@ namespace {
     /*
     * 
     * If a graceful shutdown (run cleanup/aboutToQuit) needed,
-    * don’t _Exit in the handler. Instead, set a flag and let
+    * donï¿½t _Exit in the handler. Instead, set a flag and let
     * the main thread call QCoreApplication::quit():
     * global
     *    static volatile sig_atomic_t g_gotSignal = 0;
@@ -80,6 +80,9 @@ namespace {
 int main(int argc, char* argv[])
 {
     enableLeakChecks();
+
+    // Enable Qt debug messages to console
+    qSetMessagePattern("[%{type}] %{file}:%{line} - %{message}");
 
     QApplication app(argc, argv);
     QCoreApplication::setApplicationName(QStringLiteral("EtrekApp"));
