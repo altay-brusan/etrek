@@ -145,6 +145,8 @@ private slots:
     void onNewStudyClicked();
     void onEditStudyClicked();
     void onNewViewClicked();
+    void onDeleteViewRequested(int viewIndex);
+    void onCancelStudyRequested();
 
     // --- Action Buttons ---
     void onCloseClicked();

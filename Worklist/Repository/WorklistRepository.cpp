@@ -329,7 +329,9 @@ namespace Etrek::Worklist::Repository {
                 entry.Id = query.value("id").toInt();
                 entry.Source = static_cast<Source>(query.value("source").toInt());
                 entry.Profile.Id = query.value("profile_id").toInt();
-                entry.Status = static_cast<ProcedureStepStatus>(query.value("status").toInt());
+                // Read status as string from MySQL ENUM column
+                QString statusString = query.value("status").toString();
+                entry.Status = QStringToStatus(statusString);
                 entry.CreatedAt = query.value("created_at").toDateTime();
                 entry.UpdatedAt = query.value("updated_at").toDateTime();
 
@@ -755,17 +757,38 @@ namespace Etrek::Worklist::Repository {
                 return Result<QString>::Failure(error);
             }
 
+            // Start a transaction
+            if (!db.transaction()) {
+                QString error = "Failed to start transaction: " + db.lastError().text();
+                logger->LogError(error);
+                qDebug() << error;
+                return Result<QString>::Failure(error);
+            }
+
             QSqlQuery query(db);
             query.prepare("UPDATE mwl_entries SET status = :status WHERE id = :id");
-            query.bindValue(":status", ProcedureStepStatusToString(newStatus));
+            query.bindValue(":status", ProcedureStepStatusToString(newStatus));  // Bind as string for MySQL ENUM
             query.bindValue(":id", entryId);
 
             if (!query.exec()) {
+                db.rollback();  // Rollback on error
                 QString error = translator->getErrorMessage(MWL_FAILED_TO_UPDATE_ENTRIES_MSG).arg(query.lastError().text());
                 logger->LogError(error);
                 qDebug()<<error;
                 return Result<QString>::Failure(error);
             }
+
+            // Commit the transaction to ensure changes are persisted
+            if (!db.commit()) {
+                db.rollback();
+                QString error = "Failed to commit status update: " + db.lastError().text();
+                logger->LogError(error);
+                qDebug() << error;
+                return Result<QString>::Failure(error);
+            }
+
+            qDebug() << "[WorklistRepository] Status updated and committed for entry ID:" << entryId
+                     << "New status:" << ProcedureStepStatusToString(newStatus);
         }
 
         QSqlDatabase::removeDatabase(connName);

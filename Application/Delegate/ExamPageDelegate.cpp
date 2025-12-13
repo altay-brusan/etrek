@@ -29,6 +29,7 @@
 #include <vtkImageData.h>
 #include <vtkInteractorStyleImage.h>
 #include <vtkSmartPointer.h>
+#include <vtkObject.h>
 
 namespace Etrek::Application::Delegate {
 
@@ -56,7 +57,7 @@ ExamPageDelegate::ExamPageDelegate(
     setupConnections();
 
     // Initialize VTK viewer
-    // initializeVtkViewer();  // TODO: Uncomment when VTK widget is added to UI
+    initializeVtkViewer();
 
     // Load examination context and initialize page
     QTimer::singleShot(0, this, &ExamPageDelegate::onPageLoaded);
@@ -307,6 +308,10 @@ void ExamPageDelegate::loadTechnicalParametersForPatientSize(PatientSize size)
 {
     qDebug() << "[ExamPageDelegate] ========== loadTechnicalParametersForPatientSize START ==========";
     qDebug() << "[ExamPageDelegate] Requested PatientSize:" << static_cast<int>(size);
+
+    // TEMPORARY: Visual confirmation that this method is called
+    // Remove this after debugging
+    // QMessageBox::information(nullptr, "Debug", QString("Loading parameters for patient size: %1").arg(static_cast<int>(size)));
 
     if (!ui->getExposureControlWidget()) {
         qWarning() << "[ExamPageDelegate] ExposureControlWidget not available";
@@ -662,6 +667,76 @@ void ExamPageDelegate::onNewViewClicked()
     // TODO: Add additional view/series to current study
 }
 
+void ExamPageDelegate::onDeleteViewRequested(int viewIndex)
+{
+    qDebug() << "[ExamPageDelegate] onDeleteViewRequested() - viewIndex:" << viewIndex;
+
+    // Validate view index
+    if (viewIndex < 0 || viewIndex >= m_views.size()) {
+        qWarning() << "[ExamPageDelegate] Invalid view index:" << viewIndex;
+        return;
+    }
+
+    // Check if this is the last view
+    if (m_views.size() == 1) {
+        // Show confirmation for cancelling the study
+        QMessageBox::StandardButton reply = QMessageBox::question(
+            ui,
+            "Cancel Study",
+            "Study has no more views. Do you want to cancel study?",
+            QMessageBox::Yes | QMessageBox::No
+        );
+
+        if (reply == QMessageBox::Yes) {
+            // User confirmed - cancel the entire study
+            onCancelStudyRequested();
+        }
+        // If No, do nothing - keep the last view
+        return;
+    }
+
+    // Not the last view - delete it
+    QString viewName = m_views[viewIndex].Name;
+
+    // Remove view from the list
+    m_views.remove(viewIndex);
+
+    // Update the UI to reflect the change
+    if (ui->getStudyControlWidget()) {
+        ui->getStudyControlWidget()->setViews(m_views);
+    }
+
+    // Remove corresponding series ID if it exists
+    if (viewIndex < m_seriesIds.size()) {
+        m_seriesIds.remove(viewIndex);
+    }
+
+    qDebug() << "[ExamPageDelegate] Deleted view:" << viewName << "- Remaining views:" << m_views.size();
+}
+
+void ExamPageDelegate::onCancelStudyRequested()
+{
+    qDebug() << "[ExamPageDelegate] onCancelStudyRequested()";
+
+    // Show confirmation dialog
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        ui,
+        "Cancel Study",
+        "Are you sure you want to cancel this study?\nAll views will be cancelled and you will return to the worklist.",
+        QMessageBox::Yes | QMessageBox::No
+    );
+
+    if (reply == QMessageBox::Yes) {
+        // Update worklist status to CANCELLED
+        updateWorklistStatus(ProcedureStepStatus::CANCELLED);
+
+        qDebug() << "[ExamPageDelegate] Study cancelled by user";
+
+        // Close examination page
+        emit closeExamination();
+    }
+}
+
 // --- Private Slots: Action Buttons ---
 
 void ExamPageDelegate::onCloseClicked()
@@ -826,29 +901,31 @@ void ExamPageDelegate::updateWorklistStatus(
     ProcedureStepStatus status,
     const QString& studyInstanceUid)
 {
-    qDebug() << "[ExamPageDelegate] updateWorklistStatus() - Status:" << static_cast<int>(status);
+    qDebug() << "[ExamPageDelegate] updateWorklistStatus() - Status:"
+             << ProcedureStepStatusToString(status)
+             << "for entry ID:" << m_worklistEntry.Id;
 
     if (m_worklistEntry.Id < 0) {
         qWarning() << "[ExamPageDelegate] Cannot update worklist status - invalid entry ID";
         return;
     }
 
-    // Update worklist entry status
+    // Update local worklist entry status
     m_worklistEntry.Status = status;
 
-    // TODO: Update StudyInstanceUID in worklist attributes
-    // StudyInstanceUID should be added/updated in m_worklistEntry.Attributes list
-    if (!studyInstanceUid.isEmpty()) {
-        // m_worklistEntry.StudyInstanceUid = studyInstanceUid;  // Field doesn't exist
-        // Need to find/update attribute with tag name "StudyInstanceUID"
-        qDebug() << "[ExamPageDelegate] Study Instance UID:" << studyInstanceUid;
+    // Update status in database using repository
+    auto result = m_worklistRepo->updateWorklistStatus(m_worklistEntry.Id, status);
+    if (result.isSuccess) {
+        qDebug() << "[ExamPageDelegate] Worklist status updated successfully in database to:"
+                 << ProcedureStepStatusToString(status);
+    } else {
+        qWarning() << "[ExamPageDelegate] Failed to update worklist status in database:" << result.message;
     }
 
-    auto result = m_worklistRepo->updateWorklistEntry(m_worklistEntry);
-    if (result.isSuccess) {
-        qDebug() << "[ExamPageDelegate] Worklist status updated successfully";
-    } else {
-        qWarning() << "[ExamPageDelegate] Failed to update worklist status:" << result.message;
+    // TODO: Update StudyInstanceUID in worklist attributes
+    if (!studyInstanceUid.isEmpty()) {
+        qDebug() << "[ExamPageDelegate] Study Instance UID:" << studyInstanceUid;
+        // Need to update the StudyInstanceUID attribute in the database
     }
 }
 
@@ -873,10 +950,12 @@ int ExamPageDelegate::getOrCreatePatient()
 }
 
 // --- Private Methods: VTK Operations ---
-
 void ExamPageDelegate::initializeVtkViewer()
 {
     qDebug() << "[ExamPageDelegate] initializeVtkViewer()";
+
+    // Disable VTK output window (suppress VTK warnings/errors popups)
+    vtkObject::GlobalWarningDisplayOff();
 
     // Get VTK widget from ExamPage UI
     m_vtkWidget = ui->getVtkImageViewer();
@@ -980,7 +1059,15 @@ void ExamPageDelegate::setupConnections()
 {
     qDebug() << "[ExamPageDelegate] setupConnections()";
 
-    // TODO: Connect UI widget signals to delegate slots
+    // Connect StudyControlWidget signals
+    if (ui->getStudyControlWidget()) {
+        connect(ui->getStudyControlWidget(), &StudyControlWidget::deleteViewRequested,
+                this, &ExamPageDelegate::onDeleteViewRequested);
+        connect(ui->getStudyControlWidget(), &StudyControlWidget::cancelStudyRequested,
+                this, &ExamPageDelegate::onCancelStudyRequested);
+    }
+
+    // TODO: Connect other UI widget signals to delegate slots
     // Example:
     // connect(ui->getExposureApplicationControlWidget(), &ExposureApplicationControlWidget::readyClicked,
     //         this, &ExamPageDelegate::onReadyButtonClicked);

@@ -17,7 +17,6 @@
 #include "ViewSelectionDialogBuilder.h"
 #include "ViewSelectionDialogDelegate.h"
 #include "DelegateParameter.h"
-#include "WorklistEnum.h"
 
 
 using namespace Etrek::Worklist::Repository;
@@ -76,6 +75,9 @@ namespace Etrek::Application::Delegate
 
 
         onClearFilters();
+
+        // Setup periodic refresh timer
+        setupRefreshTimer();
     }
 
     void WorkListPageDelegate::onAddNewPatient()
@@ -307,9 +309,17 @@ namespace Etrek::Application::Delegate
     }
 
     void WorkListPageDelegate::loadWorklistData(const QList<ent::WorklistEntry>& entries) {
-        baseModel->clear();
+        qDebug() << "[WorkListPageDelegate] ========== loadWorklistData START ==========";
+        qDebug() << "[WorkListPageDelegate] Loading" << entries.size() << "entries from database";
+        qDebug() << "[WorkListPageDelegate] Current model row count:" << baseModel->rowCount();
 
-        // Fixed column headers for consistent worklist display
+        // Remove all existing rows but keep the model structure
+        if (baseModel->rowCount() > 0) {
+            baseModel->removeRows(0, baseModel->rowCount());
+            qDebug() << "[WorkListPageDelegate] Removed all existing rows";
+        }
+
+        // Set headers (needed after first clear or if model was empty)
         QStringList headers;
         headers << "Patient Name"
                 << "Patient ID"
@@ -322,14 +332,41 @@ namespace Etrek::Application::Delegate
                 << "Source"
                 << "Created At";
 
-        baseModel->setHorizontalHeaderLabels(headers);
+        if (baseModel->columnCount() != headers.size()) {
+            baseModel->setHorizontalHeaderLabels(headers);
+            qDebug() << "[WorkListPageDelegate] Headers set, column count:" << baseModel->columnCount();
+        }
 
-        // Set model to the view (ensure table is connected)
-        ui->setProxyModel(proxyModel);
+        // Set model to the view only on first call (initialization)
+        if (!modelInitialized) {
+            ui->setProxyModel(proxyModel);
+            modelInitialized = true;
+            qDebug() << "[WorkListPageDelegate] Model initialized and connected to view";
+        }
 
         // Populate rows
-        for (const auto& entry : entries)
+        int rowsAdded = 0;
+        for (const auto& entry : entries) {
             baseModel->appendRow(createRowForEntry(entry));
+            rowsAdded++;
+
+            // Log first entry and every entry with non-PENDING status for debugging
+            if (rowsAdded == 1 || entry.Status != ProcedureStepStatus::PENDING) {
+                qDebug() << "[WorkListPageDelegate] Row" << rowsAdded << "- Entry ID:" << entry.Id
+                         << "Status:" << ProcedureStepStatusToString(entry.Status);
+            }
+        }
+
+        qDebug() << "[WorkListPageDelegate] Added" << rowsAdded << "rows to base model";
+        qDebug() << "[WorkListPageDelegate] Base model now has" << baseModel->rowCount() << "rows";
+
+        // Force proxy model to re-filter and update
+        if (proxyModel) {
+            proxyModel->invalidate();
+            qDebug() << "[WorkListPageDelegate] Proxy model invalidated, visible rows:" << proxyModel->rowCount();
+        }
+
+        qDebug() << "[WorkListPageDelegate] ========== loadWorklistData END ==========";
     }
 
     void WorkListPageDelegate::onEntryCreated(const ent::WorklistEntry& entry) {
@@ -502,6 +539,65 @@ namespace Etrek::Application::Delegate
 
     WorkListPageDelegate::~WorkListPageDelegate()
     {
+        // Stop and clean up the refresh timer
+        if (refreshTimer) {
+            refreshTimer->stop();
+            qDebug() << "[WorkListPageDelegate] Refresh timer stopped";
+        }
+    }
+
+    void WorkListPageDelegate::refreshWorklistData()
+    {
+        // Safety check: ensure UI is valid before accessing
+        if (!ui) {
+            // UI has been destroyed - this is normal when navigating away from the page
+            // The timer will continue running but won't update the non-existent view
+            return;
+        }
+
+        qDebug() << "";
+        qDebug() << "#################### REFRESH TRIGGERED ####################";
+        qDebug() << "[WorkListPageDelegate] Timer-triggered refresh at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+
+        // Get table view reference
+        auto* tableView = ui->getWorklistTableView();
+        if (!tableView) {
+            qWarning() << "[WorkListPageDelegate] TableView is null, cannot refresh";
+            return;
+        }
+
+        qDebug() << "[WorkListPageDelegate] Current view row count:" << (tableView->model() ? tableView->model()->rowCount() : -1);
+
+        // Reload all worklist entries from the database
+        auto result = repository->getWorklistEntries(nullptr, nullptr);
+        if (result.isSuccess) {
+            qDebug() << "[WorkListPageDelegate] Successfully loaded" << result.value.size() << "entries from database";
+
+            // Load the data into the model
+            loadWorklistData(result.value);
+
+            // Additional forced updates to ensure view refreshes
+            if (proxyModel) {
+                // Reset the proxy model to force complete refresh
+                proxyModel->invalidate();
+
+                qDebug() << "[WorkListPageDelegate] After refresh - Proxy model row count:" << proxyModel->rowCount();
+            }
+
+            // Force the view to repaint
+            tableView->reset();
+            tableView->viewport()->update();
+            tableView->update();
+
+            qDebug() << "[WorkListPageDelegate] View reset and repainted";
+            qDebug() << "[WorkListPageDelegate] Final view row count:" << tableView->model()->rowCount();
+            qDebug() << "#################### REFRESH COMPLETE ####################";
+            qDebug() << "";
+        } else {
+            qWarning() << "[WorkListPageDelegate] Failed to refresh worklist:" << result.message;
+            qDebug() << "#################### REFRESH FAILED ####################";
+            qDebug() << "";
+        }
     }
 
     void WorkListPageDelegate::apply()
@@ -541,53 +637,50 @@ namespace Etrek::Application::Delegate
             auto examContext = std::make_shared<Etrek::Core::Context::ExaminationContext>(selectedEntry);
             ctxMgr->setWorkflowContext("Examination", examContext);
 
-            // Route based on source: LOCAL vs RIS
-            if (selectedEntry.Source == Source::LOCAL) {
-                // LOCAL source: User-created worklist entry
-                // Need to show ViewSelectionDialog to select procedure and views
-                qDebug() << "LOCAL worklist entry - opening ViewSelectionDialog";
+            // Show ViewSelectionDialog to allow user to select procedure and views
+            // Pass only dbConnection - ViewSelectionDialogBuilder will create its own repository
+            DelegateParameter params;
+            params.dbConnection = dbConnection;
+            params.contextManager = contextManager;
 
-                DelegateParameter params;
-                params.dbConnection = dbConnection;
-                params.contextManager = contextManager;
-                params.workflowContext = examContext;
+            Etrek::Application::Delegate::ViewSelectionDialogBuilder builder;
+            auto [dialog, delegate] = builder.build(params, ui, this);
 
-                Etrek::Application::Delegate::ViewSelectionDialogBuilder builder;
-                auto [dialog, delegate] = builder.build(params, ui, this);
+            // Connect dialog signals
+            connect(delegate, &Etrek::Application::Delegate::ViewSelectionDialogDelegate::examinationReady,
+                    this, [this, entryId](int procedureId, const QVector<int>& viewIds) {
+                qDebug() << "Selected Procedure ID:" << procedureId;
+                qDebug() << "Selected View IDs:" << viewIds;
 
-                // Connect dialog signals
-                connect(delegate, &Etrek::Application::Delegate::ViewSelectionDialogDelegate::examinationReady,
-                        this, [this, entryId, ctxMgr, examContext](int procedureId, const QVector<int>& viewIds) {
-                    // Update examination context with selected procedure and views
-                    examContext->setProcedureId(procedureId);
-                    examContext->setViewIds(viewIds);
-                    ctxMgr->setWorkflowContext("Examination", examContext);
+                // Update ExaminationContext with selected procedure and view IDs
+                if (auto ctxMgr = contextManager.lock()) {
+                    auto workflowCtx = ctxMgr->workflowContext("Examination");
+                    auto examCtx = std::dynamic_pointer_cast<Etrek::Core::Context::ExaminationContext>(workflowCtx);
 
-                    qDebug() << "Selected Procedure ID:" << procedureId;
-                    qDebug() << "Selected View IDs:" << viewIds;
+                    if (examCtx) {
+                        examCtx->setProcedureId(procedureId);
+                        examCtx->setViewIds(viewIds);
+                        qDebug() << "[WorkListPageDelegate] Updated ExaminationContext with procedure and views";
+                    }
+                }
 
-                    // Emit signal to start examination
-                    emit startExamination(entryId);
-                });
+                // Update worklist status to IN_PROGRESS
+                auto statusResult = repository->updateWorklistStatus(entryId, ProcedureStepStatus::IN_PROGRESS);
+                if (statusResult.isSuccess) {
+                    qDebug() << "[WorkListPageDelegate] Updated worklist entry to IN_PROGRESS";
+                } else {
+                    qWarning() << "[WorkListPageDelegate] Failed to update status:" << statusResult.message;
+                }
 
-                // Show dialog modally
-                dialog->exec();
-
-                // Clean up
-                dialog->deleteLater();
-                delegate->deleteLater();
-
-            } else {
-                // RIS source: Worklist entry from remote PACS/RIS
-                // Already has procedure and views defined
-                // Skip ViewSelectionDialog and go directly to examination
-                qDebug() << "RIS worklist entry - skipping ViewSelectionDialog, opening ExaminationPage directly";
-
-                // Extract procedure and view information from worklist attributes
-                // (RIS entries should have this information in DICOM tags)
-                // For now, emit signal to start examination immediately
                 emit startExamination(entryId);
-            }
+            });
+
+            // Show dialog modally
+            dialog->exec();
+
+            // Clean up
+            dialog->deleteLater();
+            delegate->deleteLater();
         } else {
             QMessageBox::warning(ui, "Context Error",
                                "Context manager is not available. Cannot proceed with examination.");
@@ -675,6 +768,23 @@ namespace Etrek::Application::Delegate
         }
 
         return patient;
+    }
+
+    void WorkListPageDelegate::setupRefreshTimer()
+    {
+        // Create timer for periodic worklist refresh
+        refreshTimer = new QTimer(this);
+
+        // Set refresh interval to 5 seconds (5000 milliseconds)
+        refreshTimer->setInterval(5000);
+
+        // Connect timer timeout to refresh method
+        connect(refreshTimer, &QTimer::timeout, this, &WorkListPageDelegate::refreshWorklistData);
+
+        // Start the timer
+        refreshTimer->start();
+
+        qDebug() << "[WorkListPageDelegate] Periodic refresh timer started (5 second interval)";
     }
 
 
