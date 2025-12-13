@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QDebug>
+#include <QTimer>
 
 #include "MainWindowDelegate.h"
 #include "SystemSettingPageBuilder.h"
@@ -78,6 +79,13 @@ namespace Etrek::Application::Delegate
 
         m_mainWindow->prepareLoadingPage();
 
+        // Delete existing worklist delegate if any
+        if (m_worklistPageDelegate) {
+            m_worklistPageDelegate->deleteLater();
+            m_worklistPageDelegate = nullptr;
+        }
+
+        // Also clean up system settings delegate when switching to worklist
         if (m_systemSettingPageDelegate) {
             m_systemSettingPageDelegate->deleteLater();
             m_systemSettingPageDelegate = nullptr;
@@ -159,6 +167,16 @@ namespace Etrek::Application::Delegate
                         m_mainWindow->closePage();
                         // Disable exam page button when examination is closed
                         m_mainWindow->setExamPageActionEnabled(false);
+
+                        // Navigate back to WorklistPage
+                        onLoadWorklistPageAction();
+
+                        // Refresh worklist data after page is loaded (delayed to ensure UI is ready)
+                        QTimer::singleShot(0, this, [this]() {
+                            if (m_worklistPageDelegate) {
+                                m_worklistPageDelegate->refreshWorklistData();
+                            }
+                        });
                     }
                 });
 
@@ -167,11 +185,20 @@ namespace Etrek::Application::Delegate
                 &ExamPageDelegate::examinationCompleted, this,
                 [this](int studyId) {
                     qDebug() << "Examination completed, study ID:" << studyId;
-                    // Optionally refresh worklist or perform other actions
                     if (m_mainWindow) {
                         m_mainWindow->closePage();
                         // Disable exam page button when examination is completed
                         m_mainWindow->setExamPageActionEnabled(false);
+
+                        // Navigate back to WorklistPage
+                        onLoadWorklistPageAction();
+
+                        // Refresh worklist data after page is loaded (delayed to ensure UI is ready)
+                        QTimer::singleShot(0, this, [this]() {
+                            if (m_worklistPageDelegate) {
+                                m_worklistPageDelegate->refreshWorklistData();
+                            }
+                        });
                     }
                 });
 
