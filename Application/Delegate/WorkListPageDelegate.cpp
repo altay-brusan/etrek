@@ -17,7 +17,6 @@
 #include "ViewSelectionDialogBuilder.h"
 #include "ViewSelectionDialogDelegate.h"
 #include "DelegateParameter.h"
-#include "WorklistEnum.h"
 
 
 using namespace Etrek::Worklist::Repository;
@@ -541,53 +540,31 @@ namespace Etrek::Application::Delegate
             auto examContext = std::make_shared<Etrek::Core::Context::ExaminationContext>(selectedEntry);
             ctxMgr->setWorkflowContext("Examination", examContext);
 
-            // Route based on source: LOCAL vs RIS
-            if (selectedEntry.Source == Source::LOCAL) {
-                // LOCAL source: User-created worklist entry
-                // Need to show ViewSelectionDialog to select procedure and views
-                qDebug() << "LOCAL worklist entry - opening ViewSelectionDialog";
+            // Show ViewSelectionDialog to allow user to select procedure and views
+            // Pass only dbConnection - ViewSelectionDialogBuilder will create its own repository
+            DelegateParameter params;
+            params.dbConnection = dbConnection;
+            params.contextManager = contextManager;
 
-                DelegateParameter params;
-                params.dbConnection = dbConnection;
-                params.contextManager = contextManager;
-                params.workflowContext = examContext;
+            Etrek::Application::Delegate::ViewSelectionDialogBuilder builder;
+            auto [dialog, delegate] = builder.build(params, ui, this);
 
-                Etrek::Application::Delegate::ViewSelectionDialogBuilder builder;
-                auto [dialog, delegate] = builder.build(params, ui, this);
-
-                // Connect dialog signals
-                connect(delegate, &Etrek::Application::Delegate::ViewSelectionDialogDelegate::examinationReady,
-                        this, [this, entryId, ctxMgr, examContext](int procedureId, const QVector<int>& viewIds) {
-                    // Update examination context with selected procedure and views
-                    examContext->setProcedureId(procedureId);
-                    examContext->setViewIds(viewIds);
-                    ctxMgr->setWorkflowContext("Examination", examContext);
-
-                    qDebug() << "Selected Procedure ID:" << procedureId;
-                    qDebug() << "Selected View IDs:" << viewIds;
-
-                    // Emit signal to start examination
-                    emit startExamination(entryId);
-                });
-
-                // Show dialog modally
-                dialog->exec();
-
-                // Clean up
-                dialog->deleteLater();
-                delegate->deleteLater();
-
-            } else {
-                // RIS source: Worklist entry from remote PACS/RIS
-                // Already has procedure and views defined
-                // Skip ViewSelectionDialog and go directly to examination
-                qDebug() << "RIS worklist entry - skipping ViewSelectionDialog, opening ExaminationPage directly";
-
-                // Extract procedure and view information from worklist attributes
-                // (RIS entries should have this information in DICOM tags)
-                // For now, emit signal to start examination immediately
+            // Connect dialog signals
+            connect(delegate, &Etrek::Application::Delegate::ViewSelectionDialogDelegate::examinationReady,
+                    this, [this, entryId](int procedureId, const QVector<int>& viewIds) {
+                // TODO: Store selected procedure and view IDs in examination context or separate context
+                // For now, we'll just emit the startExamination signal
+                qDebug() << "Selected Procedure ID:" << procedureId;
+                qDebug() << "Selected View IDs:" << viewIds;
                 emit startExamination(entryId);
-            }
+            });
+
+            // Show dialog modally
+            dialog->exec();
+
+            // Clean up
+            dialog->deleteLater();
+            delegate->deleteLater();
         } else {
             QMessageBox::warning(ui, "Context Error",
                                "Context manager is not available. Cannot proceed with examination.");
