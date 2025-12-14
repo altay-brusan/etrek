@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QStandardItemModel>
+#include <QTimer>
 #include "WorklistFilterProxyModel.h"
 #include <QDateTime>
 #include "WorklistRepository.h"
@@ -41,6 +42,7 @@ namespace Etrek::Application::Delegate {
             std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository,
             std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository,
             std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository,
+            std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection,
             std::weak_ptr<Etrek::Context::IContextManager> contextManager = std::weak_ptr<Etrek::Context::IContextManager>(),
             QObject* parent = nullptr);
 
@@ -48,6 +50,11 @@ namespace Etrek::Application::Delegate {
         void attachDelegates(const QVector<QObject*>& delegates) override;
 
 		~WorkListPageDelegate();
+
+        /**
+         * @brief Refreshes the worklist data from the database to reflect status changes.
+         */
+        void refreshWorklistData();
 
     signals:
         void closeWorklist();
@@ -84,9 +91,10 @@ namespace Etrek::Application::Delegate {
         void loadWorklistData(const QList<ent::WorklistEntry>& entries);
         void onClearSearch();
         mdl::PatientModel worklistEntryToPatientModel(const ent::WorklistEntry& entry) const;
+        void setupRefreshTimer();
 
 
-        WorkListPage* ui;
+        QPointer<WorkListPage> ui;
         QList<ent::DicomTag> getDisplayTagList() const;
         QList<QStandardItem*> createRowForEntry(const ent::WorklistEntry& entry) const;
         QPointer<QStandardItemModel> baseModel;
@@ -95,7 +103,10 @@ namespace Etrek::Application::Delegate {
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanRepository;
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepository;
         std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository;
+        std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection;
         std::weak_ptr<Etrek::Context::IContextManager> contextManager;
+        QTimer* refreshTimer;
+        bool modelInitialized = false;
 
         void apply() override;
         void accept() override;
