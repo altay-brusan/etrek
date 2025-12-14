@@ -150,6 +150,11 @@ void WorkListPage::setStile()
         "  background: rgb(54,54,54);"
         "  gridline-color: rgb(80,80,80);"
         "  selection-background-color: rgb(92,92,92);"
+        "  selection-color: rgb(255,255,255);"
+        "}"
+        "QTableView::item:selected {"
+        "  font-weight: bold;"
+        "  color: rgb(255,255,255);"
         "}"
         "QHeaderView::section { background: rgb(64,64,64); padding:4px; border:1px solid rgb(90,90,90); }";
 

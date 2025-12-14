@@ -64,6 +64,12 @@ namespace Etrek::Application::Delegate
             if (this->ui) this->closeWorklist();
             });
 
+        // Connect selection changed signal to enable/disable Update button
+        if (auto* tableView = ui->getWorklistTableView()) {
+            // Need to defer this connection until after the model is set
+            // Will connect in loadWorklistData after first model initialization
+        }
+
         // connect(repository.get(), &WorklistRepository::worklistEntryCreated,
         //     this, &WorkListPageDelegate::onEntryCreated);
 
@@ -342,6 +348,20 @@ namespace Etrek::Application::Delegate
             ui->setProxyModel(proxyModel);
             modelInitialized = true;
             qDebug() << "[WorkListPageDelegate] Model initialized and connected to view";
+
+            // Connect selection model to enable/disable Update button
+            auto* tableView = ui->getWorklistTableView();
+            if (tableView && tableView->selectionModel()) {
+                connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged,
+                    this, [this](const QItemSelection& selected, const QItemSelection& deselected) {
+                        // Enable Update button if a row is selected, disable if not
+                        bool hasSelection = !selected.isEmpty();
+                        if (auto* updateBtn = ui->findChild<QPushButton*>("updatePatientBtn")) {
+                            updateBtn->setEnabled(hasSelection);
+                        }
+                    });
+                qDebug() << "[WorkListPageDelegate] Connected selection model to Update button state";
+            }
         }
 
         // Populate rows
@@ -568,6 +588,16 @@ namespace Etrek::Application::Delegate
 
         qDebug() << "[WorkListPageDelegate] Current view row count:" << (tableView->model() ? tableView->model()->rowCount() : -1);
 
+        // Save the currently selected entry ID before refresh
+        int selectedEntryId = -1;
+        if (tableView->selectionModel()) {
+            auto selectedIndexes = tableView->selectionModel()->selectedRows();
+            if (!selectedIndexes.isEmpty()) {
+                selectedEntryId = selectedIndexes.first().data(Qt::UserRole).toInt();
+                qDebug() << "[WorkListPageDelegate] Saved selected entry ID:" << selectedEntryId;
+            }
+        }
+
         // Reload all worklist entries from the database
         auto result = repository->getWorklistEntries(nullptr, nullptr);
         if (result.isSuccess) {
@@ -588,6 +618,24 @@ namespace Etrek::Application::Delegate
             tableView->reset();
             tableView->viewport()->update();
             tableView->update();
+
+            // Restore the selection if there was one
+            if (selectedEntryId != -1 && tableView->model()) {
+                bool selectionRestored = false;
+                for (int row = 0; row < tableView->model()->rowCount(); ++row) {
+                    QModelIndex index = tableView->model()->index(row, 0);
+                    int entryId = index.data(Qt::UserRole).toInt();
+                    if (entryId == selectedEntryId) {
+                        tableView->selectRow(row);
+                        selectionRestored = true;
+                        qDebug() << "[WorkListPageDelegate] Restored selection to row" << row << "with entry ID" << selectedEntryId;
+                        break;
+                    }
+                }
+                if (!selectionRestored) {
+                    qDebug() << "[WorkListPageDelegate] Could not restore selection - entry ID" << selectedEntryId << "not found";
+                }
+            }
 
             qDebug() << "[WorkListPageDelegate] View reset and repainted";
             qDebug() << "[WorkListPageDelegate] Final view row count:" << tableView->model()->rowCount();
