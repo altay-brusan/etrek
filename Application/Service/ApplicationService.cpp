@@ -12,6 +12,8 @@
 #include "AuthenticationService.h"
 #include "AuthenticationRepository.h"
 #include "ModalityWorklistManager.h"
+#include "WorklistRepository.h"
+#include "WorklistFieldConfigurationRepository.h"
 #include "ContextManager.h"
 #include "SessionContext.h"
 #include "IContextManager.h"
@@ -27,8 +29,6 @@
 #include "DemoLaunchStrategy.h"
 #include "DeveloperLaunchStrategy.h"
 #include "MainAppLaunchStrategy.h"
-#include "WorklistRepository.h"
-#include "WorklistFieldConfigurationRepository.h"
 #include "MainWindowBuilder.h"
 #include "DelegateParameter.h"
 
@@ -226,12 +226,14 @@ namespace Etrek::Application::Service
             m_mainWindow.reset();
         }
 
+        // Create DelegateParameter with only dbConnection
+        // Builders are responsible for creating their own repository instances
         DelegateParameter params;
         params.dbConnection = m_databaseConnectionSetting;
         params.contextManager = m_contextManager;
         params.sessionContext = m_contextManager ? m_contextManager->sessionContext() : nullptr;
 
-        MainWindowBuilder builder;
+        Etrek::Application::Delegate::MainWindowBuilder builder;
         auto result = builder.build(params, nullptr, this);
 
         m_mainWindow.reset(result.first);

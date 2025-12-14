@@ -50,6 +50,9 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionLoadOutputPage, &QAction::triggered, this, [this]() {
         emit LoadOutputPage();
         });
+
+    // Disable exam page action by default - only enabled when worklist item is selected
+    ui->actionLoadExamPage->setEnabled(false);
 }
 
 void MainWindow::prepareLoadingPage()
@@ -131,6 +134,21 @@ void MainWindow::toggleAllActions()
 
 void MainWindow::setTitle(const QString& title)
 {
+}
+
+void MainWindow::setExamPageActionEnabled(bool enabled)
+{
+    ui->actionLoadExamPage->setEnabled(enabled);
+}
+
+void MainWindow::setExamPageActionChecked(bool checked)
+{
+    ui->actionLoadExamPage->setChecked(checked);
+}
+
+void MainWindow::uncheckWorklistAction()
+{
+    ui->actionLoadWorklist->setChecked(false);
 }
 
 MainWindow::~MainWindow()

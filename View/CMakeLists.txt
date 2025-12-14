@@ -5,7 +5,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets UiTools Sql Network)
+# Note: Qt is configured in ThirdPartyLibraries/CMakeLists.txt
+# Note: VTK is configured in ThirdPartyLibraries/CMakeLists.txt (manual management like DCMTK)
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS    
     ${CMAKE_CURRENT_SOURCE_DIR}/Page    
@@ -65,10 +66,14 @@ set_target_properties(View PROPERTIES
     WINDOWS_EXPORT_ALL_SYMBOLS TRUE  # Ensure that the import library is generated
 )
 
-# some of these libs might go to launch.
+# Link against centralized third-party libraries (configured at root)
 target_link_libraries(View
-    PRIVATE 
-    Qt6::Core Qt6::Widgets Qt6::UiTools Qt6::Network
+    PRIVATE
+    Qt6::Core
+    Qt6::Widgets
+    Qt6::UiTools
+    Qt6::Network
+    ${VTK_LIBRARIES}
     Core
     Common
 )
@@ -96,6 +101,7 @@ target_include_directories(View
         ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Entity
         ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Model
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${VTK_INCLUDE_DIR}
 )
 
 # Ensure View DLL and LIB go to the correct folders as set by the root CMake

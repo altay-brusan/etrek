@@ -1,9 +1,11 @@
 #include <QApplication>
 #include <QDebug>
+#include <QTimer>
 
 #include "MainWindowDelegate.h"
 #include "SystemSettingPageBuilder.h"
 #include "WorkListPageBuilder.h"
+#include "ExamPageBuilder.h"
 
 namespace Etrek::Application::Delegate
 {
@@ -18,6 +20,8 @@ namespace Etrek::Application::Delegate
               &MainWindowDelegate::onLoadSystemPageAction);
       connect(m_mainWindow, &MainWindow::LoadWorklistPageAction, this,
           &MainWindowDelegate::onLoadWorklistPageAction);
+      connect(m_mainWindow, &MainWindow::LoadExamPage, this,
+          &MainWindowDelegate::onLoadExamPageAction);
 
       connect(m_mainWindow, &MainWindow::aboutToClose, this,
               &MainWindowDelegate::aboutToClose);
@@ -75,6 +79,13 @@ namespace Etrek::Application::Delegate
 
         m_mainWindow->prepareLoadingPage();
 
+        // Delete existing worklist delegate if any
+        if (m_worklistPageDelegate) {
+            m_worklistPageDelegate->deleteLater();
+            m_worklistPageDelegate = nullptr;
+        }
+
+        // Also clean up system settings delegate when switching to worklist
         if (m_systemSettingPageDelegate) {
             m_systemSettingPageDelegate->deleteLater();
             m_systemSettingPageDelegate = nullptr;
@@ -92,11 +103,120 @@ namespace Etrek::Application::Delegate
                         m_mainWindow->closePage();
                     }
                 });
+
+            // Connect examination start signal
+            connect(m_worklistPageDelegate,
+                &WorkListPageDelegate::startExamination, this,
+                &MainWindowDelegate::onStartExamination);
         }
 
         if (m_mainWindow) {
             m_mainWindow->loadPage(page);
             m_mainWindow->finishLoadingPage();
+        }
+    }
+
+    void MainWindowDelegate::onLoadExamPageAction() {
+        if (!m_mainWindow) {
+            qWarning() << "MainWindowDelegate::onLoadExamPageAction invoked without a MainWindow instance.";
+            return;
+        }
+
+        // If exam page delegate already exists, just show it
+        if (m_examPageDelegate) {
+            qDebug() << "MainWindowDelegate: Exam page already loaded, displaying it";
+            // The exam page should already be displayed, so just ensure it's active
+            return;
+        }
+
+        // If no exam page exists, user shouldn't be here (button should be disabled)
+        qWarning() << "MainWindowDelegate: Cannot load exam page - no active examination";
+    }
+
+    void MainWindowDelegate::onStartExamination(int worklistEntryId) {
+        if (!m_mainWindow) {
+            qWarning() << "MainWindowDelegate::onStartExamination invoked without "
+                "a MainWindow instance.";
+            return;
+        }
+
+        qDebug() << "MainWindowDelegate: Starting examination for worklist entry" << worklistEntryId;
+
+        // Uncheck worklist button when opening exam page
+        m_mainWindow->uncheckWorklistAction();
+
+        m_mainWindow->prepareLoadingPage();
+
+        // Clean up existing exam page delegate if any
+        if (m_examPageDelegate) {
+            m_examPageDelegate->deleteLater();
+            m_examPageDelegate = nullptr;
+        }
+
+        // Build examination page
+        ExamPageBuilder builder;
+        auto result = builder.build(m_params, nullptr, this);
+        auto* page = result.first;
+        m_examPageDelegate = result.second;
+
+        if (m_examPageDelegate) {
+            // Connect close examination signal
+            connect(m_examPageDelegate,
+                &ExamPageDelegate::closeExamination, this, [page, this]() {
+                    if (m_mainWindow) {
+                        m_mainWindow->closePage();
+                        // Disable exam page button when examination is closed
+                        m_mainWindow->setExamPageActionEnabled(false);
+
+                        // Navigate back to WorklistPage
+                        onLoadWorklistPageAction();
+
+                        // Refresh worklist data after page is loaded (delayed to ensure UI is ready)
+                        QTimer::singleShot(0, this, [this]() {
+                            if (m_worklistPageDelegate) {
+                                m_worklistPageDelegate->refreshWorklistData();
+                            }
+                        });
+                    }
+                });
+
+            // Connect examination completed signal
+            connect(m_examPageDelegate,
+                &ExamPageDelegate::examinationCompleted, this,
+                [this](int studyId) {
+                    qDebug() << "Examination completed, study ID:" << studyId;
+                    if (m_mainWindow) {
+                        m_mainWindow->closePage();
+                        // Disable exam page button when examination is completed
+                        m_mainWindow->setExamPageActionEnabled(false);
+
+                        // Navigate back to WorklistPage
+                        onLoadWorklistPageAction();
+
+                        // Refresh worklist data after page is loaded (delayed to ensure UI is ready)
+                        QTimer::singleShot(0, this, [this]() {
+                            if (m_worklistPageDelegate) {
+                                m_worklistPageDelegate->refreshWorklistData();
+                            }
+                        });
+                    }
+                });
+
+            // Connect error signal
+            connect(m_examPageDelegate,
+                &ExamPageDelegate::errorOccurred, this,
+                [](const QString& message) {
+                    qWarning() << "Examination error:" << message;
+                });
+        }
+
+        if (m_mainWindow) {
+            m_mainWindow->loadPage(page);
+            m_mainWindow->finishLoadingPage();
+
+            // Enable and check exam page action now that a worklist item has been selected
+            m_mainWindow->setExamPageActionEnabled(true);
+            m_mainWindow->setExamPageActionChecked(true);
         }
     }
 

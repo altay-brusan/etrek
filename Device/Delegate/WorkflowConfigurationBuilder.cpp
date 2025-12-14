@@ -17,12 +17,17 @@ namespace Etrek::Device::Delegate
             QWidget* parentWidget,
             QObject* parentDelegate)
     {
+        // Builder creates repository from dbConnection
         auto repository = std::make_shared<DeviceRepository>(params.dbConnection);
+        
         const auto equipments = repository->getGeneralEquipmentList();
         const auto institutes = repository->getInstitutionList();
         const auto envSettings = repository->getEnvironmentSettings();
 
         auto widget = new WorkflowConfigurationWidget(envSettings.value, equipments.value, institutes.value, parentWidget);
+        
+        // Delegate receives repository if it needs to perform CRUD operations
+        // In this case, delegate doesn't need repository (read-only widget)
         auto delegate = new WorkflowConfigurationDelegate(widget, parentDelegate);
 
         // If you need to attach other delegates:
