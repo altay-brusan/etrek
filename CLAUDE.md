@@ -27,6 +27,33 @@ cmake --build out/build/release
 - Libraries (.lib): `out/build/[debug|release]/lib/`
 - DLLs: `out/build/[debug|release]/bin/`
 
+### Run Application
+```bash
+# Run from build directory
+out/build/debug/EtrekApp.exe
+
+# With launch mode flags
+out/build/debug/EtrekApp.exe --demo
+out/build/debug/EtrekApp.exe --dev
+out/build/debug/EtrekApp.exe --settings
+out/build/debug/EtrekApp.exe --users
+```
+
+### Tests
+The `Test/` directory contains Qt Test-based unit tests (separate CMake project, not part of main build):
+```bash
+# Configure and build tests
+cd Test
+cmake -B build
+cmake --build build
+
+# Run a single test
+build/tst_AppLogger.exe
+
+# Run with Qt Test flags
+build/tst_AppLogger.exe -v2  # verbose output
+```
+
 ## Architecture Overview
 
 Etrek is a medical imaging application built with C++17, Qt 6.5.3, and DCMTK. The architecture follows a layered service-oriented design with clear separation between UI, business logic, and data access.
@@ -138,6 +165,7 @@ Common namespace aliases used in the codebase:
 ### Third-Party Libraries
 - **Qt 6.5.3**: UI framework, requires MSVC 2019 x64 build
 - **DCMTK 3.6.9**: DICOM protocol implementation
+- **VTK 9.5**: 3D visualization library for medical imaging
 - **spdlog**: Structured logging (header-only)
 - **OpenSSL**: Cryptography (libcrypto, libssl)
 - **MySQL**: Database backend via Qt SQL driver (QMYSQL 6.5.3)
