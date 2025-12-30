@@ -1,0 +1,1 @@
+@echo offncall "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"ncd /d C:\Users\altay\OneDrive\Projects\etrekncmake --preset Qt-Debugnif %errorlevel% neq 0 exit /b %errorlevel%nninja -C out/build/debug
