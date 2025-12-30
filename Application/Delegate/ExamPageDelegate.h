@@ -10,6 +10,7 @@
 #include "IPageAction.h"
 #include "ExamPage.h"
 #include "WorklistEntry.h"
+#include "ImageViewerTypes.h"
 #include "WorklistEnum.h"
 #include "View.h"
 #include "TechniqueParameter.h"
@@ -111,6 +112,13 @@ signals:
      * @param message Error message.
      */
     void errorOccurred(const QString& message);
+
+    /**
+     * @brief Emitted when an image is acquired and should be opened in the image viewer.
+     * @param imageData Raw image pixel data.
+     * @param metadata DICOM metadata for the acquired image.
+     */
+    void openImageViewer(const QByteArray& imageData, const Etrek::ImageViewer::DicomMetadata& metadata);
 
 private slots:
     // --- Initialization ---

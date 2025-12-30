@@ -601,6 +601,29 @@ void ExamPageDelegate::onImageReceived(const QByteArray& imageData)
     // Update thumbnails
     updateThumbnails();
 
+    // Build metadata for image viewer
+    Etrek::ImageViewer::DicomMetadata metadata;
+    // Extract patient info from worklist attributes
+    for (const auto& attr : m_worklistEntry.Attributes) {
+        if (attr.Tag.Name == "PatientName") {
+            metadata.patientName = attr.TagValue;
+        } else if (attr.Tag.Name == "PatientID") {
+            metadata.patientId = attr.TagValue;
+        }
+    }
+    metadata.studyDate = QDateTime::currentDateTime().date().toString("yyyyMMdd");
+    metadata.studyTime = QDateTime::currentDateTime().time().toString("HHmmss");
+    metadata.modality = "DX";  // Digital X-Ray
+    if (m_currentSeriesIndex < m_views.size()) {
+        metadata.seriesDescription = m_views[m_currentSeriesIndex].Name;
+    }
+    metadata.imageNumber = 1;
+    metadata.totalImages = 1;
+    // Window/Level and dimensions would be set based on actual image data
+
+    // Emit signal to open image viewer with the acquired image
+    emit openImageViewer(imageData, metadata);
+
     // Move to next view if available
     if (m_currentSeriesIndex < m_views.size() - 1) {
         onNextView();
