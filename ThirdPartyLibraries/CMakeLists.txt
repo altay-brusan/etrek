@@ -63,6 +63,9 @@ if(WIN32)
         ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkGUISupportQt-9.5d.lib
         ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkIOImage-9.5d.lib
         ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkImagingCore-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkImagingColor-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkFiltersSources-9.5d.lib
+        ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkFiltersGeneral-9.5d.lib
         ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtksys-9.5d.lib
         ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/vtk/lib/vtkglad-9.5d.lib
     )
