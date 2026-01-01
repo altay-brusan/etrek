@@ -22,6 +22,9 @@
 #include <vtkDataArray.h>
 #include <vtkCoordinate.h>
 
+#include <QEvent>
+#include <QResizeEvent>
+
 #include <algorithm>
 #include <cmath>
 
@@ -34,6 +37,11 @@ VtkViewportRenderer::VtkViewportRenderer(QVTKOpenGLNativeWidget* widget, QObject
     initializePipeline();
     initializeOverlayActors();
     initializeCrosshairs();
+
+    // Install event filter to handle resize events
+    if (m_widget) {
+        m_widget->installEventFilter(this);
+    }
 }
 
 VtkViewportRenderer::~VtkViewportRenderer() {
@@ -194,7 +202,10 @@ void VtkViewportRenderer::setImageData(vtkImageData* imageData, bool autoWL) {
 
     m_hasImage = true;
 
-    // Reset camera to fit image
+    // Mark that we need to fit on resize (handles initial layout timing issues)
+    m_needsFitOnResize = true;
+
+    // Try to fit now - if viewport isn't sized yet, it will be handled on resize
     fitToWindow();
 
     emit imageChanged();
@@ -283,16 +294,45 @@ void VtkViewportRenderer::calculateAutoWindowLevel(vtkImageData* imageData,
 }
 
 void VtkViewportRenderer::setZoom(double factor) {
-    if (!m_renderer) return;
+    if (!m_renderer || !m_hasImage) return;
 
     m_zoomFactor = std::clamp(factor, 0.1, 20.0);
 
     vtkCamera* camera = m_renderer->GetActiveCamera();
-    if (camera) {
-        // Calculate new parallel scale based on zoom
-        double baseScale = std::max(m_imageWidth, m_imageHeight) / 2.0;
-        camera->SetParallelScale(baseScale / m_zoomFactor);
+    if (!camera) return;
+
+    // Image dimensions (spacing is 1.0 for display)
+    double imageWidth = static_cast<double>(m_imageWidth);
+    double imageHeight = static_cast<double>(m_imageHeight);
+
+    // Get viewport size
+    int* viewportSize = m_renderWindow->GetSize();
+    double viewportWidth = static_cast<double>(viewportSize[0]);
+    double viewportHeight = static_cast<double>(viewportSize[1]);
+
+    // Avoid division by zero
+    if (viewportWidth <= 0 || viewportHeight <= 0 ||
+        imageWidth <= 0 || imageHeight <= 0) {
+        render();
+        return;
     }
+
+    // Calculate aspect ratios
+    double viewportAspect = viewportWidth / viewportHeight;
+    double imageAspect = imageWidth / imageHeight;
+
+    // Calculate base parallel scale (FIT mode - same as fitToWindow)
+    double baseParallelScale;
+    if (imageAspect > viewportAspect) {
+        // Image is wider than viewport - fit by WIDTH
+        baseParallelScale = (imageWidth / viewportAspect) / 2.0;
+    } else {
+        // Image is taller than viewport - fit by HEIGHT
+        baseParallelScale = imageHeight / 2.0;
+    }
+
+    // Apply zoom (divide by zoom factor to zoom in)
+    camera->SetParallelScale(baseParallelScale / m_zoomFactor);
 
     render();
     emit zoomChanged(m_zoomFactor);
@@ -335,16 +375,72 @@ void VtkViewportRenderer::resetCamera() {
 }
 
 void VtkViewportRenderer::fitToWindow() {
-    if (!m_renderer) return;
-
-    m_renderer->ResetCamera();
+    if (!m_renderer || !m_hasImage) return;
 
     vtkCamera* camera = m_renderer->GetActiveCamera();
-    if (camera) {
-        camera->ParallelProjectionOn();
+    if (!camera) return;
+
+    // Enable parallel projection for 2D viewing
+    camera->ParallelProjectionOn();
+
+    // Get viewport size
+    int* viewportSize = m_renderWindow->GetSize();
+    int viewportWidth = viewportSize[0];
+    int viewportHeight = viewportSize[1];
+
+    // Avoid division by zero - if viewport isn't sized yet, defer to resize event
+    if (viewportWidth <= 1 || viewportHeight <= 1 ||
+        m_imageWidth <= 0 || m_imageHeight <= 0) {
+        // Don't call ResetCamera - just wait for resize event
+        return;
     }
 
+    // Store viewport size for resize detection
+    m_lastViewportWidth = viewportWidth;
+    m_lastViewportHeight = viewportHeight;
+
+    // Image dimensions (spacing is 1.0 for display purposes)
+    double imageWidth = static_cast<double>(m_imageWidth);
+    double imageHeight = static_cast<double>(m_imageHeight);
+
+    // Calculate aspect ratios
+    double vWidth = static_cast<double>(viewportWidth);
+    double vHeight = static_cast<double>(viewportHeight);
+    double viewportAspect = vWidth / vHeight;
+    double imageAspect = imageWidth / imageHeight;
+
+    // FIT mode: Scale image to fit entirely within viewport (maintain aspect ratio)
+    // The entire image is visible, with black bars if aspect ratios don't match
+    // ParallelScale is half the height of the viewport in world coordinates
+    double parallelScale;
+    if (imageAspect > viewportAspect) {
+        // Image is wider than viewport - fit by WIDTH (black bars top/bottom)
+        parallelScale = (imageWidth / viewportAspect) / 2.0;
+    } else {
+        // Image is taller than viewport - fit by HEIGHT (black bars left/right)
+        parallelScale = imageHeight / 2.0;
+    }
+
+    camera->SetParallelScale(parallelScale);
+
+    // Position camera at image center
+    double imageCenterX = (m_imageWidth - 1) / 2.0;
+    double imageCenterY = (m_imageHeight - 1) / 2.0;
+
+    camera->SetFocalPoint(imageCenterX, imageCenterY, 0.0);
+    camera->SetPosition(imageCenterX, imageCenterY, 1.0);  // Camera looking down -Z
+    camera->SetViewUp(0.0, -1.0, 0.0);  // Y is down (image coordinate system)
+
+    // Reset pan and zoom tracking
+    m_panX = 0.0;
+    m_panY = 0.0;
+    m_zoomFactor = 1.0;
+
+    // Clear the flag since we've successfully fit
+    m_needsFitOnResize = false;
+
     render();
+    emit zoomChanged(m_zoomFactor);
 }
 
 void VtkViewportRenderer::setInverted(bool inverted) {
@@ -511,6 +607,17 @@ int VtkViewportRenderer::cornerToIndex(OverlayCorner corner) const {
         case OverlayCorner::BOTTOM_RIGHT: return 3;
         default: return -1;
     }
+}
+
+bool VtkViewportRenderer::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == m_widget && event->type() == QEvent::Resize) {
+        // Widget has been resized
+        if (m_hasImage && m_needsFitOnResize) {
+            // Deferred fit - widget is now properly sized
+            fitToWindow();
+        }
+    }
+    return QObject::eventFilter(watched, event);
 }
 
 } // namespace Etrek::ImageViewer::Rendering

@@ -151,8 +151,9 @@ FullImageLoadResult ImageLoaderService::loadDicom(const QString& filePath) {
     );
 
     if (result.imageData) {
-        // Set spacing
-        result.imageData->SetSpacing(metadata.pixelSpacingX, metadata.pixelSpacingY, 1.0);
+        // Use uniform spacing (1.0, 1.0) for display so pixels appear square
+        // The actual pixel spacing is stored in metadata for measurements
+        result.imageData->SetSpacing(1.0, 1.0, 1.0);
         result.success = true;
     } else {
         result.errorMessage = "Failed to convert DICOM pixel data to VTK image";
@@ -186,7 +187,9 @@ FullImageLoadResult ImageLoaderService::loadDicomFromBytes(const QByteArray& dat
     );
 
     if (result.imageData) {
-        result.imageData->SetSpacing(metadata.pixelSpacingX, metadata.pixelSpacingY, 1.0);
+        // Use uniform spacing (1.0, 1.0) for display so pixels appear square
+        // The actual pixel spacing is stored in metadata for measurements
+        result.imageData->SetSpacing(1.0, 1.0, 1.0);
         result.success = true;
     } else {
         result.errorMessage = "Failed to convert DICOM pixel data to VTK image";

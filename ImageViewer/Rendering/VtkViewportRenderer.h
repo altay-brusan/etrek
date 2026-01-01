@@ -184,6 +184,14 @@ private:
     int m_imageHeight = 0;
     double m_spacingX = 1.0;
     double m_spacingY = 1.0;
+
+    // Resize handling
+    bool m_needsFitOnResize = false;
+    int m_lastViewportWidth = 0;
+    int m_lastViewportHeight = 0;
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
 };
 
 } // namespace Etrek::ImageViewer::Rendering
