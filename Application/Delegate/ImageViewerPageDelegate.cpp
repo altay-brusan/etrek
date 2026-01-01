@@ -188,6 +188,10 @@ void ImageViewerPageDelegate::loadFromExamPage(const QByteArray& imageData, cons
         if (renderer) {
             renderer->setImageData(result.imageData, true);
             m_viewportMetadata[m_activeViewportIndex] = metadata;
+
+            // Auto-fit image to fill the viewport
+            renderer->fitToWindow();
+
             updateOverlay(m_activeViewportIndex);
             emit imageLoaded(m_activeViewportIndex);
         }
@@ -216,6 +220,9 @@ void ImageViewerPageDelegate::loadImageIntoViewport(int viewportIndex, const QSt
                 renderer->getWindowLevel(window, level);
                 m_windowLevelTool->setCurrentWindowLevel(window, level);
             }
+
+            // Auto-fit image to fill the viewport
+            renderer->fitToWindow();
 
             updateOverlay(viewportIndex);
             emit imageLoaded(viewportIndex);
