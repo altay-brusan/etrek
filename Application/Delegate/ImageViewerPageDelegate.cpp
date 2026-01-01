@@ -149,6 +149,10 @@ void ImageViewerPageDelegate::setupConnections() {
     // Thumbnails
     connect(m_ui, &ImageViewerPage::thumbnailClicked,
             this, &ImageViewerPageDelegate::onThumbnailClicked);
+
+    // Close request - user wants to close ImageViewer and return to main window
+    connect(m_ui, &ImageViewerPage::closeRequested,
+            this, &ImageViewerPageDelegate::reject);
 }
 
 void ImageViewerPageDelegate::loadFromFile(const QString& filePath) {
