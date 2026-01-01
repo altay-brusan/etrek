@@ -8,6 +8,8 @@
 #include "SystemSettingPageDelegate.h"
 #include "WorkListPageDelegate.h"
 #include "ExamPageDelegate.h"
+#include "ImageViewerPageDelegate.h"
+#include "ImageViewerTypes.h"
 
 
 namespace Etrek::Application::Delegate {
@@ -29,12 +31,15 @@ private slots:
     void onLoadSystemPageAction();
     void onLoadWorklistPageAction();
     void onLoadExamPageAction();
+    void onLoadViewPageAction();
     void onStartExamination(int worklistEntryId);
+    void onOpenImageViewer(const QByteArray& imageData, const Etrek::ImageViewer::DicomMetadata& metadata);
 
 private:
     SystemSettingPageDelegate* m_systemSettingPageDelegate{ nullptr };
     WorkListPageDelegate *m_worklistPageDelegate{nullptr};
     ExamPageDelegate *m_examPageDelegate{nullptr};
+    ImageViewerPageDelegate *m_imageViewerPageDelegate{nullptr};
   MainWindow *m_mainWindow{nullptr};
   DelegateParameter m_params;
 };

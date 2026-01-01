@@ -6,6 +6,7 @@
 #include "SystemSettingPageBuilder.h"
 #include "WorkListPageBuilder.h"
 #include "ExamPageBuilder.h"
+#include "ImageViewerPageBuilder.h"
 
 namespace Etrek::Application::Delegate
 {
@@ -22,6 +23,8 @@ namespace Etrek::Application::Delegate
           &MainWindowDelegate::onLoadWorklistPageAction);
       connect(m_mainWindow, &MainWindow::LoadExamPage, this,
           &MainWindowDelegate::onLoadExamPageAction);
+      connect(m_mainWindow, &MainWindow::LoadViewPage, this,
+          &MainWindowDelegate::onLoadViewPageAction);
 
       connect(m_mainWindow, &MainWindow::aboutToClose, this,
               &MainWindowDelegate::aboutToClose);
@@ -208,6 +211,11 @@ namespace Etrek::Application::Delegate
                 [](const QString& message) {
                     qWarning() << "Examination error:" << message;
                 });
+
+            // Connect image viewer signal for auto-open after acquisition
+            connect(m_examPageDelegate,
+                &ExamPageDelegate::openImageViewer, this,
+                &MainWindowDelegate::onOpenImageViewer);
         }
 
         if (m_mainWindow) {
@@ -217,6 +225,110 @@ namespace Etrek::Application::Delegate
             // Enable and check exam page action now that a worklist item has been selected
             m_mainWindow->setExamPageActionEnabled(true);
             m_mainWindow->setExamPageActionChecked(true);
+        }
+    }
+
+    void MainWindowDelegate::onLoadViewPageAction() {
+        if (!m_mainWindow) {
+            qWarning() << "MainWindowDelegate::onLoadViewPageAction invoked without "
+                "a MainWindow instance.";
+            return;
+        }
+
+        // If image viewer page delegate already exists, just show it
+        if (m_imageViewerPageDelegate) {
+            qDebug() << "MainWindowDelegate: Image viewer page already loaded";
+            return;
+        }
+
+        m_mainWindow->prepareLoadingPage();
+
+        // Build image viewer page
+        ImageViewerPageBuilder builder;
+        auto result = builder.build(m_params, nullptr, this);
+        auto* page = result.first;
+        m_imageViewerPageDelegate = result.second;
+
+        if (m_imageViewerPageDelegate) {
+            // Connect close signal
+            connect(m_imageViewerPageDelegate,
+                &ImageViewerPageDelegate::closeRequested, this, [page, this]() {
+                    if (m_mainWindow) {
+                        m_mainWindow->closePage();
+                    }
+
+                    // Clean up delegate
+                    if (m_imageViewerPageDelegate) {
+                        m_imageViewerPageDelegate->deleteLater();
+                        m_imageViewerPageDelegate = nullptr;
+                    }
+                });
+
+            // Connect error signal
+            connect(m_imageViewerPageDelegate,
+                &ImageViewerPageDelegate::errorOccurred, this,
+                [](const QString& message) {
+                    qWarning() << "Image viewer error:" << message;
+                });
+        }
+
+        if (m_mainWindow) {
+            m_mainWindow->loadPage(page);
+            m_mainWindow->finishLoadingPage();
+        }
+    }
+
+    void MainWindowDelegate::onOpenImageViewer(const QByteArray& imageData,
+                                               const Etrek::ImageViewer::DicomMetadata& metadata) {
+        if (!m_mainWindow) {
+            qWarning() << "MainWindowDelegate::onOpenImageViewer invoked without "
+                "a MainWindow instance.";
+            return;
+        }
+
+        qDebug() << "MainWindowDelegate: Opening image viewer with acquired image";
+
+        m_mainWindow->prepareLoadingPage();
+
+        // Clean up existing image viewer delegate if any
+        if (m_imageViewerPageDelegate) {
+            m_imageViewerPageDelegate->deleteLater();
+            m_imageViewerPageDelegate = nullptr;
+        }
+
+        // Build image viewer page
+        ImageViewerPageBuilder builder;
+        auto result = builder.build(m_params, nullptr, this);
+        auto* page = result.first;
+        m_imageViewerPageDelegate = result.second;
+
+        if (m_imageViewerPageDelegate) {
+            // Connect close signal
+            connect(m_imageViewerPageDelegate,
+                &ImageViewerPageDelegate::closeRequested, this, [page, this]() {
+                    if (m_mainWindow) {
+                        m_mainWindow->closePage();
+                    }
+
+                    // Clean up delegate
+                    if (m_imageViewerPageDelegate) {
+                        m_imageViewerPageDelegate->deleteLater();
+                        m_imageViewerPageDelegate = nullptr;
+                    }
+
+                    // Return to exam page if it exists
+                    if (m_examPageDelegate) {
+                        // Navigate back to exam page would go here
+                    }
+                });
+
+            // Load the image from ExamPage
+            m_imageViewerPageDelegate->loadFromExamPage(imageData, metadata);
+        }
+
+        if (m_mainWindow) {
+            m_mainWindow->loadPage(page);
+            m_mainWindow->finishLoadingPage();
         }
     }
 

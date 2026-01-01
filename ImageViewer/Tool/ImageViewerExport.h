@@ -1,0 +1,12 @@
+#ifndef IMAGEVIEWER_EXPORT_H
+#define IMAGEVIEWER_EXPORT_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(IMAGEVIEWER_LIBRARY)
+#  define IMAGEVIEWER_EXPORT Q_DECL_EXPORT
+#else
+#  define IMAGEVIEWER_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // IMAGEVIEWER_EXPORT_H

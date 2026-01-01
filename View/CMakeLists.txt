@@ -45,7 +45,6 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${COMMON_INCLUDE_DIR}/Pacs/*.h
     ${COMMON_INCLUDE_DIR}/Pacs/Data/Entity/*.h
     ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Model/*.h
-   
 )
 
 file(GLOB_RECURSE UIS CONFIGURE_DEPENDS
@@ -100,6 +99,7 @@ target_include_directories(View
         ${COMMON_INCLUDE_DIR}/ScanProtocol
         ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Entity
         ${COMMON_INCLUDE_DIR}/ScanProtocol/Data/Model
+        ${COMMON_INCLUDE_DIR}/ImageViewer
         ${CMAKE_CURRENT_BINARY_DIR}
         ${VTK_INCLUDE_DIR}
 )

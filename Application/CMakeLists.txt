@@ -39,7 +39,6 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${CMAKE_DICOM_DIRECTORY}/Delegate/*.h
     ${CMAKE_PACS_DIRECTORY}/Delegate/*.h
     ${CMAKE_SCANPROTOCOL_DIRECTORY}/Delegate/*.h
-
 )
 
 qt_add_resources(MY_APP_RES "resources.qrc")
@@ -67,6 +66,7 @@ target_link_libraries(Application
     Dicom
     Pacs
     ScanProtocol
+    ImageViewer
     ${VTK_LIBRARIES}
 )
 
@@ -88,6 +88,9 @@ target_include_directories(Application
         ${CMAKE_DICOM_DIRECTORY}/Delegate
         ${CMAKE_PACS_DIRECTORY}/Delegate
         ${CMAKE_SCANPROTOCOL_DIRECTORY}/Delegate
+        ${CMAKE_IMAGEVIEWER_DIRECTORY}/Rendering
+        ${CMAKE_IMAGEVIEWER_DIRECTORY}/Service
+        ${CMAKE_IMAGEVIEWER_DIRECTORY}/Tool
 )
 
 

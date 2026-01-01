@@ -16,6 +16,7 @@ set(CMAKE_WORKLIST_DIRECTORY "${CMAKE_SOURCE_DIR}/Worklist")
 set(CMAKE_DICOM_DIRECTORY "${CMAKE_SOURCE_DIR}/Dicom")
 set(CMAKE_PACS_DIRECTORY "${CMAKE_SOURCE_DIR}/Pacs")
 set(CMAKE_SCANPROTOCOL_DIRECTORY "${CMAKE_SOURCE_DIR}/ScanProtocol")
+set(CMAKE_IMAGEVIEWER_DIRECTORY "${CMAKE_SOURCE_DIR}/ImageViewer")
 
 
 # ============================================================================
@@ -62,7 +63,7 @@ add_subdirectory(Device)
 add_subdirectory(Dicom)
 add_subdirectory(Pacs)
 add_subdirectory(ScanProtocol)
-#add_subdirectory(ImageViewer)
+add_subdirectory(ImageViewer)
 add_subdirectory(Worklist)
 add_subdirectory(Executable)
 
