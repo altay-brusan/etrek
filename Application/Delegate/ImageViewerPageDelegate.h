@@ -131,6 +131,7 @@ private slots:
     void onResetRequested();
     void onMeasurementLineUpdated(const Etrek::ImageViewer::MeasurementLine& line);
     void onMeasurementLineCompleted(const Etrek::ImageViewer::MeasurementLine& line);
+    void onCursorChanged(Qt::CursorShape cursor);
 
 private:
     void initializeViewports();

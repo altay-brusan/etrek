@@ -105,6 +105,23 @@ void ImageViewerPageDelegate::initializeTools() {
     connect(m_resetTool.get(), &ResetTool::resetRequested,
             this, &ImageViewerPageDelegate::onResetRequested);
 
+    // Connect cursor change signals from all tools
+    connect(m_windowLevelTool.get(), &WindowLevelTool::cursorChanged,
+            this, &ImageViewerPageDelegate::onCursorChanged);
+    connect(m_zoomTool.get(), &ZoomTool::cursorChanged,
+            this, &ImageViewerPageDelegate::onCursorChanged);
+    connect(m_panTool.get(), &PanTool::cursorChanged,
+            this, &ImageViewerPageDelegate::onCursorChanged);
+    connect(m_rulerTool.get(), &RulerTool::cursorChanged,
+            this, &ImageViewerPageDelegate::onCursorChanged);
+    connect(m_angleTool.get(), &AngleTool::cursorChanged,
+            this, &ImageViewerPageDelegate::onCursorChanged);
+    connect(m_resetTool.get(), &ResetTool::cursorChanged,
+            this, &ImageViewerPageDelegate::onCursorChanged);
+
+    // Set pan tool sensitivity for more responsive panning
+    m_panTool->setSensitivity(2.0);
+
     // Activate default tool
     activateTool(ToolType::WINDOW_LEVEL);
 }
@@ -481,6 +498,18 @@ void ImageViewerPageDelegate::onMeasurementLineUpdated(const MeasurementLine& li
 void ImageViewerPageDelegate::onMeasurementLineCompleted(const MeasurementLine& line) {
     Q_UNUSED(line)
     // TODO: Store measurement and update visualization
+}
+
+void ImageViewerPageDelegate::onCursorChanged(Qt::CursorShape cursor) {
+    // Apply cursor to all visible viewport widgets
+    auto widgets = m_ui->getAllVtkWidgets();
+    int visibleCount = m_viewportManager->visibleViewportCount();
+
+    for (int i = 0; i < visibleCount; ++i) {
+        if (widgets[i]) {
+            widgets[i]->setCursor(cursor);
+        }
+    }
 }
 
 void ImageViewerPageDelegate::updateOverlay(int viewportIndex) {

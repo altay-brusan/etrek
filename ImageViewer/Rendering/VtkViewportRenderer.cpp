@@ -353,8 +353,11 @@ void VtkViewportRenderer::setPan(double deltaX, double deltaY) {
         double* focalPoint = camera->GetFocalPoint();
         double* position = camera->GetPosition();
 
-        camera->SetFocalPoint(focalPoint[0] - deltaX, focalPoint[1] - deltaY, focalPoint[2]);
-        camera->SetPosition(position[0] - deltaX, position[1] - deltaY, position[2]);
+        // Move camera for intuitive "drag the image" behavior
+        // X: + because drag right should move image right
+        // Y: - because Y-axis is flipped (SetViewUp 0,-1,0), so drag up should move image up
+        camera->SetFocalPoint(focalPoint[0] + deltaX, focalPoint[1] - deltaY, focalPoint[2]);
+        camera->SetPosition(position[0] + deltaX, position[1] - deltaY, position[2]);
     }
 
     render();
