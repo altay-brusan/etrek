@@ -84,6 +84,9 @@ signals:
     // Drag and drop
     void filesDropped(const QStringList& filePaths);
 
+    // Close request - emitted when user wants to close ImageViewer
+    void closeRequested();
+
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;

@@ -8,6 +8,7 @@
 #include <QVTKOpenGLNativeWidget.h>
 #include <QHBoxLayout>
 #include <QSplitter>
+#include <QDialogButtonBox>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QMimeData>
@@ -42,12 +43,11 @@ ImageViewerPage::ImageViewerPage(QWidget* parent)
     // Set initial sizes
     mainSplitter->setSizes({60, 700, 150});
 
-    // Add splitter to main layout
-    QHBoxLayout* mainLayout = new QHBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(0);
-    mainLayout->addWidget(mainSplitter);
-    setLayout(mainLayout);
+    // Add splitter to the content area defined in UI (above the buttonBox)
+    QHBoxLayout* contentLayout = new QHBoxLayout(ui->contentArea);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(0);
+    contentLayout->addWidget(mainSplitter);
 
     // Enable drag and drop
     setAcceptDrops(true);
@@ -55,8 +55,10 @@ ImageViewerPage::ImageViewerPage(QWidget* parent)
     // Setup signal connections
     setupConnections();
 
-    // Apply dark theme
-    setStyleSheet("background-color: rgb(30, 30, 30);");
+    // Connect buttonBox signals (similar to SystemSettingPage pattern)
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, [this]() {
+        emit closeRequested();
+    });
 }
 
 ImageViewerPage::~ImageViewerPage() {
@@ -217,6 +219,10 @@ void ImageViewerPage::keyPressEvent(QKeyEvent* event) {
             if (event->modifiers() & Qt::ControlModifier) {
                 emit openFileRequested();
             }
+            break;
+        case Qt::Key_Escape:
+            // Escape key closes the ImageViewer and returns to main window
+            emit closeRequested();
             break;
         default:
             QWidget::keyPressEvent(event);
