@@ -15,6 +15,7 @@
 #include "StudyControlWidget.h"
 #include "ExamTitleWidget.h"
 #include "ExposureApplicationControlWidget.h"
+#include "ImageToolPanel.h"
 #include <QVTKOpenGLNativeWidget.h>
 
 ExamPage::ExamPage(QWidget *parent)
@@ -89,7 +90,19 @@ ExamPage::ExamPage(QWidget *parent)
     layout11->setContentsMargins(0, 0, 0, 0); // Optional: removes spacing
     layout11->addWidget(m_exposureApplicationControlWidget);
 
+    // Create image tool panel with ExamPage-specific configuration (no layout, no open file)
+    m_toolPanel = new ImageToolPanel(ImageToolPanelConfig::examPageFeatures(), this);
+    ui->toolPanelLayout->addWidget(m_toolPanel);
 
+    // Forward tool panel signals
+    connect(m_toolPanel, &ImageToolPanel::toolSelected,
+            this, &ExamPage::toolSelected);
+    connect(m_toolPanel, &ImageToolPanel::invertRequested,
+            this, &ExamPage::invertRequested);
+    connect(m_toolPanel, &ImageToolPanel::fitToWindowRequested,
+            this, &ExamPage::fitToWindowRequested);
+    connect(m_toolPanel, &ImageToolPanel::resetViewRequested,
+            this, &ExamPage::resetViewRequested);
 }
 
 ExamPage::~ExamPage()
@@ -157,4 +170,9 @@ QGroupBox* ExamPage::getBodySizePlaceholder() const
 QGroupBox* ExamPage::getGeneratorControlPlaceholder() const
 {
     return ui->generatorControlPlaceholder;
+}
+
+ImageToolPanel* ExamPage::getToolPanel() const
+{
+    return m_toolPanel;
 }
