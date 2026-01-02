@@ -296,6 +296,9 @@ void filesDropped(QStringList paths);
 | `2` | 1x2 layout |
 | `4` | 2x2 layout |
 | `Ctrl+O` | Open file |
+| `Delete` / `Backspace` | Delete selected ruler/angle |
+| `Ctrl+Delete` | Clear all rulers/angles |
+| `Escape` | Close ImageViewer |
 
 **Drag & Drop:** Accepts local file URLs, emits `filesDropped()` signal.
 
@@ -498,11 +501,18 @@ signals:
 **Interaction:**
 - Click and drag → Draw measurement line
 - Release → Complete measurement
+- Click on handle → Start dragging handle
+- Drag handle → Resize ruler
+- Click on line → Select ruler
+- Delete key → Delete selected ruler
+- Ctrl+Delete → Clear all rulers
 
 **Features:**
 - Calculates distance in mm AND pixels
 - Uses pixel spacing from DICOM metadata
 - Maintains vector of completed measurements
+- Interactive editing with draggable handles
+- Visual feedback (hover highlighting, selection)
 
 **Key Methods:**
 ```cpp
@@ -511,32 +521,104 @@ QVector<MeasurementLine> getMeasurements() const;
 void clearMeasurements();
 MeasurementLine currentMeasurement() const;
 bool isDrawing() const;
+
+// Interactive editing
+bool hitTestHandle(const QPointF& pos, int& rulerId, bool& isStartHandle) const;
+int hitTestRuler(const QPointF& pos) const;
+void selectRuler(int rulerId);
+int selectedRuler() const;
+void deleteRuler(int rulerId);
+void deleteSelectedRuler();
 ```
 
 **Signals:**
 - `measurementLineUpdated(MeasurementLine)` - Live updates while drawing
 - `measurementLineCompleted(MeasurementLine)` - When released
+- `rulerSelected(int rulerId)` - When ruler is selected
+- `rulerModified(int rulerId, MeasurementLine)` - When ruler is resized
+- `rulerDeleted(int rulerId)` - When ruler is deleted
+- `measurementsChanged()` - General refresh signal
+- `handleHovered(int rulerId, bool isStartHandle)` - Handle hover state
+- `handleHoverCleared()` - No handle hovered
+
+**Edit States:**
+```cpp
+enum class RulerEditState {
+    NONE,           // Not editing
+    DRAWING_NEW,    // Drawing new ruler
+    DRAGGING_START, // Dragging start handle
+    DRAGGING_END    // Dragging end handle
+};
+```
 
 ### 5.6 AngleTool
 
 **Location:** `ImageViewer/Tool/AngleTool.h/cpp`
 
 **Interaction:**
-1. Click → Place first point
-2. Click → Place vertex (middle point)
-3. Click → Place third point and complete angle
+1. Click → Place first point (arm 1 endpoint)
+2. Click → Place vertex (middle point where angle is measured)
+3. Click → Place third point (arm 2 endpoint) and complete angle
+4. Click on handle → Start dragging handle
+5. Drag handle → Resize angle
+6. Click on arm → Select angle
+7. Delete key → Delete selected angle
+8. Ctrl+Delete → Clear all angles
+9. Right-click → Cancel current placement
+
+**Features:**
+- Three-point angle measurement
+- Visible arc at vertex showing measured angle in degrees
+- Interactive editing with draggable handles at all three points
+- Visual feedback (hover highlighting, selection)
+- Dynamic angle recalculation during drag
 
 **Key Methods:**
 ```cpp
 QVector<MeasurementAngle> getMeasurements() const;
 void clearMeasurements();
 MeasurementAngle currentMeasurement() const;
-int pointsPlaced() const;
+AngleEditState editState() const;
+bool isPlacing() const;
+
+// Interactive editing
+bool hitTestHandle(const QPointF& pos, int& angleId, AngleHandleType& handleType) const;
+int hitTestAngle(const QPointF& pos) const;
+void selectAngle(int angleId);
+int selectedAngle() const;
+void deleteAngle(int angleId);
+void deleteSelectedAngle();
 ```
 
 **Signals:**
-- `measurementAngleUpdated(MeasurementAngle)` - Live updates
+- `measurementAngleUpdated(MeasurementAngle)` - Live updates during placement
 - `measurementAngleCompleted(MeasurementAngle)` - When third point placed
+- `angleSelected(int angleId)` - When angle is selected
+- `angleModified(int angleId, MeasurementAngle)` - When angle is resized
+- `angleDeleted(int angleId)` - When angle is deleted
+- `measurementsChanged()` - General refresh signal
+- `handleHovered(int angleId, AngleHandleType)` - Handle hover state
+- `handleHoverCleared()` - No handle hovered
+
+**Edit States:**
+```cpp
+enum class AngleEditState {
+    NONE,             // Not editing
+    PLACING_POINT1,   // Placing first point
+    PLACING_VERTEX,   // Placing vertex
+    PLACING_POINT2,   // Placing third point
+    DRAGGING_POINT1,  // Dragging first point handle
+    DRAGGING_VERTEX,  // Dragging vertex handle
+    DRAGGING_POINT2   // Dragging third point handle
+};
+
+enum class AngleHandleType {
+    NONE,
+    POINT1,
+    VERTEX,
+    POINT2
+};
+```
 
 ### 5.7 ResetTool
 
@@ -839,9 +921,18 @@ SINGLE (1x1):          ONE_BY_TWO (1x2):      TWO_BY_TWO (2x2):
 | | Mouse wheel | Quick adjustment |
 | **Ruler** | Click + drag | Draw measurement line |
 | | Release | Complete measurement |
+| | Click on handle | Start dragging handle |
+| | Drag handle | Resize ruler |
+| | Click on line | Select ruler |
+| | Delete key | Delete selected ruler |
 | **Angle** | Click (1st) | Place first point |
 | | Click (2nd) | Place vertex |
 | | Click (3rd) | Complete angle |
+| | Click on handle | Start dragging handle |
+| | Drag handle | Resize angle |
+| | Click on arm | Select angle |
+| | Right-click | Cancel placement |
+| | Delete key | Delete selected angle |
 | **Reset** | Click | Reset to original state |
 
 ### 9.2 Viewport Interactions
@@ -990,6 +1081,9 @@ Tool signals → ImageViewerPageDelegate
 | **MultiViewportManager** | `ImageViewer/Rendering/MultiViewportManager.h/cpp` |
 | **ImageLoaderService** | `ImageViewer/Service/ImageLoaderService.h/cpp` |
 | **DicomParserService** | `ImageViewer/Service/DicomParserService.h/cpp` |
+| **RulerOverlayWidget** | `ImageViewer/Widget/RulerOverlayWidget.h/cpp` |
+| **AngleOverlayWidget** | `ImageViewer/Widget/AngleOverlayWidget.h/cpp` |
+| **MagnifierWidget** | `ImageViewer/Widget/MagnifierWidget.h/cpp` |
 | **ImageDisplayParams** | `ImageViewer/Data/Entity/ImageDisplayParams.h` |
 | **ImageViewerPageDelegate** | `Application/Delegate/ImageViewerPageDelegate.h/cpp` |
 | **ImageViewerPageBuilder** | `Application/Builder/ImageViewerPageBuilder.h/cpp` |
@@ -1149,11 +1243,16 @@ struct ViewportState {
 struct MeasurementLine {
     QPointF startPoint;
     QPointF endPoint;
-    double distanceMm;      // Distance in millimeters
-    double distancePixels;  // Distance in pixels
-    bool completed;
+    double distanceMm = 0.0;      // Distance in millimeters
+    double distancePixels = 0.0;  // Distance in pixels
+    bool isComplete = false;
+    int id = -1;                  // Unique identifier
+    bool isSelected = false;      // Currently selected for editing
 
     void calculateDistance(double spacingX, double spacingY);
+    bool isNearStartHandle(const QPointF& pos, double threshold = 10.0) const;
+    bool isNearEndHandle(const QPointF& pos, double threshold = 10.0) const;
+    bool isNearLine(const QPointF& pos, double threshold = 5.0) const;
 };
 ```
 
@@ -1161,18 +1260,72 @@ struct MeasurementLine {
 
 ```cpp
 struct MeasurementAngle {
-    QPointF point1;
-    QPointF vertex;
-    QPointF point2;
-    double angleDegrees;
-    bool completed;
+    QPointF point1;           // First endpoint (arm 1)
+    QPointF vertex;           // Vertex (middle point where angle is measured)
+    QPointF point2;           // Second endpoint (arm 2)
+    double angleDegrees = 0.0;
+    bool isComplete = false;
+    int id = -1;              // Unique identifier
+    bool isSelected = false;  // Currently selected for editing
 
     void calculateAngle();
+    double getArm1Angle() const;  // Angle of arm 1 relative to X-axis (radians)
+    double getArm2Angle() const;  // Angle of arm 2 relative to X-axis (radians)
+    bool isNearPoint1Handle(const QPointF& pos, double threshold = 10.0) const;
+    bool isNearVertexHandle(const QPointF& pos, double threshold = 10.0) const;
+    bool isNearPoint2Handle(const QPointF& pos, double threshold = 10.0) const;
+    bool isNearArm(const QPointF& pos, double threshold = 5.0) const;
 };
+```
+
+### RulerOverlayWidget
+
+Transparent overlay widget that renders measurement rulers using QPainter.
+
+**Visual Elements:**
+- Ruler lines: 2px width, cyan (#00BFFF)
+- Handles: Square (10x10px), white fill with cyan border
+- Hovered handle: Yellow fill
+- Selected ruler: Gold color
+- Distance label: White text with black outline, format: `25.4 (mm)`
+
+**Key Methods:**
+```cpp
+void setImageToWidgetTransform(CoordinateTransform transform);
+void setMeasurements(const QVector<MeasurementLine>& measurements);
+void setCurrentMeasurement(const MeasurementLine& line);
+void setSelectedRuler(int rulerId);
+void setHoveredHandle(int rulerId, bool isStartHandle);
+void clearHoveredHandle();
+void refresh();
+```
+
+### AngleOverlayWidget
+
+Transparent overlay widget that renders angle measurements using QPainter.
+
+**Visual Elements:**
+- Arm lines: 2px width, cyan (#00BFFF)
+- Arc: 30px radius at vertex, cyan
+- Handles: Square (10x10px) at all three points
+- Hovered handle: Yellow fill
+- Selected angle: Gold color
+- Angle label: White text with black outline, format: `45.2°`
+
+**Key Methods:**
+```cpp
+void setImageToWidgetTransform(CoordinateTransform transform);
+void setMeasurements(const QVector<MeasurementAngle>& measurements);
+void setCurrentMeasurement(const MeasurementAngle& angle);
+void setSelectedAngle(int angleId);
+void setHoveredHandle(int angleId, AngleHandleType handleType);
+void clearHoveredHandle();
+void refresh();
 ```
 
 ---
 
-*Document Version: 1.0*
+*Document Version: 1.1*
 *Last Updated: January 2026*
 *Author: Generated for Etrek Medical Imaging Application*
+*Changes: Added interactive editing documentation for Ruler and Angle tools*

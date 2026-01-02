@@ -35,6 +35,7 @@ class ResetTool;
 namespace Etrek::ImageViewer::Widget {
 class MagnifierWidget;
 class RulerOverlayWidget;
+class AngleOverlayWidget;
 }
 
 namespace Etrek::Dicom::Repository {
@@ -148,6 +149,13 @@ private slots:
     void onRulerSelected(int rulerId);
     void onRulerDeleted(int rulerId);
 
+    // Angle overlay slots
+    void onAngleMeasurementsChanged();
+    void onAngleSelected(int angleId);
+    void onAngleDeleted(int angleId);
+    void onAngleUpdated(const Etrek::ImageViewer::MeasurementAngle& angle);
+    void onAngleCompleted(const Etrek::ImageViewer::MeasurementAngle& angle);
+
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
@@ -155,6 +163,7 @@ private:
     void initializeViewports();
     void initializeTools();
     void initializeRulerOverlays();
+    void initializeAngleOverlays();
     void setupConnections();
     void updateOverlay(int viewportIndex);
     void updateAllOverlays();
@@ -163,6 +172,8 @@ private:
     QString formatOverlayText(Etrek::ImageViewer::OverlayCorner corner, int viewportIndex) const;
     void refreshRulerOverlays();
     void updateRulerOverlayTransforms();
+    void refreshAngleOverlays();
+    void updateAngleOverlayTransforms();
 
     // UI
     ImageViewerPage* m_ui;
@@ -191,6 +202,9 @@ private:
 
     // Ruler overlay widgets (one per viewport)
     std::array<Etrek::ImageViewer::Widget::RulerOverlayWidget*, 4> m_rulerOverlays = {nullptr, nullptr, nullptr, nullptr};
+
+    // Angle overlay widgets (one per viewport)
+    std::array<Etrek::ImageViewer::Widget::AngleOverlayWidget*, 4> m_angleOverlays = {nullptr, nullptr, nullptr, nullptr};
 
     // State
     Etrek::ImageViewer::ToolType m_currentTool = Etrek::ImageViewer::ToolType::WINDOW_LEVEL;
