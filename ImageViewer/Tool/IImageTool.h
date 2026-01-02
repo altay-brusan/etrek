@@ -147,6 +147,22 @@ signals:
      * @param cursor The new cursor shape
      */
     void cursorChanged(Qt::CursorShape cursor);
+
+    /**
+     * @brief Emitted when magnifier should be shown/updated.
+     * @param pos Position in image coordinates
+     */
+    void magnifierRequested(const QPointF& pos);
+
+    /**
+     * @brief Emitted when magnifier should be hidden.
+     */
+    void magnifierHideRequested();
+
+    /**
+     * @brief Emitted when magnification level should toggle.
+     */
+    void magnifierToggleRequested();
 };
 
 } // namespace Etrek::ImageViewer
