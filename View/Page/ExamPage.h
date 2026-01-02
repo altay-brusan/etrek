@@ -2,6 +2,7 @@
 #define EXAMPAGE_H
 
 #include <QWidget>
+#include "ImageViewerTypes.h"
 
 // Forward declarations
 class QVTKOpenGLNativeWidget;
@@ -12,6 +13,7 @@ class StudyControlWidget;
 class BodySizeWidget;
 class ExposureApplicationControlWidget;
 class ExposureControlWidget;
+class ImageToolPanel;
 
 namespace Ui {
 class ExamPage;
@@ -81,8 +83,36 @@ public:
     QGroupBox* getBodySizePlaceholder() const;
     QGroupBox* getGeneratorControlPlaceholder() const;
 
+    /**
+     * @brief Gets the image tool panel for image viewing tools.
+     * @return Pointer to the image tool panel.
+     */
+    ImageToolPanel* getToolPanel() const;
+
+signals:
+    /**
+     * @brief Emitted when a tool is selected in the tool panel.
+     */
+    void toolSelected(Etrek::ImageViewer::ToolType tool);
+
+    /**
+     * @brief Emitted when invert is requested.
+     */
+    void invertRequested();
+
+    /**
+     * @brief Emitted when fit to window is requested.
+     */
+    void fitToWindowRequested();
+
+    /**
+     * @brief Emitted when reset view is requested.
+     */
+    void resetViewRequested();
+
 private:
     Ui::ExamPage *ui;
+    ImageToolPanel *m_toolPanel{nullptr};
     ExamTitleWidget *m_examTitleWidget{nullptr};
     StudyControlWidget *m_studyControlWidget{nullptr};
     BodySizeWidget *m_bodySizeWidget{nullptr};

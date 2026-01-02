@@ -15,6 +15,48 @@ class ImageToolPanel;
 }
 
 /**
+ * @struct ImageToolPanelConfig
+ * @brief Configuration for ImageToolPanel button visibility.
+ *
+ * Use this to customize which buttons and sections are shown
+ * in the ImageToolPanel for different contexts (e.g., ImageViewerPage vs ExamPage).
+ */
+struct ImageToolPanelConfig {
+    // Tool buttons
+    bool showZoom = true;
+    bool showPan = true;
+    bool showWindowLevel = true;
+    bool showRuler = true;
+    bool showAngle = true;
+    bool showReset = true;
+
+    // Layout section (entire section including label and separator)
+    bool showLayoutSection = true;
+
+    // Action buttons
+    bool showOpenFile = true;
+    bool showInvert = true;
+    bool showFit = true;
+
+    /**
+     * @brief Create config with all features enabled (for ImageViewerPage).
+     */
+    static ImageToolPanelConfig fullFeatures() {
+        return ImageToolPanelConfig{};  // All defaults are true
+    }
+
+    /**
+     * @brief Create config for ExamPage (no layout, no open file).
+     */
+    static ImageToolPanelConfig examPageFeatures() {
+        ImageToolPanelConfig config;
+        config.showLayoutSection = false;
+        config.showOpenFile = false;
+        return config;
+    }
+};
+
+/**
  * @class ImageToolPanel
  * @brief Left toolbar panel with imaging tool buttons and layout selection.
  *
@@ -22,13 +64,24 @@ class ImageToolPanel;
  * - Tool selection buttons (zoom, pan, window/level, ruler, angle, reset)
  * - Layout selection buttons (1x1, 1x2, 2x2)
  * - Additional action buttons (open file, invert, etc.)
+ *
+ * Use ImageToolPanelConfig to customize which buttons are visible.
  */
 class ImageToolPanel : public QWidget
 {
     Q_OBJECT
 
 public:
+    /**
+     * @brief Construct with default config (all features).
+     */
     explicit ImageToolPanel(QWidget* parent = nullptr);
+
+    /**
+     * @brief Construct with custom configuration.
+     */
+    explicit ImageToolPanel(const ImageToolPanelConfig& config, QWidget* parent = nullptr);
+
     ~ImageToolPanel() override;
 
     /**
@@ -97,7 +150,10 @@ private:
     void setupActionButtons();
     QToolButton* createToolButton(const QString& iconPath, const QString& tooltip);
 
+    void initialize();
+
     Ui::ImageToolPanel* ui;
+    ImageToolPanelConfig m_config;
     QButtonGroup* m_toolButtonGroup;
     QButtonGroup* m_layoutButtonGroup;
     QMap<Etrek::ImageViewer::ToolType, QToolButton*> m_toolButtons;

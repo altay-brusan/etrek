@@ -10,18 +10,28 @@
 using namespace Etrek::ImageViewer;
 
 ImageToolPanel::ImageToolPanel(QWidget* parent)
+    : ImageToolPanel(ImageToolPanelConfig::fullFeatures(), parent)
+{
+}
+
+ImageToolPanel::ImageToolPanel(const ImageToolPanelConfig& config, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ImageToolPanel)
+    , m_config(config)
     , m_toolButtonGroup(new QButtonGroup(this))
     , m_layoutButtonGroup(new QButtonGroup(this))
 {
     ui->setupUi(this);
+    initialize();
+}
 
+void ImageToolPanel::initialize()
+{
     // Set up button groups
     m_toolButtonGroup->setExclusive(true);
     m_layoutButtonGroup->setExclusive(true);
 
-    // Create buttons
+    // Create buttons based on config
     setupToolButtons();
     setupLayoutButtons();
     setupActionButtons();
@@ -34,7 +44,9 @@ ImageToolPanel::ImageToolPanel(QWidget* parent)
 
     // Set default selections
     setSelectedTool(ToolType::WINDOW_LEVEL);
-    setSelectedLayout(ViewportLayout::SINGLE);
+    if (m_config.showLayoutSection) {
+        setSelectedLayout(ViewportLayout::SINGLE);
+    }
 }
 
 ImageToolPanel::~ImageToolPanel() {
@@ -42,50 +54,36 @@ ImageToolPanel::~ImageToolPanel() {
 }
 
 void ImageToolPanel::setupToolButtons() {
-    // Create tool buttons - icons will be set from resources
-    // For now, use text labels as placeholders
+    // Helper lambda to add a tool button if config allows
+    auto addToolButton = [this](bool show, const QString& icon, const QString& tooltip,
+                                 const QString& text, ToolType type) {
+        if (!show) return;
 
-    auto* zoomBtn = createToolButton(":/Images/Asset/Icon/zoom.png", "Zoom (Z)");
-    auto* panBtn = createToolButton(":/Images/Asset/Icon/pan.png", "Pan (P)");
-    auto* wlBtn = createToolButton(":/Images/Asset/Icon/windowlevel.png", "Window/Level (W)");
-    auto* rulerBtn = createToolButton(":/Images/Asset/Icon/ruler.png", "Ruler (R)");
-    auto* angleBtn = createToolButton(":/Images/Asset/Icon/angle.png", "Angle (A)");
-    auto* resetBtn = createToolButton(":/Images/Asset/Icon/reset.png", "Reset View");
+        auto* btn = createToolButton(icon, tooltip);
+        btn->setText(text);
+        m_toolButtonGroup->addButton(btn, static_cast<int>(type));
+        m_toolButtons[type] = btn;
+        ui->toolsLayout->addWidget(btn);
+    };
 
-    // Set text as fallback if icons don't exist
-    zoomBtn->setText("Z");
-    panBtn->setText("P");
-    wlBtn->setText("W/L");
-    rulerBtn->setText("R");
-    angleBtn->setText("A");
-    resetBtn->setText("RST");
-
-    // Add to button group with tool type as ID
-    m_toolButtonGroup->addButton(zoomBtn, static_cast<int>(ToolType::ZOOM));
-    m_toolButtonGroup->addButton(panBtn, static_cast<int>(ToolType::PAN));
-    m_toolButtonGroup->addButton(wlBtn, static_cast<int>(ToolType::WINDOW_LEVEL));
-    m_toolButtonGroup->addButton(rulerBtn, static_cast<int>(ToolType::RULER));
-    m_toolButtonGroup->addButton(angleBtn, static_cast<int>(ToolType::ANGLE));
-    m_toolButtonGroup->addButton(resetBtn, static_cast<int>(ToolType::RESET));
-
-    // Store references
-    m_toolButtons[ToolType::ZOOM] = zoomBtn;
-    m_toolButtons[ToolType::PAN] = panBtn;
-    m_toolButtons[ToolType::WINDOW_LEVEL] = wlBtn;
-    m_toolButtons[ToolType::RULER] = rulerBtn;
-    m_toolButtons[ToolType::ANGLE] = angleBtn;
-    m_toolButtons[ToolType::RESET] = resetBtn;
-
-    // Add to layout
-    ui->toolsLayout->addWidget(zoomBtn);
-    ui->toolsLayout->addWidget(panBtn);
-    ui->toolsLayout->addWidget(wlBtn);
-    ui->toolsLayout->addWidget(rulerBtn);
-    ui->toolsLayout->addWidget(angleBtn);
-    ui->toolsLayout->addWidget(resetBtn);
+    // Create tool buttons based on config
+    addToolButton(m_config.showZoom, ":/Images/Asset/Icon/zoom.png", "Zoom (Z)", "Z", ToolType::ZOOM);
+    addToolButton(m_config.showPan, ":/Images/Asset/Icon/pan.png", "Pan (P)", "P", ToolType::PAN);
+    addToolButton(m_config.showWindowLevel, ":/Images/Asset/Icon/windowlevel.png", "Window/Level (W)", "W/L", ToolType::WINDOW_LEVEL);
+    addToolButton(m_config.showRuler, ":/Images/Asset/Icon/ruler.png", "Ruler (R)", "R", ToolType::RULER);
+    addToolButton(m_config.showAngle, ":/Images/Asset/Icon/angle.png", "Angle (A)", "A", ToolType::ANGLE);
+    addToolButton(m_config.showReset, ":/Images/Asset/Icon/reset.png", "Reset View", "RST", ToolType::RESET);
 }
 
 void ImageToolPanel::setupLayoutButtons() {
+    // Hide entire layout section if not configured
+    if (!m_config.showLayoutSection) {
+        ui->separator1->hide();
+        ui->layoutLabel->hide();
+        // Don't create any layout buttons
+        return;
+    }
+
     auto* layout1x1 = createToolButton(":/Images/Asset/Icon/layout1x1.png", "1x1 Layout");
     auto* layout1x2 = createToolButton(":/Images/Asset/Icon/layout1x2.png", "1x2 Layout");
     auto* layout2x2 = createToolButton(":/Images/Asset/Icon/layout2x2.png", "2x2 Layout");
@@ -112,26 +110,41 @@ void ImageToolPanel::setupLayoutButtons() {
 }
 
 void ImageToolPanel::setupActionButtons() {
+    bool hasAnyAction = m_config.showOpenFile || m_config.showInvert || m_config.showFit;
+
+    // Hide actions section if no action buttons are configured
+    if (!hasAnyAction) {
+        ui->separator2->hide();
+        ui->actionsLabel->hide();
+        return;
+    }
+
     // Open file button
-    auto* openBtn = createToolButton(":/Images/Asset/Icon/open.png", "Open File (Ctrl+O)");
-    openBtn->setText("Open");
-    openBtn->setCheckable(false);
-    connect(openBtn, &QToolButton::clicked, this, &ImageToolPanel::openFileRequested);
-    ui->actionsLayout->addWidget(openBtn);
+    if (m_config.showOpenFile) {
+        auto* openBtn = createToolButton(":/Images/Asset/Icon/open.png", "Open File (Ctrl+O)");
+        openBtn->setText("Open");
+        openBtn->setCheckable(false);
+        connect(openBtn, &QToolButton::clicked, this, &ImageToolPanel::openFileRequested);
+        ui->actionsLayout->addWidget(openBtn);
+    }
 
     // Invert button
-    auto* invertBtn = createToolButton(":/Images/Asset/Icon/invert.png", "Invert Image (I)");
-    invertBtn->setText("Inv");
-    invertBtn->setCheckable(false);
-    connect(invertBtn, &QToolButton::clicked, this, &ImageToolPanel::invertRequested);
-    ui->actionsLayout->addWidget(invertBtn);
+    if (m_config.showInvert) {
+        auto* invertBtn = createToolButton(":/Images/Asset/Icon/invert.png", "Invert Image (I)");
+        invertBtn->setText("Inv");
+        invertBtn->setCheckable(false);
+        connect(invertBtn, &QToolButton::clicked, this, &ImageToolPanel::invertRequested);
+        ui->actionsLayout->addWidget(invertBtn);
+    }
 
     // Fit to window button
-    auto* fitBtn = createToolButton(":/Images/Asset/Icon/fit.png", "Fit to Window (F)");
-    fitBtn->setText("Fit");
-    fitBtn->setCheckable(false);
-    connect(fitBtn, &QToolButton::clicked, this, &ImageToolPanel::fitToWindowRequested);
-    ui->actionsLayout->addWidget(fitBtn);
+    if (m_config.showFit) {
+        auto* fitBtn = createToolButton(":/Images/Asset/Icon/fit.png", "Fit to Window (F)");
+        fitBtn->setText("Fit");
+        fitBtn->setCheckable(false);
+        connect(fitBtn, &QToolButton::clicked, this, &ImageToolPanel::fitToWindowRequested);
+        ui->actionsLayout->addWidget(fitBtn);
+    }
 }
 
 QToolButton* ImageToolPanel::createToolButton(const QString& iconPath, const QString& tooltip) {

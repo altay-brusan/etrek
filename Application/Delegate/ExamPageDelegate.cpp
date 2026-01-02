@@ -30,6 +30,23 @@
 #include <vtkInteractorStyleImage.h>
 #include <vtkSmartPointer.h>
 #include <vtkObject.h>
+#include <vtkCamera.h>
+#include <vtkImageProperty.h>
+
+// ImageViewer tool includes
+#include "IImageTool.h"
+#include "WindowLevelTool.h"
+#include "ZoomTool.h"
+#include "PanTool.h"
+#include "RulerTool.h"
+#include "AngleTool.h"
+#include "ResetTool.h"
+#include "RulerOverlayWidget.h"
+#include "AngleOverlayWidget.h"
+#include "ImageToolPanel.h"
+
+#include <QMouseEvent>
+#include <QWheelEvent>
 
 namespace Etrek::Application::Delegate {
 
@@ -58,6 +75,12 @@ ExamPageDelegate::ExamPageDelegate(
 
     // Initialize VTK viewer
     initializeVtkViewer();
+
+    // Initialize image tools
+    initializeTools();
+
+    // Initialize measurement overlays
+    initializeOverlays();
 
     // Load examination context and initialize page
     QTimer::singleShot(0, this, &ExamPageDelegate::onPageLoaded);
@@ -1090,12 +1113,15 @@ void ExamPageDelegate::setupConnections()
                 this, &ExamPageDelegate::onCancelStudyRequested);
     }
 
-    // TODO: Connect other UI widget signals to delegate slots
-    // Example:
-    // connect(ui->getExposureApplicationControlWidget(), &ExposureApplicationControlWidget::readyClicked,
-    //         this, &ExamPageDelegate::onReadyButtonClicked);
-    // connect(ui->getExposureApplicationControlWidget(), &ExposureApplicationControlWidget::exposeClicked,
-    //         this, &ExamPageDelegate::onExposeButtonClicked);
+    // Connect ImageToolPanel signals (forwarded from ExamPage)
+    connect(ui, &ExamPage::toolSelected,
+            this, &ExamPageDelegate::onToolSelected);
+    connect(ui, &ExamPage::invertRequested,
+            this, &ExamPageDelegate::onInvertRequested);
+    connect(ui, &ExamPage::fitToWindowRequested,
+            this, &ExamPageDelegate::onFitToWindowRequested);
+    connect(ui, &ExamPage::resetViewRequested,
+            this, &ExamPageDelegate::onResetViewRequested);
 }
 
 void ExamPageDelegate::displayErrorMessage(const QString& title, const QString& message)
@@ -1121,6 +1147,447 @@ QString ExamPageDelegate::generateDicomUid(const QString& type)
 
     qDebug() << "[ExamPageDelegate] Generated DICOM UID for" << type << ":" << uid;
     return uid;
+}
+
+// --- Tool Implementation Methods ---
+
+void ExamPageDelegate::initializeTools()
+{
+    qDebug() << "[ExamPageDelegate] initializeTools()";
+
+    using namespace Etrek::ImageViewer::Tool;
+
+    // Create tools
+    m_windowLevelTool = std::make_unique<WindowLevelTool>(this);
+    m_zoomTool = std::make_unique<ZoomTool>(this);
+    m_panTool = std::make_unique<PanTool>(this);
+    m_rulerTool = std::make_unique<RulerTool>(this);
+    m_angleTool = std::make_unique<AngleTool>(this);
+    m_resetTool = std::make_unique<ResetTool>(this);
+
+    // Connect window/level tool signals
+    connect(m_windowLevelTool.get(), &WindowLevelTool::windowLevelChanged,
+            this, &ExamPageDelegate::onWindowLevelChanged);
+    connect(m_windowLevelTool.get(), &WindowLevelTool::cursorChanged,
+            this, &ExamPageDelegate::onCursorChanged);
+
+    // Connect zoom tool signals
+    connect(m_zoomTool.get(), &ZoomTool::zoomRequested,
+            this, &ExamPageDelegate::onZoomRequested);
+    connect(m_zoomTool.get(), &ZoomTool::cursorChanged,
+            this, &ExamPageDelegate::onCursorChanged);
+
+    // Connect pan tool signals
+    connect(m_panTool.get(), &PanTool::panRequested,
+            this, &ExamPageDelegate::onPanRequested);
+    connect(m_panTool.get(), &PanTool::cursorChanged,
+            this, &ExamPageDelegate::onCursorChanged);
+
+    // Connect ruler tool signals
+    connect(m_rulerTool.get(), &RulerTool::measurementLineUpdated,
+            this, &ExamPageDelegate::onRulerMeasurementUpdated);
+    connect(m_rulerTool.get(), &RulerTool::measurementLineCompleted,
+            this, &ExamPageDelegate::onRulerMeasurementCompleted);
+    connect(m_rulerTool.get(), &RulerTool::cursorChanged,
+            this, &ExamPageDelegate::onCursorChanged);
+
+    // Connect angle tool signals
+    connect(m_angleTool.get(), &AngleTool::measurementAngleUpdated,
+            this, &ExamPageDelegate::onAngleMeasurementUpdated);
+    connect(m_angleTool.get(), &AngleTool::measurementAngleCompleted,
+            this, &ExamPageDelegate::onAngleMeasurementCompleted);
+    connect(m_angleTool.get(), &AngleTool::cursorChanged,
+            this, &ExamPageDelegate::onCursorChanged);
+
+    // Connect reset tool signals
+    connect(m_resetTool.get(), &ResetTool::resetRequested,
+            this, &ExamPageDelegate::onResetViewRequested);
+
+    // Install event filter on VTK widget
+    if (m_vtkWidget) {
+        m_vtkWidget->installEventFilter(this);
+    }
+
+    // Activate default tool
+    activateTool(Etrek::ImageViewer::ToolType::WINDOW_LEVEL);
+
+    qDebug() << "[ExamPageDelegate] Tools initialized";
+}
+
+void ExamPageDelegate::activateTool(Etrek::ImageViewer::ToolType tool)
+{
+    qDebug() << "[ExamPageDelegate] activateTool() - Tool:" << static_cast<int>(tool);
+
+    // Deactivate all tools
+    if (m_windowLevelTool) m_windowLevelTool->deactivate();
+    if (m_zoomTool) m_zoomTool->deactivate();
+    if (m_panTool) m_panTool->deactivate();
+    if (m_rulerTool) m_rulerTool->deactivate();
+    if (m_angleTool) m_angleTool->deactivate();
+    if (m_resetTool) m_resetTool->deactivate();
+
+    m_currentTool = tool;
+
+    // Activate selected tool
+    using namespace Etrek::ImageViewer;
+    switch (tool) {
+        case ToolType::WINDOW_LEVEL:
+            if (m_windowLevelTool) m_windowLevelTool->activate();
+            break;
+        case ToolType::ZOOM:
+            if (m_zoomTool) m_zoomTool->activate();
+            break;
+        case ToolType::PAN:
+            if (m_panTool) m_panTool->activate();
+            break;
+        case ToolType::RULER:
+            if (m_rulerTool) m_rulerTool->activate();
+            break;
+        case ToolType::ANGLE:
+            if (m_angleTool) m_angleTool->activate();
+            break;
+        case ToolType::RESET:
+            if (m_resetTool) m_resetTool->activate();
+            // Immediately trigger reset
+            onResetViewRequested();
+            break;
+        default:
+            break;
+    }
+}
+
+void ExamPageDelegate::initializeOverlays()
+{
+    qDebug() << "[ExamPageDelegate] initializeOverlays()";
+
+    using namespace Etrek::ImageViewer::Widget;
+
+    if (!m_vtkWidget) {
+        qWarning() << "[ExamPageDelegate] Cannot initialize overlays - VTK widget not available";
+        return;
+    }
+
+    // Create ruler overlay
+    m_rulerOverlay = new RulerOverlayWidget(m_vtkWidget);
+    m_rulerOverlay->setGeometry(m_vtkWidget->rect());
+    m_rulerOverlay->show();
+    m_rulerOverlay->raise();
+
+    // Create angle overlay
+    m_angleOverlay = new AngleOverlayWidget(m_vtkWidget);
+    m_angleOverlay->setGeometry(m_vtkWidget->rect());
+    m_angleOverlay->show();
+    m_angleOverlay->raise();
+
+    // Set up coordinate transforms
+    updateOverlayTransforms();
+
+    qDebug() << "[ExamPageDelegate] Overlays initialized";
+}
+
+void ExamPageDelegate::updateOverlayTransforms()
+{
+    auto transformFunc = [this](const QPointF& imagePos) -> QPointF {
+        return imageToWidget(imagePos);
+    };
+
+    if (m_rulerOverlay) {
+        m_rulerOverlay->setImageToWidgetTransform(transformFunc);
+    }
+    if (m_angleOverlay) {
+        m_angleOverlay->setImageToWidgetTransform(transformFunc);
+    }
+}
+
+QPointF ExamPageDelegate::imageToWidget(const QPointF& imagePos) const
+{
+    if (!m_renderer || !m_vtkWidget) {
+        return imagePos;
+    }
+
+    // Get camera for view transformation
+    vtkCamera* camera = m_renderer->GetActiveCamera();
+    if (!camera) {
+        return imagePos;
+    }
+
+    // Simple transformation using zoom and pan
+    // In a full implementation, this would use VTK's coordinate transformation
+    double widgetWidth = m_vtkWidget->width();
+    double widgetHeight = m_vtkWidget->height();
+    double centerX = widgetWidth / 2.0;
+    double centerY = widgetHeight / 2.0;
+
+    // Apply zoom and pan
+    double x = centerX + (imagePos.x() - centerX + m_panOffset.x()) * m_zoomLevel;
+    double y = centerY + (imagePos.y() - centerY + m_panOffset.y()) * m_zoomLevel;
+
+    return QPointF(x, y);
+}
+
+bool ExamPageDelegate::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched != m_vtkWidget) {
+        return QObject::eventFilter(watched, event);
+    }
+
+    // Handle resize for overlays
+    if (event->type() == QEvent::Resize) {
+        if (m_rulerOverlay) {
+            m_rulerOverlay->setGeometry(m_vtkWidget->rect());
+        }
+        if (m_angleOverlay) {
+            m_angleOverlay->setGeometry(m_vtkWidget->rect());
+        }
+        updateOverlayTransforms();
+    }
+
+    // Get the active tool
+    Etrek::ImageViewer::IImageTool* activeTool = nullptr;
+    using namespace Etrek::ImageViewer;
+
+    switch (m_currentTool) {
+        case ToolType::WINDOW_LEVEL:
+            activeTool = m_windowLevelTool.get();
+            break;
+        case ToolType::ZOOM:
+            activeTool = m_zoomTool.get();
+            break;
+        case ToolType::PAN:
+            activeTool = m_panTool.get();
+            break;
+        case ToolType::RULER:
+            activeTool = m_rulerTool.get();
+            break;
+        case ToolType::ANGLE:
+            activeTool = m_angleTool.get();
+            break;
+        default:
+            break;
+    }
+
+    if (!activeTool) {
+        return QObject::eventFilter(watched, event);
+    }
+
+    // Forward mouse events to active tool
+    switch (event->type()) {
+        case QEvent::MouseButtonPress: {
+            auto* mouseEvent = static_cast<QMouseEvent*>(event);
+            activeTool->onMousePress(mouseEvent->pos(), mouseEvent->button());
+            return true;
+        }
+        case QEvent::MouseMove: {
+            auto* mouseEvent = static_cast<QMouseEvent*>(event);
+            activeTool->onMouseMove(mouseEvent->pos());
+            return true;
+        }
+        case QEvent::MouseButtonRelease: {
+            auto* mouseEvent = static_cast<QMouseEvent*>(event);
+            activeTool->onMouseRelease(mouseEvent->pos(), mouseEvent->button());
+            return true;
+        }
+        case QEvent::Wheel: {
+            auto* wheelEvent = static_cast<QWheelEvent*>(event);
+            activeTool->onMouseWheel(wheelEvent->angleDelta().y(), wheelEvent->position().toPoint());
+            return true;
+        }
+        default:
+            break;
+    }
+
+    return QObject::eventFilter(watched, event);
+}
+
+// --- Tool Panel Slots ---
+
+void ExamPageDelegate::onToolSelected(Etrek::ImageViewer::ToolType tool)
+{
+    qDebug() << "[ExamPageDelegate] onToolSelected() - Tool:" << static_cast<int>(tool);
+    activateTool(tool);
+}
+
+void ExamPageDelegate::onInvertRequested()
+{
+    qDebug() << "[ExamPageDelegate] onInvertRequested()";
+
+    if (!m_imageActor) {
+        return;
+    }
+
+    // Get current colormap and invert
+    vtkImageProperty* property = m_imageActor->GetProperty();
+    if (property) {
+        // Toggle inversion by swapping window extremes
+        double currentLevel = property->GetColorLevel();
+        double currentWindow = property->GetColorWindow();
+
+        // Invert by negating the window (swaps black/white)
+        property->SetColorWindow(-currentWindow);
+        m_renderWindow->Render();
+    }
+}
+
+void ExamPageDelegate::onFitToWindowRequested()
+{
+    qDebug() << "[ExamPageDelegate] onFitToWindowRequested()";
+
+    if (!m_renderer || !m_renderWindow) {
+        return;
+    }
+
+    m_renderer->ResetCamera();
+    m_zoomLevel = 1.0;
+    m_panOffset = QPointF(0, 0);
+    m_renderWindow->Render();
+    updateOverlayTransforms();
+
+    if (m_rulerOverlay) m_rulerOverlay->refresh();
+    if (m_angleOverlay) m_angleOverlay->refresh();
+}
+
+void ExamPageDelegate::onResetViewRequested()
+{
+    qDebug() << "[ExamPageDelegate] onResetViewRequested()";
+
+    if (!m_renderer || !m_renderWindow || !m_imageActor) {
+        return;
+    }
+
+    // Reset camera
+    m_renderer->ResetCamera();
+
+    // Reset window/level to defaults
+    vtkImageProperty* property = m_imageActor->GetProperty();
+    if (property) {
+        property->SetColorWindow(m_currentWindow);
+        property->SetColorLevel(m_currentLevel);
+    }
+
+    // Reset zoom and pan
+    m_zoomLevel = 1.0;
+    m_panOffset = QPointF(0, 0);
+
+    m_renderWindow->Render();
+    updateOverlayTransforms();
+
+    if (m_rulerOverlay) m_rulerOverlay->refresh();
+    if (m_angleOverlay) m_angleOverlay->refresh();
+}
+
+void ExamPageDelegate::onCursorChanged(Qt::CursorShape cursor)
+{
+    if (m_vtkWidget) {
+        m_vtkWidget->setCursor(cursor);
+    }
+}
+
+// --- Tool Event Handlers ---
+
+void ExamPageDelegate::onWindowLevelChanged(double window, double level)
+{
+    qDebug() << "[ExamPageDelegate] onWindowLevelChanged() - Window:" << window << "Level:" << level;
+
+    if (!m_imageActor || !m_renderWindow) {
+        return;
+    }
+
+    vtkImageProperty* property = m_imageActor->GetProperty();
+    if (property) {
+        property->SetColorWindow(window);
+        property->SetColorLevel(level);
+        m_currentWindow = window;
+        m_currentLevel = level;
+        m_renderWindow->Render();
+    }
+}
+
+void ExamPageDelegate::onZoomRequested(double factor, const QPointF& center)
+{
+    qDebug() << "[ExamPageDelegate] onZoomRequested() - Factor:" << factor;
+    Q_UNUSED(center)
+
+    if (!m_renderer || !m_renderWindow) {
+        return;
+    }
+
+    vtkCamera* camera = m_renderer->GetActiveCamera();
+    if (camera) {
+        camera->Zoom(factor);
+        m_zoomLevel *= factor;
+        m_renderWindow->Render();
+        updateOverlayTransforms();
+
+        if (m_rulerOverlay) m_rulerOverlay->refresh();
+        if (m_angleOverlay) m_angleOverlay->refresh();
+    }
+}
+
+void ExamPageDelegate::onPanRequested(double deltaX, double deltaY)
+{
+    qDebug() << "[ExamPageDelegate] onPanRequested() - DeltaX:" << deltaX << "DeltaY:" << deltaY;
+
+    if (!m_renderer || !m_renderWindow) {
+        return;
+    }
+
+    vtkCamera* camera = m_renderer->GetActiveCamera();
+    if (camera) {
+        double* focalPoint = camera->GetFocalPoint();
+        double* position = camera->GetPosition();
+
+        camera->SetFocalPoint(focalPoint[0] - deltaX, focalPoint[1] - deltaY, focalPoint[2]);
+        camera->SetPosition(position[0] - deltaX, position[1] - deltaY, position[2]);
+
+        m_panOffset += QPointF(deltaX, deltaY);
+        m_renderWindow->Render();
+        updateOverlayTransforms();
+
+        if (m_rulerOverlay) m_rulerOverlay->refresh();
+        if (m_angleOverlay) m_angleOverlay->refresh();
+    }
+}
+
+// --- Measurement Handlers ---
+
+void ExamPageDelegate::onRulerMeasurementUpdated(const Etrek::ImageViewer::MeasurementLine& line)
+{
+    if (m_rulerOverlay) {
+        m_rulerOverlay->setCurrentMeasurement(line);
+    }
+}
+
+void ExamPageDelegate::onRulerMeasurementCompleted(const Etrek::ImageViewer::MeasurementLine& line)
+{
+    qDebug() << "[ExamPageDelegate] Ruler measurement completed - Length:" << line.distanceMm << "mm";
+
+    if (m_rulerOverlay) {
+        // Add to measurements list
+        auto measurements = m_rulerOverlay->measurements();
+        measurements.append(line);
+        m_rulerOverlay->setMeasurements(measurements);
+        m_rulerOverlay->clearCurrentMeasurement();
+    }
+}
+
+void ExamPageDelegate::onAngleMeasurementUpdated(const Etrek::ImageViewer::MeasurementAngle& angle)
+{
+    if (m_angleOverlay) {
+        m_angleOverlay->setCurrentMeasurement(angle);
+    }
+}
+
+void ExamPageDelegate::onAngleMeasurementCompleted(const Etrek::ImageViewer::MeasurementAngle& angle)
+{
+    qDebug() << "[ExamPageDelegate] Angle measurement completed - Angle:" << angle.angleDegrees << "degrees";
+
+    if (m_angleOverlay) {
+        // Add to measurements list
+        auto measurements = m_angleOverlay->measurements();
+        measurements.append(angle);
+        m_angleOverlay->setMeasurements(measurements);
+        m_angleOverlay->clearCurrentMeasurement();
+    }
 }
 
 } // namespace Etrek::Application::Delegate
