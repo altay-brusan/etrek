@@ -720,6 +720,38 @@ void ImageViewerPageDelegate::onResetViewRequested() {
         renderer->resetWindowLevel();
         updateOverlay(m_activeViewportIndex);
     }
+
+    // Clear all ruler measurements
+    if (m_rulerTool) {
+        m_rulerTool->clearMeasurements();
+    }
+    for (int i = 0; i < 4; ++i) {
+        if (m_rulerOverlays[i]) {
+            m_rulerOverlays[i]->setMeasurements(QVector<MeasurementLine>());
+            m_rulerOverlays[i]->clearCurrentMeasurement();
+            m_rulerOverlays[i]->refresh();
+        }
+    }
+
+    // Clear all angle measurements
+    if (m_angleTool) {
+        m_angleTool->clearMeasurements();
+    }
+    for (int i = 0; i < 4; ++i) {
+        if (m_angleOverlays[i]) {
+            m_angleOverlays[i]->setMeasurements(QVector<MeasurementAngle>());
+            m_angleOverlays[i]->clearCurrentMeasurement();
+            m_angleOverlays[i]->refresh();
+        }
+    }
+
+    // Switch back to Window/Level tool (default tool)
+    activateTool(ToolType::WINDOW_LEVEL);
+
+    // Update the tool panel UI to show Window/Level as selected
+    if (m_ui->getToolPanel()) {
+        m_ui->getToolPanel()->setSelectedTool(ToolType::WINDOW_LEVEL);
+    }
 }
 
 void ImageViewerPageDelegate::onFitToWindowRequested() {
