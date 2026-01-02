@@ -16,6 +16,7 @@
 #include "ResetTool.h"
 #include "MagnifierWidget.h"
 #include "RulerOverlayWidget.h"
+#include "AngleOverlayWidget.h"
 
 #include <QTimer>
 #include <QFileDialog>
@@ -59,10 +60,17 @@ bool ImageViewerPageDelegate::eventFilter(QObject* watched, QEvent* event) {
         // Find which viewport widget was resized
         auto widgets = m_ui->getAllVtkWidgets();
         for (int i = 0; i < 4; ++i) {
-            if (widgets[i] == watched && m_rulerOverlays[i]) {
-                // Resize overlay to match the VTK widget
-                m_rulerOverlays[i]->setGeometry(0, 0, widgets[i]->width(), widgets[i]->height());
-                m_rulerOverlays[i]->refresh();
+            if (widgets[i] == watched) {
+                // Resize ruler overlay to match the VTK widget
+                if (m_rulerOverlays[i]) {
+                    m_rulerOverlays[i]->setGeometry(0, 0, widgets[i]->width(), widgets[i]->height());
+                    m_rulerOverlays[i]->refresh();
+                }
+                // Resize angle overlay to match the VTK widget
+                if (m_angleOverlays[i]) {
+                    m_angleOverlays[i]->setGeometry(0, 0, widgets[i]->width(), widgets[i]->height());
+                    m_angleOverlays[i]->refresh();
+                }
                 break;
             }
         }
@@ -92,6 +100,7 @@ void ImageViewerPageDelegate::reject() {
 void ImageViewerPageDelegate::onPageLoaded() {
     initializeViewports();
     initializeRulerOverlays();
+    initializeAngleOverlays();
 
     // Check if there's context data to load
     if (auto ctx = m_contextManager.lock()) {
@@ -158,6 +167,57 @@ void ImageViewerPageDelegate::updateRulerOverlayTransforms() {
     }
 }
 
+void ImageViewerPageDelegate::initializeAngleOverlays() {
+    auto widgets = m_ui->getAllVtkWidgets();
+
+    for (int i = 0; i < 4; ++i) {
+        if (widgets[i]) {
+            // Parent to the VTK widget directly so overlay matches its size
+            m_angleOverlays[i] = new AngleOverlayWidget(widgets[i]);
+            m_angleOverlays[i]->setGeometry(0, 0, widgets[i]->width(), widgets[i]->height());
+            m_angleOverlays[i]->raise();
+            m_angleOverlays[i]->show();
+
+            // Set up coordinate transform using the renderer
+            auto* renderer = m_viewportManager->getRenderer(i);
+            if (renderer) {
+                m_angleOverlays[i]->setImageToWidgetTransform(
+                    [renderer](const QPointF& imagePos) {
+                        return renderer->imageToWidgetCoords(imagePos);
+                    }
+                );
+            }
+        }
+    }
+}
+
+void ImageViewerPageDelegate::refreshAngleOverlays() {
+    for (int i = 0; i < 4; ++i) {
+        if (m_angleOverlays[i]) {
+            // Update measurements from the angle tool
+            m_angleOverlays[i]->setMeasurements(m_angleTool->getMeasurements());
+            m_angleOverlays[i]->setSelectedAngle(m_angleTool->selectedAngle());
+            m_angleOverlays[i]->refresh();
+        }
+    }
+}
+
+void ImageViewerPageDelegate::updateAngleOverlayTransforms() {
+    for (int i = 0; i < 4; ++i) {
+        if (m_angleOverlays[i]) {
+            auto* renderer = m_viewportManager->getRenderer(i);
+            if (renderer) {
+                m_angleOverlays[i]->setImageToWidgetTransform(
+                    [renderer](const QPointF& imagePos) {
+                        return renderer->imageToWidgetCoords(imagePos);
+                    }
+                );
+            }
+            m_angleOverlays[i]->refresh();
+        }
+    }
+}
+
 void ImageViewerPageDelegate::initializeTools() {
     m_windowLevelTool = std::make_unique<WindowLevelTool>(this);
     m_zoomTool = std::make_unique<ZoomTool>(this);
@@ -215,6 +275,34 @@ void ImageViewerPageDelegate::initializeTools() {
             this, &ImageViewerPageDelegate::onCursorChanged);
     connect(m_resetTool.get(), &ResetTool::cursorChanged,
             this, &ImageViewerPageDelegate::onCursorChanged);
+
+    // Connect angle tool signals
+    connect(m_angleTool.get(), &AngleTool::measurementAngleUpdated,
+            this, &ImageViewerPageDelegate::onAngleUpdated);
+    connect(m_angleTool.get(), &AngleTool::measurementAngleCompleted,
+            this, &ImageViewerPageDelegate::onAngleCompleted);
+    connect(m_angleTool.get(), &AngleTool::measurementsChanged,
+            this, &ImageViewerPageDelegate::onAngleMeasurementsChanged);
+    connect(m_angleTool.get(), &AngleTool::angleSelected,
+            this, &ImageViewerPageDelegate::onAngleSelected);
+    connect(m_angleTool.get(), &AngleTool::angleDeleted,
+            this, &ImageViewerPageDelegate::onAngleDeleted);
+    connect(m_angleTool.get(), &AngleTool::handleHovered,
+            this, [this](int angleId, AngleHandleType handleType) {
+                for (int i = 0; i < 4; ++i) {
+                    if (m_angleOverlays[i]) {
+                        m_angleOverlays[i]->setHoveredHandle(angleId, handleType);
+                    }
+                }
+            });
+    connect(m_angleTool.get(), &AngleTool::handleHoverCleared,
+            this, [this]() {
+                for (int i = 0; i < 4; ++i) {
+                    if (m_angleOverlays[i]) {
+                        m_angleOverlays[i]->clearHoveredHandle();
+                    }
+                }
+            });
 
     // Set pan tool sensitivity for more responsive panning
     m_panTool->setSensitivity(2.0);
@@ -280,20 +368,25 @@ void ImageViewerPageDelegate::setupConnections() {
     connect(m_ui, &ImageViewerPage::closeRequested,
             this, &ImageViewerPageDelegate::reject);
 
-    // Ruler deletion via Delete/Backspace key
+    // Ruler/Angle deletion via Delete/Backspace key
     connect(m_ui, &ImageViewerPage::deleteSelectedRulerRequested,
             this, [this]() {
-                if (m_rulerTool && m_currentTool == ToolType::RULER) {
+                if (m_currentTool == ToolType::RULER && m_rulerTool) {
                     m_rulerTool->deleteSelectedRuler();
+                } else if (m_currentTool == ToolType::ANGLE && m_angleTool) {
+                    m_angleTool->deleteSelectedAngle();
                 }
             });
 
-    // Clear all rulers via Ctrl+Delete
+    // Clear all rulers/angles via Ctrl+Delete
     connect(m_ui, &ImageViewerPage::clearAllRulersRequested,
             this, [this]() {
-                if (m_rulerTool && m_currentTool == ToolType::RULER) {
+                if (m_currentTool == ToolType::RULER && m_rulerTool) {
                     m_rulerTool->clearMeasurements();
                     refreshRulerOverlays();
+                } else if (m_currentTool == ToolType::ANGLE && m_angleTool) {
+                    m_angleTool->clearMeasurements();
+                    refreshAngleOverlays();
                 }
             });
 }
@@ -571,6 +664,7 @@ void ImageViewerPageDelegate::onViewportMouseWheel(int viewportIndex, int delta,
         renderer->setZoom(currentZoom * zoomFactor);
         updateOverlay(m_activeViewportIndex);
         refreshRulerOverlays();
+        refreshAngleOverlays();
     }
 }
 
@@ -585,6 +679,7 @@ void ImageViewerPageDelegate::onViewportDoubleClicked(int viewportIndex, const Q
             renderer->fitToWindow();
             updateOverlay(m_activeViewportIndex);
             refreshRulerOverlays();
+            refreshAngleOverlays();
         }
     }
 }
@@ -660,6 +755,7 @@ void ImageViewerPageDelegate::onZoomRequested(double factor, const QPointF& cent
         renderer->setZoom(factor);
         updateOverlay(m_activeViewportIndex);
         refreshRulerOverlays();
+        refreshAngleOverlays();
     }
 }
 
@@ -667,6 +763,7 @@ void ImageViewerPageDelegate::onPanRequested(double deltaX, double deltaY) {
     if (auto* renderer = m_viewportManager->activeRenderer()) {
         renderer->setPan(deltaX, deltaY);
         refreshRulerOverlays();
+        refreshAngleOverlays();
     }
 }
 
@@ -715,6 +812,49 @@ void ImageViewerPageDelegate::onRulerDeleted(int rulerId) {
     Q_UNUSED(rulerId)
     // Refresh overlays after deletion
     refreshRulerOverlays();
+}
+
+void ImageViewerPageDelegate::onAngleUpdated(const MeasurementAngle& angle) {
+    // Update the angle overlay with the in-progress measurement
+    if (m_activeViewportIndex >= 0 && m_activeViewportIndex < 4) {
+        if (m_angleOverlays[m_activeViewportIndex]) {
+            m_angleOverlays[m_activeViewportIndex]->setCurrentMeasurement(angle);
+            m_angleOverlays[m_activeViewportIndex]->refresh();
+        }
+    }
+}
+
+void ImageViewerPageDelegate::onAngleCompleted(const MeasurementAngle& angle) {
+    Q_UNUSED(angle)
+    // Clear the in-progress measurement and refresh with all measurements
+    if (m_activeViewportIndex >= 0 && m_activeViewportIndex < 4) {
+        if (m_angleOverlays[m_activeViewportIndex]) {
+            m_angleOverlays[m_activeViewportIndex]->clearCurrentMeasurement();
+            m_angleOverlays[m_activeViewportIndex]->setMeasurements(m_angleTool->getMeasurements());
+            m_angleOverlays[m_activeViewportIndex]->refresh();
+        }
+    }
+}
+
+void ImageViewerPageDelegate::onAngleMeasurementsChanged() {
+    // Refresh all angle overlays when measurements change
+    refreshAngleOverlays();
+}
+
+void ImageViewerPageDelegate::onAngleSelected(int angleId) {
+    // Update the selected angle in the overlay
+    for (int i = 0; i < 4; ++i) {
+        if (m_angleOverlays[i]) {
+            m_angleOverlays[i]->setSelectedAngle(angleId);
+            m_angleOverlays[i]->refresh();
+        }
+    }
+}
+
+void ImageViewerPageDelegate::onAngleDeleted(int angleId) {
+    Q_UNUSED(angleId)
+    // Refresh overlays after deletion
+    refreshAngleOverlays();
 }
 
 void ImageViewerPageDelegate::onCursorChanged(Qt::CursorShape cursor) {
