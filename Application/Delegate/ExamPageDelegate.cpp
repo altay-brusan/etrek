@@ -1468,11 +1468,38 @@ void ExamPageDelegate::onResetViewRequested()
     m_zoomLevel = 1.0;
     m_panOffset = QPointF(0, 0);
 
+    // Clear all ruler measurements (overlay layers)
+    if (m_rulerOverlay) {
+        m_rulerOverlay->setMeasurements(QVector<Etrek::ImageViewer::MeasurementLine>());
+        m_rulerOverlay->clearCurrentMeasurement();
+        m_rulerOverlay->refresh();
+    }
+
+    // Clear all angle measurements (overlay layers)
+    if (m_angleOverlay) {
+        m_angleOverlay->setMeasurements(QVector<Etrek::ImageViewer::MeasurementAngle>());
+        m_angleOverlay->clearCurrentMeasurement();
+        m_angleOverlay->refresh();
+    }
+
+    // Clear any in-progress measurements in tools
+    if (m_rulerTool) {
+        m_rulerTool->reset();
+    }
+    if (m_angleTool) {
+        m_angleTool->reset();
+    }
+
     m_renderWindow->Render();
     updateOverlayTransforms();
 
-    if (m_rulerOverlay) m_rulerOverlay->refresh();
-    if (m_angleOverlay) m_angleOverlay->refresh();
+    // Switch back to Window/Level tool (default tool)
+    activateTool(Etrek::ImageViewer::ToolType::WINDOW_LEVEL);
+
+    // Update the tool panel UI to show Window/Level as selected
+    if (ui->getToolPanel()) {
+        ui->getToolPanel()->setSelectedTool(Etrek::ImageViewer::ToolType::WINDOW_LEVEL);
+    }
 }
 
 void ExamPageDelegate::onCursorChanged(Qt::CursorShape cursor)

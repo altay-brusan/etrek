@@ -72,7 +72,18 @@ void ImageToolPanel::setupToolButtons() {
     addToolButton(m_config.showWindowLevel, ":/Images/Asset/Icon/windowlevel.png", "Window/Level (W)", "W/L", ToolType::WINDOW_LEVEL);
     addToolButton(m_config.showRuler, ":/Images/Asset/Icon/ruler.png", "Ruler (R)", "R", ToolType::RULER);
     addToolButton(m_config.showAngle, ":/Images/Asset/Icon/angle.png", "Angle (A)", "A", ToolType::ANGLE);
-    addToolButton(m_config.showReset, ":/Images/Asset/Icon/reset.png", "Reset View", "RST", ToolType::RESET);
+
+    // Reset button is special - it's a momentary action, not a toggle tool
+    if (m_config.showReset) {
+        auto* resetBtn = createToolButton(":/Images/Asset/Icon/reset.png", "Reset View");
+        resetBtn->setText("RST");
+        resetBtn->setCheckable(false);  // Momentary action, not toggle
+        m_toolButtons[ToolType::RESET] = resetBtn;
+        ui->toolsLayout->addWidget(resetBtn);
+
+        // Connect reset button directly to resetViewRequested signal
+        connect(resetBtn, &QToolButton::clicked, this, &ImageToolPanel::resetViewRequested);
+    }
 }
 
 void ImageToolPanel::setupLayoutButtons() {
