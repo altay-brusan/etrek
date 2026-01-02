@@ -301,15 +301,47 @@ struct MeasurementLine {
 };
 
 /**
+ * @enum AngleEditState
+ * @brief State of angle editing operations.
+ */
+enum class AngleEditState {
+    NONE,             ///< Not editing any angle
+    PLACING_POINT1,   ///< Placing first point
+    PLACING_VERTEX,   ///< Placing vertex (second point)
+    PLACING_POINT2,   ///< Placing third point
+    DRAGGING_POINT1,  ///< Dragging first point handle
+    DRAGGING_VERTEX,  ///< Dragging vertex handle
+    DRAGGING_POINT2   ///< Dragging third point handle
+};
+
+/**
+ * @enum AngleHandleType
+ * @brief Identifies which handle of an angle is being interacted with.
+ */
+enum class AngleHandleType {
+    NONE,
+    POINT1,
+    VERTEX,
+    POINT2
+};
+
+/**
  * @struct MeasurementAngle
  * @brief Represents an angle measurement with three points.
+ *
+ * The angle is formed by:
+ * - point1: First arm endpoint
+ * - vertex: The corner point where the angle is measured
+ * - point2: Second arm endpoint
  */
 struct MeasurementAngle {
-    QPointF point1;  // First endpoint
-    QPointF vertex;  // Vertex (middle point)
-    QPointF point2;  // Second endpoint
+    QPointF point1;           ///< First endpoint (arm 1)
+    QPointF vertex;           ///< Vertex (middle point where angle is measured)
+    QPointF point2;           ///< Second endpoint (arm 2)
     double angleDegrees = 0.0;
     bool isComplete = false;
+    int id = -1;              ///< Unique identifier for this angle
+    bool isSelected = false;  ///< Currently selected for editing
 
     /**
      * @brief Calculate angle at vertex.
@@ -327,6 +359,79 @@ struct MeasurementAngle {
             cosAngle = std::clamp(cosAngle, -1.0, 1.0);
             angleDegrees = std::acos(cosAngle) * 180.0 / 3.14159265358979323846;
         }
+    }
+
+    /**
+     * @brief Get the start angle of arm 1 relative to positive X-axis (in radians).
+     */
+    double getArm1Angle() const {
+        return std::atan2(point1.y() - vertex.y(), point1.x() - vertex.x());
+    }
+
+    /**
+     * @brief Get the start angle of arm 2 relative to positive X-axis (in radians).
+     */
+    double getArm2Angle() const {
+        return std::atan2(point2.y() - vertex.y(), point2.x() - vertex.x());
+    }
+
+    /**
+     * @brief Check if a point is near the point1 handle.
+     */
+    bool isNearPoint1Handle(const QPointF& pos, double threshold = 10.0) const {
+        double dx = pos.x() - point1.x();
+        double dy = pos.y() - point1.y();
+        return std::sqrt(dx * dx + dy * dy) < threshold;
+    }
+
+    /**
+     * @brief Check if a point is near the vertex handle.
+     */
+    bool isNearVertexHandle(const QPointF& pos, double threshold = 10.0) const {
+        double dx = pos.x() - vertex.x();
+        double dy = pos.y() - vertex.y();
+        return std::sqrt(dx * dx + dy * dy) < threshold;
+    }
+
+    /**
+     * @brief Check if a point is near the point2 handle.
+     */
+    bool isNearPoint2Handle(const QPointF& pos, double threshold = 10.0) const {
+        double dx = pos.x() - point2.x();
+        double dy = pos.y() - point2.y();
+        return std::sqrt(dx * dx + dy * dy) < threshold;
+    }
+
+    /**
+     * @brief Check if a point is near either arm of the angle.
+     */
+    bool isNearArm(const QPointF& pos, double threshold = 5.0) const {
+        return isNearLineSegment(pos, vertex, point1, threshold) ||
+               isNearLineSegment(pos, vertex, point2, threshold);
+    }
+
+private:
+    static bool isNearLineSegment(const QPointF& pos, const QPointF& lineStart,
+                                   const QPointF& lineEnd, double threshold) {
+        double dx = lineEnd.x() - lineStart.x();
+        double dy = lineEnd.y() - lineStart.y();
+        double lengthSq = dx * dx + dy * dy;
+
+        if (lengthSq < 0.0001) {
+            double pdx = pos.x() - lineStart.x();
+            double pdy = pos.y() - lineStart.y();
+            return std::sqrt(pdx * pdx + pdy * pdy) < threshold;
+        }
+
+        double t = ((pos.x() - lineStart.x()) * dx + (pos.y() - lineStart.y()) * dy) / lengthSq;
+        t = std::clamp(t, 0.0, 1.0);
+
+        double closestX = lineStart.x() + t * dx;
+        double closestY = lineStart.y() + t * dy;
+
+        double distX = pos.x() - closestX;
+        double distY = pos.y() - closestY;
+        return std::sqrt(distX * distX + distY * distY) < threshold;
     }
 };
 
