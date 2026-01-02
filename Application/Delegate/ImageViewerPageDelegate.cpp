@@ -14,6 +14,7 @@
 #include "RulerTool.h"
 #include "AngleTool.h"
 #include "ResetTool.h"
+#include "MagnifierWidget.h"
 
 #include <QTimer>
 #include <QFileDialog>
@@ -24,6 +25,7 @@ using namespace Etrek::ImageViewer;
 using namespace Etrek::ImageViewer::Rendering;
 using namespace Etrek::ImageViewer::Service;
 using namespace Etrek::ImageViewer::Tool;
+using namespace Etrek::ImageViewer::Widget;
 
 namespace Etrek::Application::Delegate {
 
@@ -121,6 +123,18 @@ void ImageViewerPageDelegate::initializeTools() {
 
     // Set pan tool sensitivity for more responsive panning
     m_panTool->setSensitivity(2.0);
+
+    // Create magnifier widget (parented to the UI for proper overlay)
+    m_magnifier = new MagnifierWidget(m_ui);
+    m_magnifier->hide();
+
+    // Connect magnifier signals from ZoomTool
+    connect(m_zoomTool.get(), &ZoomTool::magnifierRequested,
+            this, &ImageViewerPageDelegate::onMagnifierRequested);
+    connect(m_zoomTool.get(), &ZoomTool::magnifierHideRequested,
+            this, &ImageViewerPageDelegate::onMagnifierHideRequested);
+    connect(m_zoomTool.get(), &ZoomTool::magnifierToggleRequested,
+            this, &ImageViewerPageDelegate::onMagnifierToggleRequested);
 
     // Activate default tool
     activateTool(ToolType::WINDOW_LEVEL);
@@ -501,14 +515,76 @@ void ImageViewerPageDelegate::onMeasurementLineCompleted(const MeasurementLine& 
 }
 
 void ImageViewerPageDelegate::onCursorChanged(Qt::CursorShape cursor) {
-    // Apply cursor to all visible viewport widgets
+    // Apply cursor to all visible viewport widgets and their parents
     auto widgets = m_ui->getAllVtkWidgets();
     int visibleCount = m_viewportManager->visibleViewportCount();
 
     for (int i = 0; i < visibleCount; ++i) {
         if (widgets[i]) {
             widgets[i]->setCursor(cursor);
+            // Also set on parent widget (ImageViewport)
+            if (widgets[i]->parentWidget()) {
+                widgets[i]->parentWidget()->setCursor(cursor);
+            }
         }
+    }
+}
+
+void ImageViewerPageDelegate::onMagnifierRequested(const QPointF& pos) {
+    auto* renderer = m_viewportManager->activeRenderer();
+    if (!renderer || !renderer->hasImage() || !m_magnifier) {
+        return;
+    }
+
+    // Get the current image as QImage
+    QImage sourceImage = renderer->getImageAsQImage();
+    if (sourceImage.isNull()) {
+        return;
+    }
+
+    // Get the active viewport widget to calculate screen position
+    auto widgets = m_ui->getAllVtkWidgets();
+    if (m_activeViewportIndex >= 0 && m_activeViewportIndex < widgets.size()) {
+        QWidget* viewportWidget = widgets[m_activeViewportIndex];
+        if (viewportWidget) {
+            // Convert widget coordinates to image pixel coordinates using renderer's method
+            // This properly accounts for zoom, pan, and coordinate system flips
+            QPointF imagePos = renderer->widgetToImageCoords(pos);
+
+            // If outside image bounds, hide magnifier and return
+            if (imagePos.x() < 0 || imagePos.y() < 0) {
+                if (m_magnifier->isVisible()) {
+                    m_magnifier->hide();
+                }
+                return;
+            }
+
+            // Convert widget coordinates to parent (m_ui) coordinates for positioning
+            QPoint widgetPos = pos.toPoint();
+            QPoint globalPos = viewportWidget->mapToGlobal(widgetPos);
+            QPoint parentPos = m_ui->mapFromGlobal(globalPos);
+
+            // Update magnifier - pass image coordinates for sampling, parent coords for positioning
+            m_magnifier->updateMagnifier(sourceImage, imagePos, parentPos);
+
+            // Show magnifier if not visible
+            if (!m_magnifier->isVisible()) {
+                m_magnifier->show();
+                m_magnifier->raise();
+            }
+        }
+    }
+}
+
+void ImageViewerPageDelegate::onMagnifierHideRequested() {
+    if (m_magnifier) {
+        m_magnifier->hideMagnifier();
+    }
+}
+
+void ImageViewerPageDelegate::onMagnifierToggleRequested() {
+    if (m_magnifier) {
+        m_magnifier->toggleMagnification();
     }
 }
 
