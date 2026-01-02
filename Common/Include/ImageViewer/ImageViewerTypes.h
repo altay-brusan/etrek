@@ -209,15 +209,28 @@ struct ViewportState {
 };
 
 /**
+ * @enum RulerEditState
+ * @brief State of ruler editing operations.
+ */
+enum class RulerEditState {
+    NONE,           ///< Not editing any ruler
+    DRAWING_NEW,    ///< Drawing a new ruler
+    DRAGGING_START, ///< Dragging start handle
+    DRAGGING_END    ///< Dragging end handle
+};
+
+/**
  * @struct MeasurementLine
  * @brief Represents a distance measurement between two points.
  */
 struct MeasurementLine {
     QPointF startPoint;
     QPointF endPoint;
-    double distanceMm = 0.0;  // Distance in millimeters
-    double distancePixels = 0.0;  // Distance in pixels
+    double distanceMm = 0.0;      ///< Distance in millimeters
+    double distancePixels = 0.0;  ///< Distance in pixels
     bool isComplete = false;
+    int id = -1;                  ///< Unique identifier for this ruler
+    bool isSelected = false;      ///< Currently selected for editing
 
     /**
      * @brief Calculate distance using pixel spacing.
@@ -230,6 +243,60 @@ struct MeasurementLine {
         double dxPx = endPoint.x() - startPoint.x();
         double dyPx = endPoint.y() - startPoint.y();
         distancePixels = std::sqrt(dxPx * dxPx + dyPx * dyPx);
+    }
+
+    /**
+     * @brief Check if a point is near the start handle.
+     * @param pos Position in image coordinates
+     * @param threshold Distance threshold in pixels
+     */
+    bool isNearStartHandle(const QPointF& pos, double threshold = 10.0) const {
+        double dx = pos.x() - startPoint.x();
+        double dy = pos.y() - startPoint.y();
+        return std::sqrt(dx * dx + dy * dy) < threshold;
+    }
+
+    /**
+     * @brief Check if a point is near the end handle.
+     * @param pos Position in image coordinates
+     * @param threshold Distance threshold in pixels
+     */
+    bool isNearEndHandle(const QPointF& pos, double threshold = 10.0) const {
+        double dx = pos.x() - endPoint.x();
+        double dy = pos.y() - endPoint.y();
+        return std::sqrt(dx * dx + dy * dy) < threshold;
+    }
+
+    /**
+     * @brief Check if a point is near the line segment.
+     * @param pos Position in image coordinates
+     * @param threshold Distance threshold in pixels
+     */
+    bool isNearLine(const QPointF& pos, double threshold = 5.0) const {
+        // Calculate distance from point to line segment
+        double dx = endPoint.x() - startPoint.x();
+        double dy = endPoint.y() - startPoint.y();
+        double lengthSq = dx * dx + dy * dy;
+
+        if (lengthSq < 0.0001) {
+            // Start and end are the same point
+            double pdx = pos.x() - startPoint.x();
+            double pdy = pos.y() - startPoint.y();
+            return std::sqrt(pdx * pdx + pdy * pdy) < threshold;
+        }
+
+        // Project point onto line, clamped to segment
+        double t = ((pos.x() - startPoint.x()) * dx + (pos.y() - startPoint.y()) * dy) / lengthSq;
+        t = std::clamp(t, 0.0, 1.0);
+
+        // Find closest point on segment
+        double closestX = startPoint.x() + t * dx;
+        double closestY = startPoint.y() + t * dy;
+
+        // Calculate distance
+        double distX = pos.x() - closestX;
+        double distY = pos.y() - closestY;
+        return std::sqrt(distX * distX + distY * distY) < threshold;
     }
 };
 
