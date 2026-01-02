@@ -138,6 +138,13 @@ public:
      */
     QPointF widgetToImageCoords(const QPointF& widgetPos) const;
 
+    /**
+     * @brief Convert image pixel coordinates to widget coordinates.
+     * @param imagePos Position in image coordinates (pixels)
+     * @return Position in widget coordinates (pixels from top-left), or (-1,-1) if not visible
+     */
+    QPointF imageToWidgetCoords(const QPointF& imagePos) const;
+
 signals:
     /**
      * @brief Emitted when window/level changes.

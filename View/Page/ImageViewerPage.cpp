@@ -224,6 +224,16 @@ void ImageViewerPage::keyPressEvent(QKeyEvent* event) {
             // Escape key closes the ImageViewer and returns to main window
             emit closeRequested();
             break;
+        case Qt::Key_Delete:
+        case Qt::Key_Backspace:
+            if (event->modifiers() & Qt::ControlModifier) {
+                // Ctrl+Delete: Clear all rulers
+                emit clearAllRulersRequested();
+            } else {
+                // Delete: Delete the currently selected ruler
+                emit deleteSelectedRulerRequested();
+            }
+            break;
         default:
             QWidget::keyPressEvent(event);
             break;

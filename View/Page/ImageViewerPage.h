@@ -87,6 +87,10 @@ signals:
     // Close request - emitted when user wants to close ImageViewer
     void closeRequested();
 
+    // Ruler operations
+    void deleteSelectedRulerRequested();
+    void clearAllRulersRequested();
+
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;

@@ -702,7 +702,8 @@ QPointF VtkViewportRenderer::widgetToImageCoords(const QPointF& widgetPos) const
     double widgetCenterY = viewportHeight / 2.0;
 
     // Focal point (camera center) in image coordinates
-    double focalX = imageWidth / 2.0 + m_panX;
+    // Camera moves by -deltaX, -deltaY in setPan, so focal point is center - pan
+    double focalX = imageWidth / 2.0 - m_panX;
     double focalY = imageHeight / 2.0 - m_panY;
 
     // Convert widget position to image position
@@ -727,6 +728,70 @@ QPointF VtkViewportRenderer::widgetToImageCoords(const QPointF& widgetPos) const
     }
 
     return QPointF(imageX, imageY);
+}
+
+QPointF VtkViewportRenderer::imageToWidgetCoords(const QPointF& imagePos) const {
+    if (!m_hasImage || !m_renderWindow) {
+        return QPointF(-1, -1);
+    }
+
+    // Get viewport size
+    int* viewportSize = m_renderWindow->GetSize();
+    double viewportWidth = static_cast<double>(viewportSize[0]);
+    double viewportHeight = static_cast<double>(viewportSize[1]);
+
+    if (viewportWidth <= 0 || viewportHeight <= 0) {
+        return QPointF(-1, -1);
+    }
+
+    // Image dimensions
+    double imageWidth = static_cast<double>(m_imageWidth);
+    double imageHeight = static_cast<double>(m_imageHeight);
+
+    if (imageWidth <= 0 || imageHeight <= 0) {
+        return QPointF(-1, -1);
+    }
+
+    // Calculate aspect ratios
+    double viewportAspect = viewportWidth / viewportHeight;
+    double imageAspect = imageWidth / imageHeight;
+
+    // Calculate base parallel scale (same as in setZoom/fitToWindow)
+    double baseParallelScale;
+    if (imageAspect > viewportAspect) {
+        baseParallelScale = (imageWidth / viewportAspect) / 2.0;
+    } else {
+        baseParallelScale = imageHeight / 2.0;
+    }
+
+    // Effective parallel scale with zoom applied
+    double effectiveParallelScale = baseParallelScale / m_zoomFactor;
+
+    // Visible region in world/image coordinates
+    double visibleHeight = 2.0 * effectiveParallelScale;
+    double visibleWidth = visibleHeight * viewportAspect;
+
+    // Widget center
+    double widgetCenterX = viewportWidth / 2.0;
+    double widgetCenterY = viewportHeight / 2.0;
+
+    // Focal point (camera center) in image coordinates
+    // Camera moves by -deltaX, -deltaY in setPan, so focal point is center - pan
+    double focalX = imageWidth / 2.0 - m_panX;
+    double focalY = imageHeight / 2.0 - m_panY;
+
+    // Scale factors (inverse of widgetToImageCoords)
+    double scaleX = viewportWidth / visibleWidth;
+    double scaleY = viewportHeight / visibleHeight;
+
+    // Convert image position to widget position (inverse of widgetToImageCoords)
+    double dx = (imagePos.x() - focalX) * scaleX;
+    double dy = (imagePos.y() - focalY) * scaleY;
+
+    double widgetX = widgetCenterX + dx;
+    double widgetY = widgetCenterY + dy;
+
+    return QPointF(widgetX, widgetY);
 }
 
 int VtkViewportRenderer::cornerToIndex(OverlayCorner corner) const {

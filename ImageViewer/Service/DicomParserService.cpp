@@ -324,35 +324,33 @@ double DicomParserService::getDoubleTag(DcmDataset* dataset, unsigned short grou
 }
 
 bool DicomParserService::getPixelSpacing(DcmDataset* dataset, double& spacingX, double& spacingY) {
-    OFString value;
-    if (dataset->findAndGetOFString(DCM_PixelSpacing, value, 0).good()) {
-        // Pixel spacing is formatted as "row_spacing\\column_spacing"
-        QString spacing = QString::fromStdString(value.c_str());
-        QStringList parts = spacing.split('\\');
-        if (parts.size() >= 1) {
-            spacingY = parts[0].toDouble();  // Row spacing
-        }
-        if (parts.size() >= 2) {
-            spacingX = parts[1].toDouble();  // Column spacing
+    // Initialize to defaults in case parsing partially fails
+    spacingX = 1.0;
+    spacingY = 1.0;
+
+    // Try to get both values from PixelSpacing
+    OFString value0, value1;
+    if (dataset->findAndGetOFString(DCM_PixelSpacing, value0, 0).good()) {
+        spacingY = QString::fromStdString(value0.c_str()).toDouble();  // Row spacing
+        if (dataset->findAndGetOFString(DCM_PixelSpacing, value1, 1).good()) {
+            spacingX = QString::fromStdString(value1.c_str()).toDouble();  // Column spacing
+        } else {
+            spacingX = spacingY;  // Assume square pixels if only one value
         }
         return true;
     }
 
     // Try Imager Pixel Spacing for CR/DR
-    if (dataset->findAndGetOFString(DCM_ImagerPixelSpacing, value, 0).good()) {
-        QString spacing = QString::fromStdString(value.c_str());
-        QStringList parts = spacing.split('\\');
-        if (parts.size() >= 1) {
-            spacingY = parts[0].toDouble();
-        }
-        if (parts.size() >= 2) {
-            spacingX = parts[1].toDouble();
+    if (dataset->findAndGetOFString(DCM_ImagerPixelSpacing, value0, 0).good()) {
+        spacingY = QString::fromStdString(value0.c_str()).toDouble();  // Row spacing
+        if (dataset->findAndGetOFString(DCM_ImagerPixelSpacing, value1, 1).good()) {
+            spacingX = QString::fromStdString(value1.c_str()).toDouble();  // Column spacing
+        } else {
+            spacingX = spacingY;  // Assume square pixels if only one value
         }
         return true;
     }
 
-    spacingX = 1.0;
-    spacingY = 1.0;
     return false;
 }
 
