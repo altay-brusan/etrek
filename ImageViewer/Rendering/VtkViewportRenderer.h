@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QColor>
+#include <QImage>
 #include <array>
 #include <memory>
 
@@ -123,6 +124,19 @@ public:
     // Image info
     void getImageDimensions(int& width, int& height) const;
     void getImageSpacing(double& spacingX, double& spacingY) const;
+
+    /**
+     * @brief Get the current image as a QImage for magnifier/screenshot.
+     * @return QImage of the current image data, or null image if no image loaded
+     */
+    QImage getImageAsQImage() const;
+
+    /**
+     * @brief Convert widget coordinates to image pixel coordinates.
+     * @param widgetPos Position in widget coordinates (pixels from top-left)
+     * @return Position in image coordinates (pixels), or (-1,-1) if no image
+     */
+    QPointF widgetToImageCoords(const QPointF& widgetPos) const;
 
 signals:
     /**

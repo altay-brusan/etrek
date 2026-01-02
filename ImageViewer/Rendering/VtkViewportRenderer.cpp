@@ -354,10 +354,10 @@ void VtkViewportRenderer::setPan(double deltaX, double deltaY) {
         double* position = camera->GetPosition();
 
         // Move camera for intuitive "drag the image" behavior
-        // X: + because drag right should move image right
+        // X: - because camera is flipped (looking down +Z), so drag right should move image right
         // Y: - because Y-axis is flipped (SetViewUp 0,-1,0), so drag up should move image up
-        camera->SetFocalPoint(focalPoint[0] + deltaX, focalPoint[1] - deltaY, focalPoint[2]);
-        camera->SetPosition(position[0] + deltaX, position[1] - deltaY, position[2]);
+        camera->SetFocalPoint(focalPoint[0] - deltaX, focalPoint[1] - deltaY, focalPoint[2]);
+        camera->SetPosition(position[0] - deltaX, position[1] - deltaY, position[2]);
     }
 
     render();
@@ -431,7 +431,7 @@ void VtkViewportRenderer::fitToWindow() {
     double imageCenterY = (m_imageHeight - 1) / 2.0;
 
     camera->SetFocalPoint(imageCenterX, imageCenterY, 0.0);
-    camera->SetPosition(imageCenterX, imageCenterY, 1.0);  // Camera looking down -Z
+    camera->SetPosition(imageCenterX, imageCenterY, -1.0);  // Camera looking down +Z (flips horizontally)
     camera->SetViewUp(0.0, -1.0, 0.0);  // Y is down (image coordinate system)
 
     // Reset pan and zoom tracking
@@ -600,6 +600,133 @@ void VtkViewportRenderer::getImageDimensions(int& width, int& height) const {
 void VtkViewportRenderer::getImageSpacing(double& spacingX, double& spacingY) const {
     spacingX = m_spacingX;
     spacingY = m_spacingY;
+}
+
+QImage VtkViewportRenderer::getImageAsQImage() const {
+    if (!m_hasImage || !m_windowLevelFilter) {
+        return QImage();
+    }
+
+    vtkImageData* outputImage = m_windowLevelFilter->GetOutput();
+    if (!outputImage) {
+        return QImage();
+    }
+
+    int dims[3];
+    outputImage->GetDimensions(dims);
+    int width = dims[0];
+    int height = dims[1];
+
+    if (width <= 0 || height <= 0) {
+        return QImage();
+    }
+
+    // Get the scalar type and components
+    int numComponents = outputImage->GetNumberOfScalarComponents();
+
+    // Window/level filter outputs unsigned char
+    unsigned char* pixelData = static_cast<unsigned char*>(outputImage->GetScalarPointer());
+    if (!pixelData) {
+        return QImage();
+    }
+
+    QImage::Format format;
+    if (numComponents == 1) {
+        format = QImage::Format_Grayscale8;
+    } else if (numComponents == 3) {
+        format = QImage::Format_RGB888;
+    } else if (numComponents == 4) {
+        format = QImage::Format_RGBA8888;
+    } else {
+        format = QImage::Format_Grayscale8;
+    }
+
+    // Create QImage from pixel data - no flip needed since display uses SetViewUp(0,1,0)
+    QImage image(width, height, format);
+
+    int bytesPerLine = width * numComponents;
+    for (int y = 0; y < height; ++y) {
+        unsigned char* srcRow = pixelData + y * bytesPerLine;
+        unsigned char* dstRow = image.scanLine(y);
+        memcpy(dstRow, srcRow, bytesPerLine);
+    }
+
+    return image;
+}
+
+QPointF VtkViewportRenderer::widgetToImageCoords(const QPointF& widgetPos) const {
+    if (!m_hasImage || !m_renderWindow) {
+        return QPointF(-1, -1);
+    }
+
+    // Get viewport size
+    int* viewportSize = m_renderWindow->GetSize();
+    double viewportWidth = static_cast<double>(viewportSize[0]);
+    double viewportHeight = static_cast<double>(viewportSize[1]);
+
+    if (viewportWidth <= 0 || viewportHeight <= 0) {
+        return QPointF(-1, -1);
+    }
+
+    // Image dimensions
+    double imageWidth = static_cast<double>(m_imageWidth);
+    double imageHeight = static_cast<double>(m_imageHeight);
+
+    if (imageWidth <= 0 || imageHeight <= 0) {
+        return QPointF(-1, -1);
+    }
+
+    // Calculate aspect ratios
+    double viewportAspect = viewportWidth / viewportHeight;
+    double imageAspect = imageWidth / imageHeight;
+
+    // Calculate base parallel scale (same as in setZoom/fitToWindow)
+    double baseParallelScale;
+    if (imageAspect > viewportAspect) {
+        // Image is wider - fit by width
+        baseParallelScale = (imageWidth / viewportAspect) / 2.0;
+    } else {
+        // Image is taller - fit by height
+        baseParallelScale = imageHeight / 2.0;
+    }
+
+    // Effective parallel scale with zoom applied
+    double effectiveParallelScale = baseParallelScale / m_zoomFactor;
+
+    // Visible region in world/image coordinates
+    double visibleHeight = 2.0 * effectiveParallelScale;
+    double visibleWidth = visibleHeight * viewportAspect;
+
+    // Widget center
+    double widgetCenterX = viewportWidth / 2.0;
+    double widgetCenterY = viewportHeight / 2.0;
+
+    // Focal point (camera center) in image coordinates
+    double focalX = imageWidth / 2.0 + m_panX;
+    double focalY = imageHeight / 2.0 - m_panY;
+
+    // Convert widget position to image position
+    double dx = widgetPos.x() - widgetCenterX;
+    double dy = widgetPos.y() - widgetCenterY;
+
+    // Scale factors
+    double scaleX = visibleWidth / viewportWidth;
+    double scaleY = visibleHeight / viewportHeight;
+
+    // Calculate position in VTK coordinate space
+    double vtkX = focalX + dx * scaleX;
+    double vtkY = focalY + dy * scaleY;
+
+    // Map to image coordinates (X direct since camera flips it, Y direct)
+    double imageX = vtkX;
+    double imageY = vtkY;
+
+    // Return -1,-1 if outside image bounds
+    if (imageX < 0 || imageX >= imageWidth || imageY < 0 || imageY >= imageHeight) {
+        return QPointF(-1, -1);
+    }
+
+    return QPointF(imageX, imageY);
 }
 
 int VtkViewportRenderer::cornerToIndex(OverlayCorner corner) const {
