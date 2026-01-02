@@ -23,7 +23,23 @@ class vtkRenderer;
 class vtkGenericOpenGLRenderWindow;
 class vtkImageActor;
 class vtkImageData;
+class vtkCamera;
 class QVTKOpenGLNativeWidget;
+
+// Forward declarations for ImageViewer tools
+namespace Etrek::ImageViewer::Tool {
+    class WindowLevelTool;
+    class ZoomTool;
+    class PanTool;
+    class RulerTool;
+    class AngleTool;
+    class ResetTool;
+}
+
+namespace Etrek::ImageViewer::Widget {
+    class RulerOverlayWidget;
+    class AngleOverlayWidget;
+}
 
 namespace Etrek::Worklist::Repository {
     class WorklistRepository;
@@ -160,6 +176,27 @@ private slots:
     void onCloseClicked();
     void onPrintClicked();
 
+    // --- Image Tool Panel ---
+    void onToolSelected(Etrek::ImageViewer::ToolType tool);
+    void onInvertRequested();
+    void onFitToWindowRequested();
+    void onResetViewRequested();
+    void onCursorChanged(Qt::CursorShape cursor);
+
+    // --- Tool Event Handlers ---
+    void onWindowLevelChanged(double window, double level);
+    void onZoomRequested(double factor, const QPointF& center);
+    void onPanRequested(double deltaX, double deltaY);
+
+    // --- Measurement Handlers ---
+    void onRulerMeasurementUpdated(const Etrek::ImageViewer::MeasurementLine& line);
+    void onRulerMeasurementCompleted(const Etrek::ImageViewer::MeasurementLine& line);
+    void onAngleMeasurementUpdated(const Etrek::ImageViewer::MeasurementAngle& angle);
+    void onAngleMeasurementCompleted(const Etrek::ImageViewer::MeasurementAngle& angle);
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 private:
     // --- Database Operations ---
     void createStudy();
@@ -188,6 +225,13 @@ private:
     void displayErrorMessage(const QString& title, const QString& message);
     void displayInfoMessage(const QString& title, const QString& message);
     QString generateDicomUid(const QString& type);
+
+    // --- Tool Methods ---
+    void initializeTools();
+    void activateTool(Etrek::ImageViewer::ToolType tool);
+    void initializeOverlays();
+    void updateOverlayTransforms();
+    QPointF imageToWidget(const QPointF& imagePos) const;
 
     // --- UI Components ---
     ExamPage* ui;
@@ -218,6 +262,25 @@ private:
     vtkRenderer* m_renderer = nullptr;
     vtkGenericOpenGLRenderWindow* m_renderWindow = nullptr;
     vtkImageActor* m_imageActor = nullptr;
+
+    // --- Image Tools ---
+    std::unique_ptr<Etrek::ImageViewer::Tool::WindowLevelTool> m_windowLevelTool;
+    std::unique_ptr<Etrek::ImageViewer::Tool::ZoomTool> m_zoomTool;
+    std::unique_ptr<Etrek::ImageViewer::Tool::PanTool> m_panTool;
+    std::unique_ptr<Etrek::ImageViewer::Tool::RulerTool> m_rulerTool;
+    std::unique_ptr<Etrek::ImageViewer::Tool::AngleTool> m_angleTool;
+    std::unique_ptr<Etrek::ImageViewer::Tool::ResetTool> m_resetTool;
+    Etrek::ImageViewer::ToolType m_currentTool = Etrek::ImageViewer::ToolType::WINDOW_LEVEL;
+
+    // --- Measurement Overlays ---
+    Etrek::ImageViewer::Widget::RulerOverlayWidget* m_rulerOverlay = nullptr;
+    Etrek::ImageViewer::Widget::AngleOverlayWidget* m_angleOverlay = nullptr;
+
+    // --- Image State ---
+    double m_currentWindow = 400.0;
+    double m_currentLevel = 40.0;
+    double m_zoomLevel = 1.0;
+    QPointF m_panOffset{0.0, 0.0};
 
     // --- Other Delegates ---
     QVector<QPointer<QObject>> m_childDelegates;
