@@ -34,6 +34,7 @@ class ResetTool;
 
 namespace Etrek::ImageViewer::Widget {
 class MagnifierWidget;
+class RulerOverlayWidget;
 }
 
 namespace Etrek::Dicom::Repository {
@@ -142,15 +143,26 @@ private slots:
     void onMagnifierHideRequested();
     void onMagnifierToggleRequested();
 
+    // Ruler overlay slots
+    void onRulerMeasurementsChanged();
+    void onRulerSelected(int rulerId);
+    void onRulerDeleted(int rulerId);
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 private:
     void initializeViewports();
     void initializeTools();
+    void initializeRulerOverlays();
     void setupConnections();
     void updateOverlay(int viewportIndex);
     void updateAllOverlays();
     void activateTool(Etrek::ImageViewer::ToolType tool);
     void loadImageIntoViewport(int viewportIndex, const QString& filePath);
     QString formatOverlayText(Etrek::ImageViewer::OverlayCorner corner, int viewportIndex) const;
+    void refreshRulerOverlays();
+    void updateRulerOverlayTransforms();
 
     // UI
     ImageViewerPage* m_ui;
@@ -176,6 +188,9 @@ private:
 
     // Magnifier widget
     Etrek::ImageViewer::Widget::MagnifierWidget* m_magnifier = nullptr;
+
+    // Ruler overlay widgets (one per viewport)
+    std::array<Etrek::ImageViewer::Widget::RulerOverlayWidget*, 4> m_rulerOverlays = {nullptr, nullptr, nullptr, nullptr};
 
     // State
     Etrek::ImageViewer::ToolType m_currentTool = Etrek::ImageViewer::ToolType::WINDOW_LEVEL;

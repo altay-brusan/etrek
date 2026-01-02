@@ -15,10 +15,12 @@
 #include "AngleTool.h"
 #include "ResetTool.h"
 #include "MagnifierWidget.h"
+#include "RulerOverlayWidget.h"
 
 #include <QTimer>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QEvent>
 #include <QVTKOpenGLNativeWidget.h>
 
 using namespace Etrek::ImageViewer;
@@ -52,6 +54,22 @@ ImageViewerPageDelegate::ImageViewerPageDelegate(
 
 ImageViewerPageDelegate::~ImageViewerPageDelegate() = default;
 
+bool ImageViewerPageDelegate::eventFilter(QObject* watched, QEvent* event) {
+    if (event->type() == QEvent::Resize) {
+        // Find which viewport widget was resized
+        auto widgets = m_ui->getAllVtkWidgets();
+        for (int i = 0; i < 4; ++i) {
+            if (widgets[i] == watched && m_rulerOverlays[i]) {
+                // Resize overlay to match the VTK widget
+                m_rulerOverlays[i]->setGeometry(0, 0, widgets[i]->width(), widgets[i]->height());
+                m_rulerOverlays[i]->refresh();
+                break;
+            }
+        }
+    }
+    return QObject::eventFilter(watched, event);
+}
+
 void ImageViewerPageDelegate::attachDelegates(const QVector<QObject*>& delegates) {
     Q_UNUSED(delegates)
     // No child delegates needed for image viewer
@@ -73,6 +91,7 @@ void ImageViewerPageDelegate::reject() {
 
 void ImageViewerPageDelegate::onPageLoaded() {
     initializeViewports();
+    initializeRulerOverlays();
 
     // Check if there's context data to load
     if (auto ctx = m_contextManager.lock()) {
@@ -83,6 +102,60 @@ void ImageViewerPageDelegate::onPageLoaded() {
 void ImageViewerPageDelegate::initializeViewports() {
     auto widgets = m_ui->getAllVtkWidgets();
     m_viewportManager->initialize(widgets);
+}
+
+void ImageViewerPageDelegate::initializeRulerOverlays() {
+    auto widgets = m_ui->getAllVtkWidgets();
+
+    for (int i = 0; i < 4; ++i) {
+        if (widgets[i]) {
+            // Parent to the VTK widget directly so overlay matches its size
+            m_rulerOverlays[i] = new RulerOverlayWidget(widgets[i]);
+            m_rulerOverlays[i]->setGeometry(0, 0, widgets[i]->width(), widgets[i]->height());
+            m_rulerOverlays[i]->raise();
+            m_rulerOverlays[i]->show();
+
+            // Install event filter on the VTK widget to track resize
+            widgets[i]->installEventFilter(this);
+
+            // Set up coordinate transform using the renderer
+            auto* renderer = m_viewportManager->getRenderer(i);
+            if (renderer) {
+                m_rulerOverlays[i]->setImageToWidgetTransform(
+                    [renderer](const QPointF& imagePos) {
+                        return renderer->imageToWidgetCoords(imagePos);
+                    }
+                );
+            }
+        }
+    }
+}
+
+void ImageViewerPageDelegate::refreshRulerOverlays() {
+    for (int i = 0; i < 4; ++i) {
+        if (m_rulerOverlays[i]) {
+            // Update measurements from the ruler tool
+            m_rulerOverlays[i]->setMeasurements(m_rulerTool->getMeasurements());
+            m_rulerOverlays[i]->setSelectedRuler(m_rulerTool->selectedRuler());
+            m_rulerOverlays[i]->refresh();
+        }
+    }
+}
+
+void ImageViewerPageDelegate::updateRulerOverlayTransforms() {
+    for (int i = 0; i < 4; ++i) {
+        if (m_rulerOverlays[i]) {
+            auto* renderer = m_viewportManager->getRenderer(i);
+            if (renderer) {
+                m_rulerOverlays[i]->setImageToWidgetTransform(
+                    [renderer](const QPointF& imagePos) {
+                        return renderer->imageToWidgetCoords(imagePos);
+                    }
+                );
+            }
+            m_rulerOverlays[i]->refresh();
+        }
+    }
 }
 
 void ImageViewerPageDelegate::initializeTools() {
@@ -104,6 +177,28 @@ void ImageViewerPageDelegate::initializeTools() {
             this, &ImageViewerPageDelegate::onMeasurementLineUpdated);
     connect(m_rulerTool.get(), &RulerTool::measurementLineCompleted,
             this, &ImageViewerPageDelegate::onMeasurementLineCompleted);
+    connect(m_rulerTool.get(), &RulerTool::measurementsChanged,
+            this, &ImageViewerPageDelegate::onRulerMeasurementsChanged);
+    connect(m_rulerTool.get(), &RulerTool::rulerSelected,
+            this, &ImageViewerPageDelegate::onRulerSelected);
+    connect(m_rulerTool.get(), &RulerTool::rulerDeleted,
+            this, &ImageViewerPageDelegate::onRulerDeleted);
+    connect(m_rulerTool.get(), &RulerTool::handleHovered,
+            this, [this](int rulerId, bool isStartHandle) {
+                for (int i = 0; i < 4; ++i) {
+                    if (m_rulerOverlays[i]) {
+                        m_rulerOverlays[i]->setHoveredHandle(rulerId, isStartHandle);
+                    }
+                }
+            });
+    connect(m_rulerTool.get(), &RulerTool::handleHoverCleared,
+            this, [this]() {
+                for (int i = 0; i < 4; ++i) {
+                    if (m_rulerOverlays[i]) {
+                        m_rulerOverlays[i]->clearHoveredHandle();
+                    }
+                }
+            });
     connect(m_resetTool.get(), &ResetTool::resetRequested,
             this, &ImageViewerPageDelegate::onResetRequested);
 
@@ -184,6 +279,23 @@ void ImageViewerPageDelegate::setupConnections() {
     // Close request - user wants to close ImageViewer and return to main window
     connect(m_ui, &ImageViewerPage::closeRequested,
             this, &ImageViewerPageDelegate::reject);
+
+    // Ruler deletion via Delete/Backspace key
+    connect(m_ui, &ImageViewerPage::deleteSelectedRulerRequested,
+            this, [this]() {
+                if (m_rulerTool && m_currentTool == ToolType::RULER) {
+                    m_rulerTool->deleteSelectedRuler();
+                }
+            });
+
+    // Clear all rulers via Ctrl+Delete
+    connect(m_ui, &ImageViewerPage::clearAllRulersRequested,
+            this, [this]() {
+                if (m_rulerTool && m_currentTool == ToolType::RULER) {
+                    m_rulerTool->clearMeasurements();
+                    refreshRulerOverlays();
+                }
+            });
 }
 
 void ImageViewerPageDelegate::loadFromFile(const QString& filePath) {
@@ -318,6 +430,19 @@ void ImageViewerPageDelegate::onViewportMousePressed(int viewportIndex, const QP
         m_activeViewportIndex = viewportIndex;
     }
 
+    // For ruler tool, convert widget coords to image coords
+    QPointF toolPos = pos;
+    bool validImageCoords = true;
+    if (m_currentTool == ToolType::RULER || m_currentTool == ToolType::ANGLE) {
+        if (auto* renderer = m_viewportManager->activeRenderer()) {
+            toolPos = renderer->widgetToImageCoords(pos);
+            // Check if coordinates are valid (inside image bounds)
+            if (toolPos.x() < 0 || toolPos.y() < 0) {
+                validImageCoords = false;
+            }
+        }
+    }
+
     // Forward to active tool
     switch (m_currentTool) {
         case ToolType::WINDOW_LEVEL:
@@ -330,10 +455,15 @@ void ImageViewerPageDelegate::onViewportMousePressed(int viewportIndex, const QP
             m_panTool->onMousePress(pos, button);
             break;
         case ToolType::RULER:
-            m_rulerTool->onMousePress(pos, button);
+            // Only forward if coordinates are valid (inside image)
+            if (validImageCoords) {
+                m_rulerTool->onMousePress(toolPos, button);
+            }
             break;
         case ToolType::ANGLE:
-            m_angleTool->onMousePress(pos, button);
+            if (validImageCoords) {
+                m_angleTool->onMousePress(toolPos, button);
+            }
             break;
         default:
             break;
@@ -346,6 +476,25 @@ void ImageViewerPageDelegate::onViewportMouseMoved(int viewportIndex, const QPoi
     Q_UNUSED(buttons)
     Q_UNUSED(modifiers)
 
+    // For ruler tool, convert widget coords to image coords
+    QPointF toolPos = pos;
+    if (m_currentTool == ToolType::RULER || m_currentTool == ToolType::ANGLE) {
+        if (auto* renderer = m_viewportManager->activeRenderer()) {
+            toolPos = renderer->widgetToImageCoords(pos);
+            // If out of bounds (-1,-1), clamp to image edges
+            if (toolPos.x() < 0 || toolPos.y() < 0) {
+                int imgWidth, imgHeight;
+                renderer->getImageDimensions(imgWidth, imgHeight);
+                // Re-calculate but clamp to bounds
+                // For now, just skip if invalid
+                toolPos = QPointF(
+                    qBound(0.0, toolPos.x() < 0 ? 0.0 : toolPos.x(), static_cast<double>(imgWidth - 1)),
+                    qBound(0.0, toolPos.y() < 0 ? 0.0 : toolPos.y(), static_cast<double>(imgHeight - 1))
+                );
+            }
+        }
+    }
+
     switch (m_currentTool) {
         case ToolType::WINDOW_LEVEL:
             m_windowLevelTool->onMouseMove(pos);
@@ -357,10 +506,10 @@ void ImageViewerPageDelegate::onViewportMouseMoved(int viewportIndex, const QPoi
             m_panTool->onMouseMove(pos);
             break;
         case ToolType::RULER:
-            m_rulerTool->onMouseMove(pos);
+            m_rulerTool->onMouseMove(toolPos);
             break;
         case ToolType::ANGLE:
-            m_angleTool->onMouseMove(pos);
+            m_angleTool->onMouseMove(toolPos);
             break;
         default:
             break;
@@ -371,6 +520,23 @@ void ImageViewerPageDelegate::onViewportMouseReleased(int viewportIndex, const Q
                                                        Qt::MouseButton button, Qt::KeyboardModifiers modifiers) {
     Q_UNUSED(viewportIndex)
     Q_UNUSED(modifiers)
+
+    // For ruler tool, convert widget coords to image coords
+    QPointF toolPos = pos;
+    if (m_currentTool == ToolType::RULER || m_currentTool == ToolType::ANGLE) {
+        if (auto* renderer = m_viewportManager->activeRenderer()) {
+            toolPos = renderer->widgetToImageCoords(pos);
+            // If out of bounds (-1,-1), clamp to image edges
+            if (toolPos.x() < 0 || toolPos.y() < 0) {
+                int imgWidth, imgHeight;
+                renderer->getImageDimensions(imgWidth, imgHeight);
+                toolPos = QPointF(
+                    qBound(0.0, toolPos.x() < 0 ? 0.0 : toolPos.x(), static_cast<double>(imgWidth - 1)),
+                    qBound(0.0, toolPos.y() < 0 ? 0.0 : toolPos.y(), static_cast<double>(imgHeight - 1))
+                );
+            }
+        }
+    }
 
     switch (m_currentTool) {
         case ToolType::WINDOW_LEVEL:
@@ -383,10 +549,10 @@ void ImageViewerPageDelegate::onViewportMouseReleased(int viewportIndex, const Q
             m_panTool->onMouseRelease(pos, button);
             break;
         case ToolType::RULER:
-            m_rulerTool->onMouseRelease(pos, button);
+            m_rulerTool->onMouseRelease(toolPos, button);
             break;
         case ToolType::ANGLE:
-            m_angleTool->onMouseRelease(pos, button);
+            m_angleTool->onMouseRelease(toolPos, button);
             break;
         default:
             break;
@@ -404,6 +570,7 @@ void ImageViewerPageDelegate::onViewportMouseWheel(int viewportIndex, int delta,
         double zoomFactor = delta > 0 ? 1.1 : 0.9;
         renderer->setZoom(currentZoom * zoomFactor);
         updateOverlay(m_activeViewportIndex);
+        refreshRulerOverlays();
     }
 }
 
@@ -417,6 +584,7 @@ void ImageViewerPageDelegate::onViewportDoubleClicked(int viewportIndex, const Q
         if (auto* renderer = m_viewportManager->activeRenderer()) {
             renderer->fitToWindow();
             updateOverlay(m_activeViewportIndex);
+            refreshRulerOverlays();
         }
     }
 }
@@ -491,12 +659,14 @@ void ImageViewerPageDelegate::onZoomRequested(double factor, const QPointF& cent
     if (auto* renderer = m_viewportManager->activeRenderer()) {
         renderer->setZoom(factor);
         updateOverlay(m_activeViewportIndex);
+        refreshRulerOverlays();
     }
 }
 
 void ImageViewerPageDelegate::onPanRequested(double deltaX, double deltaY) {
     if (auto* renderer = m_viewportManager->activeRenderer()) {
         renderer->setPan(deltaX, deltaY);
+        refreshRulerOverlays();
     }
 }
 
@@ -505,13 +675,46 @@ void ImageViewerPageDelegate::onResetRequested() {
 }
 
 void ImageViewerPageDelegate::onMeasurementLineUpdated(const MeasurementLine& line) {
-    Q_UNUSED(line)
-    // TODO: Update measurement visualization in renderer
+    // Update the ruler overlay with the in-progress measurement
+    if (m_activeViewportIndex >= 0 && m_activeViewportIndex < 4) {
+        if (m_rulerOverlays[m_activeViewportIndex]) {
+            m_rulerOverlays[m_activeViewportIndex]->setCurrentMeasurement(line);
+            m_rulerOverlays[m_activeViewportIndex]->refresh();
+        }
+    }
 }
 
 void ImageViewerPageDelegate::onMeasurementLineCompleted(const MeasurementLine& line) {
     Q_UNUSED(line)
-    // TODO: Store measurement and update visualization
+    // Clear the in-progress measurement and refresh with all measurements
+    if (m_activeViewportIndex >= 0 && m_activeViewportIndex < 4) {
+        if (m_rulerOverlays[m_activeViewportIndex]) {
+            m_rulerOverlays[m_activeViewportIndex]->clearCurrentMeasurement();
+            m_rulerOverlays[m_activeViewportIndex]->setMeasurements(m_rulerTool->getMeasurements());
+            m_rulerOverlays[m_activeViewportIndex]->refresh();
+        }
+    }
+}
+
+void ImageViewerPageDelegate::onRulerMeasurementsChanged() {
+    // Refresh all ruler overlays when measurements change
+    refreshRulerOverlays();
+}
+
+void ImageViewerPageDelegate::onRulerSelected(int rulerId) {
+    // Update the selected ruler in the overlay
+    for (int i = 0; i < 4; ++i) {
+        if (m_rulerOverlays[i]) {
+            m_rulerOverlays[i]->setSelectedRuler(rulerId);
+            m_rulerOverlays[i]->refresh();
+        }
+    }
+}
+
+void ImageViewerPageDelegate::onRulerDeleted(int rulerId) {
+    Q_UNUSED(rulerId)
+    // Refresh overlays after deletion
+    refreshRulerOverlays();
 }
 
 void ImageViewerPageDelegate::onCursorChanged(Qt::CursorShape cursor) {
