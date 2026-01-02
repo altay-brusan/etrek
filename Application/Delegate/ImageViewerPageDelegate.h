@@ -32,6 +32,10 @@ class AngleTool;
 class ResetTool;
 }
 
+namespace Etrek::ImageViewer::Widget {
+class MagnifierWidget;
+}
+
 namespace Etrek::Dicom::Repository {
 class DicomRepository;
 }
@@ -133,6 +137,11 @@ private slots:
     void onMeasurementLineCompleted(const Etrek::ImageViewer::MeasurementLine& line);
     void onCursorChanged(Qt::CursorShape cursor);
 
+    // Magnifier slots
+    void onMagnifierRequested(const QPointF& pos);
+    void onMagnifierHideRequested();
+    void onMagnifierToggleRequested();
+
 private:
     void initializeViewports();
     void initializeTools();
@@ -164,6 +173,9 @@ private:
     std::unique_ptr<Etrek::ImageViewer::Tool::RulerTool> m_rulerTool;
     std::unique_ptr<Etrek::ImageViewer::Tool::AngleTool> m_angleTool;
     std::unique_ptr<Etrek::ImageViewer::Tool::ResetTool> m_resetTool;
+
+    // Magnifier widget
+    Etrek::ImageViewer::Widget::MagnifierWidget* m_magnifier = nullptr;
 
     // State
     Etrek::ImageViewer::ToolType m_currentTool = Etrek::ImageViewer::ToolType::WINDOW_LEVEL;

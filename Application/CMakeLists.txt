@@ -91,6 +91,7 @@ target_include_directories(Application
         ${CMAKE_IMAGEVIEWER_DIRECTORY}/Rendering
         ${CMAKE_IMAGEVIEWER_DIRECTORY}/Service
         ${CMAKE_IMAGEVIEWER_DIRECTORY}/Tool
+        ${CMAKE_IMAGEVIEWER_DIRECTORY}/Widget
 )
 
 

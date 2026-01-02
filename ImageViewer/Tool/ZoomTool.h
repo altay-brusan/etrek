@@ -8,13 +8,15 @@ namespace Etrek::ImageViewer::Tool {
 
 /**
  * @class ZoomTool
- * @brief Tool for zooming in/out on images.
+ * @brief Magnifier tool for examining image details.
+ *
+ * When active, displays a magnifying glass overlay that shows
+ * a zoomed portion of the image centered on the cursor position.
  *
  * Interaction:
- * - Left mouse drag up: Zoom in
- * - Left mouse drag down: Zoom out
- * - Mouse wheel: Zoom in/out
- * - Double-click: Fit to window
+ * - Move mouse: Update magnifier position
+ * - Left click: Toggle magnification level (2x/3x)
+ * - Mouse wheel: Also toggles magnification level
  */
 class IMAGEVIEWER_EXPORT ZoomTool : public IImageTool {
     Q_OBJECT
@@ -25,8 +27,8 @@ public:
 
     // IImageTool interface
     ToolType type() const override { return ToolType::ZOOM; }
-    QString name() const override { return tr("Zoom"); }
-    QString tooltip() const override { return tr("Zoom in/out (Z)"); }
+    QString name() const override { return tr("Magnifier"); }
+    QString tooltip() const override { return tr("Magnifier - examine image details (Z)"); }
     QIcon icon() const override;
     bool isActive() const override { return m_active; }
     void activate() override;
@@ -39,30 +41,28 @@ public:
     void reset() override;
 
     /**
-     * @brief Set the current zoom factor.
+     * @brief Set the current magnification factor (for state sync).
      */
     void setCurrentZoom(double zoom);
-    double currentZoom() const { return m_currentZoom; }
+    double currentZoom() const { return m_currentMagnification; }
 
     /**
-     * @brief Set zoom limits.
+     * @brief Set zoom/magnification limits.
      */
     void setZoomLimits(double minZoom, double maxZoom);
 
     /**
-     * @brief Set zoom sensitivity for drag operations.
+     * @brief Set sensitivity (unused in magnifier mode, kept for API compatibility).
      */
     void setSensitivity(double sensitivity);
 
 private:
     bool m_active = false;
-    bool m_dragging = false;
     QPointF m_lastPos;
-    QPointF m_dragStartPos;
-    double m_currentZoom = 1.0;
-    double m_minZoom = 0.1;
-    double m_maxZoom = 20.0;
-    double m_sensitivity = 0.01;
+    double m_currentMagnification = 2.0;
+    double m_minZoom = 2.0;
+    double m_maxZoom = 3.0;
+    double m_sensitivity = 0.01;  // Unused in magnifier mode
 };
 
 } // namespace Etrek::ImageViewer::Tool
