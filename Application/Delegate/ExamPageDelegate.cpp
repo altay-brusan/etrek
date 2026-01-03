@@ -788,7 +788,7 @@ void ExamPageDelegate::onCancelStudyRequested()
 void ExamPageDelegate::onCloseClicked()
 {
     qDebug() << "[ExamPageDelegate] onCloseClicked()";
-    reject();  // Confirm and close
+    emit closeExamination();
 }
 
 void ExamPageDelegate::onPrintClicked()
@@ -1122,6 +1122,10 @@ void ExamPageDelegate::setupConnections()
             this, &ExamPageDelegate::onFitToWindowRequested);
     connect(ui, &ExamPage::resetViewRequested,
             this, &ExamPageDelegate::onResetViewRequested);
+
+    // Connect close button
+    connect(ui, &ExamPage::closeExamPage,
+            this, &ExamPageDelegate::onCloseClicked);
 }
 
 void ExamPageDelegate::displayErrorMessage(const QString& title, const QString& message)
