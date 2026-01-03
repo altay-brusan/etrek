@@ -32,7 +32,12 @@ public slots:
   void accept() override;
   void reject() override;
 
+private slots:
+  void onPageLoaded();
+
 private:
+  void setupConnections();
+
   SystemSettingPage *m_page;
   QVector<QPointer<QObject>> delegates;
 };
