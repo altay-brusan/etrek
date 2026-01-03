@@ -117,13 +117,27 @@ void ViewportGrid::updateGridLayout() {
         }
     }
 
-    // Set equal row/column stretch
+    // Reset ALL row/column stretches first (max 2x2 grid = indices 0,1)
+    // This is critical: when switching from larger to smaller layouts,
+    // unused rows/columns must have stretch=0 to not consume space
+    for (int r = 0; r < 2; ++r) {
+        m_gridLayout->setRowStretch(r, 0);
+    }
+    for (int c = 0; c < 2; ++c) {
+        m_gridLayout->setColumnStretch(c, 0);
+    }
+
+    // Set equal stretch for the rows/columns actually in use
     for (int r = 0; r < rows; ++r) {
         m_gridLayout->setRowStretch(r, 1);
     }
     for (int c = 0; c < cols; ++c) {
         m_gridLayout->setColumnStretch(c, 1);
     }
+
+    // Force layout update to ensure proper sizing
+    m_gridLayout->invalidate();
+    m_gridLayout->activate();
 }
 
 ImageViewport* ViewportGrid::getViewport(int index) {
