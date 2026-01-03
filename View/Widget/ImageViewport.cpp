@@ -5,7 +5,8 @@
 #include <QVBoxLayout>
 #include <QMouseEvent>
 #include <QWheelEvent>
-#include <QFrame>
+#include <QPainter>
+#include <QPen>
 
 ImageViewport::ImageViewport(QWidget* parent)
     : QWidget(parent)
@@ -71,11 +72,29 @@ bool ImageViewport::isInteractionEnabled() const {
 }
 
 void ImageViewport::updateBorderStyle() {
+    // Trigger a repaint to update the border
+    update();
+}
+
+void ImageViewport::paintEvent(QPaintEvent* event) {
+    QWidget::paintEvent(event);
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
     if (m_active) {
-        setStyleSheet("ImageViewport { border: 2px solid #00FF00; background-color: #000000; }");
+        // Active panel: bright cyan border, thicker (3px) for visibility
+        QPen pen(QColor(0, 191, 255), 3);  // DeepSkyBlue
+        painter.setPen(pen);
     } else {
-        setStyleSheet("ImageViewport { border: 1px solid #404040; background-color: #000000; }");
+        // Inactive panel: subtle dark gray border
+        QPen pen(QColor(85, 85, 85), 1);
+        painter.setPen(pen);
     }
+
+    // Draw border inside the widget bounds
+    QRect borderRect = rect().adjusted(1, 1, -1, -1);
+    painter.drawRect(borderRect);
 }
 
 QPointF ImageViewport::mapToImage(const QPoint& widgetPos) const {

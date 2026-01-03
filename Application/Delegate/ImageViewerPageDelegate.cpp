@@ -490,10 +490,16 @@ void ImageViewerPageDelegate::loadFromExamPage(const QByteArray& imageData, cons
             renderer->setImageData(result.imageData, true);
             m_viewportMetadata[m_activeViewportIndex] = metadata;
 
+            // Update ruler tool with pixel spacing (angles don't need pixel spacing - they're measured in degrees)
+            if (m_rulerTool) {
+                m_rulerTool->setPixelSpacing(metadata.pixelSpacingX, metadata.pixelSpacingY);
+            }
+
             // Auto-fit image to fill the viewport
             renderer->fitToWindow();
 
             updateOverlay(m_activeViewportIndex);
+            updateEdgeRulers(m_activeViewportIndex);
             emit imageLoaded(m_activeViewportIndex);
         }
     } else {
@@ -763,8 +769,18 @@ void ImageViewerPageDelegate::onActiveViewportChanged(int index) {
             renderer->getWindowLevel(window, level);
             m_windowLevelTool->setCurrentWindowLevel(window, level);
             m_zoomTool->setCurrentZoom(renderer->getZoom());
+
+            // Update pixel spacing for ruler tool based on active viewport's metadata
+            // (angles don't need pixel spacing - they're measured in degrees)
+            const auto& meta = m_viewportMetadata[index];
+            if (m_rulerTool) {
+                m_rulerTool->setPixelSpacing(meta.pixelSpacingX, meta.pixelSpacingY);
+            }
         }
     }
+
+    // Update overlays for the newly active viewport
+    updateOverlay(index);
 }
 
 void ImageViewerPageDelegate::onOpenFileRequested() {
