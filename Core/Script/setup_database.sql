@@ -326,7 +326,7 @@ CREATE TABLE device_connections (
 
 -- ****************[section: pacs ]***********************
 
--- details of connection for pcas nodes
+-- details of connection for pacs nodes
 CREATE TABLE pacs_nodes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     entity_type ENUM('Archive','MPPS') NOT NULL,
