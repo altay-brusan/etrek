@@ -72,9 +72,24 @@ bool ImageViewport::isInteractionEnabled() const {
 
 void ImageViewport::updateBorderStyle() {
     if (m_active) {
-        setStyleSheet("ImageViewport { border: 2px solid #00FF00; background-color: #000000; }");
+        // Active panel: bright cyan border, thicker (3px) for visibility
+        setStyleSheet(
+            "ImageViewport { "
+            "  border: 3px solid #00BFFF; "  // DeepSkyBlue - bright and visible
+            "  background-color: #000000; "
+            "}"
+        );
     } else {
-        setStyleSheet("ImageViewport { border: 1px solid #404040; background-color: #000000; }");
+        // Inactive panel: subtle dark gray border
+        setStyleSheet(
+            "ImageViewport { "
+            "  border: 1px solid #555555; "
+            "  background-color: #000000; "
+            "}"
+            "ImageViewport:hover { "
+            "  border: 2px solid #0080FF; "  // Highlight on hover to indicate clickable
+            "}"
+        );
     }
 }
 
