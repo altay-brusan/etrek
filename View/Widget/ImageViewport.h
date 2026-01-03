@@ -6,6 +6,7 @@
 
 // Forward declarations
 class QVTKOpenGLNativeWidget;
+class QPaintEvent;
 
 namespace Etrek::ImageViewer {
 enum class InteractionType;
@@ -87,6 +88,7 @@ signals:
     void mouseDoubleClicked(int index, const QPointF& pos, Qt::MouseButton button);
 
 protected:
+    void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
