@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 #include <QFrame>
 #include <QGroupBox>
+#include <QDialogButtonBox>
 #include "ui_ExamPage.h"
 #include "GeneratorControlWidget.h"
 #include "DetectorControlWidget.h"
@@ -103,6 +104,10 @@ ExamPage::ExamPage(QWidget *parent)
             this, &ExamPage::fitToWindowRequested);
     connect(m_toolPanel, &ImageToolPanel::resetViewRequested,
             this, &ExamPage::resetViewRequested);
+
+    // Connect close button
+    connect(ui->buttonBox, &QDialogButtonBox::rejected,
+            this, &ExamPage::closeExamPage);
 }
 
 ExamPage::~ExamPage()

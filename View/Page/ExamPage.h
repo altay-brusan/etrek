@@ -110,6 +110,11 @@ signals:
      */
     void resetViewRequested();
 
+    /**
+     * @brief Emitted when the close button is pressed.
+     */
+    void closeExamPage();
+
 private:
     Ui::ExamPage *ui;
     ImageToolPanel *m_toolPanel{nullptr};
