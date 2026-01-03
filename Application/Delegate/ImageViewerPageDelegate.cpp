@@ -17,6 +17,7 @@
 #include "MagnifierWidget.h"
 #include "RulerOverlayWidget.h"
 #include "AngleOverlayWidget.h"
+#include "EdgeRulerWidget.h"
 
 #include <QTimer>
 #include <QFileDialog>
@@ -71,6 +72,11 @@ bool ImageViewerPageDelegate::eventFilter(QObject* watched, QEvent* event) {
                     m_angleOverlays[i]->setGeometry(0, 0, widgets[i]->width(), widgets[i]->height());
                     m_angleOverlays[i]->refresh();
                 }
+                // Resize edge ruler overlay to match the VTK widget
+                if (m_edgeRulers[i]) {
+                    m_edgeRulers[i]->setGeometry(0, 0, widgets[i]->width(), widgets[i]->height());
+                    m_edgeRulers[i]->update();
+                }
                 break;
             }
         }
@@ -101,6 +107,7 @@ void ImageViewerPageDelegate::onPageLoaded() {
     initializeViewports();
     initializeRulerOverlays();
     initializeAngleOverlays();
+    initializeEdgeRulers();
 
     // Check if there's context data to load
     if (auto ctx = m_contextManager.lock()) {
@@ -189,6 +196,64 @@ void ImageViewerPageDelegate::initializeAngleOverlays() {
             }
         }
     }
+}
+
+void ImageViewerPageDelegate::initializeEdgeRulers() {
+    auto widgets = m_ui->getAllVtkWidgets();
+
+    for (int i = 0; i < 4; ++i) {
+        if (widgets[i]) {
+            // Parent to the VTK widget directly so overlay matches its size
+            m_edgeRulers[i] = new EdgeRulerWidget(widgets[i]);
+            m_edgeRulers[i]->setGeometry(0, 0, widgets[i]->width(), widgets[i]->height());
+            m_edgeRulers[i]->raise();
+            m_edgeRulers[i]->show();
+
+            // Initially hide until an image is loaded
+            m_edgeRulers[i]->setVisible(false);
+        }
+    }
+}
+
+void ImageViewerPageDelegate::updateEdgeRulers(int viewportIndex) {
+    if (viewportIndex < 0 || viewportIndex >= 4) return;
+    if (!m_edgeRulers[viewportIndex]) return;
+
+    auto* renderer = m_viewportManager->getRenderer(viewportIndex);
+    if (!renderer || !renderer->hasImage()) {
+        m_edgeRulers[viewportIndex]->setVisible(false);
+        return;
+    }
+
+    // Get pixel spacing from metadata
+    const auto& meta = m_viewportMetadata[viewportIndex];
+    double spacingX = meta.pixelSpacingX;
+    double spacingY = meta.pixelSpacingY;
+
+    // If pixel spacing is invalid, hide the ruler
+    if (spacingX <= 0 || spacingY <= 0) {
+        m_edgeRulers[viewportIndex]->setVisible(false);
+        return;
+    }
+
+    // Get image dimensions
+    int imageWidth, imageHeight;
+    renderer->getImageDimensions(imageWidth, imageHeight);
+
+    // Update edge ruler with image info
+    m_edgeRulers[viewportIndex]->setPixelSpacing(spacingX, spacingY);
+    m_edgeRulers[viewportIndex]->setImageDimensions(imageWidth, imageHeight);
+    m_edgeRulers[viewportIndex]->setZoomLevel(renderer->getZoom());
+
+    // Set coordinate transform for converting image coords to widget coords
+    m_edgeRulers[viewportIndex]->setImageToWidgetTransform(
+        [renderer](const QPointF& imagePos) {
+            return renderer->imageToWidgetCoords(imagePos);
+        }
+    );
+
+    m_edgeRulers[viewportIndex]->setVisible(true);
+    m_edgeRulers[viewportIndex]->update();
 }
 
 void ImageViewerPageDelegate::refreshAngleOverlays() {
@@ -461,6 +526,7 @@ void ImageViewerPageDelegate::loadImageIntoViewport(int viewportIndex, const QSt
             renderer->fitToWindow();
 
             updateOverlay(viewportIndex);
+            updateEdgeRulers(viewportIndex);
             emit imageLoaded(viewportIndex);
         }
     } else {
@@ -663,6 +729,7 @@ void ImageViewerPageDelegate::onViewportMouseWheel(int viewportIndex, int delta,
         double zoomFactor = delta > 0 ? 1.1 : 0.9;
         renderer->setZoom(currentZoom * zoomFactor);
         updateOverlay(m_activeViewportIndex);
+        updateEdgeRulers(m_activeViewportIndex);
         refreshRulerOverlays();
         refreshAngleOverlays();
     }
@@ -678,6 +745,7 @@ void ImageViewerPageDelegate::onViewportDoubleClicked(int viewportIndex, const Q
         if (auto* renderer = m_viewportManager->activeRenderer()) {
             renderer->fitToWindow();
             updateOverlay(m_activeViewportIndex);
+            updateEdgeRulers(m_activeViewportIndex);
             refreshRulerOverlays();
             refreshAngleOverlays();
         }
@@ -719,6 +787,7 @@ void ImageViewerPageDelegate::onResetViewRequested() {
         renderer->resetCamera();
         renderer->resetWindowLevel();
         updateOverlay(m_activeViewportIndex);
+        updateEdgeRulers(m_activeViewportIndex);
     }
 
     // Clear all ruler measurements
@@ -758,6 +827,9 @@ void ImageViewerPageDelegate::onFitToWindowRequested() {
     if (auto* renderer = m_viewportManager->activeRenderer()) {
         renderer->fitToWindow();
         updateOverlay(m_activeViewportIndex);
+        updateEdgeRulers(m_activeViewportIndex);
+        refreshRulerOverlays();
+        refreshAngleOverlays();
     }
 }
 
@@ -786,6 +858,7 @@ void ImageViewerPageDelegate::onZoomRequested(double factor, const QPointF& cent
     if (auto* renderer = m_viewportManager->activeRenderer()) {
         renderer->setZoom(factor);
         updateOverlay(m_activeViewportIndex);
+        updateEdgeRulers(m_activeViewportIndex);
         refreshRulerOverlays();
         refreshAngleOverlays();
     }
@@ -990,40 +1063,93 @@ QString ImageViewerPageDelegate::formatOverlayText(OverlayCorner corner, int vie
 
     switch (corner) {
         case OverlayCorner::TOP_LEFT: {
+            // Patient demographics
             QString text;
             if (!meta.patientName.isEmpty()) {
                 text += meta.patientName + "\n";
             }
             if (!meta.patientId.isEmpty()) {
-                text += "ID: " + meta.patientId;
+                text += "ID: " + meta.patientId + "\n";
+            }
+            // Add birth date and sex on same line if available
+            QString demographics;
+            if (!meta.patientBirthDate.isEmpty()) {
+                demographics += "DOB: " + meta.patientBirthDate;
+            }
+            if (!meta.patientSex.isEmpty()) {
+                if (!demographics.isEmpty()) demographics += "  ";
+                demographics += meta.patientSex;
+            }
+            if (!demographics.isEmpty()) {
+                text += demographics;
+            }
+            // Remove trailing newline if present
+            while (text.endsWith('\n')) {
+                text.chop(1);
             }
             return text;
         }
         case OverlayCorner::TOP_RIGHT: {
+            // Study information
             QString text;
             if (!meta.studyDate.isEmpty()) {
                 text += meta.studyDate;
+                if (!meta.studyTime.isEmpty()) {
+                    // Format time if available (take first 6 chars: HHMMSS)
+                    QString time = meta.studyTime.left(6);
+                    if (time.length() >= 4) {
+                        text += " " + time.left(2) + ":" + time.mid(2, 2);
+                    }
+                }
+                text += "\n";
+            }
+            if (!meta.studyDescription.isEmpty()) {
+                text += meta.studyDescription + "\n";
+            }
+            if (!meta.accessionNumber.isEmpty()) {
+                text += "Acc#: " + meta.accessionNumber;
+            }
+            // Remove trailing newline if present
+            while (text.endsWith('\n')) {
+                text.chop(1);
             }
             return text;
         }
         case OverlayCorner::BOTTOM_LEFT: {
+            // Technical parameters
             double window, level;
             renderer->getWindowLevel(window, level);
             double zoom = renderer->getZoom();
 
-            return QString("Zoom: %1%\nWW/WL: %2/%3")
+            QString text = QString("Zoom: %1%\nWW/WL: %2/%3")
                 .arg(static_cast<int>(zoom * 100))
                 .arg(static_cast<int>(window))
                 .arg(static_cast<int>(level));
+
+            // Add modality if available
+            if (!meta.modality.isEmpty()) {
+                text += "\n" + meta.modality;
+            }
+
+            return text;
         }
         case OverlayCorner::BOTTOM_RIGHT: {
+            // Image/Series information
             QString text;
             if (meta.instanceNumber > 0) {
-                text += QString("Image: %1").arg(meta.instanceNumber);
+                if (meta.totalImages > 1) {
+                    text += QString("Image: %1/%2").arg(meta.instanceNumber).arg(meta.totalImages);
+                } else {
+                    text += QString("Image: %1").arg(meta.instanceNumber);
+                }
             }
             if (!meta.seriesDescription.isEmpty()) {
                 if (!text.isEmpty()) text += "\n";
                 text += meta.seriesDescription;
+            }
+            if (!meta.bodyPartExamined.isEmpty()) {
+                if (!text.isEmpty()) text += "\n";
+                text += meta.bodyPartExamined;
             }
             return text;
         }

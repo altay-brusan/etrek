@@ -36,6 +36,7 @@ namespace Etrek::ImageViewer::Widget {
 class MagnifierWidget;
 class RulerOverlayWidget;
 class AngleOverlayWidget;
+class EdgeRulerWidget;
 }
 
 namespace Etrek::Dicom::Repository {
@@ -164,6 +165,7 @@ private:
     void initializeTools();
     void initializeRulerOverlays();
     void initializeAngleOverlays();
+    void initializeEdgeRulers();
     void setupConnections();
     void updateOverlay(int viewportIndex);
     void updateAllOverlays();
@@ -174,6 +176,7 @@ private:
     void updateRulerOverlayTransforms();
     void refreshAngleOverlays();
     void updateAngleOverlayTransforms();
+    void updateEdgeRulers(int viewportIndex);
 
     // UI
     ImageViewerPage* m_ui;
@@ -205,6 +208,9 @@ private:
 
     // Angle overlay widgets (one per viewport)
     std::array<Etrek::ImageViewer::Widget::AngleOverlayWidget*, 4> m_angleOverlays = {nullptr, nullptr, nullptr, nullptr};
+
+    // Edge ruler widgets (one per viewport)
+    std::array<Etrek::ImageViewer::Widget::EdgeRulerWidget*, 4> m_edgeRulers = {nullptr, nullptr, nullptr, nullptr};
 
     // State
     Etrek::ImageViewer::ToolType m_currentTool = Etrek::ImageViewer::ToolType::WINDOW_LEVEL;
