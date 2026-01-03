@@ -6,7 +6,6 @@
 #include "ExamPage.h"
 #include "OutputPage.h"
 #include "SystemSettingPage.h"
-#include "ViewPage.h"
 #include "ui_Mainwindow.h"
 
 MainWindow::MainWindow(QWidget* parent)
