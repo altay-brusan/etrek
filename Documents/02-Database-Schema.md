@@ -46,6 +46,128 @@ mwl_profiles ──< mwl_presentation_contexts
                                            └──< mwl_attributes >── mwl_entries ──< mwl_task_mapping
 ```
 
+## Data Flow Overview
+
+### MWL to DICOM Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           INPUT: MODALITY WORKLIST                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  mwl_profiles          Which RIS/MWL connection?                            │
+│       │                                                                     │
+│       ▼                                                                     │
+│  profile_tag_association ──► dicom_tags     Which DICOM tags to use?        │
+│       │                                                                     │
+│       ▼                                                                     │
+│  mwl_entries           Store the worklist item (patient, procedure, etc.)   │
+│       │                                                                     │
+│       ▼                                                                     │
+│  mwl_attributes        Store actual DICOM tag values (EAV pattern)          │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      │ Operator starts examination
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        SCAN PROTOCOL LOOKUP                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+│                                                                             │
+│  Procedure Code (from MWL) ──► procedures                                   │
+│       │                                                                     │
+│       ▼                                                                     │
+│  procedure_views ──────────► views ──► body_parts ──► anatomic_regions      │
+│       │                         │                                           │
+│       │                         ▼                                           │
+│       │                    view_techniques ──► technique_parameters         │
+│       │                         │                                           │
+│       │                         ▼                                           │
+│       │              Default kVp, mA, ms based on:                          │
+│       │              - Body part                                            │
+│       │              - Patient size (Fat/Medium/Thin/Paediatric)            │
+│       │              - View position (AP, LAT, etc.)                        │
+│       │                                                                     │
+│       └──────────────► Populate UI with defaults (operator can override)    │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      │ Image acquisition
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           OUTPUT: DICOM HIERARCHY                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+│                                                                             │
+│  patients ◄──── Create/lookup patient from MWL demographics                 │
+│       │                                                                     │
+│       ▼                                                                     │
+│  studies ◄───── Create study (study_instance_uid, accession_number)         │
+│       │                                                                     │
+│       ▼                                                                     │
+│  series ◄────── Create series for each view (series_instance_uid)           │
+│       │                                                                     │
+│       ▼                                                                     │
+│  images ◄────── Store image metadata (rows, columns, bits, etc.)            │
+│       │                                                                     │
+│       ▼                                                                     │
+│  sop_commons ◄─ Store SOP Instance UID (unique per image)                   │
+│       │                                                                     │
+│       ▼                                                                     │
+│  acquisitions ◄ Store acquisition details (dose, AEC settings)              │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      │ Link MWL to created DICOM objects
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  mwl_task_mapping      Junction table connecting:                           │
+│                        - mwl_entry_id  → Input worklist item                │
+│                        - procedure_id  → What was ordered                   │
+│                        - study_id      → Created study                      │
+│                        - series_id     → Created series                     │
+│                        - images_id     → Created image                      │
+│                        - sop_common_id → DICOM SOP instance                 │
+│                        - acquisition_id→ Acquisition details                │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      │ Generate DICOM file
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           DICOM FILE OUTPUT                                 │
+│  Combine data from all tables above to create compliant DICOM file          │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Scan Protocol Hierarchy
+
+```
+anatomic_regions (HEAD, THORAX, ABDOMEN, ...)
+       │
+       ▼
+body_parts (SKULL, CHEST, SPINE, KNEE, ...)
+       │
+       ├──────────────────────────────────┐
+       ▼                                  ▼
+    views                          technique_parameters
+ (AP, LAT, OBL, ...)               (kVp, mA, ms per body part + patient size)
+       │                                  │
+       └──────────► view_techniques ◄─────┘
+                   Links views to default exposure parameters
+                   Supports multi-shot (seq: 1,2,...)
+                   Supports dual-energy (role: PRIMARY, LOW, HIGH)
+       │
+       ▼
+  procedure_views
+       │
+       ▼
+  procedures (Chest PA, CSpine AP, Pelvis AP, ...)
+       │
+       ▼
+  Mapped from MWL procedure codes (SNOMED/SRT standard)
+```
+
+---
+
 ## Core Domain Modules
 
 ### 1. Authentication & Authorization
@@ -355,22 +477,33 @@ Specific anatomical structures within regions.
 - `anatomic_regions ──< body_parts` (One region → many body parts)
 
 #### technique_parameters
-Exposure technique factors (kV, mA, ms) per body part and patient size.
+Exposure technique factors (kV, mA, ms) per body part and patient size. These are the **default values** that populate the UI when a procedure is selected. The operator can override these values during examination.
 
 **Key Fields:**
-- `body_part_id` → `body_parts(id)`
-- `size`: Fat, Medium, Thin, Paediatric
-- `technique_profile`: AP|PA, LAT, OBL, AXIAL, DUAL
-- `kvp`, `ma`, `ms`: Exposure factors
+- `body_part_id` → `body_parts(id)` - Which body part
+- `size`: Fat, Medium, Thin, Paediatric - Patient body habitus
+- `technique_profile`: AP|PA, LAT, OBL, AXIAL - Projection type
+- `kvp`, `ma`, `ms`: Default exposure factors
+- `fkvp`, `fma`: Fine-tuned fallback values
 - `focal_spot`: Small/large focal spot selection
 - `sid_min`, `sid_max`: Source-to-Image Distance range (cm)
-- `grid_type`, `grid_ratio`: Anti-scatter grid
+- `grid_type`, `grid_ratio`, `grid_speed`: Anti-scatter grid settings
 - `exposure_style`: Mas Mode, Time Mode, AEC Mode, Manual
 - `aec_field`, `aec_density`: Auto Exposure Control settings
 
+**Example:**
+| Body Part | Size | Profile | kVp | mA | ms |
+|-----------|------|---------|-----|----|----|
+| CHEST | Fat | AP\|PA | 90 | 200 | 10 |
+| CHEST | Medium | AP\|PA | 80 | 200 | 8 |
+| CHEST | Thin | AP\|PA | 70 | 200 | 6 |
+| CHEST | Paediatric | AP\|PA | 60 | 100 | 5 |
+
 **Design Notes:**
-- Supports multiple techniques per body part (different sizes/projections)
+- Multiple techniques per body part (different sizes/projections)
 - AEC (Automatic Exposure Control) parameters included
+- These are **defaults only** - actual values are stored in `acquisitions` table after imaging
+- Values can be overridden by operator during examination
 
 #### views
 Imaging views/orientations with positioning details.
@@ -431,7 +564,26 @@ Associates procedures with required views (many-to-many).
 
 ### 5. DICOM Modality Worklist
 
-Implements DICOM MWL query/response handling.
+Implements DICOM MWL query/response handling with a flexible, profile-based design.
+
+#### Design Philosophy
+
+The MWL system uses a **flexible EAV (Entity-Attribute-Value) pattern** rather than a fixed schema because:
+1. Different RIS systems support different DICOM tags
+2. Some tags may not be available from certain MWL providers
+3. New tags can be added without schema changes
+4. Each MWL profile can define its own tag set
+
+#### Key Concepts
+
+| Term | Description |
+|------|-------------|
+| **MWL Profile** | Configuration for a specific RIS/MWL connection |
+| **DICOM Tag** | Standard DICOM attribute (e.g., PatientName = 0010,0010) |
+| **Profile Tag Association** | Which tags are used by which profile |
+| **MWL Entry** | A single worklist item (scheduled procedure) |
+| **MWL Attribute** | Actual tag value for a worklist entry |
+| **Presentation Context** | DICOM transfer syntax for data exchange |
 
 #### dicom_tags
 Global DICOM tag dictionary.
@@ -497,16 +649,38 @@ Actual DICOM tag values from MWL query.
 - RESTRICT delete: Prevent deletion of tag definitions
 
 #### mwl_task_mapping
-Links worklist entries to created DICOM instances.
+Links worklist entries to created DICOM instances. This is the **bridge table** between the MWL input world and the DICOM output world.
 
 **Key Fields:**
-- `mwl_entry_id` → `mwl_entries(id)`
-- `procedure_id` → `procedures(id)`
-- `study_id`, `series_id`, `images_id`, `sop_common_id`, `acquisition_id`
+- `mwl_entry_id` → `mwl_entries(id)` - The source worklist item
+- `procedure_id` → `procedures(id)` - The procedure being performed
+- `study_id` → `studies(id)` - Created study
+- `series_id` → `series(id)` - Created series
+- `images_id` → `images(id)` - Created image
+- `sop_common_id` → `sop_commons(id)` - DICOM SOP instance
+- `acquisition_id` → `acquisitions(id)` - Acquisition details
+
+**Primary Key:** `(mwl_entry_id, procedure_id)`
 
 **Design Pattern:**
-- Tracks worklist fulfillment
-- Links scheduled procedure to actual performed imaging
+- Tracks worklist fulfillment during examination
+- Links scheduled procedure (MWL) to actual performed imaging (DICOM tables)
+- One row per image created from a worklist item
+- Supports multi-image procedures (e.g., Chest PA + LAT = 2 rows)
+
+**Workflow:**
+1. MWL entry arrives with procedure code (e.g., "Chest 2-View")
+2. Operator starts examination
+3. For each image captured:
+   - Create study/series/image/acquisition records
+   - Insert row into `mwl_task_mapping` linking MWL to created records
+4. All rows share same `mwl_entry_id` but different `images_id`, `series_id`, etc.
+
+**Design Rationale:**
+When an MWL entry contains a procedure code (e.g., "Chest 2-View"), the system converts it to individual views via `procedure_views`. Each view is then mapped as a separate procedure entry in this junction table. This means:
+- MWL procedure code → Converted to multiple views
+- Each view → Creates its own row in `mwl_task_mapping` with a distinct `procedure_id`
+- The PK `(mwl_entry_id, procedure_id)` correctly ensures one mapping per view/procedure per MWL entry
 
 #### worklist_field_configurations
 Configurable primary key fields for MWL matching.
