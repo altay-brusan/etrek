@@ -1,15 +1,28 @@
 #include "SystemSettingPageDelegate.h"
 #include "SystemSettingPage.h"
 
+#include <QTimer>
+
 namespace Etrek::Application::Delegate
 {
     SystemSettingPageDelegate::SystemSettingPageDelegate(SystemSettingPage* page, QObject* parent)
         : QObject(parent),
         m_page(page)
     {
-        connect(page, &SystemSettingPage::saveSettings, this, &SystemSettingPageDelegate::accept);
-        connect(page, &SystemSettingPage::applySettings, this, &SystemSettingPageDelegate::apply);
-        connect(page, &SystemSettingPage::closeSettings, this, &SystemSettingPageDelegate::reject);
+        // Deferred initialization to allow UI to settle first
+        QTimer::singleShot(0, this, &SystemSettingPageDelegate::onPageLoaded);
+    }
+
+    void SystemSettingPageDelegate::onPageLoaded()
+    {
+        setupConnections();
+    }
+
+    void SystemSettingPageDelegate::setupConnections()
+    {
+        connect(m_page, &SystemSettingPage::saveSettings, this, &SystemSettingPageDelegate::accept);
+        connect(m_page, &SystemSettingPage::applySettings, this, &SystemSettingPageDelegate::apply);
+        connect(m_page, &SystemSettingPage::closeSettings, this, &SystemSettingPageDelegate::reject);
     }
 
     SystemSettingPageDelegate::~SystemSettingPageDelegate() = default;
