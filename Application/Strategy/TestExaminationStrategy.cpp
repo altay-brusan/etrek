@@ -1,15 +1,20 @@
 #include "TestExaminationStrategy.h"
-#include "LoggerProvider.h"
+#include "AppLoggerFactory.h"
+#include "TranslationProvider.h"
 
 namespace Etrek::Application::Strategy {
 
 using Etrek::Examination::ExaminationMode;
+using Etrek::Core::Log::AppLoggerFactory;
+using Etrek::Core::Log::LoggerProvider;
+using Etrek::Core::Globalization::TranslationProvider;
 
 TestExaminationStrategy::TestExaminationStrategy()
-    : m_logger(Etrek::Core::Log::LoggerProvider::Instance().GetLogger("TestExaminationStrategy"))
-    , m_testExposureCount(0)
+    : m_testExposureCount(0)
     , m_allTestsPassed(true)
 {
+    AppLoggerFactory factory(LoggerProvider::Instance(), &TranslationProvider::Instance());
+    m_logger = factory.CreateLogger("TestExaminationStrategy");
 }
 
 ExaminationMode TestExaminationStrategy::mode() const

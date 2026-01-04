@@ -203,7 +203,7 @@ namespace Etrek::Worklist::Connectivity
                     QString procedureCode = extractProcedureCode(entry);
                     QString codeMeaning = extractProcedureCodeMeaning(entry);
                     QString codingScheme = extractCodingScheme(entry);
-                    QString connectionName = settings->getName();
+                    QString connectionName = settings->getConnectionName();
 
                     if (!procedureCode.isEmpty()) {
                         auto mappingResult = m_mappingService->mapProcedureCode(

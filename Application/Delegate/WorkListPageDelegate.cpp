@@ -14,6 +14,7 @@
 #include "IContextManager.h"
 #include "ISessionContext.h"
 #include "ExaminationContext.h"
+#include "User.h"
 #include "WorklistFilterProxyModel.h"
 #include "ViewSelectionDialogBuilder.h"
 #include "ViewSelectionDialogDelegate.h"

@@ -14,8 +14,8 @@
  * - Worklist
  *
  * Pages manage widgets, the connections between them, and object
- * lifetimes. When changes occur within a page—such as creating a new
- * page or closing an existing one—the delegates within that page
+ * lifetimes. When changes occur within a page - such as creating a new
+ * page or closing an existing one - the delegates within that page
  * may need to respond. This interface provides a standardized way
  * for delegates to react to page-level events.
  */
