@@ -8,6 +8,7 @@
 #include "WorklistEntry.h"
 #include "WorklistProfile.h"
 #include "WorklistQueryService.h"
+#include "RisProcedureMappingService.h"
 
 
 
@@ -20,10 +21,12 @@ namespace Etrek::Worklist::Connectivity
 
     ModalityWorklistManager::ModalityWorklistManager(std::shared_ptr<WorklistRepository> repository,
         std::shared_ptr<RisConnectionSetting> settings,
+        std::shared_ptr<Etrek::Worklist::Service::RisProcedureMappingService> mappingService,
         QObject* parent)
         : QObject(parent),
         m_repository(repository),
-        settings(settings)
+        settings(settings),
+        m_mappingService(std::move(mappingService))
     {
         m_findTimer = new QTimer(this);
         m_findTimer->setInterval(m_refreshPeriodMs);
@@ -195,6 +198,29 @@ namespace Etrek::Worklist::Connectivity
                 remapedEntry.Status = ProcedureStepStatus::PENDING;
                 remapedEntry.CreatedAt = QDateTime::currentDateTime();
 
+                // Attempt to map the procedure code to an internal view
+                if (m_mappingService) {
+                    QString procedureCode = extractProcedureCode(entry);
+                    QString codeMeaning = extractProcedureCodeMeaning(entry);
+                    QString codingScheme = extractCodingScheme(entry);
+                    QString connectionName = settings->getName();
+
+                    if (!procedureCode.isEmpty()) {
+                        auto mappingResult = m_mappingService->mapProcedureCode(
+                            connectionName, procedureCode, codingScheme, codeMeaning);
+
+                        if (mappingResult.success) {
+                            qDebug() << "[ModalityWorklistManager] Procedure code" << procedureCode
+                                     << "mapped to view:" << mappingResult.viewName
+                                     << "(ID:" << mappingResult.viewId << ")";
+                            // TODO: Store mappingResult.viewId in the worklist entry
+                            // This requires extending WorklistEntry entity in Epic 5
+                        } else {
+                            qDebug() << "[ModalityWorklistManager]" << mappingResult.warningMessage;
+                        }
+                    }
+                }
+
                 m_repository->createWorklistEntry(remapedEntry);
             }
             else {
@@ -210,6 +236,47 @@ namespace Etrek::Worklist::Connectivity
                 // m_repository->UpdateWorklistEntry(remapedEntry);
             }
         }
+    }
+
+    QString ModalityWorklistManager::extractProcedureCode(const WorklistEntry& entry) const
+    {
+        // Look for Scheduled Protocol Code Sequence (0040,0008) > Code Value (0008,0100)
+        // The tag may be stored with parent reference or as a flat attribute
+        for (const auto& attr : entry.Attributes) {
+            // Code Value tag: (0008,0100) - may be nested under (0040,0008)
+            if (attr.Tag.GroupHex == 0x0008 && attr.Tag.ElementHex == 0x0100) {
+                if (!attr.TagValue.isEmpty()) {
+                    return attr.TagValue;
+                }
+            }
+        }
+        return QString();
+    }
+
+    QString ModalityWorklistManager::extractProcedureCodeMeaning(const WorklistEntry& entry) const
+    {
+        // Look for Code Meaning (0008,0104)
+        for (const auto& attr : entry.Attributes) {
+            if (attr.Tag.GroupHex == 0x0008 && attr.Tag.ElementHex == 0x0104) {
+                if (!attr.TagValue.isEmpty()) {
+                    return attr.TagValue;
+                }
+            }
+        }
+        return QString();
+    }
+
+    QString ModalityWorklistManager::extractCodingScheme(const WorklistEntry& entry) const
+    {
+        // Look for Coding Scheme Designator (0008,0102)
+        for (const auto& attr : entry.Attributes) {
+            if (attr.Tag.GroupHex == 0x0008 && attr.Tag.ElementHex == 0x0102) {
+                if (!attr.TagValue.isEmpty()) {
+                    return attr.TagValue;
+                }
+            }
+        }
+        return QString();
     }
 
 }

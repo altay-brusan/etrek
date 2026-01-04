@@ -25,6 +25,11 @@ namespace Etrek::Core::Data::Model
     class RisConnectionSetting;
 }
 
+namespace Etrek::Worklist::Service
+{
+    class RisProcedureMappingService;
+}
+
 namespace Etrek::Worklist::Connectivity
 {
 
@@ -37,6 +42,7 @@ namespace Etrek::Worklist::Connectivity
     public:
         explicit ModalityWorklistManager(std::shared_ptr<Etrek::Worklist::Repository::WorklistRepository> repository,
             std::shared_ptr<Etrek::Core::Data::Model::RisConnectionSetting> settings,
+            std::shared_ptr<Etrek::Worklist::Service::RisProcedureMappingService> mappingService = nullptr,
             QObject* parent = nullptr);
 
         void setActiveProfile(const Etrek::Worklist::Data::Entity::WorklistProfile& profile);
@@ -59,9 +65,13 @@ namespace Etrek::Worklist::Connectivity
 
     private:
         void prepareQueryService();  // Sets up thread & service safely
+        QString extractProcedureCode(const Etrek::Worklist::Data::Entity::WorklistEntry& entry) const;
+        QString extractProcedureCodeMeaning(const Etrek::Worklist::Data::Entity::WorklistEntry& entry) const;
+        QString extractCodingScheme(const Etrek::Worklist::Data::Entity::WorklistEntry& entry) const;
 
         std::shared_ptr<Etrek::Worklist::Repository::WorklistRepository> m_repository;
         std::shared_ptr<Etrek::Core::Data::Model::RisConnectionSetting> settings;
+        std::shared_ptr<Etrek::Worklist::Service::RisProcedureMappingService> m_mappingService;
 
         std::unique_ptr<WorklistQueryService> m_queryService;
         Etrek::Worklist::Data::Entity::WorklistProfile m_profile;
