@@ -1,245 +1,965 @@
-# E-TREK Architecture Overview
+# E-TREK Software Architecture Document
 
-## Introduction
+## Document Information
 
-E-TREK is a medical imaging Digital Radiography (DR) system designed for capturing, processing, and managing X-ray images in clinical environments. Built with Qt 6.5.3 and C++17, the application follows a modular architecture that separates concerns across distinct packages, each responsible for a specific domain of functionality.
+| Item | Description |
+|------|-------------|
+| Project | E-TREK Digital Radiography Workstation |
+| Version | 1.0 |
+| Last Updated | January 2025 |
+| Architecture Model | 4+1 Architectural View Model |
 
-The system integrates with hospital information systems through DICOM Modality Worklist (MWL), controls X-ray hardware including generators and detectors, and provides comprehensive image viewing capabilities using VTK for medical image visualization. The architecture emphasizes maintainability, testability, and clear separation between user interface, business logic, and data access layers.
+---
 
-## Project Organization
+## 1. Introduction
 
-The codebase is organized into functional modules, each compiled as a separate shared library. This modular approach allows teams to work independently on different aspects of the system while maintaining clear boundaries between components.
+### 1.1 Purpose
+
+This document describes the software architecture of E-TREK, a medical imaging Digital Radiography (DR) workstation application. The architecture is presented using the 4+1 View Model, which addresses the concerns of different stakeholders through five complementary views: Logical, Development, Process, Physical, and Scenarios.
+
+### 1.2 Scope
+
+E-TREK is designed as a generic workstation software for medical X-ray imaging systems. The software integrates with hospital information systems through DICOM Modality Worklist (MWL), controls X-ray hardware including generators and detectors, and provides comprehensive image viewing capabilities.
+
+**The system supports multiple simultaneous Modality Worklist connections**, allowing integration with different RIS (Radiology Information System) providers. Each MWL connection can be independently configured with its own DICOM tag mappings, transfer syntaxes, and query parameters. This flexibility enables healthcare facilities to connect to multiple scheduling systems or migrate between providers without software modifications.
+
+### 1.3 Definitions and Acronyms
+
+| Term | Definition |
+|------|------------|
+| DR | Digital Radiography |
+| DICOM | Digital Imaging and Communications in Medicine |
+| MWL | Modality Worklist |
+| RIS | Radiology Information System |
+| PACS | Picture Archiving and Communication System |
+| AEC | Automatic Exposure Control |
+| SID | Source-to-Image Distance |
+| kVp | Kilovoltage Peak |
+| mA | Milliampere |
+
+---
+
+## 2. X-Ray Machine Context
+
+### 2.1 Target Hardware
+
+E-TREK is designed as a workstation software for medical X-ray machines. The software is intentionally generic and independent of any specific X-ray equipment manufacturer, allowing device manufacturers and system integrators to incorporate E-TREK into their products.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      X-RAY IMAGING SYSTEM                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌─────────────┐     ┌─────────────┐     ┌─────────────────────┐  │
+│   │  X-Ray      │     │  X-Ray      │     │                     │  │
+│   │  Generator  │────▶│  Tube(s)    │────▶│  Patient            │  │
+│   │             │     │  (1 or 2)   │     │                     │  │
+│   └─────────────┘     └─────────────┘     └─────────────────────┘  │
+│         │                                           │               │
+│         │                                           ▼               │
+│         │                                 ┌─────────────────────┐  │
+│         │                                 │  Detector(s)        │  │
+│         │                                 │  (1 or 2)           │  │
+│         │                                 │  - Flat Panel       │  │
+│         │                                 │  - Line Scanner     │  │
+│         │                                 └─────────────────────┘  │
+│         │                                           │               │
+│         ▼                                           ▼               │
+│   ┌─────────────────────────────────────────────────────────────┐  │
+│   │                    E-TREK WORKSTATION                        │  │
+│   │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │  │
+│   │  │ Generator   │  │ Detector    │  │ Image Processing    │  │  │
+│   │  │ Control     │  │ Interface   │  │ & Visualization     │  │  │
+│   │  └─────────────┘  └─────────────┘  └─────────────────────┘  │  │
+│   └─────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 2.2 Supported Configurations
+
+The device organization in E-TREK supports various X-ray system configurations:
+
+**Detector Configurations:**
+- Single detector systems (standard radiography)
+- Dual detector systems (table + wall stand, or dual wall stands)
+- Line scanner detectors (for slot radiography and cephalometry)
+
+**X-Ray Tube Configurations:**
+- Single tube systems
+- Dual tube systems (ceiling-mounted + floor-mounted)
+
+**Imaging Techniques:**
+- Standard single-exposure radiography
+- Dual-exposure techniques (for dual-energy subtraction imaging)
+- Cephalography (orthodontic and ENT imaging)
+- Slot scanning / Line scanning (full-leg, full-spine imaging)
+
+### 2.3 Integration Model
+
+E-TREK provides a hardware abstraction layer that allows equipment manufacturers to integrate their specific hardware through well-defined interfaces. The software communicates with hardware through configurable protocols including RS-232, RS-485, CAN bus, Modbus, and Ethernet.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    INTEGRATION ARCHITECTURE                       │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │                    E-TREK APPLICATION                       │  │
+│  │  ┌──────────────────────────────────────────────────────┐  │  │
+│  │  │              Hardware Abstraction Layer               │  │  │
+│  │  └──────────────────────────────────────────────────────┘  │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                              │                                    │
+│          ┌───────────────────┼───────────────────┐               │
+│          ▼                   ▼                   ▼               │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐         │
+│  │  Generator   │   │  Detector    │   │  Positioner  │         │
+│  │  Driver      │   │  Driver      │   │  Driver      │         │
+│  └──────────────┘   └──────────────┘   └──────────────┘         │
+│          │                   │                   │               │
+│          ▼                   ▼                   ▼               │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐         │
+│  │ Manufacturer │   │ Manufacturer │   │ Manufacturer │         │
+│  │ A Generator  │   │ B Detector   │   │ C Positioner │         │
+│  └──────────────┘   └──────────────┘   └──────────────┘         │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 3. Architectural Concepts
+
+Before describing the architecture views, this section introduces the key design patterns and principles used throughout E-TREK.
+
+### 3.1 Model-View-Delegate Pattern
+
+E-TREK uses the Model-View-Delegate (MVD) pattern, a variation of Model-View-Controller adapted for Qt applications. This pattern separates the application into three interconnected components:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    MODEL-VIEW-DELEGATE PATTERN                       │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                         ┌─────────────┐                             │
+│                         │             │                             │
+│              ┌─────────▶│   MODEL     │◀─────────┐                  │
+│              │          │ (Data +     │          │                  │
+│              │          │  Business   │          │                  │
+│              │          │  Rules)     │          │                  │
+│              │          │             │          │                  │
+│              │          └─────────────┘          │                  │
+│              │                                   │                  │
+│         Reads Data                          Updates Data            │
+│              │                                   │                  │
+│              │                                   │                  │
+│     ┌────────┴────────┐               ┌─────────┴────────┐         │
+│     │                 │    User       │                  │         │
+│     │      VIEW       │───Actions────▶│    DELEGATE      │         │
+│     │  (UI Widgets)   │               │ (Business Logic) │         │
+│     │                 │◀──UI Updates──│                  │         │
+│     └─────────────────┘               └──────────────────┘         │
+│                                                                     │
+│  VIEW: Handles display and user interaction (Qt Widgets)            │
+│  DELEGATE: Implements business logic and coordinates operations     │
+│  MODEL: Represents data and domain entities                         │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Benefits of MVD:**
+- Clear separation between UI and business logic
+- Views can be replaced or modified without changing business rules
+- Business logic can be tested independently of the UI
+- Multiple views can share the same delegate logic
+
+### 3.2 Builder Pattern
+
+E-TREK uses the Builder pattern to construct complex objects (pages with their delegates and dependencies). Builders encapsulate the construction logic, making it easier to create properly configured objects.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        BUILDER PATTERN                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌─────────────────┐                                               │
+│   │  DelegateParams │──────┐                                        │
+│   │  - dbConnection │      │                                        │
+│   │  - contextMgr   │      │                                        │
+│   └─────────────────┘      │                                        │
+│                            ▼                                        │
+│                    ┌───────────────┐                                │
+│                    │               │                                │
+│                    │    BUILDER    │                                │
+│                    │               │                                │
+│                    └───────┬───────┘                                │
+│                            │                                        │
+│            ┌───────────────┼───────────────┐                        │
+│            │               │               │                        │
+│            ▼               ▼               ▼                        │
+│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                │
+│   │ Repository  │  │    View     │  │  Delegate   │                │
+│   │ Instances   │  │   Widget    │  │  Instance   │                │
+│   └─────────────┘  └─────────────┘  └─────────────┘                │
+│            │               │               │                        │
+│            └───────────────┴───────────────┘                        │
+│                            │                                        │
+│                            ▼                                        │
+│                  ┌───────────────────┐                              │
+│                  │ Fully Configured  │                              │
+│                  │ Page + Delegate   │                              │
+│                  └───────────────────┘                              │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.3 Dependency Injection
+
+Dependency Injection (DI) is a technique where objects receive their dependencies from external sources rather than creating them internally. In E-TREK, the `DelegateParameter` structure serves as a simple dependency injection container.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    DEPENDENCY INJECTION                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   WITHOUT DI (Tight Coupling):                                      │
+│   ┌─────────────────────────────────────────────────────────┐      │
+│   │  class WorklistPage {                                    │      │
+│   │      WorklistPage() {                                    │      │
+│   │          repo = new WorklistRepository("localhost",...); │ ✗    │
+│   │      }  // Hard-coded dependency                         │      │
+│   │  }                                                       │      │
+│   └─────────────────────────────────────────────────────────┘      │
+│                                                                     │
+│   WITH DI (Loose Coupling):                                         │
+│   ┌─────────────────────────────────────────────────────────┐      │
+│   │  class WorklistPage {                                    │      │
+│   │      WorklistPage(IWorklistRepository* repo) {           │ ✓    │
+│   │          this->repo = repo;                              │      │
+│   │      }  // Dependency injected from outside              │      │
+│   │  }                                                       │      │
+│   └─────────────────────────────────────────────────────────┘      │
+│                                                                     │
+│   DelegateParameter as DI Container:                                │
+│   ┌─────────────────────────────────────────────────────────┐      │
+│   │                                                          │      │
+│   │   ApplicationService                                     │      │
+│   │         │                                                │      │
+│   │         │ creates                                        │      │
+│   │         ▼                                                │      │
+│   │   DelegateParameter ─────┬─────────┬─────────┐          │      │
+│   │   {                      │         │         │          │      │
+│   │     dbConnection ────────┤         │         │          │      │
+│   │     contextManager ──────┼─────────┤         │          │      │
+│   │   }                      │         │         │          │      │
+│   │                          ▼         ▼         ▼          │      │
+│   │                       Builder1  Builder2  Builder3      │      │
+│   │                                                          │      │
+│   └─────────────────────────────────────────────────────────┘      │
+│                                                                     │
+│   Benefits:                                                         │
+│   • Components don't need to know how dependencies are created     │
+│   • Easy to substitute mock objects for testing                    │
+│   • Configuration centralized in one place                         │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.4 Repository Pattern
+
+The Repository pattern abstracts data access behind a collection-like interface. Components work with repositories rather than directly with the database, making the code more testable and the data layer replaceable.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      REPOSITORY PATTERN                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌─────────────────┐                                               │
+│   │    Delegate     │                                               │
+│   │  (Business      │                                               │
+│   │   Logic)        │                                               │
+│   └────────┬────────┘                                               │
+│            │                                                        │
+│            │ Uses interface                                         │
+│            ▼                                                        │
+│   ┌─────────────────┐                                               │
+│   │  IRepository    │  ◀─── Abstract interface                      │
+│   │  + getAll()     │                                               │
+│   │  + getById()    │                                               │
+│   │  + save()       │                                               │
+│   │  + delete()     │                                               │
+│   └────────┬────────┘                                               │
+│            │                                                        │
+│            │ Implemented by                                         │
+│            ▼                                                        │
+│   ┌─────────────────┐                                               │
+│   │   Repository    │  ◀─── Concrete implementation                 │
+│   │  (SQL queries,  │                                               │
+│   │   transactions) │                                               │
+│   └────────┬────────┘                                               │
+│            │                                                        │
+│            ▼                                                        │
+│   ┌─────────────────┐                                               │
+│   │    Database     │                                               │
+│   │    (MySQL)      │                                               │
+│   └─────────────────┘                                               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 4. Scenarios (Use Cases)
+
+The Scenarios view describes the key use cases that drive the architecture. These scenarios illustrate how the architectural elements work together to deliver functionality.
+
+### 4.1 Primary Use Cases
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                       PRIMARY USE CASES                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                        ┌─────────────┐                              │
+│                        │  Operator   │                              │
+│                        │ (Technician)│                              │
+│                        └──────┬──────┘                              │
+│                               │                                     │
+│       ┌───────────────────────┼───────────────────────┐            │
+│       │                       │                       │            │
+│       ▼                       ▼                       ▼            │
+│  ┌─────────┐           ┌─────────────┐         ┌──────────┐        │
+│  │ UC-01   │           │   UC-02     │         │  UC-03   │        │
+│  │ Login   │           │ Select      │         │ Capture  │        │
+│  │         │           │ Patient     │         │ Image    │        │
+│  └─────────┘           └─────────────┘         └──────────┘        │
+│                                                                     │
+│       ┌───────────────────────┼───────────────────────┐            │
+│       │                       │                       │            │
+│       ▼                       ▼                       ▼            │
+│  ┌─────────┐           ┌─────────────┐         ┌──────────┐        │
+│  │ UC-04   │           │   UC-05     │         │  UC-06   │        │
+│  │ Review  │           │ Export to   │         │ Configure│        │
+│  │ Image   │           │ PACS        │         │ System   │        │
+│  └─────────┘           └─────────────┘         └──────────┘        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.2 UC-02: Select Patient from Worklist (Detailed)
+
+This scenario illustrates the complete flow from selecting a patient to starting an examination.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│              UC-02: SELECT PATIENT FROM WORKLIST                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Actor: Radiography Technician                                      │
+│  Precondition: User is logged in, WorklistPage is displayed         │
+│  Goal: Select a scheduled patient and start examination             │
+│                                                                     │
+│  FLOW:                                                              │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ 1. System queries MWL from configured RIS connections        │  │
+│  │    ┌─────────┐     ┌─────────┐     ┌─────────┐              │  │
+│  │    │  RIS 1  │     │  RIS 2  │     │  Local  │              │  │
+│  │    └────┬────┘     └────┬────┘     └────┬────┘              │  │
+│  │         │               │               │                    │  │
+│  │         └───────────────┼───────────────┘                    │  │
+│  │                         ▼                                    │  │
+│  │                 ┌───────────────┐                            │  │
+│  │                 │ Merged        │                            │  │
+│  │                 │ Worklist      │                            │  │
+│  │                 └───────────────┘                            │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ 2. Technician selects patient from worklist table            │  │
+│  │                                                               │  │
+│  │    ┌─────────────────────────────────────────────────────┐   │  │
+│  │    │ Patient Name  │ Procedure      │ Status   │ Source  │   │  │
+│  │    ├───────────────┼────────────────┼──────────┼─────────┤   │  │
+│  │    │ John Smith    │ Chest PA/LAT   │ SCHEDULED│ RIS 1   │   │  │
+│  │    │ ▶ Jane Doe    │ Knee AP/LAT    │ SCHEDULED│ RIS 2   │ ◀─┼───Selected
+│  │    │ Bob Johnson   │ Hand AP        │ SCHEDULED│ Local   │   │  │
+│  │    └─────────────────────────────────────────────────────┘   │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ 3. System loads procedure details and technique defaults     │  │
+│  │                                                               │  │
+│  │    Procedure: Knee AP/LAT                                    │  │
+│  │         │                                                    │  │
+│  │         ├──▶ View 1: Knee AP                                 │  │
+│  │         │      └─▶ Technique: 60kVp, 5mAs, Grid             │  │
+│  │         │                                                    │  │
+│  │         └──▶ View 2: Knee LAT                                │  │
+│  │                └─▶ Technique: 65kVp, 6mAs, Grid             │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ 4. Technician clicks "Start Examination"                     │  │
+│  │    → System navigates to ExamPage                            │  │
+│  │    → Worklist status updated to IN_PROGRESS                  │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+│  Postcondition: ExamPage displayed with patient data and           │
+│                 technique defaults loaded                          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.3 UC-03: Capture Image (Detailed)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    UC-03: CAPTURE IMAGE                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Actor: Radiography Technician                                      │
+│  Precondition: ExamPage displayed, patient positioned               │
+│                                                                     │
+│  FLOW:                                                              │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ 1. Technician adjusts technique if needed                    │  │
+│  │                                                               │  │
+│  │    Default: 60 kVp, 5 mAs    ──▶    Adjusted: 65 kVp, 6 mAs │  │
+│  │    (System suggests based on body part + patient size)       │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ 2. Technician presses exposure button                        │  │
+│  │                                                               │  │
+│  │    ┌───────────┐  Command   ┌───────────┐                   │  │
+│  │    │ E-TREK    │ ─────────▶ │ Generator │ ──▶ X-Ray Pulse   │  │
+│  │    └───────────┘            └───────────┘                   │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ 3. Detector captures and transfers image                     │  │
+│  │                                                               │  │
+│  │    ┌───────────┐  Raw Data  ┌───────────┐  Processed        │  │
+│  │    │ Detector  │ ─────────▶ │ E-TREK    │ ─────────▶ Display│  │
+│  │    └───────────┘            │ Processing│                   │  │
+│  │                             └───────────┘                   │  │
+│  │                                  │                           │  │
+│  │                                  ▼                           │  │
+│  │                          ┌─────────────┐                    │  │
+│  │                          │ - Offset    │                    │  │
+│  │                          │ - Gain      │                    │  │
+│  │                          │ - Defect    │                    │  │
+│  │                          │   Correction│                    │  │
+│  │                          └─────────────┘                    │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ 4. Technician reviews image                                  │  │
+│  │    - Adjust window/level                                     │  │
+│  │    - Add measurements (ruler, angle)                         │  │
+│  │    - Accept or reject image                                  │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ 5. System stores image metadata in DICOM tables              │  │
+│  │                                                               │  │
+│  │    studies ◀── series ◀── images ◀── acquisitions           │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 5. Logical View
+
+The Logical View describes the functional decomposition of the system into packages and components. This view is primarily concerned with the functional requirements and how the system provides services to users.
+
+### 5.1 Package Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      PACKAGE DEPENDENCIES                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                       ┌─────────────────┐                           │
+│                       │   Executable    │                           │
+│                       │   (main.cpp)    │                           │
+│                       └────────┬────────┘                           │
+│                                │                                    │
+│                                ▼                                    │
+│                       ┌─────────────────┐                           │
+│                       │   Application   │ ◀── Business Logic        │
+│                       │   - Builders    │     & Orchestration       │
+│                       │   - Delegates   │                           │
+│                       │   - Services    │                           │
+│                       └────────┬────────┘                           │
+│                                │                                    │
+│          ┌─────────────────────┼─────────────────────┐             │
+│          │                     │                     │             │
+│          ▼                     ▼                     ▼             │
+│  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐        │
+│  │     View     │     │    Core      │     │   Domain     │        │
+│  │  - Pages     │     │  - Logging   │     │  Modules     │        │
+│  │  - Widgets   │     │  - Security  │     │  - Worklist  │        │
+│  │  - Dialogs   │     │  - Settings  │     │  - Device    │        │
+│  └──────────────┘     │  - Context   │     │  - Dicom     │        │
+│                       └──────────────┘     │  - Pacs      │        │
+│                                            │  - Protocol  │        │
+│                                            └──────────────┘        │
+│          │                     │                     │             │
+│          └─────────────────────┼─────────────────────┘             │
+│                                │                                    │
+│                                ▼                                    │
+│                       ┌─────────────────┐                           │
+│                       │     Common      │ ◀── Interfaces &          │
+│                       │  - Interfaces   │     Shared Types          │
+│                       │  - Entities     │                           │
+│                       │  - Specs        │                           │
+│                       └─────────────────┘                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Application Layer Components
+
+The Application layer contains the business logic organized by functional area:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    APPLICATION LAYER                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    MainWindowDelegate                        │   │
+│  │  - Manages page navigation                                   │   │
+│  │  - Coordinates between pages                                 │   │
+│  │  - Handles application-level events                          │   │
+│  └────────────────────────────┬────────────────────────────────┘   │
+│                               │                                     │
+│            ┌──────────────────┼──────────────────┐                 │
+│            │                  │                  │                 │
+│            ▼                  ▼                  ▼                 │
+│  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐      │
+│  │ WorklistPage    │ │ ExamPage        │ │ SystemSetting   │      │
+│  │ Builder +       │ │ Builder +       │ │ PageBuilder +   │      │
+│  │ Delegate        │ │ Delegate        │ │ Delegate        │      │
+│  │                 │ │                 │ │                 │      │
+│  │ • Query MWL     │ │ • Control HW    │ │ • Edit configs  │      │
+│  │ • Add patients  │ │ • Capture image │ │ • Manage users  │      │
+│  │ • Start exam    │ │ • Review/Accept │ │ • Device setup  │      │
+│  └─────────────────┘ └─────────────────┘ └─────────────────┘      │
+│            │                  │                  │                 │
+│            └──────────────────┼──────────────────┘                 │
+│                               ▼                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    ApplicationService                        │   │
+│  │  - Startup/shutdown orchestration                            │   │
+│  │  - Launch strategy selection                                 │   │
+│  │  - Service initialization                                    │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 5.3 View Layer Components
+
+The View layer contains UI components organized by type:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                       VIEW LAYER                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                      MainWindow                              │   │
+│  │  ┌─────────────────────────────────────────────────────┐    │   │
+│  │  │                    Toolbar                           │    │   │
+│  │  │  [System] [Worklist] [Exam] [Viewer] [Output]       │    │   │
+│  │  └─────────────────────────────────────────────────────┘    │   │
+│  │  ┌─────────────────────────────────────────────────────┐    │   │
+│  │  │                                                      │    │   │
+│  │  │              Page Content Area                       │    │   │
+│  │  │                                                      │    │   │
+│  │  │    ┌─────────────────────────────────────────┐      │    │   │
+│  │  │    │  Currently Loaded Page                   │      │    │   │
+│  │  │    │  (Only one page visible at a time)       │      │    │   │
+│  │  │    └─────────────────────────────────────────┘      │    │   │
+│  │  │                                                      │    │   │
+│  │  └─────────────────────────────────────────────────────┘    │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  PAGES:                    WIDGETS:                DIALOGS:         │
+│  ┌──────────────┐         ┌──────────────┐       ┌──────────────┐  │
+│  │ WorklistPage │         │ ImageToolbar │       │ LoginDialog  │  │
+│  │ ExamPage     │         │ TechniqueCtl │       │ AddPatient   │  │
+│  │ ViewerPage   │         │ ViewSelector │       │ Confirmation │  │
+│  │ SettingsPage │         │ Thumbnail    │       │ ErrorMessage │  │
+│  └──────────────┘         └──────────────┘       └──────────────┘  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 6. Development View
+
+The Development View describes the static organization of the software in its development environment. This view addresses concerns of developers and focuses on software module organization.
+
+### 6.1 Source Code Organization
 
 ```
 etrek/
-├── Executable/          # Application entry point (main.cpp)
-├── Application/         # Business logic, delegates, and page builders
-├── Core/                # Foundation services (logging, security, settings)
-├── View/                # User interface components (pages, widgets, dialogs)
-├── Common/              # Shared interfaces and type definitions
-├── Worklist/            # DICOM Modality Worklist management
-├── Device/              # X-ray hardware configuration and control
-├── Dicom/               # DICOM protocol implementation
-├── Pacs/                # Picture Archiving and Communication System
-├── ScanProtocol/        # Imaging procedures and technique parameters
-├── ImageViewer/         # VTK-based image visualization
-└── ThirdPartyLibraries/ # External dependencies (Qt, VTK, DCMTK, etc.)
+├── Executable/              # Application entry point
+│   └── main.cpp
+│
+├── Application/             # Business logic layer
+│   ├── Builder/             # Page builders
+│   │   ├── WorkListPageBuilder.cpp
+│   │   ├── ExamPageBuilder.cpp
+│   │   └── ...
+│   ├── Delegate/            # Page delegates
+│   │   ├── MainWindowDelegate.cpp
+│   │   ├── WorkListPageDelegate.cpp
+│   │   └── ...
+│   ├── Service/             # Application services
+│   │   └── ApplicationService.cpp
+│   └── Strategy/            # Launch strategies
+│       ├── MainAppLaunchStrategy.cpp
+│       └── ...
+│
+├── View/                    # UI layer
+│   ├── Page/                # Full-screen pages
+│   ├── Widget/              # Reusable widgets
+│   ├── Dialog/              # Modal dialogs
+│   └── Asset/               # Icons, images
+│
+├── Core/                    # Foundation services
+│   ├── Log/                 # Logging system
+│   ├── Security/            # Authentication, crypto
+│   ├── Setting/             # Configuration management
+│   ├── Context/             # Session and workflow state
+│   └── Data/Model/          # Core data models
+│
+├── Common/                  # Shared interfaces
+│   └── Include/             # Header-only interfaces
+│
+├── Worklist/                # MWL domain
+│   ├── Connectivity/        # DICOM MWL queries
+│   └── Repository/          # Data access
+│
+├── Device/                  # Hardware domain
+│   ├── Repository/          # Device configuration
+│   └── Driver/              # Hardware interfaces
+│
+├── Dicom/                   # DICOM domain
+│   └── Repository/          # Patient/Study/Series data
+│
+├── ScanProtocol/            # Imaging protocols
+│   └── Repository/          # Procedures, views, techniques
+│
+├── ImageViewer/             # VTK visualization
+│   ├── Viewport/            # Image display
+│   └── Tools/               # Measurements, annotations
+│
+└── ThirdPartyLibraries/     # External dependencies
+    ├── Qt/
+    ├── VTK/
+    └── DCMTK/
 ```
 
-The dependency hierarchy flows from high-level modules down to foundational services. The Application module depends on View for UI components and Core for services. Lower-level modules like Core and Common have no dependencies on upper layers, ensuring a clean architecture where changes in business logic don't ripple down to infrastructure code.
+### 6.2 Build Outputs
 
-## Main Window and Page Architecture
+Each module is compiled as a shared library (DLL on Windows):
 
-The user interface follows a single-window, multi-page design pattern. The `MainWindow` class serves as the application shell, providing a toolbar for navigation and a central content area where pages are dynamically loaded and unloaded based on user actions.
-
-### MainWindow Structure
-
-The MainWindow contains a toolbar with actions for navigating between different functional areas of the application. When a user clicks a toolbar action, the MainWindow emits a signal that the MainWindowDelegate handles by loading the appropriate page. Only one page is visible at a time, and the previous page is properly cleaned up before loading a new one.
-
-```cpp
-// MainWindow provides the shell and navigation signals
-class MainWindow : public QMainWindow {
-signals:
-    void LoadSystemPageAction();    // Settings page
-    void LoadWorklistPageAction();  // Patient worklist
-    void LoadExamPage();            // Examination/imaging
-    void LoadViewPage();            // Image viewer
-    void LoadOutputPage();          // PACS export
-};
+```
+out/build/debug/
+├── Etrek.exe                # Main executable
+├── Application.dll          # Business logic
+├── View.dll                 # UI components
+├── Core.dll                 # Foundation services
+├── Worklist.dll             # MWL functionality
+├── Device.dll               # Hardware control
+├── Dicom.dll                # DICOM operations
+├── ScanProtocol.dll         # Imaging protocols
+├── ImageViewer.dll          # Visualization
+├── setting/                 # Configuration files
+│   └── Settings.json
+├── log/                     # Application logs
+└── lang/                    # Translation files
 ```
 
-The MainWindow maintains a `m_pageContainer` layout where pages are inserted. The `loadPage()` method handles the transition between pages, ensuring proper cleanup of the previous page and smooth loading of the new one. During page loading, a busy cursor is displayed and toolbar actions are temporarily disabled to prevent user confusion.
+---
 
-### Page Loading Flow
+## 7. Process View
 
-When a navigation action is triggered, the following sequence occurs:
+The Process View describes the system's runtime behavior, including processes, threads, and their interactions. This view addresses performance, scalability, and concurrency concerns.
 
-1. The MainWindow emits a signal (e.g., `LoadWorklistPageAction`)
-2. The MainWindowDelegate receives the signal and calls `prepareLoadingPage()` to show a busy cursor
-3. The delegate uses a Builder to create the page and its delegate
-4. The page widget is passed to `loadPage()` which adds it to the content area
-5. Finally, `finishLoadingPage()` restores the cursor and re-enables actions
+### 7.1 Main Application Thread
 
-This pattern ensures that page transitions are smooth and that resources from previous pages are properly released before new pages are loaded.
+The main thread runs the Qt event loop and handles all UI operations. Following Qt's threading model, UI updates must occur on the main thread.
 
-## Application Package
-
-The Application package is the orchestration layer of the system. It contains the business logic that coordinates between the user interface (View) and the data/services layers (Core, Device, Worklist, etc.). The package is organized around two key patterns: Builders and Delegates.
-
-### Builders
-
-Builders are factory classes responsible for constructing pages along with their associated delegates and dependencies. A Builder receives a `DelegateParameter` structure containing shared resources like the database connection and context manager. Using these parameters, the Builder creates repository instances and wires everything together.
-
-The Builder pattern isolates construction complexity from the page and delegate classes themselves. Pages don't need to know how to create their repositories or where the database connection comes from. This makes pages easier to test and maintain.
-
-### Delegates
-
-Delegates handle the business logic for their associated pages. While the page (in the View layer) manages UI rendering and user interaction, the delegate implements what happens when the user performs an action. Delegates hold references to repositories and services, coordinate data operations, and emit signals to update the UI.
-
-This separation means that UI code in the View layer remains focused on presentation, while business rules and data access logic live in the Application layer where they can be more easily tested and modified.
-
-### DelegateParameter
-
-The `DelegateParameter` structure serves as a dependency injection container, passed from the application startup through to individual page builders. It contains:
-
-- The active database connection
-- The context manager (user session, workflow state)
-- Any shared services needed across pages
-
-By centralizing these dependencies in a single structure, the codebase avoids scattered dependency management and makes it clear what resources are available during page construction.
-
-## Example: WorklistPage
-
-To illustrate these patterns in practice, consider how the WorklistPage is constructed and operates. The WorklistPage displays the DICOM Modality Worklist, allowing operators to view scheduled procedures, add new patients, and select items for examination.
-
-### Building the WorklistPage
-
-When the user navigates to the worklist, the `MainWindowDelegate` calls the `WorkListPageBuilder`:
-
-```cpp
-void MainWindowDelegate::onLoadWorklistPageAction() {
-    m_mainWindow->prepareLoadingPage();
-
-    // Builder creates the page and delegate with all dependencies
-    WorkListPageBuilder builder;
-    auto [page, delegate] = builder.build(m_delegateParameter, m_mainWindow, this);
-
-    m_worklistPageDelegate = delegate;
-
-    // Connect delegate signals to handle navigation
-    connect(delegate, &WorkListPageDelegate::startExamination,
-            this, &MainWindowDelegate::onStartExamination);
-
-    m_mainWindow->loadPage(page);
-    m_mainWindow->finishLoadingPage();
-}
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    MAIN APPLICATION THREAD                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                     Qt Event Loop                            │   │
+│  │                                                              │   │
+│  │    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   │   │
+│  │    │  User   │   │  Timer  │   │ Signal/ │   │ Network │   │   │
+│  │    │ Input   │   │ Events  │   │  Slot   │   │  I/O    │   │   │
+│  │    └────┬────┘   └────┬────┘   └────┬────┘   └────┬────┘   │   │
+│  │         │             │             │             │         │   │
+│  │         └─────────────┴──────┬──────┴─────────────┘         │   │
+│  │                              │                               │   │
+│  │                              ▼                               │   │
+│  │                    ┌─────────────────┐                      │   │
+│  │                    │  Event Queue    │                      │   │
+│  │                    └────────┬────────┘                      │   │
+│  │                             │                               │   │
+│  │                             ▼                               │   │
+│  │                    ┌─────────────────┐                      │   │
+│  │                    │ Event Dispatch  │                      │   │
+│  │                    └────────┬────────┘                      │   │
+│  │                             │                               │   │
+│  │              ┌──────────────┼──────────────┐               │   │
+│  │              ▼              ▼              ▼               │   │
+│  │        ┌──────────┐  ┌──────────┐  ┌──────────┐           │   │
+│  │        │   UI     │  │ Delegate │  │  Timer   │           │   │
+│  │        │ Updates  │  │ Handlers │  │ Callbacks│           │   │
+│  │        └──────────┘  └──────────┘  └──────────┘           │   │
+│  │                                                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Inside the Builder
+### 7.2 Background Operations
 
-The `WorkListPageBuilder::build()` method creates the necessary repositories and wires them to the page and delegate:
+Long-running operations run in background threads to keep the UI responsive:
 
-```cpp
-std::pair<WorkListPage*, WorkListPageDelegate*>
-WorkListPageBuilder::build(const DelegateParameter& params,
-                           QWidget* parentWidget,
-                           QObject* parentDelegate) {
-    // Create repositories from the shared database connection
-    auto worklistRepository = std::make_shared<WorklistRepository>(params.dbConnection);
-    auto scanRepository = std::make_shared<ScanProtocolRepository>(params.dbConnection);
-    auto dicomRepository = std::make_shared<DicomRepository>(params.dbConnection);
-
-    // Create the page widget
-    auto* page = new WorkListPage(worklistRepository, parentWidget);
-
-    // Create the delegate with repositories and context
-    auto* delegate = new WorkListPageDelegate(
-        page,
-        worklistRepository,
-        scanRepository,
-        dicomRepository,
-        params.dbConnection,
-        params.contextManager,
-        parentDelegate);
-
-    return { page, delegate };
-}
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    CONCURRENT OPERATIONS                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  MAIN THREAD                    BACKGROUND THREADS                  │
+│  ───────────                    ──────────────────                  │
+│                                                                     │
+│  ┌──────────────┐              ┌──────────────────┐                │
+│  │ UI Rendering │              │ MWL Query Thread │                │
+│  │ User Input   │              │                  │                │
+│  │ Event Loop   │◀────────────▶│ • Query RIS 1    │                │
+│  └──────────────┘   Signal/    │ • Query RIS 2    │                │
+│        │            Slot       │ • Merge results  │                │
+│        │                       └──────────────────┘                │
+│        │                                                           │
+│        │                       ┌──────────────────┐                │
+│        │                       │ Image Processing │                │
+│        │◀─────────────────────▶│                  │                │
+│        │                       │ • Calibration    │                │
+│        │                       │ • Enhancement    │                │
+│        │                       │ • DICOM encode   │                │
+│        │                       └──────────────────┘                │
+│        │                                                           │
+│        │                       ┌──────────────────┐                │
+│        │                       │ PACS Transfer    │                │
+│        │◀─────────────────────▶│                  │                │
+│        │                       │ • C-STORE        │                │
+│        │                       │ • MPPS updates   │                │
+│        │                       └──────────────────┘                │
+│        │                                                           │
+│        ▼                                                           │
+│  ┌──────────────┐                                                  │
+│  │ UI Updated   │                                                  │
+│  │ with Results │                                                  │
+│  └──────────────┘                                                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Delegate Responsibilities
+### 7.3 Image Acquisition Sequence
 
-The `WorkListPageDelegate` handles business operations such as:
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                 IMAGE ACQUISITION SEQUENCE                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Time ──────────────────────────────────────────────────────────▶  │
+│                                                                     │
+│  UI Thread:                                                         │
+│  ─────────                                                         │
+│  [Prep] ──▶ [Wait] ────────────────────────────▶ [Display] ──▶    │
+│     │                                                 ▲            │
+│     │                                                 │            │
+│     │ Trigger                                         │ Complete   │
+│     ▼                                                 │            │
+│  Generator Thread:                                    │            │
+│  ────────────────                                    │            │
+│  ──────▶ [Expose] ──▶ [Done] ─────────────────────────┤            │
+│                          │                            │            │
+│                          │ X-ray pulse               │            │
+│                          ▼                            │            │
+│  Detector Thread:                                     │            │
+│  ───────────────                                     │            │
+│  ────────────────▶ [Capture] ──▶ [Transfer] ──▶ [Process] ────▶   │
+│                                                                     │
+│  Timeline:                                                          │
+│  ├────────┼────────┼────────┼────────┼────────┼────────┤          │
+│  0ms     50ms    100ms    200ms    500ms   1000ms   1500ms         │
+│  │        │        │        │        │        │        │          │
+│  Prep  Exposure  Capture Transfer  Process Display                 │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-- Querying the MWL from connected RIS systems
-- Filtering and searching worklist entries
-- Creating new local patients
-- Starting examinations when items are selected
-- Coordinating with the ContextManager to track workflow state
+---
 
-When the user selects a worklist item and clicks "Start Exam", the delegate validates the selection, updates the workflow context, and emits a signal that causes the MainWindowDelegate to navigate to the ExamPage.
+## 8. Physical View
 
-## Application Startup
+The Physical View describes the mapping of software onto hardware. For E-TREK, this primarily means the deployment on a single workstation connected to X-ray equipment.
 
-The application initialization follows a well-defined sequence managed by the `ApplicationService` class. Different launch modes (normal, demo, settings manager, user manager) are handled through the Strategy pattern.
+### 8.1 Deployment Architecture
 
-### Launch Modes
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PHYSICAL DEPLOYMENT                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌───────────────────────────────────────────────────────────────┐ │
+│  │                    HOSPITAL NETWORK                            │ │
+│  │                                                                │ │
+│  │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐      │ │
+│  │   │    RIS      │    │    PACS     │    │   MySQL     │      │ │
+│  │   │   Server    │    │   Server    │    │   Server    │      │ │
+│  │   └──────┬──────┘    └──────┬──────┘    └──────┬──────┘      │ │
+│  │          │                  │                  │              │ │
+│  │          └──────────────────┼──────────────────┘              │ │
+│  │                             │                                 │ │
+│  │                      ┌──────┴──────┐                         │ │
+│  │                      │   Network   │                         │ │
+│  │                      │   Switch    │                         │ │
+│  │                      └──────┬──────┘                         │ │
+│  └─────────────────────────────┼─────────────────────────────────┘ │
+│                                │                                    │
+│                                │ Ethernet                           │
+│                                │                                    │
+│  ┌─────────────────────────────┼─────────────────────────────────┐ │
+│  │                    X-RAY ROOM                                  │ │
+│  │                             │                                  │ │
+│  │   ┌─────────────────────────┴─────────────────────────────┐   │ │
+│  │   │              E-TREK WORKSTATION PC                     │   │ │
+│  │   │  ┌─────────────────────────────────────────────────┐  │   │ │
+│  │   │  │  Windows 10/11 Professional                      │  │   │ │
+│  │   │  │  ┌─────────────────────────────────────────┐    │  │   │ │
+│  │   │  │  │           E-TREK Application            │    │  │   │ │
+│  │   │  │  └─────────────────────────────────────────┘    │  │   │ │
+│  │   │  │  ┌─────────┐  ┌─────────┐  ┌─────────────┐     │  │   │ │
+│  │   │  │  │ Qt 6.5  │  │ VTK 9.5 │  │ MySQL Client│     │  │   │ │
+│  │   │  │  └─────────┘  └─────────┘  └─────────────┘     │  │   │ │
+│  │   │  └─────────────────────────────────────────────────┘  │   │ │
+│  │   └───────────────────────────────────────────────────────┘   │ │
+│  │          │              │              │                       │ │
+│  │          │ RS-232/      │ Ethernet/    │ CAN/                  │ │
+│  │          │ Modbus       │ Direct       │ RS-485                │ │
+│  │          ▼              ▼              ▼                       │ │
+│  │   ┌──────────┐   ┌──────────┐   ┌──────────┐                  │ │
+│  │   │ Generator│   │ Detector │   │Positioner│                  │ │
+│  │   │          │   │          │   │ (if any) │                  │ │
+│  │   └──────────┘   └──────────┘   └──────────┘                  │ │
+│  │                                                                │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-The application supports multiple launch modes specified via command-line arguments:
+### 8.2 Hardware Requirements
 
-- **(default)**: Full application with authentication and all features
-- **--demo**: Testing mode with sample data
-- **--setting-manager**: Opens only the system settings interface
-- **--user-manager**: Opens only the user account management interface
-- **--developer**: Diagnostic and debugging tools
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| CPU | Intel Core i5 (4 cores) | Intel Core i7 (8 cores) |
+| RAM | 8 GB | 16 GB |
+| Storage | 256 GB SSD | 512 GB NVMe SSD |
+| Display | 1920x1080 | 2560x1440 or dual monitor |
+| GPU | Integrated graphics | Dedicated GPU (for VTK acceleration) |
+| Network | 1 Gbps Ethernet | 1 Gbps Ethernet |
+| OS | Windows 10 Pro (64-bit) | Windows 11 Pro (64-bit) |
 
-Each mode is implemented as a strategy class that configures which services to initialize and which UI to display. This approach allows the same codebase to serve different purposes without conditional logic scattered throughout.
+### 8.3 Communication Interfaces
 
-### Initialization Sequence
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                 HARDWARE INTERFACES                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌───────────────────────────────────────────────────────────────┐ │
+│  │                    E-TREK Workstation                          │ │
+│  │                                                                │ │
+│  │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐      │ │
+│  │   │   COM1      │    │   COM2      │    │ Ethernet    │      │ │
+│  │   │  RS-232     │    │  RS-485     │    │ 1 Gbps      │      │ │
+│  │   └──────┬──────┘    └──────┬──────┘    └──────┬──────┘      │ │
+│  └──────────┼──────────────────┼──────────────────┼──────────────┘ │
+│             │                  │                  │                 │
+│             │                  │                  │                 │
+│             ▼                  ▼                  ▼                 │
+│  ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐   │
+│  │    Generator     │ │   Positioner     │ │    Detector      │   │
+│  │                  │ │   Controller     │ │                  │   │
+│  │  Protocol:       │ │                  │ │  Protocol:       │   │
+│  │  - Modbus RTU    │ │  Protocol:       │ │  - TCP/IP        │   │
+│  │  - Custom        │ │  - CAN bus       │ │  - Raw socket    │   │
+│  │                  │ │  - RS-485        │ │                  │   │
+│  │  Settings:       │ │                  │ │  Settings:       │   │
+│  │  - 9600 baud     │ │  Settings:       │ │  - Port 5000     │   │
+│  │  - 8N1           │ │  - 115200 baud   │ │  - Static IP     │   │
+│  └──────────────────┘ └──────────────────┘ └──────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-When the application starts in normal mode, the following initialization occurs:
+---
 
-1. **Logging Setup**: The spdlog-based logging system is configured with file rotation and appropriate log levels.
+## 9. Quality Attributes
 
-2. **Settings Loading**: Configuration is read from `Settings.json`, including database connection parameters, RIS connections, and file paths.
+### 9.1 Performance
 
-3. **Database Connection**: A connection to the MySQL database is established using the configured credentials.
+The system is designed to meet the following performance targets:
 
-4. **Authentication**: The login dialog is presented, and the user must authenticate before proceeding.
+| Operation | Target | Notes |
+|-----------|--------|-------|
+| Application startup | < 5 seconds | From launch to login screen |
+| Page navigation | < 500 ms | Between any two pages |
+| Image display | < 2 seconds | From capture complete to on-screen |
+| MWL query | < 3 seconds | Per RIS connection |
+| PACS transfer | < 5 seconds | Per image (network dependent) |
 
-5. **Context Initialization**: The ContextManager is created to track user session and workflow state throughout the application lifecycle.
+### 9.2 Reliability
 
-6. **Main Window Creation**: The MainWindowBuilder constructs the main window and its delegate, wiring up navigation signals.
+- Automatic database connection recovery after network interruption
+- Image data preserved in local cache until successful PACS transfer
+- Graceful degradation when RIS connections are unavailable
+- Transaction-based database operations to prevent data corruption
 
-7. **Initial Page Load**: Depending on configuration, the application may automatically navigate to the WorklistPage or wait for user action.
+### 9.3 Security
 
-## Core Services
+- User authentication required for all operations
+- Role-based access control (Admin, Technician, Engineer)
+- Encrypted password storage using bcrypt
+- Audit logging of all user actions
 
-The Core package provides foundational services used throughout the application. These services are designed to be stateless where possible and thread-safe where necessary.
+---
 
-### Logging
+## 10. References
 
-The logging system is built on spdlog and provides structured, rotated log files. The `LoggerProvider` singleton manages logger instances, and components can request loggers for specific subsystems. Log files are automatically rotated based on size and age, with configurable retention policies.
-
-### Security
-
-User authentication is handled by the `AuthenticationService`, which validates credentials against hashed passwords stored in the database. The `CryptoManager` provides password hashing using industry-standard algorithms. Session tokens track logged-in users and their roles throughout the application.
-
-### Settings
-
-The `SettingProvider` loads configuration from JSON files at startup. Database passwords can be stored encrypted, with automatic decryption during loading. Settings include database connection parameters, RIS configurations, logging preferences, and system behavior flags.
-
-### Context Management
-
-The `ContextManager` maintains application state that spans across pages and operations. The `SessionContext` tracks the currently logged-in user and their permissions, while the `WorkflowContext` tracks the current examination state, selected worklist item, and imaging progress.
-
-## Design Principles
-
-### Separation of Concerns
-
-Each module has a single, well-defined responsibility. The View layer handles only UI rendering and user interaction. The Application layer contains business logic and workflow coordination. The Core layer provides infrastructure services. This separation makes the codebase easier to understand, test, and modify.
-
-### Dependency Direction
-
-Dependencies flow inward toward more stable, foundational code. Upper layers (Application, View) depend on lower layers (Core, Common), but never the reverse. This ensures that changes to business logic or UI don't require modifications to infrastructure code.
-
-### Memory Management
-
-The codebase uses smart pointers (`std::shared_ptr`, `std::unique_ptr`) for heap-allocated objects and relies on Qt's parent-child ownership model for QObject-derived classes. Raw `new` and `delete` are avoided in business logic, with RAII patterns ensuring proper resource cleanup.
-
-### Qt Integration
-
-The application leverages Qt's signal/slot mechanism for loose coupling between components. Qt's meta-object system enables runtime type information and property binding. Asynchronous operations use Qt's event loop rather than manual threading where possible.
-
-## Third-Party Dependencies
-
-The application relies on several external libraries, all organized in the `ThirdPartyLibraries/` directory:
-
-- **Qt 6.5.3**: Provides the application framework including UI widgets, networking, database access, and OpenGL integration
-- **VTK 9.5**: Powers the medical image visualization with support for windowing, measurements, and annotations
-- **DCMTK**: Implements the DICOM protocol for worklist queries, image storage, and PACS communication
-- **OpenSSL**: Provides cryptographic functions for password hashing and secure connections
-- **spdlog**: High-performance logging with support for multiple sinks and automatic rotation
-- **MySQL**: Relational database for storing patient data, worklist entries, and system configuration
+- Kruchten, P. (1995). "The 4+1 View Model of Architecture"
+- DICOM Standard PS3.4 - Service Class Specifications
+- Qt 6.5 Documentation - Application Architecture
+- VTK User's Guide - Medical Imaging
 
 ---
 
