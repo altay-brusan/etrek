@@ -30,7 +30,7 @@ SystemSettingPageBuilder::build(const DelegateParameter &params,
   auto page = new SystemSettingPage(parentWidget);
 
   auto *systemSettingPageDelegate =
-      new SystemSettingPageDelegate(page, parentDelegate);
+      new SystemSettingPageDelegate(page, params.contextManager, parentDelegate);
 
   // Prepare delegate parameters for all sub-builders
   // Pass only dbConnection and context info - each sub-builder creates its own repositories

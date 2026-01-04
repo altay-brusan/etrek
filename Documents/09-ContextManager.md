@@ -207,3 +207,37 @@ The system is designed to be extensible:
 2. **Additional session data**: Extend `SessionContext` with new fields
 3. **Context persistence**: Add save/restore for session recovery
 4. **Context events**: Subscribe to context changes via signals
+
+---
+
+## Context Injection Audit
+
+### Delegates WITH Context Injection
+
+| Delegate | File | contextManager param |
+|----------|------|---------------------|
+| WorkListPageDelegate | Application/Delegate/WorkListPageDelegate.h:46 | `std::weak_ptr<IContextManager>` |
+| ExamPageDelegate | Application/Delegate/ExamPageDelegate.h:99 | `std::weak_ptr<IContextManager>` |
+| ViewSelectionDialogDelegate | Application/Delegate/ViewSelectionDialogDelegate.h:37 | `std::weak_ptr<IContextManager>` |
+| ImageViewerPageDelegate | Application/Delegate/ImageViewerPageDelegate.h:77 | `std::weak_ptr<IContextManager>` |
+| MainWindowDelegate | Application/Delegate/MainWindowDelegate.h:20 | Via `DelegateParameter` |
+| SystemSettingPageDelegate | Application/Delegate/SystemSettingPageDelegate.h:25 | `std::weak_ptr<IContextManager>` |
+
+### Configuration Delegates (Context via DelegateParameter)
+
+Configuration delegates are child delegates of `SystemSettingPageDelegate` and receive context via `DelegateParameter` from `SystemSettingPageBuilder.cpp`. They access context through the builder pattern rather than direct constructor injection.
+
+| Delegate | Module |
+|----------|--------|
+| WorkListConfigurationDelegate | Worklist |
+| WorkflowConfigurationDelegate | Device |
+| ViewConfigurationDelegate | ScanProtocol |
+| ProcedureConfigurationDelegate | ScanProtocol |
+| TechniqueConfigurationDelegate | ScanProtocol |
+| GeneratorConfigurationDelegate | Device |
+| DetectorConfigurationDelegate | Device |
+| DapConfigurationDelegate | Device |
+| CollimatorConfigurationDelegate | Device |
+| ConnectionSetupDelegate | Device |
+| PacsEntityConfigurationDelegate | Pacs |
+| ImageCommentConfigurationDelegate | Dicom |
