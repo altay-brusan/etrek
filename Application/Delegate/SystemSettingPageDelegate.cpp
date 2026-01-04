@@ -1,13 +1,18 @@
 #include "SystemSettingPageDelegate.h"
 #include "SystemSettingPage.h"
+#include "IContextManager.h"
 
 #include <QTimer>
 
 namespace Etrek::Application::Delegate
 {
-    SystemSettingPageDelegate::SystemSettingPageDelegate(SystemSettingPage* page, QObject* parent)
-        : QObject(parent),
-        m_page(page)
+    SystemSettingPageDelegate::SystemSettingPageDelegate(
+        SystemSettingPage* page,
+        std::weak_ptr<Etrek::Context::IContextManager> contextManager,
+        QObject* parent)
+        : QObject(parent)
+        , m_page(page)
+        , m_contextManager(contextManager)
     {
         // Deferred initialization to allow UI to settle first
         QTimer::singleShot(0, this, &SystemSettingPageDelegate::onPageLoaded);
