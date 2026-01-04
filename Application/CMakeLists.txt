@@ -14,6 +14,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Builder/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Strategy/*.cpp
 )
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
@@ -21,6 +22,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Builder/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Strategy/*.h
     
     ${COMMON_INCLUDE_DIR}/Core/Data/Entity/*.h
     ${COMMON_INCLUDE_DIR}/Core/Data/Model/*.h
@@ -29,6 +31,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${COMMON_INCLUDE_DIR}/Worklist/Specification/*.h
     ${COMMON_INCLUDE_DIR}/Core/Globalization/*.h
     ${COMMON_INCLUDE_DIR}/Context/*.h
+    ${COMMON_INCLUDE_DIR}/Examination/*.h
     ${CMAKE_VIEW_DIRECTORY}/Page/*.h
     ${CMAKE_VIEW_DIRECTORY}/Widget/*.h
     ${CMAKE_VIEW_DIRECTORY}/Dialog/*.h
@@ -76,6 +79,7 @@ target_include_directories(Application
         ${CMAKE_CURRENT_SOURCE_DIR}/Service
         ${CMAKE_CURRENT_SOURCE_DIR}/Delegate
         ${CMAKE_CURRENT_SOURCE_DIR}/Builder
+        ${CMAKE_CURRENT_SOURCE_DIR}/Strategy
         ${CMAKE_CURRENT_BINARY_DIR}
         ${CMAKE_VIEW_DIRECTORY}/Page
         ${CMAKE_VIEW_DIRECTORY}/Widget

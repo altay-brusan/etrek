@@ -17,6 +17,8 @@
 #include "Procedure.h"
 #include "BodySizeWidget.h"
 #include "ExposureApplicationControlWidget.h"
+#include "ExaminationMode.h"
+#include "IExaminationModeStrategy.h"
 
 // Forward declarations for VTK
 class vtkRenderer;
@@ -287,6 +289,9 @@ private:
 
     // --- Other Delegates ---
     QVector<QPointer<QObject>> m_childDelegates;
+
+    // --- Examination Mode Strategy ---
+    std::unique_ptr<Etrek::Examination::IExaminationModeStrategy> m_examinationStrategy;
 };
 
 } // namespace Etrek::Application::Delegate

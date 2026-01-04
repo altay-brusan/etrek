@@ -54,6 +54,10 @@ public:
     QString requestedProcedureDescription() const override;
     QString referringPhysician() const override;
 
+    // Examination Mode
+    Etrek::Examination::ExaminationMode examinationMode() const override;
+    void setExaminationMode(Etrek::Examination::ExaminationMode mode) override;
+
     // --- Additional Accessors ---
 
     /**
@@ -108,6 +112,9 @@ private:
     // For LOCAL worklist entries: selected procedure and views
     int m_procedureId = -1;
     QVector<int> m_viewIds;
+
+    // Examination mode (defaults to CLINICAL for real patient exams)
+    Etrek::Examination::ExaminationMode m_examinationMode = Etrek::Examination::ExaminationMode::CLINICAL;
 };
 
 } // namespace Etrek::Core::Context

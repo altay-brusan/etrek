@@ -184,4 +184,16 @@ QVector<int> ExaminationContext::viewIds() const
     return m_viewIds;
 }
 
+// --- Examination Mode ---
+
+Etrek::Examination::ExaminationMode ExaminationContext::examinationMode() const
+{
+    return m_examinationMode;
+}
+
+void ExaminationContext::setExaminationMode(Etrek::Examination::ExaminationMode mode)
+{
+    m_examinationMode = mode;
+}
+
 } // namespace Etrek::Core::Context

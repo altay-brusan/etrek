@@ -2,6 +2,7 @@
 #define IEXAMINATIONCONTEXT_H
 
 #include "IWorkflowContext.h"
+#include "Examination/ExaminationMode.h"
 #include <QString>
 #include <QDate>
 #include <optional>
@@ -112,6 +113,20 @@ public:
      * @return The referring physician's name.
      */
     virtual QString referringPhysician() const = 0;
+
+    // --- Examination Mode ---
+
+    /**
+     * @brief Returns the current examination mode.
+     * @return The examination mode (CLINICAL, DEMO, CALIBRATION, or TEST).
+     */
+    virtual Etrek::Examination::ExaminationMode examinationMode() const = 0;
+
+    /**
+     * @brief Sets the examination mode.
+     * @param mode The examination mode to set.
+     */
+    virtual void setExaminationMode(Etrek::Examination::ExaminationMode mode) = 0;
 };
 
 } // namespace Etrek::Context
