@@ -45,6 +45,7 @@ E-TREK is designed as a generic workstation software for medical X-ray imaging s
 
 E-TREK is designed as a workstation software for medical X-ray machines. The software is intentionally generic and independent of any specific X-ray equipment manufacturer, allowing device manufacturers and system integrators to incorporate E-TREK into their products.
 
+<!--
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                      X-RAY IMAGING SYSTEM                           │
@@ -75,6 +76,9 @@ E-TREK is designed as a workstation software for medical X-ray machines. The sof
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+-->
+
+<img src="./images/01-Architecture-Overview/X-RAY-IMAGING-SYSTEM.png" alt="X-Ray Imaging System" width="90%">
 
 ### 2.2 Supported Configurations
 
@@ -411,7 +415,91 @@ This scenario illustrates the complete flow from selecting a patient to starting
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.3 UC-03: Capture Image (Detailed)
+### 4.3 Image Accept/Reject Workflow
+
+After capturing an image, the technician must review and decide whether to accept or reject it. This decision affects the examination workflow and data management.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                  IMAGE ACCEPT/REJECT WORKFLOW                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                    ┌─────────────────┐                              │
+│                    │  Image Captured │                              │
+│                    └────────┬────────┘                              │
+│                             │                                       │
+│                             ▼                                       │
+│                    ┌─────────────────┐                              │
+│                    │ Technician      │                              │
+│                    │ Reviews Image   │                              │
+│                    │ - Window/Level  │                              │
+│                    │ - Zoom/Pan      │                              │
+│                    │ - Measurements  │                              │
+│                    └────────┬────────┘                              │
+│                             │                                       │
+│              ┌──────────────┴──────────────┐                       │
+│              │                             │                       │
+│              ▼                             ▼                       │
+│     ┌─────────────────┐          ┌─────────────────┐              │
+│     │    ACCEPT       │          │    REJECT       │              │
+│     └────────┬────────┘          └────────┬────────┘              │
+│              │                            │                        │
+│              ▼                            ▼                        │
+│  ┌────────────────────┐       ┌────────────────────┐              │
+│  │ • Mark as ACCEPTED │       │ • Mark as REJECTED │              │
+│  │ • Add to study     │       │ • Record reason:   │              │
+│  │ • Queue for PACS   │       │   - Motion blur    │              │
+│  │ • Update thumbnail │       │   - Poor exposure  │              │
+│  │                    │       │   - Wrong position │              │
+│  │                    │       │   - Patient moved  │              │
+│  │                    │       │   - Equipment error│              │
+│  └────────────────────┘       └────────────────────┘              │
+│              │                            │                        │
+│              │                            ▼                        │
+│              │                 ┌────────────────────┐              │
+│              │                 │ Prompt: Retake?    │              │
+│              │                 └─────────┬──────────┘              │
+│              │                           │                         │
+│              │              ┌────────────┴────────────┐            │
+│              │              │                         │            │
+│              │              ▼                         ▼            │
+│              │     ┌──────────────┐         ┌──────────────┐      │
+│              │     │  Yes: Retake │         │  No: Continue│      │
+│              │     │  same view   │         │  to next view│      │
+│              │     └──────────────┘         └──────────────┘      │
+│              │                                        │            │
+│              └────────────────────────────────────────┘            │
+│                               │                                    │
+│                               ▼                                    │
+│                    ┌─────────────────┐                             │
+│                    │ All views done? │                             │
+│                    └────────┬────────┘                             │
+│                             │                                      │
+│              ┌──────────────┴──────────────┐                      │
+│              │                             │                      │
+│              ▼                             ▼                      │
+│     ┌─────────────────┐          ┌─────────────────┐             │
+│     │ No: Next View   │          │ Yes: Complete   │             │
+│     │                 │          │ Examination     │             │
+│     └─────────────────┘          └─────────────────┘             │
+│                                                                    │
+│  REJECT REASONS (Stored in Database):                             │
+│  ┌────────────────────────────────────────────────────────────┐   │
+│  │ Code │ Reason              │ Requires Retake │ Dose Added  │   │
+│  ├──────┼─────────────────────┼─────────────────┼─────────────┤   │
+│  │ R01  │ Motion artifact     │ Recommended     │ Yes         │   │
+│  │ R02  │ Underexposure       │ Required        │ Yes         │   │
+│  │ R03  │ Overexposure        │ Required        │ Yes         │   │
+│  │ R04  │ Positioning error   │ Required        │ Yes         │   │
+│  │ R05  │ Patient not ready   │ Required        │ Yes         │   │
+│  │ R06  │ Equipment malfunction│ Required       │ Varies      │   │
+│  │ R07  │ Test/Calibration    │ No              │ No (usually)│   │
+│  └────────────────────────────────────────────────────────────┘   │
+│                                                                    │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.4 UC-03: Capture Image (Detailed)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -467,6 +555,364 @@ This scenario illustrates the complete flow from selecting a patient to starting
 │  │                                                               │  │
 │  │    studies ◀── series ◀── images ◀── acquisitions           │  │
 │  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.5 Calibration and Service Mode
+
+Users with Administrator or Engineer privileges can access special calibration and service functions. These operations are essential for maintaining detector quality and system performance.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                 CALIBRATION AND SERVICE MODE                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ACCESS CONTROL:                                                    │
+│  ┌────────────────────────────────────────────────────────────────┐│
+│  │  Role          │ Calibration │ Service Test │ Device Config   ││
+│  ├────────────────┼─────────────┼──────────────┼─────────────────┤│
+│  │  Technician    │     ✗       │      ✗       │       ✗         ││
+│  │  Engineer      │     ✓       │      ✓       │       ✓         ││
+│  │  Admin         │     ✓       │      ✓       │       ✓         ││
+│  └────────────────────────────────────────────────────────────────┘│
+│                                                                     │
+│  CALIBRATION TYPES:                                                 │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    DETECTOR CALIBRATION                      │   │
+│  │                                                              │   │
+│  │  1. DARK IMAGE (Offset Calibration)                         │   │
+│  │     ┌────────────────────────────────────────────────────┐  │   │
+│  │     │ • No X-ray exposure                                │  │   │
+│  │     │ • Captures detector baseline noise                 │  │   │
+│  │     │ • Used to subtract electronic offset               │  │   │
+│  │     │ • Typically: 10-50 frames averaged                 │  │   │
+│  │     └────────────────────────────────────────────────────┘  │   │
+│  │                          │                                   │   │
+│  │                          ▼                                   │   │
+│  │  2. BRIGHT IMAGE (Gain Calibration)                         │   │
+│  │     ┌────────────────────────────────────────────────────┐  │   │
+│  │     │ • Uniform X-ray exposure (no object)               │  │   │
+│  │     │ • Captures detector sensitivity variations         │  │   │
+│  │     │ • Used to normalize pixel response                 │  │   │
+│  │     │ • Typically: 70-80 kVp, medium mAs                 │  │   │
+│  │     └────────────────────────────────────────────────────┘  │   │
+│  │                          │                                   │   │
+│  │                          ▼                                   │   │
+│  │  3. DEFECT MAP                                              │   │
+│  │     ┌────────────────────────────────────────────────────┐  │   │
+│  │     │ • Identifies dead/hot pixels                       │  │   │
+│  │     │ • Creates interpolation map                        │  │   │
+│  │     │ • Updated periodically or after detector service   │  │   │
+│  │     └────────────────────────────────────────────────────┘  │   │
+│  │                                                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  SERVICE TEST IMAGING:                                              │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    TEST IMAGE CAPTURE                        │   │
+│  │                                                              │   │
+│  │  Purpose: Verify system performance without patient data    │   │
+│  │                                                              │   │
+│  │  ┌──────────────────┐  ┌──────────────────┐                 │   │
+│  │  │ Resolution Test  │  │ Uniformity Test  │                 │   │
+│  │  │ • Line pair      │  │ • Flat field     │                 │   │
+│  │  │   phantom        │  │   exposure       │                 │   │
+│  │  │ • MTF analysis   │  │ • SNR analysis   │                 │   │
+│  │  └──────────────────┘  └──────────────────┘                 │   │
+│  │                                                              │   │
+│  │  ┌──────────────────┐  ┌──────────────────┐                 │   │
+│  │  │ AEC Verification │  │ Dose Check       │                 │   │
+│  │  │ • Ionization     │  │ • DAP meter      │                 │   │
+│  │  │   chamber test   │  │   calibration    │                 │   │
+│  │  │ • Density check  │  │ • mAs accuracy   │                 │   │
+│  │  └──────────────────┘  └──────────────────┘                 │   │
+│  │                                                              │   │
+│  │  Test images are:                                            │   │
+│  │  • NOT sent to PACS                                         │   │
+│  │  • Stored in separate calibration folder                    │   │
+│  │  • Tagged with "SERVICE" or "CALIBRATION" in metadata       │   │
+│  │  • Can be reviewed and exported for QA reports              │   │
+│  │                                                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  CALIBRATION WORKFLOW:                                              │
+│                                                                     │
+│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐         │
+│  │ Select  │───▶│ Prepare │───▶│ Capture │───▶│ Verify  │         │
+│  │ Type    │    │ System  │    │ Images  │    │ Results │         │
+│  └─────────┘    └─────────┘    └─────────┘    └────┬────┘         │
+│                                                     │              │
+│                                    ┌────────────────┴────────┐     │
+│                                    │                         │     │
+│                                    ▼                         ▼     │
+│                           ┌─────────────┐          ┌─────────────┐│
+│                           │   PASS      │          │    FAIL     ││
+│                           │ Save to     │          │ Alert user, ││
+│                           │ calibration │          │ retry or    ││
+│                           │ storage     │          │ service     ││
+│                           └─────────────┘          └─────────────┘│
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.6 Demo Mode
+
+Demo mode allows the application to run without actual X-ray hardware, useful for training, presentations, and software testing. This mode simulates image capture using pre-stored sample images.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         DEMO MODE                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  LAUNCH: EtrekApp.exe --demo                                        │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    DEMO MODE FEATURES                        │   │
+│  │                                                              │   │
+│  │  ┌────────────────────────────────────────────────────────┐ │   │
+│  │  │ Feature              │ Normal Mode │ Demo Mode         │ │   │
+│  │  ├──────────────────────┼─────────────┼───────────────────┤ │   │
+│  │  │ Hardware connection  │ Required    │ Simulated         │ │   │
+│  │  │ X-ray exposure       │ Real        │ Simulated         │ │   │
+│  │  │ Image source         │ Detector    │ Sample library    │ │   │
+│  │  │ Database             │ Production  │ Demo database     │ │   │
+│  │  │ PACS transfer        │ Enabled     │ Disabled          │ │   │
+│  │  │ MWL query            │ Real RIS    │ Mock worklist     │ │   │
+│  │  │ Authentication       │ Required    │ Auto-login        │ │   │
+│  │  └────────────────────────────────────────────────────────┘ │   │
+│  │                                                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  SIMULATED CAPTURE FLOW:                                            │
+│                                                                     │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐            │
+│  │ User clicks │───▶│ Random      │───▶│ Apply       │            │
+│  │ "Expose"    │    │ sample      │    │ technique   │            │
+│  │             │    │ selected    │    │ simulation  │            │
+│  └─────────────┘    └─────────────┘    └──────┬──────┘            │
+│                                                │                   │
+│                                                ▼                   │
+│                     ┌─────────────────────────────────────┐       │
+│                     │ Sample Image Library                 │       │
+│                     │ ┌─────────┐ ┌─────────┐ ┌─────────┐ │       │
+│                     │ │ Chest   │ │ Hand    │ │ Knee    │ │       │
+│                     │ │ samples │ │ samples │ │ samples │ │       │
+│                     │ └─────────┘ └─────────┘ └─────────┘ │       │
+│                     │ ┌─────────┐ ┌─────────┐ ┌─────────┐ │       │
+│                     │ │ Spine   │ │ Pelvis  │ │ Skull   │ │       │
+│                     │ │ samples │ │ samples │ │ samples │ │       │
+│                     │ └─────────┘ └─────────┘ └─────────┘ │       │
+│                     └─────────────────────────────────────┘       │
+│                                                │                   │
+│                                                ▼                   │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐            │
+│  │ Display     │◀───│ Add noise/  │◀───│ Match body  │            │
+│  │ image       │    │ variation   │    │ part to     │            │
+│  │             │    │             │    │ procedure   │            │
+│  └─────────────┘    └─────────────┘    └─────────────┘            │
+│                                                                     │
+│  USE CASES:                                                         │
+│  • Sales demonstrations to potential customers                     │
+│  • Training new technicians on software workflow                   │
+│  • Software testing without radiation exposure                     │
+│  • Conference and trade show presentations                         │
+│  • Development and debugging                                       │
+│                                                                     │
+│  VISUAL INDICATOR:                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  ┌──────────────────────────────────────────────────────┐   │   │
+│  │  │  ████  DEMO MODE - No Real X-Ray Exposure  ████      │   │   │
+│  │  └──────────────────────────────────────────────────────┘   │   │
+│  │  Status bar shows clear "DEMO MODE" indicator                │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.7 Data Lifecycle and Storage Management
+
+E-TREK includes a Storage Manager that automatically manages disk space by archiving or removing old data based on configurable retention policies.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                 DATA LIFECYCLE AND STORAGE MANAGEMENT                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  DATA LIFECYCLE STAGES:                                             │
+│                                                                     │
+│  ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌───────┐│
+│  │ CAPTURE │──▶│ REVIEW  │──▶│ ARCHIVE │──▶│ STORAGE │──▶│CLEANUP││
+│  │         │   │         │   │ TO PACS │   │ LOCAL   │   │       ││
+│  └─────────┘   └─────────┘   └─────────┘   └─────────┘   └───────┘│
+│       │            │             │             │             │     │
+│       │            │             │             │             │     │
+│       ▼            ▼             ▼             ▼             ▼     │
+│   Immediate    Minutes       Hours/Days    Days/Weeks    Weeks+   │
+│                                                                     │
+│  DATA CATEGORIES AND RETENTION:                                     │
+│                                                                     │
+│  ┌────────────────────────────────────────────────────────────────┐│
+│  │ Category          │ Default Retention │ After PACS Transfer   ││
+│  ├───────────────────┼───────────────────┼───────────────────────┤│
+│  │ Patient Images    │ 30 days           │ Can be deleted        ││
+│  │ Rejected Images   │ 7 days            │ Auto-delete           ││
+│  │ Calibration Data  │ 90 days           │ N/A (local only)      ││
+│  │ Service/Test      │ 30 days           │ N/A (local only)      ││
+│  │ Worklist Entries  │ 30 days           │ Archive after complete││
+│  │ Audit Logs        │ 365 days          │ Compress after 30 days││
+│  └────────────────────────────────────────────────────────────────┘│
+│                                                                     │
+│  STORAGE MANAGER OPERATION:                                         │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                                                              │   │
+│  │   ┌──────────────────────────────────────────────────────┐  │   │
+│  │   │              STORAGE MONITOR (Background)             │  │   │
+│  │   │                                                       │  │   │
+│  │   │    Disk Usage: [████████████░░░░░░░░] 62%            │  │   │
+│  │   │                                                       │  │   │
+│  │   │    Thresholds:                                        │  │   │
+│  │   │    ├── Warning:  70%  → Alert admin                  │  │   │
+│  │   │    ├── Critical: 85%  → Start auto-cleanup           │  │   │
+│  │   │    └── Emergency: 95% → Block new captures           │  │   │
+│  │   │                                                       │  │   │
+│  │   └──────────────────────────────────────────────────────┘  │   │
+│  │                                                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  AUTO-CLEANUP PROCESS:                                              │
+│                                                                     │
+│  ┌─────────────┐                                                   │
+│  │ Disk usage  │                                                   │
+│  │ > threshold │                                                   │
+│  └──────┬──────┘                                                   │
+│         │                                                          │
+│         ▼                                                          │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ CLEANUP PRIORITY ORDER:                                      │   │
+│  │                                                              │   │
+│  │  1. ┌─────────────────────────────────────────────────────┐ │   │
+│  │     │ Temporary files (*.tmp, processing cache)           │ │   │
+│  │     └─────────────────────────────────────────────────────┘ │   │
+│  │                         │                                    │   │
+│  │  2. ┌─────────────────────────────────────────────────────┐ │   │
+│  │     │ Rejected images older than retention period         │ │   │
+│  │     └─────────────────────────────────────────────────────┘ │   │
+│  │                         │                                    │   │
+│  │  3. ┌─────────────────────────────────────────────────────┐ │   │
+│  │     │ Successfully transferred images (PACS confirmed)   │ │   │
+│  │     └─────────────────────────────────────────────────────┘ │   │
+│  │                         │                                    │   │
+│  │  4. ┌─────────────────────────────────────────────────────┐ │   │
+│  │     │ Old calibration data (keep most recent only)        │ │   │
+│  │     └─────────────────────────────────────────────────────┘ │   │
+│  │                         │                                    │   │
+│  │  5. ┌─────────────────────────────────────────────────────┐ │   │
+│  │     │ Compress old audit logs                             │ │   │
+│  │     └─────────────────────────────────────────────────────┘ │   │
+│  │                                                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  SAFETY RULES:                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ • NEVER delete images not yet transferred to PACS          │   │
+│  │ • NEVER delete data from current day's examinations        │   │
+│  │ • ALWAYS log what was deleted (audit trail)                │   │
+│  │ • ALWAYS verify PACS transfer success before cleanup       │   │
+│  │ • Keep at least one recent calibration set                 │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  MANUAL CLEANUP (Admin Only):                                       │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                                                              │   │
+│  │   System Settings → Storage Management                       │   │
+│  │   ┌──────────────────────────────────────────────────────┐  │   │
+│  │   │ [✓] Auto-cleanup enabled                             │  │   │
+│  │   │ [✓] Auto-clear disk space                            │  │   │
+│  │   │                                                       │  │   │
+│  │   │ Retention Periods:                                    │  │   │
+│  │   │   Patient images:    [30 ] days                       │  │   │
+│  │   │   Rejected images:   [7  ] days                       │  │   │
+│  │   │   Worklist entries:  [30 ] days                       │  │   │
+│  │   │   Log files:         [90 ] days                       │  │   │
+│  │   │                                                       │  │   │
+│  │   │ [ Run Cleanup Now ] [ View Storage Report ]           │  │   │
+│  │   └──────────────────────────────────────────────────────┘  │   │
+│  │                                                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.8 PACS Transfer and Archive
+
+After examination completion, images are transferred to the Picture Archiving and Communication System for long-term storage and distribution.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PACS TRANSFER WORKFLOW                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  TRANSFER TRIGGERS:                                                 │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ • Automatic: After examination completion                    │   │
+│  │ • Automatic: Image accepted by technician                   │   │
+│  │ • Manual: User clicks "Send to PACS"                        │   │
+│  │ • Scheduled: Batch transfer during off-hours                │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  TRANSFER FLOW:                                                     │
+│                                                                     │
+│  ┌──────────────┐                                                  │
+│  │ Image Ready  │                                                  │
+│  │ for Transfer │                                                  │
+│  └──────┬───────┘                                                  │
+│         │                                                          │
+│         ▼                                                          │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐         │
+│  │ Build DICOM  │───▶│ C-STORE to   │───▶│ Wait for     │         │
+│  │ object       │    │ PACS         │    │ confirmation │         │
+│  └──────────────┘    └──────────────┘    └──────┬───────┘         │
+│                                                  │                 │
+│                             ┌────────────────────┴──────────────┐  │
+│                             │                                   │  │
+│                             ▼                                   ▼  │
+│                    ┌──────────────┐                   ┌──────────┐│
+│                    │   SUCCESS    │                   │  FAILED  ││
+│                    │              │                   │          ││
+│                    │ • Mark sent  │                   │ • Retry  ││
+│                    │ • Update DB  │                   │ • Queue  ││
+│                    │ • Log event  │                   │ • Alert  ││
+│                    └──────────────┘                   └──────────┘│
+│                                                                     │
+│  TRANSFER QUEUE:                                                    │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ Status    │ Patient      │ Study          │ Images │ Retry  │   │
+│  ├───────────┼──────────────┼────────────────┼────────┼────────┤   │
+│  │ ● Sending │ John Smith   │ Chest PA/LAT   │ 2/2    │ 0      │   │
+│  │ ● Pending │ Jane Doe     │ Knee AP        │ 0/1    │ 0      │   │
+│  │ ⚠ Failed  │ Bob Wilson   │ Hand AP/LAT    │ 1/2    │ 3      │   │
+│  │ ✓ Done    │ Alice Brown  │ Spine AP/LAT   │ 2/2    │ 0      │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  MPPS (Modality Performed Procedure Step):                         │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                                                              │   │
+│  │  ┌──────────┐     ┌──────────┐     ┌──────────┐            │   │
+│  │  │ N-CREATE │────▶│ N-SET    │────▶│ N-SET    │            │   │
+│  │  │ IN       │     │ update   │     │ COMPLETED│            │   │
+│  │  │ PROGRESS │     │ images   │     │ or       │            │   │
+│  │  │          │     │          │     │ DISCONT. │            │   │
+│  │  └──────────┘     └──────────┘     └──────────┘            │   │
+│  │       │                │                │                   │   │
+│  │       ▼                ▼                ▼                   │   │
+│  │  Exam started    Each image       Exam finished            │   │
+│  │                  captured                                   │   │
+│  │                                                              │   │
+│  └─────────────────────────────────────────────────────────────┘   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
