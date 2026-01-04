@@ -24,13 +24,9 @@ namespace Etrek::ScanProtocol::Delegate
         auto bodyParts = repository->getAllBodyParts();
         auto anatomicalRegions = repository->getAllAnatomicRegions();
         auto widget = new ProcedureConfigurationWidget(procedures.value, bodyParts.value, anatomicalRegions.value, views.value, parentWidget);
-        
-        // Delegate receives repository if it needs to perform CRUD operations
-        // In this case, delegate doesn't need repository (read-only widget)
-        auto delegate = new ProcedureConfigurationDelegate(widget, parentDelegate);
 
-        // If you need to attach other delegates:
-        // if (delegate) delegate->AttachDelegates(params.delegates.values());
+        // Delegate receives repository to perform CRUD operations on apply/accept
+        auto delegate = new ProcedureConfigurationDelegate(widget, repository, parentDelegate);
 
         return { widget, delegate };
     }

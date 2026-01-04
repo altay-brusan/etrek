@@ -2,8 +2,12 @@
 
 #include <QObject>
 #include <QWidget>
+#include <memory>
 #include "IDelegate.h"
 #include "IPageAction.h"
+
+namespace Etrek::ScanProtocol::Repository { class ScanProtocolRepository; }
+class ViewConfigurationWidget;
 
 namespace Etrek::ScanProtocol::Delegate
 {
@@ -15,7 +19,10 @@ namespace Etrek::ScanProtocol::Delegate
 		Q_OBJECT
 		Q_INTERFACES(IDelegate IPageAction)
 	public:
-		ViewConfigurationDelegate(QWidget* widget, QObject* parent);
+		ViewConfigurationDelegate(
+			ViewConfigurationWidget* widget,
+			std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> repository,
+			QObject* parent);
 
 		QString name() const override;
 		void attachDelegates(const QVector<QObject*>& delegates) override;
@@ -23,11 +30,14 @@ namespace Etrek::ScanProtocol::Delegate
 		~ViewConfigurationDelegate();
 
 	private:
+		ViewConfigurationWidget* m_widget = nullptr;
+		std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> m_repository;
 
-		QWidget* m_widget = nullptr;
 		void apply() override;
 		void accept() override;
 		void reject() override;
+
+		bool saveAllViews();
 	};
 
 }

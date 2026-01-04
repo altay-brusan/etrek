@@ -25,6 +25,12 @@ public:
         QWidget* parent = nullptr);
     ~ProcedureConfigurationWidget();
 
+    /**
+     * @brief Returns the current list of procedures (may be modified by user).
+     * @return Vector of procedures with any user modifications.
+     */
+    QVector<Etrek::ScanProtocol::Data::Entity::Procedure> getProcedures() const { return m_procedures; }
+
 private:
     Ui::ProcedureConfigurationWidget* ui;
 

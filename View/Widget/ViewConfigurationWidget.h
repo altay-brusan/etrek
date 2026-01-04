@@ -24,6 +24,12 @@ public:
     explicit ViewConfigurationWidget(const QVector<ViewEntity>& views, QWidget* parent = nullptr);
     ~ViewConfigurationWidget();
 
+    /**
+     * @brief Returns the current list of views (may be modified by user).
+     * @return Vector of views with any user modifications.
+     */
+    QVector<ViewEntity> getViews() const { return m_parameters; }
+
 signals:
     void viewSelected(int viewId);
 
