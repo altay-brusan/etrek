@@ -3,6 +3,7 @@
 #include "DicomRepository.h"
 #include "ScanProtocolRepository.h"
 #include "DeviceRepository.h"
+#include "MwlTaskMappingRepository.h"
 
 namespace Etrek::Application::Delegate {
 
@@ -41,6 +42,11 @@ ExamPageBuilder::build(const DelegateParameter& params,
         nullptr  // QObject parent
     );
 
+    auto mwlTaskMappingRepo = std::make_shared<Etrek::Dicom::Repository::MwlTaskMappingRepository>(
+        params.dbConnection,
+        nullptr  // QObject parent
+    );
+
     // Create the delegate with all dependencies
     auto* delegate = new ExamPageDelegate(
         page,
@@ -48,6 +54,7 @@ ExamPageBuilder::build(const DelegateParameter& params,
         dicomRepo,
         scanProtocolRepo,
         deviceRepo,
+        mwlTaskMappingRepo,
         params.dbConnection,
         params.contextManager,
         parentDelegate

@@ -4,6 +4,8 @@
 #include "DicomRepository.h"
 #include "ScanProtocolRepository.h"
 #include "DeviceRepository.h"
+#include "MwlTaskMappingRepository.h"
+#include "MwlTaskMapping.h"
 #include "IContextManager.h"
 #include "ExaminationContext.h"
 #include "DatabaseConnectionSetting.h"
@@ -56,6 +58,7 @@ ExamPageDelegate::ExamPageDelegate(
     std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepo,
     std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanProtocolRepo,
     std::shared_ptr<Etrek::Device::Repository::DeviceRepository> deviceRepo,
+    std::shared_ptr<Etrek::Dicom::Repository::MwlTaskMappingRepository> mwlTaskMappingRepo,
     std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection,
     std::weak_ptr<Etrek::Context::IContextManager> contextManager,
     QObject* parent)
@@ -65,6 +68,7 @@ ExamPageDelegate::ExamPageDelegate(
     , m_dicomRepo(dicomRepo)
     , m_scanProtocolRepo(scanProtocolRepo)
     , m_deviceRepo(deviceRepo)
+    , m_mwlTaskMappingRepo(mwlTaskMappingRepo)
     , m_dbConnection(dbConnection)
     , m_contextManager(contextManager)
 {
@@ -134,6 +138,26 @@ void ExamPageDelegate::accept()
     // Mark examination as complete
     if (m_examinationContext) {
         m_examinationContext->markComplete();
+    }
+
+    // Create MWL task mapping to link worklist entry to DICOM objects
+    if (m_mwlTaskMappingRepo && m_worklistEntry.Id >= 0 && m_studyId >= 0) {
+        Etrek::Dicom::Data::Entity::MwlTaskMapping mapping;
+        mapping.MwlEntryId = m_worklistEntry.Id;
+        mapping.ProcedureId = m_procedure.Id;
+        mapping.StudyId = m_studyId;
+        mapping.SeriesId = m_seriesIds.isEmpty() ? -1 : m_seriesIds.first();
+        // TODO: Track ImagesId, SopCommonId, AcquisitionId when image acquisition is fully implemented
+        mapping.ImagesId = -1;
+        mapping.SopCommonId = -1;
+        mapping.AcquisitionId = -1;
+
+        auto result = m_mwlTaskMappingRepo->createMapping(mapping);
+        if (result.isSuccess) {
+            qDebug() << "[ExamPageDelegate] MWL task mapping created successfully";
+        } else {
+            qDebug() << "[ExamPageDelegate] Failed to create MWL task mapping:" << result.message;
+        }
     }
 
     // Update worklist status to COMPLETED

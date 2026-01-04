@@ -47,6 +47,7 @@ namespace Etrek::Worklist::Repository {
 
 namespace Etrek::Dicom::Repository {
     class DicomRepository;
+    class MwlTaskMappingRepository;
 }
 
 namespace Etrek::ScanProtocol::Repository {
@@ -95,6 +96,7 @@ public:
         std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> dicomRepo,
         std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> scanProtocolRepo,
         std::shared_ptr<Etrek::Device::Repository::DeviceRepository> deviceRepo,
+        std::shared_ptr<Etrek::Dicom::Repository::MwlTaskMappingRepository> mwlTaskMappingRepo,
         std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection,
         std::weak_ptr<Etrek::Context::IContextManager> contextManager,
         QObject* parent = nullptr
@@ -241,6 +243,7 @@ private:
     std::shared_ptr<Etrek::Dicom::Repository::DicomRepository> m_dicomRepo;
     std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> m_scanProtocolRepo;
     std::shared_ptr<Etrek::Device::Repository::DeviceRepository> m_deviceRepo;
+    std::shared_ptr<Etrek::Dicom::Repository::MwlTaskMappingRepository> m_mwlTaskMappingRepo;
     std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> m_dbConnection;
 
     // --- Context ---
