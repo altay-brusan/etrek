@@ -10,18 +10,21 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS
     ${CMAKE_CURRENT_SOURCE_DIR}/Data
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service
 )
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Data/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.cpp
 )
 
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Data/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service/*.h
 
     ${COMMON_INCLUDE_DIR}/*.h
     ${COMMON_INCLUDE_DIR}/Dicom/*.h
@@ -54,6 +57,7 @@ target_include_directories(Dicom
     ${CMAKE_CURRENT_SOURCE_DIR}/Data/Util
     ${CMAKE_CURRENT_SOURCE_DIR}/Delegate
     ${CMAKE_CURRENT_SOURCE_DIR}/Repository
+    ${CMAKE_CURRENT_SOURCE_DIR}/Service
     ${COMMON_INCLUDE_DIR}/Dicom/
     ${COMMON_INCLUDE_DIR}/Dicom/Data/Entity
 )

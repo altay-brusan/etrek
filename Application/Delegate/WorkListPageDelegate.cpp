@@ -12,11 +12,14 @@
 #include "AddPatientDialog.h"
 #include "LocalMwlRegistrationService.h"
 #include "IContextManager.h"
+#include "ISessionContext.h"
 #include "ExaminationContext.h"
 #include "WorklistFilterProxyModel.h"
 #include "ViewSelectionDialogBuilder.h"
 #include "ViewSelectionDialogDelegate.h"
 #include "DelegateParameter.h"
+#include "EntityStatusService.h"
+#include "EntityStatus.h"
 
 
 using namespace Etrek::Worklist::Repository;
@@ -40,7 +43,8 @@ namespace Etrek::Application::Delegate
         , dicomRepository(dicomRepository)
         , dicomTagRepository(dicomTagRepository)
         , dbConnection(dbConnection)
-        , contextManager(contextManager) {
+        , contextManager(contextManager)
+        , entityStatusService(std::make_shared<Etrek::Dicom::Service::EntityStatusService>(dicomRepository)) {
 
         baseModel = new QStandardItemModel(this);
         proxyModel = new WorklistFilterProxyModel(this);
@@ -118,6 +122,35 @@ namespace Etrek::Application::Delegate
             auto result = registrationService.registerPatient(patientData);
 
             if (result.isSuccess) {
+                // Track entity status for each created MWL entry
+                if (entityStatusService) {
+                    // Get user ID from session context
+                    int userId = -1;
+                    if (auto ctxMgr = contextManager.lock()) {
+                        if (auto sessionCtx = ctxMgr->sessionContext()) {
+                            if (auto user = sessionCtx->currentUser()) {
+                                userId = user->Id;
+                            }
+                        }
+                    }
+
+                    using namespace Etrek::Dicom::Data::Entity;
+                    for (const auto& entry : result.value) {
+                        auto statusResult = entityStatusService->scheduleEntity(
+                            EntityType::STUDY,
+                            entry.Id,
+                            userId,
+                            Priority::NORMAL);
+
+                        if (statusResult.isSuccess) {
+                            qDebug() << "[WorkListPageDelegate] Entity status set to SCHEDULED for entry:" << entry.Id;
+                        } else {
+                            qWarning() << "[WorkListPageDelegate] Failed to track entity status for entry:"
+                                       << entry.Id << "-" << statusResult.message;
+                        }
+                    }
+                }
+
                 // Success - show message and refresh the worklist
                 QString message = QString("Successfully registered patient with %1 MWL entry(ies).")
                     .arg(result.value.size());
@@ -700,7 +733,8 @@ namespace Etrek::Application::Delegate
                 qDebug() << "Selected Procedure ID:" << procedureId;
                 qDebug() << "Selected View IDs:" << viewIds;
 
-                // Update ExaminationContext with selected procedure and view IDs
+                // Get user ID from session context for status tracking
+                int userId = -1;
                 if (auto ctxMgr = contextManager.lock()) {
                     auto workflowCtx = ctxMgr->workflowContext("Examination");
                     auto examCtx = std::dynamic_pointer_cast<Etrek::Core::Context::ExaminationContext>(workflowCtx);
@@ -710,6 +744,13 @@ namespace Etrek::Application::Delegate
                         examCtx->setViewIds(viewIds);
                         qDebug() << "[WorkListPageDelegate] Updated ExaminationContext with procedure and views";
                     }
+
+                    // Get user ID from session context
+                    if (auto sessionCtx = ctxMgr->sessionContext()) {
+                        if (auto user = sessionCtx->currentUser()) {
+                            userId = user->Id;
+                        }
+                    }
                 }
 
                 // Update worklist status to IN_PROGRESS
@@ -718,6 +759,22 @@ namespace Etrek::Application::Delegate
                     qDebug() << "[WorkListPageDelegate] Updated worklist entry to IN_PROGRESS";
                 } else {
                     qWarning() << "[WorkListPageDelegate] Failed to update status:" << statusResult.message;
+                }
+
+                // Track entity status in entity_status table
+                if (entityStatusService) {
+                    using namespace Etrek::Dicom::Data::Entity;
+                    auto entityStatusResult = entityStatusService->startExamination(
+                        EntityType::STUDY,
+                        entryId,
+                        userId,
+                        Priority::NORMAL);
+
+                    if (entityStatusResult.isSuccess) {
+                        qDebug() << "[WorkListPageDelegate] Entity status set to IN_PROGRESS";
+                    } else {
+                        qWarning() << "[WorkListPageDelegate] Failed to track entity status:" << entityStatusResult.message;
+                    }
                 }
 
                 emit startExamination(entryId);
