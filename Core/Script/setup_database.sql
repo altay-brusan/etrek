@@ -581,6 +581,7 @@ CREATE TABLE sop_commons (
 );
 
 -- Acquisition module
+-- Stores actual runtime technique parameters used during image acquisition
 CREATE TABLE acquisitions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     study_id INT NOT NULL,  -- Link to the Study
@@ -592,6 +593,16 @@ CREATE TABLE acquisitions (
     acquisition_device_id INT DEFAULT NULL,  -- Reference to acquisition device used
     radiation_dose DOUBLE DEFAULT NULL,  -- Optional: Radiation dose used during acquisition
     aec_position INT DEFAULT NULL,  -- (0028,0301): Add AEC Density here as it relates to exposure control
+    -- Runtime technique parameters (actual values used, may differ from protocol defaults)
+    kvp INT DEFAULT NULL,  -- (0018,0060) Peak kilovoltage output of the X-ray generator used
+    ma INT DEFAULT NULL,  -- Tube current in milliamperes
+    mas DECIMAL(8,2) DEFAULT NULL,  -- (0018,1152) Exposure in milliampere-seconds
+    exposure_time INT DEFAULT NULL,  -- (0018,1150) Time of X-ray exposure in milliseconds
+    sid INT DEFAULT NULL,  -- Source to Image Distance in cm
+    patient_size_category VARCHAR(20) DEFAULT NULL,  -- Thin, Medium, Fat, Paediatric
+    exposure_index DECIMAL(10,4) DEFAULT NULL,  -- (0018,1411) Exposure Index
+    target_exposure_index DECIMAL(10,4) DEFAULT NULL,  -- (0018,1412) Target Exposure Index
+    deviation_index DECIMAL(6,2) DEFAULT NULL,  -- (0018,1413) Deviation Index
     FOREIGN KEY (study_id) REFERENCES studies(id) ON DELETE CASCADE,
     FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE,
     FOREIGN KEY (acquisition_device_id) REFERENCES general_equipments(id)

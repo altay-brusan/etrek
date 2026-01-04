@@ -682,6 +682,17 @@ void ExamPageDelegate::onImageReceived(const QByteArray& imageData)
 void ExamPageDelegate::onAcquisitionComplete()
 {
     qDebug() << "[ExamPageDelegate] onAcquisitionComplete()";
+
+    // Log runtime technique parameters that will be persisted
+    qDebug() << "[ExamPageDelegate] Runtime technique parameters for persistence:";
+    qDebug() << "  - KVP:" << m_currentTechnique.Kvp;
+    qDebug() << "  - mA:" << m_currentTechnique.Ma;
+    qDebug() << "  - Time (ms):" << m_currentTechnique.Ms;
+    qDebug() << "  - mAs:" << (m_currentTechnique.Ma * m_currentTechnique.Ms / 1000.0);
+    qDebug() << "  - AEC Density:" << m_currentTechnique.AecDensity;
+    qDebug() << "  - Study ID:" << m_studyId;
+    qDebug() << "  - Series ID:" << (m_seriesIds.isEmpty() ? -1 : m_seriesIds[m_currentSeriesIndex]);
+
     displayInfoMessage("Complete", "Image acquisition completed successfully.");
 }
 
@@ -689,32 +700,43 @@ void ExamPageDelegate::onAcquisitionComplete()
 
 void ExamPageDelegate::onKvpChanged(int kvp)
 {
-    qDebug() << "[ExamPageDelegate] KVP changed to:" << kvp;
+    int previousKvp = m_currentTechnique.Kvp;
     m_currentTechnique.Kvp = kvp;
+    qDebug() << "[ExamPageDelegate] KVP changed:" << previousKvp << "->" << kvp
+             << "(runtime technique updated)";
 }
 
 void ExamPageDelegate::onMaChanged(int ma)
 {
-    qDebug() << "[ExamPageDelegate] mA changed to:" << ma;
+    int previousMa = m_currentTechnique.Ma;
     m_currentTechnique.Ma = ma;
+    qDebug() << "[ExamPageDelegate] mA changed:" << previousMa << "->" << ma
+             << "(runtime technique updated)";
 }
 
 void ExamPageDelegate::onMasChanged(int mas)
 {
-    qDebug() << "[ExamPageDelegate] mAs changed to:" << mas;
-    // mAs = mA * time, so update time if needed
+    // Store calculated mAs value
+    // mAs = mA * time(s), time in ms so: mAs = mA * ms / 1000
+    qDebug() << "[ExamPageDelegate] mAs changed to:" << mas
+             << "(calculated from mA:" << m_currentTechnique.Ma
+             << "* time:" << m_currentTechnique.Ms << "ms)";
 }
 
 void ExamPageDelegate::onTimeChanged(int time)
 {
-    qDebug() << "[ExamPageDelegate] Time changed to:" << time;
+    int previousTime = m_currentTechnique.Ms;
     m_currentTechnique.Ms = time;
+    qDebug() << "[ExamPageDelegate] Exposure time changed:" << previousTime << "->" << time << "ms"
+             << "(runtime technique updated)";
 }
 
 void ExamPageDelegate::onDensityChanged(int density)
 {
-    qDebug() << "[ExamPageDelegate] Density changed to:" << density;
+    int previousDensity = m_currentTechnique.AecDensity;
     m_currentTechnique.AecDensity = density;
+    qDebug() << "[ExamPageDelegate] AEC Density changed:" << previousDensity << "->" << density
+             << "(runtime technique updated)";
 }
 
 // --- Private Slots: Study/Series Operations ---
@@ -937,7 +959,18 @@ void ExamPageDelegate::createImage(const QByteArray& imageData, int seriesId)
     // Generate DICOM SOP Instance UID
     QString sopInstanceUid = generateDicomUid("image");
 
+    // Log the runtime technique parameters being used for this image
+    qDebug() << "[ExamPageDelegate] Using runtime technique parameters:";
+    qDebug() << "  - KVP:" << m_currentTechnique.Kvp << "(will be saved to images.kvp)";
+    qDebug() << "  - mA:" << m_currentTechnique.Ma << "(will be saved to acquisitions.ma)";
+    qDebug() << "  - Time:" << m_currentTechnique.Ms << "ms (will be saved to acquisitions.exposure_time)";
+    qDebug() << "  - mAs:" << (m_currentTechnique.Ma * m_currentTechnique.Ms / 1000.0)
+             << "(will be saved to acquisitions.mas)";
+    qDebug() << "  - AEC Density:" << m_currentTechnique.AecDensity
+             << "(will be saved to acquisitions.aec_position)";
+
     // TODO: Create image record using DicomRepository
+    // When implementing, use m_currentTechnique values (runtime) NOT protocol defaults:
     /*
     Image image;
     image.studyId = m_studyId;
@@ -949,18 +982,33 @@ void ExamPageDelegate::createImage(const QByteArray& imageData, int seriesId)
     image.rows = height;
     image.columns = width;
     image.bitsAllocated = bitsAllocated;
-    image.kvp = m_currentTechnique.Kvp;
-    // ... more DICOM attributes
+    image.kvp = m_currentTechnique.Kvp;  // Runtime value, not protocol default
 
-    auto result = m_dicomRepo->createImage(image);
-    if (result.isSuccess) {
-        qDebug() << "[ExamPageDelegate] Image created with ID:" << result.value;
+    auto imageResult = m_dicomRepo->createImage(image);
+    if (imageResult.isSuccess) {
+        qDebug() << "[ExamPageDelegate] Image created with ID:" << imageResult.value;
 
-        // Store image pixel data to file system
-        QString imageFilePath = QString("path/to/images/%1.dcm").arg(sopInstanceUid);
-        // Save imageData to file
+        // Create acquisition record with runtime technique parameters
+        Acquisition acquisition;
+        acquisition.studyId = m_studyId;
+        acquisition.seriesId = seriesId;
+        acquisition.acquisitionUid = generateDicomUid("acquisition");
+        acquisition.acquisitionDate = QDate::currentDate();
+        acquisition.acquisitionTime = QTime::currentTime();
+        acquisition.kvp = m_currentTechnique.Kvp;
+        acquisition.ma = m_currentTechnique.Ma;
+        acquisition.mas = m_currentTechnique.Ma * m_currentTechnique.Ms / 1000.0;
+        acquisition.exposureTime = m_currentTechnique.Ms;
+        acquisition.aecPosition = m_currentTechnique.AecDensity;
+        // acquisition.patientSizeCategory = m_currentPatientSize;  // TODO: track patient size
+        // acquisition.sid = m_currentSid;  // TODO: track SID
+
+        auto acqResult = m_dicomRepo->createAcquisition(acquisition);
+        if (acqResult.isSuccess) {
+            qDebug() << "[ExamPageDelegate] Acquisition created with runtime values";
+        }
     } else {
-        displayErrorMessage("Database Error", "Failed to create image: " + result.message);
+        displayErrorMessage("Database Error", "Failed to create image: " + imageResult.message);
     }
     */
 
