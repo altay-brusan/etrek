@@ -771,6 +771,28 @@ CREATE TABLE mwl_task_mapping (
     FOREIGN KEY (acquisition_id) REFERENCES acquisitions(id) ON DELETE CASCADE
 );
 
+-- Maps external RIS procedure codes to internal views
+-- Note: Uses connection_name as identifier since RIS connections are file-configured
+CREATE TABLE ris_procedure_mapping (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    connection_name VARCHAR(100) NOT NULL,     -- RIS connection name from settings
+    external_code VARCHAR(50) NOT NULL,        -- Code from RIS (e.g., "SRT2133", "CHEST-PA")
+    external_coding_scheme VARCHAR(20),        -- Optional: "SRT", "99LOCAL", etc.
+    external_code_meaning VARCHAR(255),        -- Human-readable description from RIS
+    internal_view_id INT NOT NULL,             -- FK to views table
+    is_active BOOLEAN DEFAULT TRUE,
+    notes TEXT,
+    created_at DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at DATETIME(6) DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(6),
+
+    UNIQUE KEY uq_ris_code (connection_name, external_code),
+    FOREIGN KEY (internal_view_id) REFERENCES views(id) ON DELETE RESTRICT
+);
+
+-- Index for fast lookups during MWL import
+CREATE INDEX idx_ris_mapping_lookup
+ON ris_procedure_mapping (connection_name, external_code, is_active);
+
 -- **************[Insert DICOM tags into dicom_tags table]************************
 
 -- roles using system

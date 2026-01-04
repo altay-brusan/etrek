@@ -17,6 +17,9 @@
 #include "ContextManager.h"
 #include "SessionContext.h"
 #include "IContextManager.h"
+#include "RisProcedureMappingRepository.h"
+#include "RisProcedureMappingService.h"
+#include "ScanProtocolRepository.h"
 
 #include "MainWindowDelegate.h"
 #include "ILaunchStrategy.h"
@@ -289,9 +292,18 @@ namespace Etrek::Application::Service
             [keepAlive = risQ](RisConnectionSetting*) mutable { keepAlive.clear(); }
         );
 
+        // Create the RIS procedure mapping service for code-to-view translation
+        auto mappingRepo = std::make_shared<Etrek::Worklist::Repository::RisProcedureMappingRepository>(
+            m_databaseConnectionSetting);
+        auto viewRepo = std::make_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(
+            m_databaseConnectionSetting);
+        auto mappingService = std::make_shared<Etrek::Worklist::Service::RisProcedureMappingService>(
+            mappingRepo, viewRepo);
+
         m_modalityWorklistManager = new ModalityWorklistManager(
             worklistRepository,
             risStd,
+            mappingService,
             this  // Qt parent manages lifetime
         );
 
