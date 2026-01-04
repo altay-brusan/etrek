@@ -11,6 +11,7 @@
 #include "DatabaseConnectionSetting.h"
 #include "WorklistEnum.h"
 #include "Result.h"
+#include "ExaminationModeStrategyFactory.h"
 
 // Widget includes
 #include "ExamTitleWidget.h"
@@ -135,13 +136,19 @@ void ExamPageDelegate::accept()
 {
     qDebug() << "[ExamPageDelegate] accept() - Completing examination";
 
+    // Notify strategy that examination is complete
+    if (m_examinationStrategy) {
+        m_examinationStrategy->onExaminationComplete();
+    }
+
     // Mark examination as complete
     if (m_examinationContext) {
         m_examinationContext->markComplete();
     }
 
-    // Create MWL task mapping to link worklist entry to DICOM objects
-    if (m_mwlTaskMappingRepo && m_worklistEntry.Id >= 0 && m_studyId >= 0) {
+    // Create MWL task mapping to link worklist entry to DICOM objects (if strategy allows)
+    bool shouldCreateDicom = !m_examinationStrategy || m_examinationStrategy->shouldCreateDicom();
+    if (shouldCreateDicom && m_mwlTaskMappingRepo && m_worklistEntry.Id >= 0 && m_studyId >= 0) {
         Etrek::Dicom::Data::Entity::MwlTaskMapping mapping;
         mapping.MwlEntryId = m_worklistEntry.Id;
         mapping.ProcedureId = m_procedure.Id;
@@ -158,10 +165,22 @@ void ExamPageDelegate::accept()
         } else {
             qDebug() << "[ExamPageDelegate] Failed to create MWL task mapping:" << result.message;
         }
+    } else if (!shouldCreateDicom) {
+        qDebug() << "[ExamPageDelegate] Skipping DICOM/MWL mapping per strategy";
     }
 
-    // Update worklist status to COMPLETED
-    updateWorklistStatus(ProcedureStepStatus::COMPLETED);
+    // Update worklist status to COMPLETED (if strategy allows)
+    if (!m_examinationStrategy || m_examinationStrategy->shouldUpdateWorklistStatus()) {
+        updateWorklistStatus(ProcedureStepStatus::COMPLETED);
+    } else {
+        qDebug() << "[ExamPageDelegate] Skipping worklist status update per strategy";
+    }
+
+    // TODO: Send to PACS (if strategy allows)
+    if (m_examinationStrategy && m_examinationStrategy->shouldSendToPacs()) {
+        qDebug() << "[ExamPageDelegate] PACS transmission would occur here";
+        // TODO: Implement PACS C-STORE when PACS service is integrated
+    }
 
     // Emit completion signal
     emit examinationCompleted(m_studyId);
@@ -217,6 +236,11 @@ void ExamPageDelegate::onPageLoaded()
     // Create study and series in database
     createStudy();
     createSeriesForViews();
+
+    // Notify strategy that examination has started
+    if (m_examinationStrategy) {
+        m_examinationStrategy->onExaminationStart();
+    }
 }
 
 void ExamPageDelegate::loadExaminationContext()
@@ -240,6 +264,12 @@ void ExamPageDelegate::loadExaminationContext()
         } else {
             displayErrorMessage("Context Error", "Worklist entry not found in examination context.");
         }
+
+        // Initialize examination mode strategy based on context
+        auto examinationMode = m_examinationContext->examinationMode();
+        m_examinationStrategy = Etrek::Application::Strategy::ExaminationModeStrategyFactory::createStrategy(examinationMode);
+        qDebug() << "[ExamPageDelegate] Examination mode strategy initialized:"
+                 << m_examinationStrategy->modeName();
     } else {
         displayErrorMessage("Context Error", "Context manager is not available.");
     }
@@ -616,6 +646,12 @@ void ExamPageDelegate::onExposeButtonClicked()
 {
     qDebug() << "[ExamPageDelegate] onExposeButtonClicked() - Starting exposure";
 
+    // Check with strategy if exposure should proceed
+    if (m_examinationStrategy && !m_examinationStrategy->onBeforeExposure()) {
+        qDebug() << "[ExamPageDelegate] Exposure cancelled by strategy";
+        return;
+    }
+
     // TODO: Send exposure command to generator
     // This would typically interface with hardware via DeviceRepository
     // For now, simulate image acquisition
@@ -630,6 +666,12 @@ void ExamPageDelegate::onImageReceived(const QByteArray& imageData)
 {
     qDebug() << "[ExamPageDelegate] onImageReceived() - Image size:" << imageData.size() << "bytes";
 
+    // Notify strategy of image reception
+    if (m_examinationStrategy) {
+        QString imageId = generateDicomUid("image");
+        m_examinationStrategy->onImageReceived(imageData, imageId);
+    }
+
     if (m_seriesIds.isEmpty() || m_currentSeriesIndex >= m_seriesIds.size()) {
         displayErrorMessage("Acquisition Error", "No active series to store image.");
         return;
@@ -638,8 +680,12 @@ void ExamPageDelegate::onImageReceived(const QByteArray& imageData)
     // Get current series ID
     int currentSeriesId = m_seriesIds[m_currentSeriesIndex];
 
-    // Create image record in database
-    createImage(imageData, currentSeriesId);
+    // Create image record in database (if strategy allows)
+    if (!m_examinationStrategy || m_examinationStrategy->shouldPersistImages()) {
+        createImage(imageData, currentSeriesId);
+    } else {
+        qDebug() << "[ExamPageDelegate] Skipping image persistence per strategy";
+    }
 
     // Display image in VTK viewer
     // TODO: Convert imageData to vtkImageData and display
@@ -682,6 +728,11 @@ void ExamPageDelegate::onImageReceived(const QByteArray& imageData)
 void ExamPageDelegate::onAcquisitionComplete()
 {
     qDebug() << "[ExamPageDelegate] onAcquisitionComplete()";
+
+    // Notify strategy of exposure completion
+    if (m_examinationStrategy) {
+        m_examinationStrategy->onAfterExposure(true);
+    }
 
     // Log runtime technique parameters that will be persisted
     qDebug() << "[ExamPageDelegate] Runtime technique parameters for persistence:";
