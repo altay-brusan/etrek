@@ -97,7 +97,7 @@ namespace Etrek::Application::Delegate {
 
         QPointer<WorkListPage> ui;
         QList<ent::DicomTag> getDisplayTagList() const;
-        QList<QStandardItem*> createRowForEntry(const ent::WorklistEntry& entry) const;
+        QList<QStandardItem*> createRowForEntry(const ent::WorklistEntry& entry);
         QPointer<QStandardItemModel> baseModel;
         QPointer<WorklistFilterProxyModel> proxyModel;
         std::shared_ptr<repo::WorklistRepository> repository;

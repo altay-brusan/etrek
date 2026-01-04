@@ -368,6 +368,8 @@ namespace Etrek::Application::Delegate
                 << "Accession Number"
                 << "Admission ID"
                 << "Status"
+                << "Workflow Status"
+                << "Assigned To"
                 << "Source"
                 << "Created At";
 
@@ -522,7 +524,7 @@ namespace Etrek::Application::Delegate
         return tagList;
     }
 
-    QList<QStandardItem*> WorkListPageDelegate::createRowForEntry(const ent::WorklistEntry& entry) const {
+    QList<QStandardItem*> WorkListPageDelegate::createRowForEntry(const ent::WorklistEntry& entry) {
         // Build tag map from entry attributes for quick lookup
         QMap<QString, QString> tagMap;
         for (const auto& attr : entry.Attributes)
@@ -533,6 +535,39 @@ namespace Etrek::Application::Delegate
             QStandardItem* item = new QStandardItem(text);
             item->setData(QColor(208, 208, 208), Qt::ForegroundRole);
             item->setData(entry.Id, Qt::UserRole);  // Store WorklistEntry ID for selection/updates
+            return item;
+        };
+
+        // Helper lambda to create workflow status item with color coding
+        auto createWorkflowStatusItem = [&entry](const QString& text,
+                                                  Etrek::Dicom::Data::Entity::WorkflowStatus status) -> QStandardItem* {
+            QStandardItem* item = new QStandardItem(text);
+            item->setData(entry.Id, Qt::UserRole);
+
+            // Color code based on workflow status
+            QColor color;
+            switch (status) {
+                case Etrek::Dicom::Data::Entity::WorkflowStatus::SCHEDULED:
+                    color = QColor(128, 128, 128);  // Gray
+                    break;
+                case Etrek::Dicom::Data::Entity::WorkflowStatus::IN_PROGRESS:
+                    color = QColor(70, 130, 180);   // Steel Blue
+                    break;
+                case Etrek::Dicom::Data::Entity::WorkflowStatus::COMPLETED:
+                    color = QColor(60, 179, 113);   // Medium Sea Green
+                    break;
+                case Etrek::Dicom::Data::Entity::WorkflowStatus::CANCELLED:
+                    color = QColor(220, 20, 60);    // Crimson Red
+                    break;
+                case Etrek::Dicom::Data::Entity::WorkflowStatus::ABORTED:
+                    color = QColor(255, 140, 0);    // Dark Orange
+                    break;
+                case Etrek::Dicom::Data::Entity::WorkflowStatus::PENDING:
+                default:
+                    color = QColor(208, 208, 208);  // Default gray text
+                    break;
+            }
+            item->setData(color, Qt::ForegroundRole);
             return item;
         };
 
@@ -569,13 +604,37 @@ namespace Etrek::Application::Delegate
         // Column 6: Admission ID (DICOM tag: AdmissionID)
         row << createItem(tagMap.value("AdmissionID", ""));
 
-        // Column 7: Status (from WorklistEntry.Status enum)
+        // Column 7: Status (from WorklistEntry.Status enum - MWL procedure step status)
         row << createItem(ProcedureStepStatusToString(entry.Status));
 
-        // Column 8: Source (from WorklistEntry.Source enum)
+        // Column 8: Workflow Status (from entity_status table)
+        // Column 9: Assigned To (from entity_status table)
+        QString workflowStatusText = "-";
+        QString assignedToText = "-";
+        Etrek::Dicom::Data::Entity::WorkflowStatus workflowStatus =
+            Etrek::Dicom::Data::Entity::WorkflowStatus::PENDING;
+
+        if (entityStatusService) {
+            using namespace Etrek::Dicom::Data::Entity;
+            auto statusResult = entityStatusService->getCurrentStatus(EntityType::STUDY, entry.Id);
+            if (statusResult.isSuccess && statusResult.value.has_value()) {
+                const auto& entityStatus = statusResult.value.value();
+                workflowStatus = entityStatus.Status;
+                workflowStatusText = EntityStatus::WorkflowStatusToString(entityStatus.Status);
+
+                // Show assigned user ID (could be enhanced to show username with user lookup)
+                if (entityStatus.AssignedTo >= 0) {
+                    assignedToText = QString("User %1").arg(entityStatus.AssignedTo);
+                }
+            }
+        }
+        row << createWorkflowStatusItem(workflowStatusText, workflowStatus);
+        row << createItem(assignedToText);
+
+        // Column 10: Source (from WorklistEntry.Source enum)
         row << createItem(SourceToString(entry.Source));
 
-        // Column 9: Created At (from WorklistEntry.CreatedAt timestamp)
+        // Column 11: Created At (from WorklistEntry.CreatedAt timestamp)
         row << createItem(entry.CreatedAt.toString("yyyy-MM-dd HH:mm"));
 
         return row;
