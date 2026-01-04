@@ -17,6 +17,7 @@
 #include "DicomRepository.h"
 #include "DicomTagRepository.h"
 #include "PatientModel.h"
+#include "EntityStatusService.h"
 
 namespace Etrek::Context {
     class IContextManager;
@@ -105,6 +106,7 @@ namespace Etrek::Application::Delegate {
         std::shared_ptr<Etrek::Dicom::Repository::DicomTagRepository> dicomTagRepository;
         std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> dbConnection;
         std::weak_ptr<Etrek::Context::IContextManager> contextManager;
+        std::shared_ptr<Etrek::Dicom::Service::EntityStatusService> entityStatusService;
         QTimer* refreshTimer;
         bool modelInitialized = false;
 
