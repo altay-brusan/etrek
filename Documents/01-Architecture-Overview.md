@@ -336,6 +336,7 @@ The Scenarios view describes the key use cases that drive the architecture. Thes
 
 ### 4.1 Primary Use Cases
 
+<!--
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                       PRIMARY USE CASES                              │
@@ -366,11 +367,14 @@ The Scenarios view describes the key use cases that drive the architecture. Thes
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+-->
+<img src="./images/01-Architecture-Overview/PRIMARY-USE-CASES.png" alt="PRIMARY USE CASES" width="90%">
+
 
 ### 4.2 UC-02: Select Patient from Worklist (Detailed)
 
 This scenario illustrates the complete flow from selecting a patient to starting an examination.
-
+<!--
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │              UC-02: SELECT PATIENT FROM WORKLIST                     │
@@ -430,11 +434,13 @@ This scenario illustrates the complete flow from selecting a patient to starting
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+-->
 
+<img src="./images/01-Architecture-Overview/UC-02-SELECT-PATIENT-FROM-WORKLIST.png" alt="UC-02: SELECT PATIENT FROM WORKLIST" width="90%">
 ### 4.3 Image Accept/Reject Workflow
 
 After capturing an image, the technician must review and decide whether to accept or reject it. This decision affects the examination workflow and data management.
-
+<!--
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                  IMAGE ACCEPT/REJECT WORKFLOW                        │
@@ -514,6 +520,8 @@ After capturing an image, the technician must review and decide whether to accep
 │                                                                    │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+-->
+<img src="./images/01-Architecture-Overview/IMAGE-ACCEPT-REJECT-WORKFLOW.png" alt="IMAGE ACCEPT/REJECT WORKFLOW" width="90%">
 
 ### 4.4 UC-03: Capture Image (Detailed)
 
