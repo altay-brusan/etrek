@@ -102,7 +102,7 @@ The device organization in E-TREK supports various X-ray system configurations:
 ### 2.3 Integration Model
 
 E-TREK provides a hardware abstraction layer that allows equipment manufacturers to integrate their specific hardware through well-defined interfaces. The software communicates with hardware through configurable protocols including RS-232, RS-485, CAN bus, Modbus, and Ethernet.
-
+<!--
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                    INTEGRATION ARCHITECTURE                       │
@@ -130,6 +130,8 @@ E-TREK provides a hardware abstraction layer that allows equipment manufacturers
 │                                                                  │
 └──────────────────────────────────────────────────────────────────┘
 ```
+-->
+<img src="./images/01-Architecture-Overview/INTEGRATION-ARCHITECTURE.png" alt="Integration Architecture" width="90%">
 
 ---
 
@@ -140,7 +142,7 @@ Before describing the architecture views, this section introduces the key design
 ### 3.1 Model-View-Delegate Pattern
 
 E-TREK uses the Model-View-Delegate (MVD) pattern, a variation of Model-View-Controller adapted for Qt applications. This pattern separates the application into three interconnected components:
-
+<!--
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    MODEL-VIEW-DELEGATE PATTERN                       │
@@ -171,6 +173,9 @@ E-TREK uses the Model-View-Delegate (MVD) pattern, a variation of Model-View-Con
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+-->
+<img src="./images/01-Architecture-Overview/MODEL-VIEW-DELEGATE-PATTERN.png" alt="MODEL-VIEW-DELEGATE PATTERN" width="90%">
+
 
 **Benefits of MVD:**
 - Clear separation between UI and business logic
@@ -181,6 +186,8 @@ E-TREK uses the Model-View-Delegate (MVD) pattern, a variation of Model-View-Con
 ### 3.2 Builder Pattern
 
 E-TREK uses the Builder pattern to construct complex objects (pages with their delegates and dependencies). Builders encapsulate the construction logic, making it easier to create properly configured objects.
+
+<!--
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -217,11 +224,15 @@ E-TREK uses the Builder pattern to construct complex objects (pages with their d
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+-->
+<img src="./images/01-Architecture-Overview/BUILDER-PATTERN.png" alt="BUILDER PATTERN" width="90%">
 
 ### 3.3 Dependency Injection
 
 Dependency Injection (DI) is a technique where objects receive their dependencies from external sources rather than creating them internally. In E-TREK, the `DelegateParameter` structure serves as a simple dependency injection container.
 
+
+<!--
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    DEPENDENCY INJECTION                              │
@@ -269,11 +280,14 @@ Dependency Injection (DI) is a technique where objects receive their dependencie
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+-->
+<img src="./images/01-Architecture-Overview/DEPENDENCY-INJECTION.png" alt="DEPENDENCY INJECTION" width="90%">
 
 ### 3.4 Repository Pattern
 
 The Repository pattern abstracts data access behind a collection-like interface. Components work with repositories rather than directly with the database, making the code more testable and the data layer replaceable.
 
+<!--
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                      REPOSITORY PATTERN                              │
@@ -311,6 +325,8 @@ The Repository pattern abstracts data access behind a collection-like interface.
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+-->
+<img src="./images/01-Architecture-Overview/REPOSITORY-PATTERN.png" alt="REPOSITORY PATTERN" width="90%">
 
 ---
 
