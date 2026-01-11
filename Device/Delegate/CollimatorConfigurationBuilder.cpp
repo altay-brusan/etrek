@@ -1,7 +1,10 @@
 #include "CollimatorConfigurationBuilder.h"
+#include "DeviceRepository.h"
 
 namespace Etrek::Device::Delegate
 {
+    using Etrek::Device::Repository::DeviceRepository;
+
     CollimatorConfigurationBuilder::CollimatorConfigurationBuilder()
     {
     }
@@ -15,11 +18,13 @@ namespace Etrek::Device::Delegate
             QWidget* parentWidget,
             QObject* parentDelegate)
     {
-        auto widget = new CollimatorConfigurationWidget(parentWidget);
-        auto delegate = new CollimatorConfigurationDelegate(widget, parentDelegate);
+        // Builder creates repository from dbConnection
+        auto repository = std::make_shared<DeviceRepository>(params.dbConnection);
 
-        // If attach other delegates are needed:
-        // if (delegate) delegate->AttachDelegates(params.delegates.values());
+        auto widget = new CollimatorConfigurationWidget(parentWidget);
+
+        // Delegate receives repository to perform CRUD operations on apply/accept
+        auto delegate = new CollimatorConfigurationDelegate(widget, repository, parentDelegate);
 
         return { widget, delegate };
     }

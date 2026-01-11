@@ -1,37 +1,46 @@
 #ifndef WORKFLOWCONFIGURATIONDELEGATE_H
 #define WORKFLOWCONFIGURATIONDELEGATE_H
+
 #include <QWidget>
 #include <QObject>
+#include <memory>
 #include "IDelegate.h"
 #include "IPageAction.h"
 
-class WorkflowConfigurationDelegate : 
-	public QObject,
-	public IDelegate,
-	public IPageAction
+namespace Etrek::Device::Repository { class DeviceRepository; }
+class WorkflowConfigurationWidget;
+
+namespace Etrek::Device::Delegate
 {
-    Q_OBJECT
-    Q_INTERFACES(IDelegate IPageAction)
+	namespace rpo = Etrek::Device::Repository;
 
-public:
-    explicit WorkflowConfigurationDelegate(QWidget* widget, QObject *parent = nullptr);
+	class WorkflowConfigurationDelegate :
+		public QObject,
+		public IDelegate,
+		public IPageAction
+	{
+		Q_OBJECT
+		Q_INTERFACES(IDelegate IPageAction)
 
-    QString name() const override;
+	public:
+		WorkflowConfigurationDelegate(
+			WorkflowConfigurationWidget* widget,
+			std::shared_ptr<rpo::DeviceRepository> repository,
+			QObject* parent = nullptr);
 
-    void attachDelegates(const QVector<QObject*>& delegates) override;
+		QString name() const override;
+		void attachDelegates(const QVector<QObject*>& delegates) override;
 
+		~WorkflowConfigurationDelegate();
 
+	private:
+		WorkflowConfigurationWidget* m_widget = nullptr;
+		std::shared_ptr<rpo::DeviceRepository> m_repository;
 
-private:
-	QWidget* m_widget = nullptr; // Pointer to the associated widget
-    
-
-    void apply() override;
-
-    void accept() override;
-
-    void reject() override;
-
-};
+		void apply() override;
+		void accept() override;
+		void reject() override;
+	};
+}
 
 #endif // WORKFLOWCONFIGURATIONDELEGATE_H
