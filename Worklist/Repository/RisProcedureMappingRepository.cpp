@@ -1,28 +1,34 @@
 #include "RisProcedureMappingRepository.h"
-#include "LoggerProvider.h"
+#include "AppLoggerFactory.h"
+#include "TranslationProvider.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QRandomGenerator>
 
 namespace Etrek::Worklist::Repository {
 
+    using Etrek::Core::Log::AppLoggerFactory;
+    using Etrek::Core::Log::LoggerProvider;
+    using Etrek::Core::Globalization::TranslationProvider;
+
     RisProcedureMappingRepository::RisProcedureMappingRepository(
         std::shared_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting> connectionSetting,
         QObject* parent)
         : QObject(parent)
         , m_connectionSetting(std::move(connectionSetting))
-        , m_logger(Etrek::Core::Log::LoggerProvider::Instance().GetLogger("RisProcedureMappingRepository"))
     {
+        AppLoggerFactory factory(LoggerProvider::Instance(), &TranslationProvider::Instance());
+        m_logger = factory.CreateLogger("RisProcedureMappingRepository");
     }
 
     QSqlDatabase RisProcedureMappingRepository::createConnection(const QString& connectionName) const
     {
         QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL", connectionName);
-        db.setHostName(m_connectionSetting->Host);
-        db.setPort(m_connectionSetting->Port);
-        db.setDatabaseName(m_connectionSetting->DatabaseName);
-        db.setUserName(m_connectionSetting->Username);
-        db.setPassword(m_connectionSetting->Password);
+        db.setHostName(m_connectionSetting->getHostName());
+        db.setPort(m_connectionSetting->getPort());
+        db.setDatabaseName(m_connectionSetting->getDatabaseName());
+        db.setUserName(m_connectionSetting->getEtrekUserName());
+        db.setPassword(m_connectionSetting->getPassword());
         return db;
     }
 

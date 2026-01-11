@@ -1,16 +1,21 @@
 #include "DemoExaminationStrategy.h"
-#include "LoggerProvider.h"
+#include "AppLoggerFactory.h"
+#include "TranslationProvider.h"
 #include <QDir>
 #include <QCoreApplication>
 
 namespace Etrek::Application::Strategy {
 
 using Etrek::Examination::ExaminationMode;
+using Etrek::Core::Log::AppLoggerFactory;
+using Etrek::Core::Log::LoggerProvider;
+using Etrek::Core::Globalization::TranslationProvider;
 
 DemoExaminationStrategy::DemoExaminationStrategy()
-    : m_logger(Etrek::Core::Log::LoggerProvider::Instance().GetLogger("DemoExaminationStrategy"))
-    , m_currentImageIndex(0)
+    : m_currentImageIndex(0)
 {
+    AppLoggerFactory factory(LoggerProvider::Instance(), &TranslationProvider::Instance());
+    m_logger = factory.CreateLogger("DemoExaminationStrategy");
 }
 
 ExaminationMode DemoExaminationStrategy::mode() const

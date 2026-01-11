@@ -44,6 +44,7 @@ target_link_libraries(Pacs
     Core
     Common
     View
+    Worklist
 )
 
 target_include_directories(Pacs

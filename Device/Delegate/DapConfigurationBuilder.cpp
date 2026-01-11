@@ -1,7 +1,10 @@
 #include "DapConfigurationBuilder.h"
+#include "DeviceRepository.h"
 
 namespace Etrek::Device::Delegate
 {
+    using Etrek::Device::Repository::DeviceRepository;
+
     DapConfigurationBuilder::DapConfigurationBuilder()
     {
     }
@@ -15,11 +18,13 @@ namespace Etrek::Device::Delegate
             QWidget* parentWidget,
             QObject* parentDelegate)
     {
-        auto widget = new DapConfigurationWidget(parentWidget);
-        auto delegate = new DapConfigurationDelegate(widget, parentDelegate);
+        // Builder creates repository from dbConnection
+        auto repository = std::make_shared<DeviceRepository>(params.dbConnection);
 
-        // If you need to attach other delegates:
-        // if (delegate) delegate->AttachDelegates(params.delegates.values());
+        auto widget = new DapConfigurationWidget(parentWidget);
+
+        // Delegate receives repository to perform CRUD operations on apply/accept
+        auto delegate = new DapConfigurationDelegate(widget, repository, parentDelegate);
 
         return { widget, delegate };
     }

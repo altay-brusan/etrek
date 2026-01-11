@@ -17,8 +17,8 @@
 #include "Procedure.h"
 #include "BodySizeWidget.h"
 #include "ExposureApplicationControlWidget.h"
-#include "ExaminationMode.h"
-#include "IExaminationModeStrategy.h"
+#include "Examination/ExaminationMode.h"
+#include "Examination/IExaminationModeStrategy.h"
 
 // Forward declarations for VTK
 class vtkRenderer;

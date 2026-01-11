@@ -1,7 +1,7 @@
 #ifndef ETREK_APPLICATION_STRATEGY_CLINICALEXAMINATIONSTRATEGY_H
 #define ETREK_APPLICATION_STRATEGY_CLINICALEXAMINATIONSTRATEGY_H
 
-#include "IExaminationModeStrategy.h"
+#include "Examination/IExaminationModeStrategy.h"
 #include "AppLogger.h"
 #include <memory>
 

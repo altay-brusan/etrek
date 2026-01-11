@@ -1,14 +1,19 @@
 #include "ClinicalExaminationStrategy.h"
-#include "LoggerProvider.h"
+#include "AppLoggerFactory.h"
+#include "TranslationProvider.h"
 
 namespace Etrek::Application::Strategy {
 
 using Etrek::Examination::ExaminationMode;
+using Etrek::Core::Log::AppLoggerFactory;
+using Etrek::Core::Log::LoggerProvider;
+using Etrek::Core::Globalization::TranslationProvider;
 
 ClinicalExaminationStrategy::ClinicalExaminationStrategy()
-    : m_logger(Etrek::Core::Log::LoggerProvider::Instance().GetLogger("ClinicalExaminationStrategy"))
-    , m_exposureCount(0)
+    : m_exposureCount(0)
 {
+    AppLoggerFactory factory(LoggerProvider::Instance(), &TranslationProvider::Instance());
+    m_logger = factory.CreateLogger("ClinicalExaminationStrategy");
 }
 
 ExaminationMode ClinicalExaminationStrategy::mode() const

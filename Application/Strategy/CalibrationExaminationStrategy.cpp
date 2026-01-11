@@ -1,14 +1,19 @@
 #include "CalibrationExaminationStrategy.h"
-#include "LoggerProvider.h"
+#include "AppLoggerFactory.h"
+#include "TranslationProvider.h"
 
 namespace Etrek::Application::Strategy {
 
 using Etrek::Examination::ExaminationMode;
+using Etrek::Core::Log::AppLoggerFactory;
+using Etrek::Core::Log::LoggerProvider;
+using Etrek::Core::Globalization::TranslationProvider;
 
 CalibrationExaminationStrategy::CalibrationExaminationStrategy()
-    : m_logger(Etrek::Core::Log::LoggerProvider::Instance().GetLogger("CalibrationExaminationStrategy"))
-    , m_calibrationFrameCount(0)
+    : m_calibrationFrameCount(0)
 {
+    AppLoggerFactory factory(LoggerProvider::Instance(), &TranslationProvider::Instance());
+    m_logger = factory.CreateLogger("CalibrationExaminationStrategy");
 }
 
 ExaminationMode CalibrationExaminationStrategy::mode() const

@@ -23,10 +23,8 @@ namespace Etrek::Dicom::Delegate
         auto allComments = repository->getAllComments();
         auto widget = new ImageCommentConfigurationWidget(allComments, parentWidget);
         
-        // If delegate needs to perform CRUD operations, pass repository to it:
-        // auto delegate = new ImageCommentConfigurationDelegate(widget, repository, parentDelegate);
-        // For now, delegate doesn't receive repository (read-only widget)
-        auto delegate = new ImageCommentConfigurationDelegate(widget, parentDelegate);
+        // Delegate receives repository to perform CRUD operations on apply/accept
+        auto delegate = new ImageCommentConfigurationDelegate(widget, repository, parentDelegate);
 
         // If you need to attach other delegates:
         // if (delegate) delegate->AttachDelegates(params.delegates.values());

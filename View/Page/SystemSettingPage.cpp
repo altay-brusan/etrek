@@ -12,6 +12,7 @@
 #include "ViewConfigurationWidget.h"
 #include "ProcedureConfigurationWidget.h"
 #include "TechniqueConfigurationWidget.h"
+#include "RisProcedureMappingConfigurationWidget.h"
 
 SystemSettingPage::SystemSettingPage(QWidget *parent)
     : QWidget(parent)
@@ -54,6 +55,9 @@ SystemSettingPage::SystemSettingPage(QWidget *parent)
 
     m_techniqueConfigurationPlaceholder = new QVBoxLayout(ui->techniqueSettingTab);
     m_techniqueConfigurationPlaceholder->setContentsMargins(0, 0, 0, 0);
+
+    m_risProcedureMappingPlaceholder = new QVBoxLayout(ui->risProcedureMappingTab);
+    m_risProcedureMappingPlaceholder->setContentsMargins(0, 0, 0, 0);
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, [this]() {
             // Handle OK/Accept button pressed
@@ -154,6 +158,11 @@ void SystemSettingPage::setViewConfigurationWidget(QWidget* widget)
 void SystemSettingPage::setTechniqueConfigurationWidget(QWidget* widget)
 {
 	m_techniqueConfigurationPlaceholder->addWidget(widget);
+}
+
+void SystemSettingPage::setRisProcedureMappingConfigurationWidget(QWidget* widget)
+{
+	m_risProcedureMappingPlaceholder->addWidget(widget);
 }
 
 SystemSettingPage::~SystemSettingPage()

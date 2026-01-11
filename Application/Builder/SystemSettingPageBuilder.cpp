@@ -11,6 +11,7 @@
 #include "ViewConfigurationBuilder.h"
 #include "WorkListConfigurationBuilder.h"
 #include "WorkflowConfigurationBuilder.h"
+#include "RisProcedureMappingConfigurationBuilder.h"
 
 using namespace Etrek::Worklist::Delegate;
 using namespace Etrek::Device::Delegate;
@@ -136,6 +137,14 @@ SystemSettingPageBuilder::build(const DelegateParameter &params,
   auto &techniqueConfigDelegate = techniqueConfig.second;
   page->setTechniqueConfigurationWidget(techniqueConfigWidget);
 
+  // RisProcedureMappingConfiguration
+  RisProcedureMappingConfigurationBuilder risMappingConfigBuilder;
+  auto risMappingConfig = risMappingConfigBuilder.build(
+      delegateParameters, page, systemSettingPageDelegate);
+  auto *risMappingConfigWidget = risMappingConfig.first;
+  auto &risMappingConfigDelegate = risMappingConfig.second;
+  page->setRisProcedureMappingConfigurationWidget(risMappingConfigWidget);
+
   QVector<QObject *> delegates = {workflowConfigurationDelegate,
                                   connectionSetupDelegate,
                                   imageCommentDelegate,
@@ -147,7 +156,8 @@ SystemSettingPageBuilder::build(const DelegateParameter &params,
                                   pacsEntityConfigDelegate,
                                   procedureConfigDelegate,
                                   viewConfigDelegate,
-                                  techniqueConfigDelegate};
+                                  techniqueConfigDelegate,
+                                  risMappingConfigDelegate};
   systemSettingPageDelegate->attachDelegates(delegates);
 
   return {page, systemSettingPageDelegate};

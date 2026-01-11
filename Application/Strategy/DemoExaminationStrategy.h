@@ -1,7 +1,7 @@
 #ifndef ETREK_APPLICATION_STRATEGY_DEMOEXAMINATIONSTRATEGY_H
 #define ETREK_APPLICATION_STRATEGY_DEMOEXAMINATIONSTRATEGY_H
 
-#include "IExaminationModeStrategy.h"
+#include "Examination/IExaminationModeStrategy.h"
 #include "AppLogger.h"
 #include <memory>
 #include <QStringList>
