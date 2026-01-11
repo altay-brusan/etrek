@@ -3,11 +3,17 @@
 
 #include <QObject>
 #include <QWidget>
+#include <memory>
 #include "IDelegate.h"
 #include "IPageAction.h"
 
-namespace Etrek::Dicom::Delegate 
+namespace Etrek::Dicom::Repository { class ImageCommentRepository; }
+class ImageCommentConfigurationWidget;
+
+namespace Etrek::Dicom::Delegate
 {
+    namespace rpo = Etrek::Dicom::Repository;
+
     class ImageCommentConfigurationDelegate :
 	public QObject,
 	public IDelegate,
@@ -17,7 +23,10 @@ namespace Etrek::Dicom::Delegate
         Q_INTERFACES(IDelegate IPageAction)
 
     public:
-        explicit ImageCommentConfigurationDelegate(QWidget* widget, QObject* parent = nullptr);
+        ImageCommentConfigurationDelegate(
+            ImageCommentConfigurationWidget* widget,
+            std::shared_ptr<rpo::ImageCommentRepository> repository,
+            QObject* parent = nullptr);
 
         // Inherited via IDelegate
         QString name() const override;
@@ -26,9 +35,9 @@ namespace Etrek::Dicom::Delegate
 		~ImageCommentConfigurationDelegate();
 
     private:
-        QWidget* m_widget = nullptr;
+        ImageCommentConfigurationWidget* m_widget = nullptr;
+        std::shared_ptr<rpo::ImageCommentRepository> m_repository;
 
-        
         // Inherited via IPageAction
         void apply() override;
         void accept() override;
@@ -36,4 +45,4 @@ namespace Etrek::Dicom::Delegate
     };
 }
 
-#endif // IMAGECOMMENTCONFIGURATION_H
+#endif // IMAGECOMMENTCONFIGURATIONDELEGATE_H
