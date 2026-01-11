@@ -1,4 +1,22 @@
-﻿#ifndef SCANPROTOCOLREPOSITORY_H
+/**
+ * @file ScanProtocolRepository.h
+ * @brief Repository for scan protocol configuration data access.
+ *
+ * @details Provides comprehensive CRUD operations for scan protocols including
+ *          body parts, views, procedures, technique parameters, and their relationships.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see View
+ * @see Procedure
+ * @see TechniqueParameter
+ * @see BodyPart
+ */
+
+#ifndef SCANPROTOCOLREPOSITORY_H
 #define SCANPROTOCOLREPOSITORY_H
 
 #include <memory>
@@ -19,8 +37,37 @@
 #include "Procedure.h"
 #include "ProcedureView.h"
 
+/**
+ * @namespace Etrek::ScanProtocol::Repository
+ * @brief Contains repository classes for scan protocol data access.
+ */
 namespace Etrek::ScanProtocol::Repository {
 
+    /**
+     * @class ScanProtocolRepository
+     * @brief Repository for scan protocol configuration.
+     *
+     * @details Implements the Repository pattern for scan protocol data access.
+     *          Provides CRUD operations for:
+     *          - Anatomic regions and body parts
+     *          - Radiographic views
+     *          - Radiographic procedures (multi-view sequences)
+     *          - Technique parameters (KVP, mA, time settings)
+     *          - View-technique associations
+     *          - Procedure-view associations
+     *
+     *          Supports soft-delete for views and procedures to maintain
+     *          historical integrity while removing from active use.
+     *
+     * @see View
+     * @see Procedure
+     * @see TechniqueParameter
+     * @see ViewConfigurationDelegate
+     * @see ProcedureConfigurationDelegate
+     * @see TechniqueConfigurationDelegate
+     *
+     * @ingroup ScanProtocol
+     */
     class ScanProtocolRepository
     {
     public:

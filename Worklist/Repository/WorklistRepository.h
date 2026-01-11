@@ -1,3 +1,22 @@
+/**
+ * @file WorklistRepository.h
+ * @brief Repository for DICOM Modality Worklist (MWL) data access.
+ *
+ * @details Provides comprehensive data access for worklist management including
+ *          CRUD operations for worklist entries, profiles, DICOM tags, and attributes.
+ *          Supports querying by various criteria and emits signals for entry changes.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see WorklistEntry
+ * @see WorklistProfile
+ * @see DicomTag
+ * @see IWorklistRepository
+ */
+
 #ifndef WORKLISTREPOSITORY_H
 #define WORKLISTREPOSITORY_H
 
@@ -16,6 +35,10 @@
 #include "AppLogger.h"
 #include "IWorklistRepository.h"
 
+/**
+ * @namespace Etrek::Worklist::Repository
+ * @brief Contains repository classes for worklist data access.
+ */
 namespace Etrek::Worklist::Repository {
 
     /**

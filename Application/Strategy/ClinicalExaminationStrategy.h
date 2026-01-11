@@ -1,3 +1,20 @@
+/**
+ * @file ClinicalExaminationStrategy.h
+ * @brief Strategy implementation for clinical patient examination mode.
+ *
+ * @details Implements the IExaminationModeStrategy interface for standard
+ *          clinical patient examinations with full DICOM workflow.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see IExaminationModeStrategy
+ * @see ExaminationMode
+ * @see ExaminationModeStrategyFactory
+ */
+
 #ifndef ETREK_APPLICATION_STRATEGY_CLINICALEXAMINATIONSTRATEGY_H
 #define ETREK_APPLICATION_STRATEGY_CLINICALEXAMINATIONSTRATEGY_H
 
@@ -5,15 +22,37 @@
 #include "AppLogger.h"
 #include <memory>
 
+/**
+ * @namespace Etrek::Application::Strategy
+ * @brief Contains strategy implementations for application behavior patterns.
+ */
 namespace Etrek::Application::Strategy {
 
 /**
  * @class ClinicalExaminationStrategy
- * @brief Strategy for normal patient examination mode.
+ * @brief Strategy for standard clinical patient examination mode.
  *
- * This is the primary examination mode used for real patient exams.
- * It creates DICOM objects, persists images to the database,
- * sends to PACS, and updates worklist status.
+ * @details This is the primary examination mode used for real patient exams.
+ *          It implements the full DICOM workflow including:
+ *          - Creating DICOM Study, Series, and Image objects
+ *          - Persisting images to the database
+ *          - Sending images to configured PACS servers
+ *          - Updating worklist entry status (MWL)
+ *          - Complete audit trail logging
+ *
+ * @par Workflow:
+ * 1. onExaminationStart() - Initializes DICOM study, sets MWL to IN_PROGRESS
+ * 2. onBeforeExposure() - Validates patient data and technique parameters
+ * 3. onAfterExposure() - Logs exposure, prepares for image reception
+ * 4. onImageReceived() - Creates DICOM objects, stores in database
+ * 5. onExaminationComplete() - Finalizes study, sends to PACS, updates MWL
+ *
+ * @see IExaminationModeStrategy
+ * @see DemoExaminationStrategy
+ * @see CalibrationExaminationStrategy
+ * @see TestExaminationStrategy
+ *
+ * @ingroup Examination
  */
 class ClinicalExaminationStrategy : public Etrek::Examination::IExaminationModeStrategy {
 public:

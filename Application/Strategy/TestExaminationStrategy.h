@@ -1,3 +1,20 @@
+/**
+ * @file TestExaminationStrategy.h
+ * @brief Strategy implementation for device verification and testing mode.
+ *
+ * @details Implements the IExaminationModeStrategy interface for QA testing
+ *          and device verification procedures.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see IExaminationModeStrategy
+ * @see ExaminationMode
+ * @see ExaminationModeStrategyFactory
+ */
+
 #ifndef ETREK_APPLICATION_STRATEGY_TESTEXAMINATIONSTRATEGY_H
 #define ETREK_APPLICATION_STRATEGY_TESTEXAMINATIONSTRATEGY_H
 
@@ -9,16 +26,30 @@ namespace Etrek::Application::Strategy {
 
 /**
  * @class TestExaminationStrategy
- * @brief Strategy for device verification and testing mode.
+ * @brief Strategy for device verification and quality assurance testing.
  *
- * This mode is used for internal testing and device verification:
- * - Daily quality assurance (QA) tests
- * - Device functionality verification
- * - System integration testing
- * - Service diagnostics
+ * @details This mode is used for internal testing and device verification:
+ *          - Daily quality assurance (QA) tests
+ *          - Device functionality verification
+ *          - System integration testing
+ *          - Service diagnostics
  *
- * Test images may be persisted to a separate test database for
- * QA record keeping but are never mixed with patient data.
+ *          Key characteristics:
+ *          - Test images persisted to separate QA database
+ *          - Pass/fail tracking for test sequences
+ *          - No patient DICOM objects created
+ *          - No PACS transmission
+ *          - No worklist status updates
+ *          - Complete isolation from patient data
+ *
+ *          Test results are logged and can be reviewed for compliance
+ *          with regulatory QA requirements.
+ *
+ * @see IExaminationModeStrategy
+ * @see ClinicalExaminationStrategy
+ * @see CalibrationExaminationStrategy
+ *
+ * @ingroup Examination
  */
 class TestExaminationStrategy : public Etrek::Examination::IExaminationModeStrategy {
 public:
