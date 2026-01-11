@@ -26,9 +26,8 @@ namespace Etrek::Worklist::Delegate {
         auto tags = repository->getTagsByProfile(1);
         auto* widget = new WorkListConfigurationWidget(tags.value, parentWidget);
         
-        // Delegate receives repository if it needs to perform CRUD operations
-        // In this case, delegate doesn't need repository (read-only widget)
-        auto* delegate = new WorkListConfigurationDelegate(widget, parentDelegate);
+        // Delegate receives repository to perform CRUD operations on apply/accept
+        auto* delegate = new WorkListConfigurationDelegate(widget, repository, parentDelegate);
 
         // If you need to attach other delegates:
         // if (delegate) delegate->AttachDelegates(params.delegates.values());

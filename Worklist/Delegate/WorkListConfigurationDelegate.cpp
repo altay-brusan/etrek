@@ -1,29 +1,48 @@
 #include "WorkListConfigurationDelegate.h"
+#include "WorkListConfigurationWidget.h"
+#include "WorklistRepository.h"
 
-namespace Etrek::Worklist::Delegate 
+namespace Etrek::Worklist::Delegate
 {
-	WorkListConfigurationDelegate::WorkListConfigurationDelegate(QWidget* widget, QObject* parent)
-		: QObject(parent), m_widget(widget)
+	using Etrek::Worklist::Repository::WorklistRepository;
+
+	WorkListConfigurationDelegate::WorkListConfigurationDelegate(
+		WorkListConfigurationWidget* widget,
+		std::shared_ptr<WorklistRepository> repository,
+		QObject* parent)
+		: QObject(parent), m_widget(widget), m_repository(repository)
 	{
 	}
 
 	WorkListConfigurationDelegate::~WorkListConfigurationDelegate()
 	{
 	}
-	QString Etrek::Worklist::Delegate::WorkListConfigurationDelegate::name() const
+
+	QString WorkListConfigurationDelegate::name() const
 	{
-		return QString();
+		return QStringLiteral("WorkListConfigurationDelegate");
 	}
-	void Etrek::Worklist::Delegate::WorkListConfigurationDelegate::attachDelegates(const QVector<QObject*>& delegates)
+
+	void WorkListConfigurationDelegate::attachDelegates(const QVector<QObject*>& delegates)
 	{
+		Q_UNUSED(delegates);
 	}
-	void Etrek::Worklist::Delegate::WorkListConfigurationDelegate::apply()
+
+	void WorkListConfigurationDelegate::apply()
 	{
+		// TODO: Implement when WorkListConfigurationWidget has getter methods
+		// Example: auto tags = m_widget->getTags();
+		// for (const auto& tag : tags) {
+		//     m_repository->updateTag(tag);
+		// }
 	}
-	void Etrek::Worklist::Delegate::WorkListConfigurationDelegate::accept()
+
+	void WorkListConfigurationDelegate::accept()
 	{
+		apply();
 	}
-	void Etrek::Worklist::Delegate::WorkListConfigurationDelegate::reject()
+
+	void WorkListConfigurationDelegate::reject()
 	{
 	}
 }
