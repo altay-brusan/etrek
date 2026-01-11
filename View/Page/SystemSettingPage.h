@@ -30,6 +30,7 @@ public:
 	void setProcedureConfigurationWidget(QWidget* widget);
 	void setViewConfigurationWidget(QWidget* widget);
 	void setTechniqueConfigurationWidget(QWidget* widget);
+	void setRisProcedureMappingConfigurationWidget(QWidget* widget);
 
     ~SystemSettingPage();
 
@@ -53,7 +54,7 @@ private:
 	QVBoxLayout* m_procedureConfigurationPlaceholder;
 	QVBoxLayout* m_viewConfigureationPlaceholder;
 	QVBoxLayout* m_techniqueConfigurationPlaceholder;
-	
+	QVBoxLayout* m_risProcedureMappingPlaceholder;
 };
 
 #endif // SYSTEMSETTINGPAGE_H
