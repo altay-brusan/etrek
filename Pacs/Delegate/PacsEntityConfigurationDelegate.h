@@ -2,12 +2,17 @@
 
 #include <QObject>
 #include <QWidget>
+#include <memory>
 #include "IDelegate.h"
 #include "IPageAction.h"
 
+namespace Etrek::Pacs::Repository { class PacsNodeRepository; }
+class PacsEntityConfigurationWidget;
 
 namespace Etrek::Pacs::Delegate
 {
+	namespace rpo = Etrek::Pacs::Repository;
+
 	class PacsEntityConfigurationDelegate :
 	public QObject,
 	public IDelegate,
@@ -17,20 +22,22 @@ namespace Etrek::Pacs::Delegate
 		Q_INTERFACES(IDelegate IPageAction)
 
 	public:
-		PacsEntityConfigurationDelegate(QWidget* widget, QObject* parent);
-		
+		PacsEntityConfigurationDelegate(
+			PacsEntityConfigurationWidget* widget,
+			std::shared_ptr<rpo::PacsNodeRepository> repository,
+			QObject* parent);
+
 		QString name() const override;
 		void attachDelegates(const QVector<QObject*>& delegates) override;
 
 		~PacsEntityConfigurationDelegate();
 	private:
-		QWidget* m_widget;
-
+		PacsEntityConfigurationWidget* m_widget = nullptr;
+		std::shared_ptr<rpo::PacsNodeRepository> m_repository;
 
 		void apply() override;
 		void accept() override;
 		void reject() override;
 	};
-
 }
 
