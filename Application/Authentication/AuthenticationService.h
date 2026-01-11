@@ -1,3 +1,20 @@
+/**
+ * @file AuthenticationService.h
+ * @brief Service for user authentication and user management.
+ *
+ * @details Provides user authentication via login dialog and user management
+ *          operations including create, update, and delete users.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see AuthenticationRepository
+ * @see CryptoManager
+ * @see User
+ */
+
 #ifndef AUTHENTICATIONSERVICE_H
 #define AUTHENTICATIONSERVICE_H
 
@@ -29,8 +46,34 @@ namespace Etrek::Core::Log {
     class AppLogger;
 }
 
+/**
+ * @namespace Etrek::Application::Authentication
+ * @brief Contains authentication-related classes.
+ */
 namespace Etrek::Application::Authentication {
 
+    /**
+     * @class AuthenticationService
+     * @brief Service for user authentication and management.
+     *
+     * @details Handles user authentication via login dialog and provides
+     *          user management operations (CRUD) with cryptographic
+     *          password handling.
+     *
+     *          Key responsibilities:
+     *          - Display login dialog for user authentication
+     *          - Verify credentials using AuthenticationRepository
+     *          - Hash passwords using CryptoManager
+     *          - Emit signals for user management events
+     *          - Display user manager dialog for admin operations
+     *
+     * @see AuthenticationRepository
+     * @see CryptoManager
+     * @see User
+     * @see ApplicationService
+     *
+     * @ingroup Authentication
+     */
     class AuthenticationService : public QObject
     {
         Q_OBJECT

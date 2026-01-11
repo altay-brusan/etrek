@@ -1,3 +1,21 @@
+/**
+ * @file ApplicationService.h
+ * @brief Central application orchestration service.
+ *
+ * @details Provides the main entry point for application initialization,
+ *          coordinating database setup, authentication, device initialization,
+ *          and main window construction.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see ILaunchStrategy
+ * @see AuthenticationService
+ * @see ContextManager
+ */
+
 #ifndef APPLICATION_SERVICE_H
 #define APPLICATION_SERVICE_H
 
@@ -61,10 +79,40 @@ namespace Etrek::Context {
     class IContextManager;
 }
 
+/**
+ * @namespace Etrek::Application::Service
+ * @brief Contains application-level service classes.
+ */
 namespace Etrek::Application::Service
 {
     class ILaunchStrategy;
 
+    /**
+     * @class ApplicationService
+     * @brief Central orchestration service for application lifecycle.
+     *
+     * @details Singleton-like service that coordinates all aspects of
+     *          application initialization and lifecycle management.
+     *
+     *          Initialization order:
+     *          1. Logger setup (spdlog)
+     *          2. Settings loading (SettingProvider)
+     *          3. Database initialization (Qt SQL with MySQL)
+     *          4. Authentication service setup
+     *          5. RIS connections (ModalityWorklistManager)
+     *          6. Device initialization
+     *          7. Main window construction
+     *
+     *          The service uses the Strategy pattern for different launch
+     *          modes (main, demo, settings, users) via ILaunchStrategy.
+     *
+     * @see ILaunchStrategy
+     * @see AuthenticationService
+     * @see ContextManager
+     * @see MainWindowDelegate
+     *
+     * @ingroup Application
+     */
     class ApplicationService : public QObject
     {
         Q_OBJECT

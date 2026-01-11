@@ -1,3 +1,19 @@
+/**
+ * @file EntityStatusService.h
+ * @brief Service for DICOM entity workflow status management.
+ *
+ * @details Provides high-level workflow operations for managing entity status
+ *          including examination start, completion, cancellation, and status tracking.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see EntityStatus
+ * @see DicomRepository
+ */
+
 #ifndef ENTITYSTATUSSERVICE_H
 #define ENTITYSTATUSSERVICE_H
 
@@ -11,6 +27,10 @@ namespace Etrek::Dicom::Repository {
     class DicomRepository;
 }
 
+/**
+ * @namespace Etrek::Dicom::Service
+ * @brief Contains service classes for DICOM business logic.
+ */
 namespace Etrek::Dicom::Service {
 
     using namespace Etrek::Dicom::Data::Entity;
