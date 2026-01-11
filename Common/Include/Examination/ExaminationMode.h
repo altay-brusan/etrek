@@ -1,3 +1,19 @@
+/**
+ * @file ExaminationMode.h
+ * @brief Enumeration and utilities for examination mode types.
+ *
+ * @details Defines the ExaminationMode enumeration and helper functions
+ *          for converting between modes and strings, and for querying
+ *          mode capabilities.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see IExaminationModeStrategy
+ */
+
 #ifndef ETREK_EXAMINATION_EXAMINATIONMODE_H
 #define ETREK_EXAMINATION_EXAMINATIONMODE_H
 
