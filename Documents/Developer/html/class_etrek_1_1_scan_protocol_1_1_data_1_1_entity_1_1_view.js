@@ -1,0 +1,25 @@
+var class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view =
+[
+    [ "View", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a41ef417da78865861040d308b7d315aa", null ],
+    [ "operator!=", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a8650de30afe8b0a0285d89bbb863f90a", null ],
+    [ "operator==", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a1a74a626c907fa0c75b1565834559574", null ],
+    [ "BodyPart", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#aafbf6ec427a6fcc8deed319a83eeb298", null ],
+    [ "CollimatorSize", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#af72704cd2040b0e1262b37d3580807f4", null ],
+    [ "Description", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a9a409faeb09af2a48e5fb7aa35455b59", null ],
+    [ "IconFileLocation", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a32f7c744c21072f7ff71cee38462dd4a", null ],
+    [ "Id", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a2355f27028a73db7f9209a756a313ac1", null ],
+    [ "ImageHorizontalFlip", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#ab2e2d186a73ed64a28e113f51e9170bb", null ],
+    [ "ImageLaterality", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a1157055b8a652e0ef6f22e2ed6814ef8", null ],
+    [ "ImageProcessingAlgorithm", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a12cb691a6b464f3fd61e0ae9192fc259", null ],
+    [ "ImageRotate", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a1252975b560d64fcaba62d8494a88713", null ],
+    [ "IsActive", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a6cfb56387a5e336b8d77eabf0adf439e", null ],
+    [ "LabelMark", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a1b4a58c24b77d3b131c2850bcbbe1997", null ],
+    [ "LabelPosition", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#af6f6a35862e2ab61bf39fa1d0db728ef", null ],
+    [ "Name", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a312a3138085a85c56c0fff6be519ced8", null ],
+    [ "PatientOrientationCol", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a3e606e0f9799884c01c035a53d43837b", null ],
+    [ "PatientOrientationRow", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#aa12ced49e6e5f6a99884e9b45d54283a", null ],
+    [ "PatientPosition", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a82f372483b53ffb703934e0261749799", null ],
+    [ "PositionName", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a4c53c7b856ad403ddac9e5991cba1f54", null ],
+    [ "ProjectionProfile", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a19d7e5f30d8760719a84bc86acd258b8", null ],
+    [ "ViewPosition", "class_etrek_1_1_scan_protocol_1_1_data_1_1_entity_1_1_view.html#a45486efa71be1654b0d1e0291e4c5aa0", null ]
+];

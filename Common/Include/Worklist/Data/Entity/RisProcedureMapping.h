@@ -1,9 +1,29 @@
+/**
+ * @file RisProcedureMapping.h
+ * @brief Entity for RIS procedure code to internal view mappings.
+ *
+ * @details Defines the RisProcedureMapping entity used to map external
+ *          RIS procedure codes to internal Etrek view identifiers.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see RisProcedureMappingRepository
+ * @see RisProcedureMappingService
+ */
+
 #ifndef RISPROCEDUREMAPPING_H
 #define RISPROCEDUREMAPPING_H
 
 #include <QString>
 #include <QDateTime>
 
+/**
+ * @namespace Etrek::Worklist::Data::Entity
+ * @brief Contains entity classes for worklist-related data.
+ */
 namespace Etrek::Worklist::Data::Entity {
 
 /**

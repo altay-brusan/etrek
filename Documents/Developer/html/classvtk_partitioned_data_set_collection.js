@@ -1,0 +1,26 @@
+var classvtk_partitioned_data_set_collection =
+[
+    [ "CompositeShallowCopy", "classvtk_partitioned_data_set_collection.html#a84820298f1fbf5c5674c6a7a53f40711", null ],
+    [ "CopyStructure", "classvtk_partitioned_data_set_collection.html#a0dd4dc996a610031510e5db29860bcff", null ],
+    [ "CreateForCopyStructure", "classvtk_partitioned_data_set_collection.html#a10cd4110b39250cb9dc03a35e4c39583", null ],
+    [ "DeepCopy", "classvtk_partitioned_data_set_collection.html#a602fe19281d467b6cf70306e7ad38202", null ],
+    [ "GetCompositeIndex", "classvtk_partitioned_data_set_collection.html#a9a454827a619e47204af2714218f6c17", null ],
+    [ "GetDataObjectType", "classvtk_partitioned_data_set_collection.html#a829ccccb9052097a4460bf3a2dbdf519", null ],
+    [ "GetMetaData", "classvtk_partitioned_data_set_collection.html#a8b934fe764255c5e91a3bf8b011c4f07", null ],
+    [ "GetMetaData", "classvtk_partitioned_data_set_collection.html#a21f5e8532f0adee0039ac066a7b0104c", null ],
+    [ "GetMTime", "classvtk_partitioned_data_set_collection.html#ad7a7c0030e2e4b526b28283c9f6aa4c2", null ],
+    [ "GetNumberOfPartitionedDataSets", "classvtk_partitioned_data_set_collection.html#a03a8935090ffe52739c91ded3cf1acd3", null ],
+    [ "GetNumberOfPartitions", "classvtk_partitioned_data_set_collection.html#a14c9567d5ae49498344968b6c76d4309", null ],
+    [ "GetPartitionedDataSet", "classvtk_partitioned_data_set_collection.html#a47c7cdce0ff3fa2b9dd57c1d3c6dc56d", null ],
+    [ "HasMetaData", "classvtk_partitioned_data_set_collection.html#a298bd963a479e0afeaf795e76cc6416c", null ],
+    [ "HasMetaData", "classvtk_partitioned_data_set_collection.html#a4d219daf2752fac921a06bba76c2b58f", null ],
+    [ "Initialize", "classvtk_partitioned_data_set_collection.html#aacfb3cfa81e070ba039626e0cbaeda0d", null ],
+    [ "PrintSelf", "classvtk_partitioned_data_set_collection.html#abb0e3eda18c6472230d2ec543cec8151", null ],
+    [ "RemovePartitionedDataSet", "classvtk_partitioned_data_set_collection.html#a1c27c847aadcb2fd4690e293f03733e8", null ],
+    [ "SetNumberOfPartitionedDataSets", "classvtk_partitioned_data_set_collection.html#a2ffd2ed04cdac481e4047cd3fd01ee02", null ],
+    [ "SetNumberOfPartitions", "classvtk_partitioned_data_set_collection.html#aca3d10fb4d60d4c6e1418b5de97cafdd", null ],
+    [ "SetPartition", "classvtk_partitioned_data_set_collection.html#a68471042873e75877f833aff4d6af5da", null ],
+    [ "SetPartitionedDataSet", "classvtk_partitioned_data_set_collection.html#a595e0536b871a6f4d491f0927d04f093", null ],
+    [ "ShallowCopy", "classvtk_partitioned_data_set_collection.html#a56b1c1a9fc97fed4373955519317e00a", null ],
+    [ "vtkGetObjectMacro", "classvtk_partitioned_data_set_collection.html#a59794cf48d49f228b1162547b5ec5ad6", null ]
+];

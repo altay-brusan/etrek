@@ -1,0 +1,4 @@
+var class_eigen_1_1internal_1_1generic__matrix__wrapper_3_01_matrix_type_00_01false_01_4 =
+[
+    [ "ConstSelfAdjointViewReturnType", "struct_eigen_1_1internal_1_1generic__matrix__wrapper_3_01_matrix_type_00_01false_01_4_1_1_const_self_adjoint_view_return_type.html", null ]
+];

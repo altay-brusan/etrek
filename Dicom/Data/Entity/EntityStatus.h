@@ -1,9 +1,30 @@
+/**
+ * @file EntityStatus.h
+ * @brief Entity for DICOM workflow status tracking.
+ *
+ * @details Defines the EntityStatus entity class and related enumerations
+ *          for tracking workflow status across the DICOM hierarchy
+ *          (Patient, Study, Series, Image).
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see EntityStatusService
+ * @see DicomRepository
+ */
+
 #ifndef ETREK_DICOM_DATA_ENTITY_ENTITYSTATUS_H
 #define ETREK_DICOM_DATA_ENTITY_ENTITYSTATUS_H
 
 #include <QString>
 #include <QDateTime>
 
+/**
+ * @namespace Etrek::Dicom::Data::Entity
+ * @brief Contains entity classes for DICOM-related data.
+ */
 namespace Etrek::Dicom::Data::Entity {
 
     /**

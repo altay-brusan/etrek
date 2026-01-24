@@ -1,0 +1,733 @@
+\doxysection{cmp.\+h}
+\hypertarget{cmp_8h_source}{}\label{cmp_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/cmp.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/cmp.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ WARNING:\ do\ not\ edit!}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ Generated\ by\ makefile\ from\ include\(\backslash\)openssl\(\backslash\)cmp.h.in}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ Copyright\ 2007-\/2024\ The\ OpenSSL\ Project\ Authors.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ Copyright\ Nokia\ 2007-\/2019}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ Copyright\ Siemens\ AG\ 2015-\/2019}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ Licensed\ under\ the\ Apache\ License\ 2.0\ (the\ "{}License"{}).\ \ You\ may\ not\ use}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ this\ file\ except\ in\ compliance\ with\ the\ License.\ \ You\ can\ obtain\ a\ copy}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ in\ the\ file\ LICENSE\ in\ the\ source\ distribution\ or\ at}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *\ https://www.openssl.org/source/license.html}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_CMP\_H}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#\ define\ OPENSSL\_CMP\_H}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#\ include\ <openssl/opensslconf.h>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_CMP}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#\ \ include\ <openssl/crmf.h>}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#\ \ include\ <openssl/cmperr.h>}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#\ \ include\ <openssl/cmp\_util.h>}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#\ \ include\ <openssl/http.h>}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*\ explicit\ \#includes\ not\ strictly\ needed\ since\ implied\ by\ the\ above:\ */}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#\ \ include\ <openssl/types.h>}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#\ \ include\ <openssl/safestack.h>}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#\ \ include\ <openssl/x509.h>}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#\ \ include\ <openssl/x509v3.h>}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#\ \ ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00035\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PVNO\_2\ 2}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PVNO\_3\ 3}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PVNO\ OSSL\_CMP\_PVNO\_2\ }\textcolor{comment}{/*\ v2\ is\ the\ default\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ \ \ PKIFailureInfo\ ::=\ BIT\ STRING\ \{}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ \ \ -\/-\/\ since\ we\ can\ fail\ in\ more\ than\ one\ way!}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ \ \ -\/-\/\ More\ codes\ may\ be\ added\ in\ the\ future\ if/when\ required.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badAlg\ \ \ \ \ \ \ \ \ \ \ \ \ \ (0),}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ unrecognized\ or\ unsupported\ Algorithm\ Identifier}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badMessageCheck\ \ \ \ \ (1),}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ integrity\ check\ failed\ (e.g.,\ signature\ did\ not\ verify)}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badRequest\ \ \ \ \ \ \ \ \ \ (2),}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ transaction\ not\ permitted\ or\ supported}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badTime\ \ \ \ \ \ \ \ \ \ \ \ \ (3),}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ messageTime\ was\ not\ sufficiently\ close\ to\ the\ system\ time,}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ as\ defined\ by\ local\ policy}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badCertId\ \ \ \ \ \ \ \ \ \ \ (4),}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ no\ certificate\ could\ be\ found\ matching\ the\ provided\ criteria}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badDataFormat\ \ \ \ \ \ \ (5),}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ the\ data\ submitted\ has\ the\ wrong\ format}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ \ \ \ \ \ \ wrongAuthority\ \ \ \ \ \ (6),}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ the\ authority\ indicated\ in\ the\ request\ is\ different\ from\ the}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ one\ creating\ the\ response\ token}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *\ \ \ \ \ \ \ incorrectData\ \ \ \ \ \ \ (7),}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ the\ requester's\ data\ is\ incorrect\ (for\ notary\ services)}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ *\ \ \ \ \ \ \ missingTimeStamp\ \ \ \ (8),}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ when\ the\ timestamp\ is\ missing\ but\ should\ be\ there}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ (by\ policy)}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badPOP\ \ \ \ \ \ \ \ \ \ \ \ \ \ (9),}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ the\ proof-\/of-\/possession\ failed}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ *\ \ \ \ \ \ \ certRevoked\ \ \ \ \ \ \ \ \ (10),}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ the\ certificate\ has\ already\ been\ revoked}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ *\ \ \ \ \ \ \ certConfirmed\ \ \ \ \ \ \ (11),}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ the\ certificate\ has\ already\ been\ confirmed}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ *\ \ \ \ \ \ \ wrongIntegrity\ \ \ \ \ \ (12),}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ invalid\ integrity,\ password\ based\ instead\ of\ signature\ or}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ vice\ versa}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badRecipientNonce\ \ \ (13),}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ invalid\ recipient\ nonce,\ either\ missing\ or\ wrong\ value}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ *\ \ \ \ \ \ \ timeNotAvailable\ \ \ \ (14),}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ the\ TSA's\ time\ source\ is\ not\ available}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ *\ \ \ \ \ \ \ unacceptedPolicy\ \ \ \ (15),}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ the\ requested\ TSA\ policy\ is\ not\ supported\ by\ the\ TSA.}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ *\ \ \ \ \ \ \ unacceptedExtension\ (16),}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ the\ requested\ extension\ is\ not\ supported\ by\ the\ TSA.}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *\ \ \ \ \ \ \ addInfoNotAvailable\ (17),}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ the\ additional\ information\ requested\ could\ not\ be}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ understood\ or\ is\ not\ available}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badSenderNonce\ \ \ \ \ \ (18),}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ invalid\ sender\ nonce,\ either\ missing\ or\ wrong\ size}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ *\ \ \ \ \ \ \ badCertTemplate\ \ \ \ \ (19),}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ invalid\ cert.\ template\ or\ missing\ mandatory\ information}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ *\ \ \ \ \ \ \ signerNotTrusted\ \ \ \ (20),}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ signer\ of\ the\ message\ unknown\ or\ not\ trusted}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ *\ \ \ \ \ \ \ transactionIdInUse\ \ (21),}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ the\ transaction\ identifier\ is\ already\ in\ use}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ *\ \ \ \ \ \ \ unsupportedVersion\ \ (22),}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ the\ version\ of\ the\ message\ is\ not\ supported}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ *\ \ \ \ \ \ \ notAuthorized\ \ \ \ \ \ \ (23),}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ the\ sender\ was\ not\ authorized\ to\ make\ the\ preceding}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ -\/-\/\ request\ or\ perform\ the\ preceding\ action}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ *\ \ \ \ \ \ \ systemUnavail\ \ \ \ \ \ \ (24),}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ the\ request\ cannot\ be\ handled\ due\ to\ system\ unavailability}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ *\ \ \ \ \ \ \ systemFailure\ \ \ \ \ \ \ (25),}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ the\ request\ cannot\ be\ handled\ due\ to\ system\ failure}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ *\ \ \ \ \ \ \ duplicateCertReq\ \ \ \ (26)}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ certificate\ cannot\ be\ issued\ because\ a\ duplicate}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ certificate\ already\ exists}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ *\ \ \ \}}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badAlg\ 0}}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badMessageCheck\ 1}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badRequest\ 2}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badTime\ 3}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badCertId\ 4}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badDataFormat\ 5}}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_wrongAuthority\ 6}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_incorrectData\ 7}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_missingTimeStamp\ 8}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badPOP\ 9}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_certRevoked\ 10}}
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_certConfirmed\ 11}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_wrongIntegrity\ 12}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badRecipientNonce\ 13}}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_timeNotAvailable\ 14}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_unacceptedPolicy\ 15}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_unacceptedExtension\ 16}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_addInfoNotAvailable\ 17}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badSenderNonce\ 18}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_badCertTemplate\ 19}}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_signerNotTrusted\ 20}}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_transactionIdInUse\ 21}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_unsupportedVersion\ 22}}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_notAuthorized\ 23}}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_systemUnavail\ 24}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_systemFailure\ 25}}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_duplicateCertReq\ 26}}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_MAX\ 26}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKIFAILUREINFO\_MAX\_BIT\_PATTERN\ \(\backslash\)}}
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{\ \ \ \ ((1\ <<\ (OSSL\_CMP\_PKIFAILUREINFO\_MAX\ +\ 1))\ -\/\ 1)}}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{\#\ \ if\ OSSL\_CMP\_PKIFAILUREINFO\_MAX\_BIT\_PATTERN\ >\ INT\_MAX}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#\ \ \ error\ CMP\_PKIFAILUREINFO\_MAX\ bit\ pattern\ does\ not\ fit\ in\ type\ int}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00142\ \textcolor{keyword}{typedef}\ ASN1\_BIT\_STRING\ OSSL\_CMP\_PKIFAILUREINFO;}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badAlg\ (1\ <<\ 0)}}
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badMessageCheck\ (1\ <<\ 1)}}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badRequest\ (1\ <<\ 2)}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badTime\ (1\ <<\ 3)}}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badCertId\ (1\ <<\ 4)}}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badDataFormat\ (1\ <<\ 5)}}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_wrongAuthority\ (1\ <<\ 6)}}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_incorrectData\ (1\ <<\ 7)}}
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_missingTimeStamp\ (1\ <<\ 8)}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badPOP\ (1\ <<\ 9)}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_certRevoked\ (1\ <<\ 10)}}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_certConfirmed\ (1\ <<\ 11)}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_wrongIntegrity\ (1\ <<\ 12)}}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badRecipientNonce\ (1\ <<\ 13)}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_timeNotAvailable\ (1\ <<\ 14)}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_unacceptedPolicy\ (1\ <<\ 15)}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_unacceptedExtension\ (1\ <<\ 16)}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_addInfoNotAvailable\ (1\ <<\ 17)}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badSenderNonce\ (1\ <<\ 18)}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_badCertTemplate\ (1\ <<\ 19)}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_signerNotTrusted\ (1\ <<\ 20)}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_transactionIdInUse\ (1\ <<\ 21)}}
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_unsupportedVersion\ (1\ <<\ 22)}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_notAuthorized\ (1\ <<\ 23)}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_systemUnavail\ (1\ <<\ 24)}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_systemFailure\ (1\ <<\ 25)}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_FAILINFO\_duplicateCertReq\ (1\ <<\ 26)}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ *\ \ \ PKIStatus\ ::=\ INTEGER\ \{}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ *\ \ \ \ \ \ \ accepted\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (0),}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ you\ got\ exactly\ what\ you\ asked\ for}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ *\ \ \ \ \ \ \ grantedWithMods\ \ \ \ \ \ \ \ (1),}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ you\ got\ something\ like\ what\ you\ asked\ for;\ the}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ requester\ is\ responsible\ for\ ascertaining\ the\ differences}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ *\ \ \ \ \ \ \ rejection\ \ \ \ \ \ \ \ \ \ \ \ \ \ (2),}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ you\ don't\ get\ it,\ more\ information\ elsewhere\ in\ the\ message}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ *\ \ \ \ \ \ \ waiting\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (3),}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ the\ request\ body\ part\ has\ not\ yet\ been\ processed;\ expect\ to}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ hear\ more\ later\ (note:\ proper\ handling\ of\ this\ status}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ response\ MAY\ use\ the\ polling\ req/rep\ PKIMessages\ specified}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ in\ Section\ 5.3.22;\ alternatively,\ polling\ in\ the\ underlying}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ transport\ layer\ MAY\ have\ some\ utility\ in\ this\ regard)}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ *\ \ \ \ \ \ \ revocationWarning\ \ \ \ \ \ (4),}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ this\ message\ contains\ a\ warning\ that\ a\ revocation\ is}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ imminent}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ *\ \ \ \ \ \ \ revocationNotification\ (5),}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ notification\ that\ a\ revocation\ has\ occurred}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ *\ \ \ \ \ \ \ keyUpdateWarning\ \ \ \ \ \ \ (6)}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ update\ already\ done\ for\ the\ oldCertId\ specified\ in}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ *\ \ \ \ \ \ \ -\/-\/\ CertReqMsg}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ *\ \ \ \}}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_request\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/3}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_trans\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/2}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_unspecified\ \ \ \ \ \ \ \ \ \ \ \ -\/1}}
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_accepted\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_grantedWithMods\ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_rejection\ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_waiting\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_revocationWarning\ \ \ \ \ \ 4}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_revocationNotification\ 5}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISTATUS\_keyUpdateWarning\ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00207\ \textcolor{keyword}{typedef}\ ASN1\_INTEGER\ OSSL\_CMP\_PKISTATUS;}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ DECLARE\_ASN1\_ITEM(OSSL\_CMP\_PKISTATUS)}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CERTORENCCERT\_CERTIFICATE\ 0}}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CERTORENCCERT\_ENCRYPTEDCERT\ 1}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{comment}{/*\ data\ type\ declarations\ */}}
+\DoxyCodeLine{00215\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_ctx\_st\ OSSL\_CMP\_CTX;}
+\DoxyCodeLine{00216\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_pkiheader\_st\ OSSL\_CMP\_PKIHEADER;}
+\DoxyCodeLine{00217\ DECLARE\_ASN1\_FUNCTIONS(OSSL\_CMP\_PKIHEADER)}
+\DoxyCodeLine{00218\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_msg\_st\ OSSL\_CMP\_MSG;}
+\DoxyCodeLine{00219\ DECLARE\_ASN1\_DUP\_FUNCTION(OSSL\_CMP\_MSG)}
+\DoxyCodeLine{00220\ DECLARE\_ASN1\_ENCODE\_FUNCTIONS(OSSL\_CMP\_MSG,\ OSSL\_CMP\_MSG,\ OSSL\_CMP\_MSG)}
+\DoxyCodeLine{00221\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_certstatus\_st\ OSSL\_CMP\_CERTSTATUS;}
+\DoxyCodeLine{00222\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(OSSL\_CMP\_CERTSTATUS,\ OSSL\_CMP\_CERTSTATUS,\ OSSL\_CMP\_CERTSTATUS)}
+\DoxyCodeLine{00223\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_value(sk,\ idx)\ ((OSSL\_CMP\_CERTSTATUS\ *)OPENSSL\_sk\_value(ossl\_check\_const\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_new(cmp)\ ((STACK\_OF(OSSL\_CMP\_CERTSTATUS)\ *)OPENSSL\_sk\_new(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_new\_null()\ ((STACK\_OF(OSSL\_CMP\_CERTSTATUS)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_new\_reserve(cmp,\ n)\ ((STACK\_OF(OSSL\_CMP\_CERTSTATUS)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00231\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_delete(sk,\ i)\ ((OSSL\_CMP\_CERTSTATUS\ *)OPENSSL\_sk\_delete(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_delete\_ptr(sk,\ ptr)\ ((OSSL\_CMP\_CERTSTATUS\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_type(ptr)))}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_type(ptr))}}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_type(ptr))}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_pop(sk)\ ((OSSL\_CMP\_CERTSTATUS\ *)OPENSSL\_sk\_pop(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk)))}}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_shift(sk)\ ((OSSL\_CMP\_CERTSTATUS\ *)OPENSSL\_sk\_shift(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk)))}}
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),ossl\_check\_OSSL\_CMP\_CERTSTATUS\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_set(sk,\ idx,\ ptr)\ ((OSSL\_CMP\_CERTSTATUS\ *)OPENSSL\_sk\_set(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ (idx),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_type(ptr)))}}
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_type(ptr))}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_type(ptr))}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_dup(sk)\ ((STACK\_OF(OSSL\_CMP\_CERTSTATUS)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk)))}}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(OSSL\_CMP\_CERTSTATUS)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_copyfunc\_type(copyfunc),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTSTATUS\_set\_cmp\_func(sk,\ cmp)\ ((sk\_OSSL\_CMP\_CERTSTATUS\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_OSSL\_CMP\_CERTSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTSTATUS\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_itav\_st\ OSSL\_CMP\_ITAV;}
+\DoxyCodeLine{00250\ DECLARE\_ASN1\_DUP\_FUNCTION(OSSL\_CMP\_ITAV)}
+\DoxyCodeLine{00251\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(OSSL\_CMP\_ITAV,\ OSSL\_CMP\_ITAV,\ OSSL\_CMP\_ITAV)}
+\DoxyCodeLine{00252\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_OSSL\_CMP\_ITAV\_sk\_type(sk))}}
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_value(sk,\ idx)\ ((OSSL\_CMP\_ITAV\ *)OPENSSL\_sk\_value(ossl\_check\_const\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_new(cmp)\ ((STACK\_OF(OSSL\_CMP\_ITAV)\ *)OPENSSL\_sk\_new(ossl\_check\_OSSL\_CMP\_ITAV\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_new\_null()\ ((STACK\_OF(OSSL\_CMP\_ITAV)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_new\_reserve(cmp,\ n)\ ((STACK\_OF(OSSL\_CMP\_ITAV)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_OSSL\_CMP\_ITAV\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk))}}
+\DoxyCodeLine{00259\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk))}}
+\DoxyCodeLine{00260\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_delete(sk,\ i)\ ((OSSL\_CMP\_ITAV\ *)OPENSSL\_sk\_delete(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00261\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_delete\_ptr(sk,\ ptr)\ ((OSSL\_CMP\_ITAV\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_ITAV\_type(ptr)))}}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_ITAV\_type(ptr))}}
+\DoxyCodeLine{00263\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_ITAV\_type(ptr))}}
+\DoxyCodeLine{00264\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_pop(sk)\ ((OSSL\_CMP\_ITAV\ *)OPENSSL\_sk\_pop(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk)))}}
+\DoxyCodeLine{00265\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_shift(sk)\ ((OSSL\_CMP\_ITAV\ *)OPENSSL\_sk\_shift(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk)))}}
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),ossl\_check\_OSSL\_CMP\_ITAV\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00267\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_ITAV\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_set(sk,\ idx,\ ptr)\ ((OSSL\_CMP\_ITAV\ *)OPENSSL\_sk\_set(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ (idx),\ ossl\_check\_OSSL\_CMP\_ITAV\_type(ptr)))}}
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_ITAV\_type(ptr))}}
+\DoxyCodeLine{00270\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_ITAV\_type(ptr))}}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_ITAV\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk))}}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_OSSL\_CMP\_ITAV\_sk\_type(sk))}}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_dup(sk)\ ((STACK\_OF(OSSL\_CMP\_ITAV)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_OSSL\_CMP\_ITAV\_sk\_type(sk)))}}
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(OSSL\_CMP\_ITAV)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_ITAV\_copyfunc\_type(copyfunc),\ ossl\_check\_OSSL\_CMP\_ITAV\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_ITAV\_set\_cmp\_func(sk,\ cmp)\ ((sk\_OSSL\_CMP\_ITAV\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_OSSL\_CMP\_ITAV\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_ITAV\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_crlstatus\_st\ OSSL\_CMP\_CRLSTATUS;}
+\DoxyCodeLine{00280\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(OSSL\_CMP\_CRLSTATUS,\ OSSL\_CMP\_CRLSTATUS,\ OSSL\_CMP\_CRLSTATUS)}
+\DoxyCodeLine{00281\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00282\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_value(sk,\ idx)\ ((OSSL\_CMP\_CRLSTATUS\ *)OPENSSL\_sk\_value(ossl\_check\_const\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_new(cmp)\ ((STACK\_OF(OSSL\_CMP\_CRLSTATUS)\ *)OPENSSL\_sk\_new(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00284\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_new\_null()\ ((STACK\_OF(OSSL\_CMP\_CRLSTATUS)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_new\_reserve(cmp,\ n)\ ((STACK\_OF(OSSL\_CMP\_CRLSTATUS)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00286\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00287\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00288\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_delete(sk,\ i)\ ((OSSL\_CMP\_CRLSTATUS\ *)OPENSSL\_sk\_delete(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00290\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_delete\_ptr(sk,\ ptr)\ ((OSSL\_CMP\_CRLSTATUS\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_type(ptr)))}}
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_type(ptr))}}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_type(ptr))}}
+\DoxyCodeLine{00293\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_pop(sk)\ ((OSSL\_CMP\_CRLSTATUS\ *)OPENSSL\_sk\_pop(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk)))}}
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_shift(sk)\ ((OSSL\_CMP\_CRLSTATUS\ *)OPENSSL\_sk\_shift(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk)))}}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),ossl\_check\_OSSL\_CMP\_CRLSTATUS\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00296\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_set(sk,\ idx,\ ptr)\ ((OSSL\_CMP\_CRLSTATUS\ *)OPENSSL\_sk\_set(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ (idx),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_type(ptr)))}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_type(ptr))}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_type(ptr))}}
+\DoxyCodeLine{00300\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk))}}
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_dup(sk)\ ((STACK\_OF(OSSL\_CMP\_CRLSTATUS)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk)))}}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(OSSL\_CMP\_CRLSTATUS)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_copyfunc\_type(copyfunc),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CRLSTATUS\_set\_cmp\_func(sk,\ cmp)\ ((sk\_OSSL\_CMP\_CRLSTATUS\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_OSSL\_CMP\_CRLSTATUS\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CRLSTATUS\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ \textcolor{keyword}{typedef}\ OSSL\_CRMF\_ATTRIBUTETYPEANDVALUE\ OSSL\_CMP\_ATAV;}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_ATAV\_free\ OSSL\_CRMF\_ATTRIBUTETYPEANDVALUE\_free}}
+\DoxyCodeLine{00310\ \textcolor{keyword}{typedef}\ STACK\_OF(OSSL\_CRMF\_ATTRIBUTETYPEANDVALUE)\ OSSL\_CMP\_ATAVS;}
+\DoxyCodeLine{00311\ DECLARE\_ASN1\_FUNCTIONS(OSSL\_CMP\_ATAVS)}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#\ \ define\ stack\_st\_OSSL\_CMP\_ATAV\ stack\_st\_OSSL\_CRMF\_ATTRIBUTETYPEANDVALUE}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\#\ \ define\ sk\_OSSL\_CMP\_ATAV\_num\ sk\_OSSL\_CRMF\_ATTRIBUTETYPEANDVALUE\_num}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\#\ \ define\ sk\_OSSL\_CMP\_ATAV\_value\ sk\_OSSL\_CRMF\_ATTRIBUTETYPEANDVALUE\_value}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\#\ \ define\ sk\_OSSL\_CMP\_ATAV\_push\ sk\_OSSL\_CRMF\_ATTRIBUTETYPEANDVALUE\_push}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\#\ \ define\ sk\_OSSL\_CMP\_ATAV\_pop\_free\ sk\_OSSL\_CRMF\_ATTRIBUTETYPEANDVALUE\_pop\_free}}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_revrepcontent\_st\ OSSL\_CMP\_REVREPCONTENT;}
+\DoxyCodeLine{00319\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_pkisi\_st\ OSSL\_CMP\_PKISI;}
+\DoxyCodeLine{00320\ DECLARE\_ASN1\_FUNCTIONS(OSSL\_CMP\_PKISI)}
+\DoxyCodeLine{00321\ DECLARE\_ASN1\_DUP\_FUNCTION(OSSL\_CMP\_PKISI)}
+\DoxyCodeLine{00322\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(OSSL\_CMP\_PKISI,\ OSSL\_CMP\_PKISI,\ OSSL\_CMP\_PKISI)}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_OSSL\_CMP\_PKISI\_sk\_type(sk))}}
+\DoxyCodeLine{00324\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_value(sk,\ idx)\ ((OSSL\_CMP\_PKISI\ *)OPENSSL\_sk\_value(ossl\_check\_const\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_new(cmp)\ ((STACK\_OF(OSSL\_CMP\_PKISI)\ *)OPENSSL\_sk\_new(ossl\_check\_OSSL\_CMP\_PKISI\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_new\_null()\ ((STACK\_OF(OSSL\_CMP\_PKISI)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_new\_reserve(cmp,\ n)\ ((STACK\_OF(OSSL\_CMP\_PKISI)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_OSSL\_CMP\_PKISI\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00328\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk))}}
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk))}}
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_delete(sk,\ i)\ ((OSSL\_CMP\_PKISI\ *)OPENSSL\_sk\_delete(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00332\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_delete\_ptr(sk,\ ptr)\ ((OSSL\_CMP\_PKISI\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_PKISI\_type(ptr)))}}
+\DoxyCodeLine{00333\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_PKISI\_type(ptr))}}
+\DoxyCodeLine{00334\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_PKISI\_type(ptr))}}
+\DoxyCodeLine{00335\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_pop(sk)\ ((OSSL\_CMP\_PKISI\ *)OPENSSL\_sk\_pop(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk)))}}
+\DoxyCodeLine{00336\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_shift(sk)\ ((OSSL\_CMP\_PKISI\ *)OPENSSL\_sk\_shift(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk)))}}
+\DoxyCodeLine{00337\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),ossl\_check\_OSSL\_CMP\_PKISI\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_PKISI\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00339\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_set(sk,\ idx,\ ptr)\ ((OSSL\_CMP\_PKISI\ *)OPENSSL\_sk\_set(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ (idx),\ ossl\_check\_OSSL\_CMP\_PKISI\_type(ptr)))}}
+\DoxyCodeLine{00340\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_PKISI\_type(ptr))}}
+\DoxyCodeLine{00341\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_PKISI\_type(ptr))}}
+\DoxyCodeLine{00342\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_PKISI\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk))}}
+\DoxyCodeLine{00344\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_OSSL\_CMP\_PKISI\_sk\_type(sk))}}
+\DoxyCodeLine{00345\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_dup(sk)\ ((STACK\_OF(OSSL\_CMP\_PKISI)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_OSSL\_CMP\_PKISI\_sk\_type(sk)))}}
+\DoxyCodeLine{00346\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(OSSL\_CMP\_PKISI)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_PKISI\_copyfunc\_type(copyfunc),\ ossl\_check\_OSSL\_CMP\_PKISI\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00347\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_PKISI\_set\_cmp\_func(sk,\ cmp)\ ((sk\_OSSL\_CMP\_PKISI\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_OSSL\_CMP\_PKISI\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_PKISI\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_certrepmessage\_st\ OSSL\_CMP\_CERTREPMESSAGE;}
+\DoxyCodeLine{00350\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(OSSL\_CMP\_CERTREPMESSAGE,\ OSSL\_CMP\_CERTREPMESSAGE,\ OSSL\_CMP\_CERTREPMESSAGE)}
+\DoxyCodeLine{00351\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk))}}
+\DoxyCodeLine{00352\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_value(sk,\ idx)\ ((OSSL\_CMP\_CERTREPMESSAGE\ *)OPENSSL\_sk\_value(ossl\_check\_const\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00353\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_new(cmp)\ ((STACK\_OF(OSSL\_CMP\_CERTREPMESSAGE)\ *)OPENSSL\_sk\_new(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00354\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_new\_null()\ ((STACK\_OF(OSSL\_CMP\_CERTREPMESSAGE)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00355\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_new\_reserve(cmp,\ n)\ ((STACK\_OF(OSSL\_CMP\_CERTREPMESSAGE)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00356\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00357\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk))}}
+\DoxyCodeLine{00358\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk))}}
+\DoxyCodeLine{00359\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_delete(sk,\ i)\ ((OSSL\_CMP\_CERTREPMESSAGE\ *)OPENSSL\_sk\_delete(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00360\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_delete\_ptr(sk,\ ptr)\ ((OSSL\_CMP\_CERTREPMESSAGE\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_type(ptr)))}}
+\DoxyCodeLine{00361\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_type(ptr))}}
+\DoxyCodeLine{00362\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_type(ptr))}}
+\DoxyCodeLine{00363\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_pop(sk)\ ((OSSL\_CMP\_CERTREPMESSAGE\ *)OPENSSL\_sk\_pop(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk)))}}
+\DoxyCodeLine{00364\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_shift(sk)\ ((OSSL\_CMP\_CERTREPMESSAGE\ *)OPENSSL\_sk\_shift(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk)))}}
+\DoxyCodeLine{00365\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00366\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00367\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_set(sk,\ idx,\ ptr)\ ((OSSL\_CMP\_CERTREPMESSAGE\ *)OPENSSL\_sk\_set(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ (idx),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_type(ptr)))}}
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_type(ptr))}}
+\DoxyCodeLine{00369\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_type(ptr))}}
+\DoxyCodeLine{00370\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00371\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk))}}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk))}}
+\DoxyCodeLine{00373\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_dup(sk)\ ((STACK\_OF(OSSL\_CMP\_CERTREPMESSAGE)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk)))}}
+\DoxyCodeLine{00374\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(OSSL\_CMP\_CERTREPMESSAGE)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_copyfunc\_type(copyfunc),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00375\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTREPMESSAGE\_set\_cmp\_func(sk,\ cmp)\ ((sk\_OSSL\_CMP\_CERTREPMESSAGE\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTREPMESSAGE\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_pollrep\_st\ OSSL\_CMP\_POLLREP;}
+\DoxyCodeLine{00378\ \textcolor{keyword}{typedef}\ STACK\_OF(OSSL\_CMP\_POLLREP)\ OSSL\_CMP\_POLLREPCONTENT;}
+\DoxyCodeLine{00379\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_certresponse\_st\ OSSL\_CMP\_CERTRESPONSE;}
+\DoxyCodeLine{00380\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(OSSL\_CMP\_CERTRESPONSE,\ OSSL\_CMP\_CERTRESPONSE,\ OSSL\_CMP\_CERTRESPONSE)}
+\DoxyCodeLine{00381\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk))}}
+\DoxyCodeLine{00382\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_value(sk,\ idx)\ ((OSSL\_CMP\_CERTRESPONSE\ *)OPENSSL\_sk\_value(ossl\_check\_const\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00383\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_new(cmp)\ ((STACK\_OF(OSSL\_CMP\_CERTRESPONSE)\ *)OPENSSL\_sk\_new(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00384\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_new\_null()\ ((STACK\_OF(OSSL\_CMP\_CERTRESPONSE)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_new\_reserve(cmp,\ n)\ ((STACK\_OF(OSSL\_CMP\_CERTRESPONSE)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00386\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk))}}
+\DoxyCodeLine{00388\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk))}}
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_delete(sk,\ i)\ ((OSSL\_CMP\_CERTRESPONSE\ *)OPENSSL\_sk\_delete(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00390\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_delete\_ptr(sk,\ ptr)\ ((OSSL\_CMP\_CERTRESPONSE\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_type(ptr)))}}
+\DoxyCodeLine{00391\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_type(ptr))}}
+\DoxyCodeLine{00392\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_type(ptr))}}
+\DoxyCodeLine{00393\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_pop(sk)\ ((OSSL\_CMP\_CERTRESPONSE\ *)OPENSSL\_sk\_pop(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk)))}}
+\DoxyCodeLine{00394\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_shift(sk)\ ((OSSL\_CMP\_CERTRESPONSE\ *)OPENSSL\_sk\_shift(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk)))}}
+\DoxyCodeLine{00395\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00396\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00397\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_set(sk,\ idx,\ ptr)\ ((OSSL\_CMP\_CERTRESPONSE\ *)OPENSSL\_sk\_set(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ (idx),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_type(ptr)))}}
+\DoxyCodeLine{00398\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_type(ptr))}}
+\DoxyCodeLine{00399\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_type(ptr))}}
+\DoxyCodeLine{00400\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00401\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk))}}
+\DoxyCodeLine{00402\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk))}}
+\DoxyCodeLine{00403\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_dup(sk)\ ((STACK\_OF(OSSL\_CMP\_CERTRESPONSE)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk)))}}
+\DoxyCodeLine{00404\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(OSSL\_CMP\_CERTRESPONSE)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_copyfunc\_type(copyfunc),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00405\ \textcolor{preprocessor}{\#define\ sk\_OSSL\_CMP\_CERTRESPONSE\_set\_cmp\_func(sk,\ cmp)\ ((sk\_OSSL\_CMP\_CERTRESPONSE\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_sk\_type(sk),\ ossl\_check\_OSSL\_CMP\_CERTRESPONSE\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \textcolor{keyword}{typedef}\ STACK\_OF(ASN1\_UTF8STRING)\ OSSL\_CMP\_PKIFREETEXT;}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00410\ \textcolor{comment}{\ *\ function\ DECLARATIONS}}
+\DoxyCodeLine{00411\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \textcolor{comment}{/*\ from\ cmp\_asn.c\ */}}
+\DoxyCodeLine{00414\ OSSL\_CMP\_ITAV\ *OSSL\_CMP\_ITAV\_create(ASN1\_OBJECT\ *\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},\ ASN1\_TYPE\ *value);}
+\DoxyCodeLine{00415\ \textcolor{keywordtype}{void}\ OSSL\_CMP\_ITAV\_set0(OSSL\_CMP\_ITAV\ *itav,\ ASN1\_OBJECT\ *\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ASN1\_TYPE\ *value);}
+\DoxyCodeLine{00417\ ASN1\_OBJECT\ *OSSL\_CMP\_ITAV\_get0\_type(\textcolor{keyword}{const}\ OSSL\_CMP\_ITAV\ *itav);}
+\DoxyCodeLine{00418\ ASN1\_TYPE\ *OSSL\_CMP\_ITAV\_get0\_value(\textcolor{keyword}{const}\ OSSL\_CMP\_ITAV\ *itav);}
+\DoxyCodeLine{00419\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ITAV\_push0\_stack\_item(STACK\_OF(OSSL\_CMP\_ITAV)\ **sk\_p,}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_ITAV\ *itav);}
+\DoxyCodeLine{00421\ \textcolor{keywordtype}{void}\ OSSL\_CMP\_ITAV\_free(OSSL\_CMP\_ITAV\ *itav);}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00423\ OSSL\_CMP\_ITAV\ *OSSL\_CMP\_ITAV\_new0\_certProfile(STACK\_OF(ASN1\_UTF8STRING)}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *certProfile);}
+\DoxyCodeLine{00425\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ITAV\_get0\_certProfile(\textcolor{keyword}{const}\ OSSL\_CMP\_ITAV\ *itav,}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(ASN1\_UTF8STRING)\ **out);}
+\DoxyCodeLine{00427\ OSSL\_CMP\_ITAV\ *OSSL\_CMP\_ITAV\_new\_caCerts(\textcolor{keyword}{const}\ STACK\_OF(X509)\ *caCerts);}
+\DoxyCodeLine{00428\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ITAV\_get0\_caCerts(\textcolor{keyword}{const}\ OSSL\_CMP\_ITAV\ *itav,\ STACK\_OF(X509)\ **out);}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ OSSL\_CMP\_ITAV\ *OSSL\_CMP\_ITAV\_new\_rootCaCert(\textcolor{keyword}{const}\ X509\ *rootCaCert);}
+\DoxyCodeLine{00431\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ITAV\_get0\_rootCaCert(\textcolor{keyword}{const}\ OSSL\_CMP\_ITAV\ *itav,\ X509\ **out);}
+\DoxyCodeLine{00432\ OSSL\_CMP\_ITAV\ *OSSL\_CMP\_ITAV\_new\_rootCaKeyUpdate(\textcolor{keyword}{const}\ X509\ *newWithNew,}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\ *newWithOld,}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\ *oldWithNew);}
+\DoxyCodeLine{00435\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ITAV\_get0\_rootCaKeyUpdate(\textcolor{keyword}{const}\ OSSL\_CMP\_ITAV\ *itav,}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\ **newWithNew,}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\ **newWithOld,}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\ **oldWithNew);}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ OSSL\_CMP\_CRLSTATUS\ *OSSL\_CMP\_CRLSTATUS\_create(\textcolor{keyword}{const}\ X509\_CRL\ *crl,}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\ *cert,\ \textcolor{keywordtype}{int}\ only\_DN);}
+\DoxyCodeLine{00442\ OSSL\_CMP\_CRLSTATUS\ *OSSL\_CMP\_CRLSTATUS\_new1(\textcolor{keyword}{const}\ DIST\_POINT\_NAME\ *dpn,}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ GENERAL\_NAMES\ *issuer,}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_TIME\ *thisUpdate);}
+\DoxyCodeLine{00445\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CRLSTATUS\_get0(\textcolor{keyword}{const}\ OSSL\_CMP\_CRLSTATUS\ *crlstatus,}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DIST\_POINT\_NAME\ **dpn,\ GENERAL\_NAMES\ **issuer,}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ASN1\_TIME\ **thisUpdate);}
+\DoxyCodeLine{00448\ \textcolor{keywordtype}{void}\ OSSL\_CMP\_CRLSTATUS\_free(OSSL\_CMP\_CRLSTATUS\ *crlstatus);}
+\DoxyCodeLine{00449\ OSSL\_CMP\_ITAV}
+\DoxyCodeLine{00450\ *OSSL\_CMP\_ITAV\_new0\_crlStatusList(STACK\_OF(OSSL\_CMP\_CRLSTATUS)\ *crlStatusList);}
+\DoxyCodeLine{00451\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ITAV\_get0\_crlStatusList(\textcolor{keyword}{const}\ OSSL\_CMP\_ITAV\ *itav,}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(OSSL\_CMP\_CRLSTATUS)\ **out);}
+\DoxyCodeLine{00453\ OSSL\_CMP\_ITAV\ *OSSL\_CMP\_ITAV\_new\_crls(\textcolor{keyword}{const}\ X509\_CRL\ *crls);}
+\DoxyCodeLine{00454\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ITAV\_get0\_crls(\textcolor{keyword}{const}\ OSSL\_CMP\_ITAV\ *it,\ STACK\_OF(X509\_CRL)\ **out);}
+\DoxyCodeLine{00455\ OSSL\_CMP\_ITAV}
+\DoxyCodeLine{00456\ *OSSL\_CMP\_ITAV\_new0\_certReqTemplate(OSSL\_CRMF\_CERTTEMPLATE\ *certTemplate,}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_ATAVS\ *keySpec);}
+\DoxyCodeLine{00458\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ITAV\_get1\_certReqTemplate(\textcolor{keyword}{const}\ OSSL\_CMP\_ITAV\ *itav,}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CRMF\_CERTTEMPLATE\ **certTemplate,}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_ATAVS\ **keySpec);}
+\DoxyCodeLine{00461\ }
+\DoxyCodeLine{00462\ OSSL\_CMP\_ATAV\ *OSSL\_CMP\_ATAV\_create(ASN1\_OBJECT\ *\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},\ ASN1\_TYPE\ *value);}
+\DoxyCodeLine{00463\ \textcolor{keywordtype}{void}\ OSSL\_CMP\_ATAV\_set0(OSSL\_CMP\_ATAV\ *itav,\ ASN1\_OBJECT\ *\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ASN1\_TYPE\ *value);}
+\DoxyCodeLine{00465\ ASN1\_OBJECT\ *OSSL\_CMP\_ATAV\_get0\_type(\textcolor{keyword}{const}\ OSSL\_CMP\_ATAV\ *itav);}
+\DoxyCodeLine{00466\ ASN1\_TYPE\ *OSSL\_CMP\_ATAV\_get0\_value(\textcolor{keyword}{const}\ OSSL\_CMP\_ATAV\ *itav);}
+\DoxyCodeLine{00467\ OSSL\_CMP\_ATAV\ *OSSL\_CMP\_ATAV\_new\_algId(\textcolor{keyword}{const}\ X509\_ALGOR\ *alg);}
+\DoxyCodeLine{00468\ X509\_ALGOR\ *OSSL\_CMP\_ATAV\_get0\_algId(\textcolor{keyword}{const}\ OSSL\_CMP\_ATAV\ *atav);}
+\DoxyCodeLine{00469\ OSSL\_CMP\_ATAV\ *OSSL\_CMP\_ATAV\_new\_rsaKeyLen(\textcolor{keywordtype}{int}\ len);}
+\DoxyCodeLine{00470\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ATAV\_get\_rsaKeyLen(\textcolor{keyword}{const}\ OSSL\_CMP\_ATAV\ *atav);}
+\DoxyCodeLine{00471\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_ATAV\_push1(OSSL\_CMP\_ATAVS\ **sk\_p,\ \textcolor{keyword}{const}\ OSSL\_CMP\_ATAV\ *atav);}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \textcolor{keywordtype}{void}\ OSSL\_CMP\_MSG\_free(OSSL\_CMP\_MSG\ *msg);}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \textcolor{comment}{/*\ from\ cmp\_ctx.c\ */}}
+\DoxyCodeLine{00476\ OSSL\_CMP\_CTX\ *OSSL\_CMP\_CTX\_new(OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00477\ \textcolor{keywordtype}{void}\ OSSL\_CMP\_CTX\_free(OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00478\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_reinit(OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00479\ OSSL\_LIB\_CTX\ *OSSL\_CMP\_CTX\_get0\_libctx(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00480\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *OSSL\_CMP\_CTX\_get0\_propq(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00481\ \textcolor{comment}{/*\ CMP\ general\ options:\ */}}
+\DoxyCodeLine{00482\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_LOG\_VERBOSITY\ 0}}
+\DoxyCodeLine{00483\ \textcolor{comment}{/*\ CMP\ transfer\ options:\ */}}
+\DoxyCodeLine{00484\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_KEEP\_ALIVE\ \ \ \ 10}}
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_MSG\_TIMEOUT\ \ \ 11}}
+\DoxyCodeLine{00486\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_TOTAL\_TIMEOUT\ 12}}
+\DoxyCodeLine{00487\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_USE\_TLS\ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00488\ \textcolor{comment}{/*\ CMP\ request\ options:\ */}}
+\DoxyCodeLine{00489\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_VALIDITY\_DAYS\ 20}}
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_SUBJECTALTNAME\_NODEFAULT\ 21}}
+\DoxyCodeLine{00491\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_SUBJECTALTNAME\_CRITICAL\ 22}}
+\DoxyCodeLine{00492\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_POLICIES\_CRITICAL\ 23}}
+\DoxyCodeLine{00493\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_POPO\_METHOD\ 24}}
+\DoxyCodeLine{00494\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_IMPLICIT\_CONFIRM\ 25}}
+\DoxyCodeLine{00495\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_DISABLE\_CONFIRM\ 26}}
+\DoxyCodeLine{00496\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_REVOCATION\_REASON\ 27}}
+\DoxyCodeLine{00497\ \textcolor{comment}{/*\ CMP\ protection\ options:\ */}}
+\DoxyCodeLine{00498\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_UNPROTECTED\_SEND\ 30}}
+\DoxyCodeLine{00499\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_UNPROTECTED\_ERRORS\ 31}}
+\DoxyCodeLine{00500\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_OWF\_ALGNID\ 32}}
+\DoxyCodeLine{00501\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_MAC\_ALGNID\ 33}}
+\DoxyCodeLine{00502\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_DIGEST\_ALGNID\ 34}}
+\DoxyCodeLine{00503\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_IGNORE\_KEYUSAGE\ 35}}
+\DoxyCodeLine{00504\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_PERMIT\_TA\_IN\_EXTRACERTS\_FOR\_IR\ 36}}
+\DoxyCodeLine{00505\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_OPT\_NO\_CACHE\_EXTRACERTS\ 37}}
+\DoxyCodeLine{00506\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set\_option(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ opt,\ \textcolor{keywordtype}{int}\ val);}
+\DoxyCodeLine{00507\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_get\_option(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ opt);}
+\DoxyCodeLine{00508\ \textcolor{comment}{/*\ CMP-\/specific\ callback\ for\ logging\ and\ outputting\ the\ error\ queue:\ */}}
+\DoxyCodeLine{00509\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set\_log\_cb(OSSL\_CMP\_CTX\ *ctx,\ OSSL\_CMP\_log\_cb\_t\ cb);}
+\DoxyCodeLine{00510\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_set\_log\_verbosity(ctx,\ level)\ \(\backslash\)}}
+\DoxyCodeLine{00511\ \textcolor{preprocessor}{\ \ \ \ OSSL\_CMP\_CTX\_set\_option(ctx,\ OSSL\_CMP\_OPT\_LOG\_VERBOSITY,\ level)}}
+\DoxyCodeLine{00512\ \textcolor{keywordtype}{void}\ OSSL\_CMP\_CTX\_print\_errors(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00513\ \textcolor{comment}{/*\ message\ transfer:\ */}}
+\DoxyCodeLine{00514\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_serverPath(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *path);}
+\DoxyCodeLine{00515\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_server(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *address);}
+\DoxyCodeLine{00516\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set\_serverPort(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ port);}
+\DoxyCodeLine{00517\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_proxy(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00518\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_no\_proxy(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *names);}
+\DoxyCodeLine{00519\ \textcolor{preprocessor}{\#\ \ \ ifndef\ OPENSSL\_NO\_HTTP}}
+\DoxyCodeLine{00520\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set\_http\_cb(OSSL\_CMP\_CTX\ *ctx,\ OSSL\_HTTP\_bio\_cb\_t\ cb);}
+\DoxyCodeLine{00521\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set\_http\_cb\_arg(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{void}\ *arg);}
+\DoxyCodeLine{00522\ \textcolor{keywordtype}{void}\ *OSSL\_CMP\_CTX\_get\_http\_cb\_arg(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00523\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00524\ \textcolor{keyword}{typedef}\ OSSL\_CMP\_MSG\ *(*OSSL\_CMP\_transfer\_cb\_t)\ (OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req);}
+\DoxyCodeLine{00526\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set\_transfer\_cb(OSSL\_CMP\_CTX\ *ctx,\ OSSL\_CMP\_transfer\_cb\_t\ cb);}
+\DoxyCodeLine{00527\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set\_transfer\_cb\_arg(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{void}\ *arg);}
+\DoxyCodeLine{00528\ \textcolor{keywordtype}{void}\ *OSSL\_CMP\_CTX\_get\_transfer\_cb\_arg(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00529\ \textcolor{comment}{/*\ server\ authentication:\ */}}
+\DoxyCodeLine{00530\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_srvCert(OSSL\_CMP\_CTX\ *ctx,\ X509\ *cert);}
+\DoxyCodeLine{00531\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_expected\_sender(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ X509\_NAME\ *name);}
+\DoxyCodeLine{00532\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set0\_trustedStore(OSSL\_CMP\_CTX\ *ctx,\ X509\_STORE\ *store);}
+\DoxyCodeLine{00533\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_set0\_trusted\ OSSL\_CMP\_CTX\_set0\_trustedStore}}
+\DoxyCodeLine{00534\ X509\_STORE\ *OSSL\_CMP\_CTX\_get0\_trustedStore(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00535\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CTX\_get0\_trusted\ OSSL\_CMP\_CTX\_get0\_trustedStore}}
+\DoxyCodeLine{00536\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_untrusted(OSSL\_CMP\_CTX\ *ctx,\ STACK\_OF(X509)\ *certs);}
+\DoxyCodeLine{00537\ STACK\_OF(X509)\ *OSSL\_CMP\_CTX\_get0\_untrusted(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00538\ \textcolor{comment}{/*\ client\ authentication:\ */}}
+\DoxyCodeLine{00539\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_cert(OSSL\_CMP\_CTX\ *ctx,\ X509\ *cert);}
+\DoxyCodeLine{00540\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_build\_cert\_chain(OSSL\_CMP\_CTX\ *ctx,\ X509\_STORE\ *own\_trusted,}
+\DoxyCodeLine{00541\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(X509)\ *candidates);}
+\DoxyCodeLine{00542\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_pkey(OSSL\_CMP\_CTX\ *ctx,\ EVP\_PKEY\ *pkey);}
+\DoxyCodeLine{00543\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_referenceValue(OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *ref,\ \textcolor{keywordtype}{int}\ len);}
+\DoxyCodeLine{00545\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_secretValue(OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *sec,\ \textcolor{keywordtype}{int}\ len);}
+\DoxyCodeLine{00547\ \textcolor{comment}{/*\ CMP\ message\ header\ and\ extra\ certificates:\ */}}
+\DoxyCodeLine{00548\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_recipient(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ X509\_NAME\ *name);}
+\DoxyCodeLine{00549\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_push0\_geninfo\_ITAV(OSSL\_CMP\_CTX\ *ctx,\ OSSL\_CMP\_ITAV\ *itav);}
+\DoxyCodeLine{00550\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_reset\_geninfo\_ITAVs(OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00551\ STACK\_OF(OSSL\_CMP\_ITAV)}
+\DoxyCodeLine{00552\ \ \ \ \ *OSSL\_CMP\_CTX\_get0\_geninfo\_ITAVs(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00553\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_extraCertsOut(OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(X509)\ *extraCertsOut);}
+\DoxyCodeLine{00555\ \textcolor{comment}{/*\ certificate\ template:\ */}}
+\DoxyCodeLine{00556\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set0\_newPkey(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ priv,\ EVP\_PKEY\ *pkey);}
+\DoxyCodeLine{00557\ EVP\_PKEY\ *OSSL\_CMP\_CTX\_get0\_newPkey(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ priv);}
+\DoxyCodeLine{00558\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_issuer(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ X509\_NAME\ *name);}
+\DoxyCodeLine{00559\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_serialNumber(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *sn);}
+\DoxyCodeLine{00560\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_subjectName(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ X509\_NAME\ *name);}
+\DoxyCodeLine{00561\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_push1\_subjectAltName(OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ GENERAL\_NAME\ *name);}
+\DoxyCodeLine{00563\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set0\_reqExtensions(OSSL\_CMP\_CTX\ *ctx,\ X509\_EXTENSIONS\ *exts);}
+\DoxyCodeLine{00564\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_reqExtensions\_have\_SAN(OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00565\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_push0\_policy(OSSL\_CMP\_CTX\ *ctx,\ POLICYINFO\ *pinfo);}
+\DoxyCodeLine{00566\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_oldCert(OSSL\_CMP\_CTX\ *ctx,\ X509\ *cert);}
+\DoxyCodeLine{00567\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_p10CSR(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ X509\_REQ\ *csr);}
+\DoxyCodeLine{00568\ \textcolor{comment}{/*\ misc\ body\ contents:\ */}}
+\DoxyCodeLine{00569\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_push0\_genm\_ITAV(OSSL\_CMP\_CTX\ *ctx,\ OSSL\_CMP\_ITAV\ *itav);}
+\DoxyCodeLine{00570\ \textcolor{comment}{/*\ certificate\ confirmation:\ */}}
+\DoxyCodeLine{00571\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_CMP\_certConf\_cb\_t)\ (OSSL\_CMP\_CTX\ *ctx,\ X509\ *cert,}
+\DoxyCodeLine{00572\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fail\_info,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **txt);}
+\DoxyCodeLine{00573\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_certConf\_cb(OSSL\_CMP\_CTX\ *ctx,\ X509\ *cert,\ \textcolor{keywordtype}{int}\ fail\_info,}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **text);}
+\DoxyCodeLine{00575\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set\_certConf\_cb(OSSL\_CMP\_CTX\ *ctx,\ OSSL\_CMP\_certConf\_cb\_t\ cb);}
+\DoxyCodeLine{00576\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set\_certConf\_cb\_arg(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{void}\ *arg);}
+\DoxyCodeLine{00577\ \textcolor{keywordtype}{void}\ *OSSL\_CMP\_CTX\_get\_certConf\_cb\_arg(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00578\ \textcolor{comment}{/*\ result\ fetching:\ */}}
+\DoxyCodeLine{00579\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_get\_status(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00580\ OSSL\_CMP\_PKIFREETEXT\ *OSSL\_CMP\_CTX\_get0\_statusString(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00581\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_get\_failInfoCode(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00582\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_PKISI\_BUFLEN\ 1024}}
+\DoxyCodeLine{00583\ X509\ *OSSL\_CMP\_CTX\_get0\_validatedSrvCert(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00584\ X509\ *OSSL\_CMP\_CTX\_get0\_newCert(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00585\ STACK\_OF(X509)\ *OSSL\_CMP\_CTX\_get1\_newChain(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00586\ STACK\_OF(X509)\ *OSSL\_CMP\_CTX\_get1\_caPubs(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00587\ STACK\_OF(X509)\ *OSSL\_CMP\_CTX\_get1\_extraCertsIn(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00588\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_transactionID(OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00589\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_OCTET\_STRING\ *\textcolor{keywordtype}{id});}
+\DoxyCodeLine{00590\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_CTX\_set1\_senderNonce(OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_OCTET\_STRING\ *nonce);}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \textcolor{comment}{/*\ from\ cmp\_status.c\ */}}
+\DoxyCodeLine{00594\ \textcolor{keywordtype}{char}\ *OSSL\_CMP\_CTX\_snprint\_PKIStatus(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{char}\ *buf,}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ bufsize);}
+\DoxyCodeLine{00596\ \textcolor{keywordtype}{char}\ *OSSL\_CMP\_snprint\_PKIStatusInfo(\textcolor{keyword}{const}\ OSSL\_CMP\_PKISI\ *statusInfo,}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ bufsize);}
+\DoxyCodeLine{00598\ OSSL\_CMP\_PKISI\ *}
+\DoxyCodeLine{00599\ OSSL\_CMP\_STATUSINFO\_new(\textcolor{keywordtype}{int}\ status,\ \textcolor{keywordtype}{int}\ fail\_info,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *text);}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ \textcolor{comment}{/*\ from\ cmp\_hdr.c\ */}}
+\DoxyCodeLine{00602\ ASN1\_OCTET\_STRING\ *OSSL\_CMP\_HDR\_get0\_transactionID(\textcolor{keyword}{const}}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_PKIHEADER\ *hdr);}
+\DoxyCodeLine{00604\ ASN1\_OCTET\_STRING\ *OSSL\_CMP\_HDR\_get0\_recipNonce(\textcolor{keyword}{const}\ OSSL\_CMP\_PKIHEADER\ *hdr);}
+\DoxyCodeLine{00605\ STACK\_OF(OSSL\_CMP\_ITAV)}
+\DoxyCodeLine{00606\ \ \ \ \ *OSSL\_CMP\_HDR\_get0\_geninfo\_ITAVs(\textcolor{keyword}{const}\ OSSL\_CMP\_PKIHEADER\ *hdr);}
+\DoxyCodeLine{00607\ }
+\DoxyCodeLine{00608\ \textcolor{comment}{/*\ from\ cmp\_msg.c\ */}}
+\DoxyCodeLine{00609\ OSSL\_CMP\_PKIHEADER\ *OSSL\_CMP\_MSG\_get0\_header(\textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *msg);}
+\DoxyCodeLine{00610\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_MSG\_get\_bodytype(\textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *msg);}
+\DoxyCodeLine{00611\ X509\_PUBKEY\ *OSSL\_CMP\_MSG\_get0\_certreq\_publickey(\textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *msg);}
+\DoxyCodeLine{00612\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_MSG\_update\_transactionID(OSSL\_CMP\_CTX\ *ctx,\ OSSL\_CMP\_MSG\ *msg);}
+\DoxyCodeLine{00613\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_MSG\_update\_recipNonce(OSSL\_CMP\_CTX\ *ctx,\ OSSL\_CMP\_MSG\ *msg);}
+\DoxyCodeLine{00614\ OSSL\_CRMF\_MSG\ *OSSL\_CMP\_CTX\_setup\_CRM(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ for\_KUR,\ \textcolor{keywordtype}{int}\ rid);}
+\DoxyCodeLine{00615\ OSSL\_CMP\_MSG\ *OSSL\_CMP\_MSG\_read(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ OSSL\_LIB\_CTX\ *libctx,}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00617\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_MSG\_write(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *msg);}
+\DoxyCodeLine{00618\ OSSL\_CMP\_MSG\ *d2i\_OSSL\_CMP\_MSG\_bio(BIO\ *bio,\ OSSL\_CMP\_MSG\ **msg);}
+\DoxyCodeLine{00619\ \textcolor{keywordtype}{int}\ i2d\_OSSL\_CMP\_MSG\_bio(BIO\ *bio,\ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *msg);}
+\DoxyCodeLine{00620\ }
+\DoxyCodeLine{00621\ \textcolor{comment}{/*\ from\ cmp\_vfy.c\ */}}
+\DoxyCodeLine{00622\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_validate\_msg(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *msg);}
+\DoxyCodeLine{00623\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_validate\_cert\_path(\textcolor{keyword}{const}\ OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\ *trusted\_store,\ X509\ *cert);}
+\DoxyCodeLine{00625\ }
+\DoxyCodeLine{00626\ \textcolor{comment}{/*\ from\ cmp\_http.c\ */}}
+\DoxyCodeLine{00627\ \textcolor{preprocessor}{\#\ \ \ ifndef\ OPENSSL\_NO\_HTTP}}
+\DoxyCodeLine{00628\ OSSL\_CMP\_MSG\ *OSSL\_CMP\_MSG\_http\_perform(OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req);}
+\DoxyCodeLine{00630\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00631\ }
+\DoxyCodeLine{00632\ \textcolor{comment}{/*\ from\ cmp\_server.c\ */}}
+\DoxyCodeLine{00633\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_cmp\_srv\_ctx\_st\ OSSL\_CMP\_SRV\_CTX;}
+\DoxyCodeLine{00634\ OSSL\_CMP\_MSG\ *OSSL\_CMP\_SRV\_process\_request(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req);}
+\DoxyCodeLine{00636\ OSSL\_CMP\_MSG\ *\ OSSL\_CMP\_CTX\_server\_perform(OSSL\_CMP\_CTX\ *client\_ctx,}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req);}
+\DoxyCodeLine{00638\ OSSL\_CMP\_SRV\_CTX\ *OSSL\_CMP\_SRV\_CTX\_new(OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00639\ \textcolor{keywordtype}{void}\ OSSL\_CMP\_SRV\_CTX\_free(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx);}
+\DoxyCodeLine{00640\ \textcolor{keyword}{typedef}\ OSSL\_CMP\_PKISI\ *(*OSSL\_CMP\_SRV\_cert\_request\_cb\_t)}
+\DoxyCodeLine{00641\ \ \ \ \ (OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,\ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req,\ \textcolor{keywordtype}{int}\ certReqId,}
+\DoxyCodeLine{00642\ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CRMF\_MSG\ *crm,\ \textcolor{keyword}{const}\ X509\_REQ\ *p10cr,}
+\DoxyCodeLine{00643\ \ \ \ \ \ X509\ **certOut,\ STACK\_OF(X509)\ **chainOut,\ STACK\_OF(X509)\ **caPubs);}
+\DoxyCodeLine{00644\ \textcolor{keyword}{typedef}\ OSSL\_CMP\_PKISI\ *(*OSSL\_CMP\_SRV\_rr\_cb\_t)(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req,}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *issuer,}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *serial);}
+\DoxyCodeLine{00648\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_CMP\_SRV\_genm\_cb\_t)(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req,}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ STACK\_OF(OSSL\_CMP\_ITAV)\ *in,}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(OSSL\_CMP\_ITAV)\ **out);}
+\DoxyCodeLine{00652\ \textcolor{keyword}{typedef}\ void\ (*OSSL\_CMP\_SRV\_error\_cb\_t)(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00653\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req,}
+\DoxyCodeLine{00654\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_PKISI\ *statusInfo,}
+\DoxyCodeLine{00655\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *errorCode,}
+\DoxyCodeLine{00656\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_PKIFREETEXT\ *errDetails);}
+\DoxyCodeLine{00657\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_CMP\_SRV\_certConf\_cb\_t)(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00658\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req,}
+\DoxyCodeLine{00659\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ certReqId,}
+\DoxyCodeLine{00660\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_OCTET\_STRING\ *certHash,}
+\DoxyCodeLine{00661\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_PKISI\ *si);}
+\DoxyCodeLine{00662\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_CMP\_SRV\_pollReq\_cb\_t)(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req,\ \textcolor{keywordtype}{int}\ certReqId,}
+\DoxyCodeLine{00664\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_MSG\ **certReq,}
+\DoxyCodeLine{00665\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int64\_t\ *check\_after);}
+\DoxyCodeLine{00666\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_SRV\_CTX\_init(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,\ \textcolor{keywordtype}{void}\ *custom\_ctx,}
+\DoxyCodeLine{00667\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_SRV\_cert\_request\_cb\_t\ process\_cert\_request,}
+\DoxyCodeLine{00668\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_SRV\_rr\_cb\_t\ process\_rr,}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_SRV\_genm\_cb\_t\ process\_genm,}
+\DoxyCodeLine{00670\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_SRV\_error\_cb\_t\ process\_error,}
+\DoxyCodeLine{00671\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_SRV\_certConf\_cb\_t\ process\_certConf,}
+\DoxyCodeLine{00672\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_SRV\_pollReq\_cb\_t\ process\_pollReq);}
+\DoxyCodeLine{00673\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_CMP\_SRV\_delayed\_delivery\_cb\_t)(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00674\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CMP\_MSG\ *req);}
+\DoxyCodeLine{00675\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_CMP\_SRV\_clean\_transaction\_cb\_t)(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00676\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_OCTET\_STRING\ *id);}
+\DoxyCodeLine{00677\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_SRV\_CTX\_init\_trans(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00678\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_SRV\_delayed\_delivery\_cb\_t\ delay,}
+\DoxyCodeLine{00679\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_SRV\_clean\_transaction\_cb\_t\ clean);}
+\DoxyCodeLine{00680\ OSSL\_CMP\_CTX\ *OSSL\_CMP\_SRV\_CTX\_get0\_cmp\_ctx(\textcolor{keyword}{const}\ OSSL\_CMP\_SRV\_CTX\ *srv\_ctx);}
+\DoxyCodeLine{00681\ \textcolor{keywordtype}{void}\ *OSSL\_CMP\_SRV\_CTX\_get0\_custom\_ctx(\textcolor{keyword}{const}\ OSSL\_CMP\_SRV\_CTX\ *srv\_ctx);}
+\DoxyCodeLine{00682\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_SRV\_CTX\_set\_send\_unprotected\_errors(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ val);}
+\DoxyCodeLine{00684\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_SRV\_CTX\_set\_accept\_unprotected(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,\ \textcolor{keywordtype}{int}\ val);}
+\DoxyCodeLine{00685\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_SRV\_CTX\_set\_accept\_raverified(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,\ \textcolor{keywordtype}{int}\ val);}
+\DoxyCodeLine{00686\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_SRV\_CTX\_set\_grant\_implicit\_confirm(OSSL\_CMP\_SRV\_CTX\ *srv\_ctx,}
+\DoxyCodeLine{00687\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ val);}
+\DoxyCodeLine{00688\ }
+\DoxyCodeLine{00689\ \textcolor{comment}{/*\ from\ cmp\_client.c\ */}}
+\DoxyCodeLine{00690\ X509\ *OSSL\_CMP\_exec\_certreq(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ req\_type,}
+\DoxyCodeLine{00691\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CRMF\_MSG\ *crm);}
+\DoxyCodeLine{00692\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_IR\ \ \ \ 0}}
+\DoxyCodeLine{00693\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_CR\ \ \ \ 2}}
+\DoxyCodeLine{00694\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_P10CR\ 4}}
+\DoxyCodeLine{00695\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_KUR\ \ \ 7}}
+\DoxyCodeLine{00696\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_GENM\ \ 21}}
+\DoxyCodeLine{00697\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_ERROR\ 23}}
+\DoxyCodeLine{00698\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_exec\_IR\_ses(ctx)\ \(\backslash\)}}
+\DoxyCodeLine{00699\ \textcolor{preprocessor}{\ \ \ \ OSSL\_CMP\_exec\_certreq(ctx,\ OSSL\_CMP\_IR,\ NULL)}}
+\DoxyCodeLine{00700\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_exec\_CR\_ses(ctx)\ \(\backslash\)}}
+\DoxyCodeLine{00701\ \textcolor{preprocessor}{\ \ \ \ OSSL\_CMP\_exec\_certreq(ctx,\ OSSL\_CMP\_CR,\ NULL)}}
+\DoxyCodeLine{00702\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_exec\_P10CR\_ses(ctx)\ \(\backslash\)}}
+\DoxyCodeLine{00703\ \textcolor{preprocessor}{\ \ \ \ OSSL\_CMP\_exec\_certreq(ctx,\ OSSL\_CMP\_P10CR,\ NULL)}}
+\DoxyCodeLine{00704\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_CMP\_exec\_KUR\_ses(ctx)\ \(\backslash\)}}
+\DoxyCodeLine{00705\ \textcolor{preprocessor}{\ \ \ \ OSSL\_CMP\_exec\_certreq(ctx,\ OSSL\_CMP\_KUR,\ NULL)}}
+\DoxyCodeLine{00706\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_try\_certreq(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ req\_type,}
+\DoxyCodeLine{00707\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_CRMF\_MSG\ *crm,\ \textcolor{keywordtype}{int}\ *checkAfter);}
+\DoxyCodeLine{00708\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_exec\_RR\_ses(OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00709\ STACK\_OF(OSSL\_CMP\_ITAV)\ *OSSL\_CMP\_exec\_GENM\_ses(OSSL\_CMP\_CTX\ *ctx);}
+\DoxyCodeLine{00710\ }
+\DoxyCodeLine{00711\ \textcolor{comment}{/*\ from\ cmp\_genm.c\ */}}
+\DoxyCodeLine{00712\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_get1\_caCerts(OSSL\_CMP\_CTX\ *ctx,\ STACK\_OF(X509)\ **out);}
+\DoxyCodeLine{00713\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_get1\_rootCaKeyUpdate(OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00714\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\ *oldWithOld,\ X509\ **newWithNew,}
+\DoxyCodeLine{00715\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\ **newWithOld,\ X509\ **oldWithNew);}
+\DoxyCodeLine{00716\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_get1\_crlUpdate(OSSL\_CMP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ X509\ *crlcert,}
+\DoxyCodeLine{00717\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_CRL\ *last\_crl,}
+\DoxyCodeLine{00718\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_CRL\ **crl);}
+\DoxyCodeLine{00719\ \textcolor{keywordtype}{int}\ OSSL\_CMP\_get1\_certReqTemplate(OSSL\_CMP\_CTX\ *ctx,}
+\DoxyCodeLine{00720\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CRMF\_CERTTEMPLATE\ **certTemplate,}
+\DoxyCodeLine{00721\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CMP\_ATAVS\ **keySpec);}
+\DoxyCodeLine{00722\ }
+\DoxyCodeLine{00723\ \textcolor{preprocessor}{\#\ \ ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00724\ \}}
+\DoxyCodeLine{00725\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00726\ \textcolor{preprocessor}{\#\ endif\ }\textcolor{comment}{/*\ !defined(OPENSSL\_NO\_CMP)\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00727\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !defined(OPENSSL\_CMP\_H)\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

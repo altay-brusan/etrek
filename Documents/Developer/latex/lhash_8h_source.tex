@@ -1,0 +1,404 @@
+\doxysection{lhash.\+h}
+\hypertarget{lhash_8h_source}{}\label{lhash_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/lhash.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/lhash.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Copyright\ 1995-\/2024\ The\ OpenSSL\ Project\ Authors.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Licensed\ under\ the\ Apache\ License\ 2.0\ (the\ "{}License"{}).\ \ You\ may\ not\ use}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ this\ file\ except\ in\ compliance\ with\ the\ License.\ \ You\ can\ obtain\ a\ copy}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ in\ the\ file\ LICENSE\ in\ the\ source\ distribution\ or\ at}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ https://www.openssl.org/source/license.html}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *\ Header\ for\ dynamic\ hash\ table\ routines\ Author\ -\/\ Eric\ Young}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_LHASH\_H}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#\ define\ OPENSSL\_LHASH\_H}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#\ pragma\ once}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#\ include\ <openssl/macros.h>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#\ \ define\ HEADER\_LHASH\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#\ include\ <openssl/e\_os2.h>}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#\ include\ <openssl/bio.h>}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_STDIO}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#\ \ include\ <stdio.h>}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }lhash\_node\_st\ OPENSSL\_LH\_NODE;}
+\DoxyCodeLine{00036\ \textcolor{keyword}{typedef}\ int\ (*OPENSSL\_LH\_COMPFUNC)\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00037\ \textcolor{keyword}{typedef}\ int\ (*OPENSSL\_LH\_COMPFUNCTHUNK)\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ OPENSSL\_LH\_COMPFUNC\ cfn);}
+\DoxyCodeLine{00038\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ long\ (*OPENSSL\_LH\_HASHFUNC)\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00039\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ long\ (*OPENSSL\_LH\_HASHFUNCTHUNK)\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *,\ OPENSSL\_LH\_HASHFUNC\ hfn);}
+\DoxyCodeLine{00040\ \textcolor{keyword}{typedef}\ void\ (*OPENSSL\_LH\_DOALL\_FUNC)\ (\textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00041\ \textcolor{keyword}{typedef}\ void\ (*OPENSSL\_LH\_DOALL\_FUNC\_THUNK)\ (\textcolor{keywordtype}{void}\ *,\ OPENSSL\_LH\_DOALL\_FUNC\ doall);}
+\DoxyCodeLine{00042\ \textcolor{keyword}{typedef}\ void\ (*OPENSSL\_LH\_DOALL\_FUNCARG)\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00043\ \textcolor{keyword}{typedef}\ void\ (*OPENSSL\_LH\_DOALL\_FUNCARG\_THUNK)\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{void}\ *,\ OPENSSL\_LH\_DOALL\_FUNCARG\ doall);}
+\DoxyCodeLine{00044\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }lhash\_st\ OPENSSL\_LHASH;}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ Macros\ for\ declaring\ and\ implementing\ type-\/safe\ wrappers\ for\ LHASH}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ callbacks.\ This\ way,\ callbacks\ can\ be\ provided\ to\ LHASH\ structures\ without}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ function\ pointer\ casting\ and\ the\ macro-\/defined\ callbacks\ provide}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ per-\/variable\ casting\ before\ deferring\ to\ the\ underlying\ type-\/specific}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *\ callbacks.\ NB:\ It\ is\ possible\ to\ place\ a\ "{}static"{}\ in\ front\ of\ both\ the}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ DECLARE\ and\ IMPLEMENT\ macros\ if\ the\ functions\ are\ strictly\ internal.}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{comment}{/*\ First:\ "{}hash"{}\ functions\ */}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#\ define\ DECLARE\_LHASH\_HASH\_FN(name,\ o\_type)\ \(\backslash\)}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ unsigned\ long\ name\#\#\_LHASH\_HASH(const\ void\ *);}}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#\ define\ IMPLEMENT\_LHASH\_HASH\_FN(name,\ o\_type)\ \(\backslash\)}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ unsigned\ long\ name\#\#\_LHASH\_HASH(const\ void\ *arg)\ \{\ \(\backslash\)}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ o\_type\ *a\ =\ arg;\ \(\backslash\)}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ name\#\#\_hash(a);\ \}}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#\ define\ LHASH\_HASH\_FN(name)\ name\#\#\_LHASH\_HASH}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{comment}{/*\ Second:\ "{}compare"{}\ functions\ */}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#\ define\ DECLARE\_LHASH\_COMP\_FN(name,\ o\_type)\ \(\backslash\)}}
+\DoxyCodeLine{00066\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ int\ name\#\#\_LHASH\_COMP(const\ void\ *,\ const\ void\ *);}}
+\DoxyCodeLine{00067\ \textcolor{preprocessor}{\#\ define\ IMPLEMENT\_LHASH\_COMP\_FN(name,\ o\_type)\ \(\backslash\)}}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ int\ name\#\#\_LHASH\_COMP(const\ void\ *arg1,\ const\ void\ *arg2)\ \{\ \(\backslash\)}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ o\_type\ *a\ =\ arg1;\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ const\ o\_type\ *b\ =\ arg2;\ \(\backslash\)}}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ name\#\#\_cmp(a,b);\ \}}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#\ define\ LHASH\_COMP\_FN(name)\ name\#\#\_LHASH\_COMP}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{comment}{/*\ Fourth:\ "{}doall\_arg"{}\ functions\ */}}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\#\ define\ DECLARE\_LHASH\_DOALL\_ARG\_FN(name,\ o\_type,\ a\_type)\ \(\backslash\)}}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ void\ name\#\#\_LHASH\_DOALL\_ARG(void\ *,\ void\ *);}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#\ define\ IMPLEMENT\_LHASH\_DOALL\_ARG\_FN(name,\ o\_type,\ a\_type)\ \(\backslash\)}}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ void\ name\#\#\_LHASH\_DOALL\_ARG(void\ *arg1,\ void\ *arg2)\ \{\ \(\backslash\)}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ o\_type\ *a\ =\ arg1;\ \(\backslash\)}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ a\_type\ *b\ =\ arg2;\ \(\backslash\)}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ name\#\#\_doall\_arg(a,\ b);\ \}}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#\ define\ LHASH\_DOALL\_ARG\_FN(name)\ name\#\#\_LHASH\_DOALL\_ARG}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#\ define\ LH\_LOAD\_MULT\ \ \ \ 256}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{keywordtype}{int}\ OPENSSL\_LH\_error(OPENSSL\_LHASH\ *lh);}
+\DoxyCodeLine{00088\ OPENSSL\_LHASH\ *OPENSSL\_LH\_new(OPENSSL\_LH\_HASHFUNC\ \doxymbox{\hyperlink{classvtk_en_sight_gold_combined_reader_1_1h}{h}},\ OPENSSL\_LH\_COMPFUNC\ c);}
+\DoxyCodeLine{00089\ OPENSSL\_LHASH\ *OPENSSL\_LH\_set\_thunks(OPENSSL\_LHASH\ *lh,}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OPENSSL\_LH\_HASHFUNCTHUNK\ hw,}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OPENSSL\_LH\_COMPFUNCTHUNK\ cw,}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OPENSSL\_LH\_DOALL\_FUNC\_THUNK\ daw,}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OPENSSL\_LH\_DOALL\_FUNCARG\_THUNK\ daaw);}
+\DoxyCodeLine{00094\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_free(OPENSSL\_LHASH\ *lh);}
+\DoxyCodeLine{00095\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_flush(OPENSSL\_LHASH\ *lh);}
+\DoxyCodeLine{00096\ \textcolor{keywordtype}{void}\ *OPENSSL\_LH\_insert(OPENSSL\_LHASH\ *lh,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00097\ \textcolor{keywordtype}{void}\ *OPENSSL\_LH\_delete(OPENSSL\_LHASH\ *lh,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00098\ \textcolor{keywordtype}{void}\ *OPENSSL\_LH\_retrieve(OPENSSL\_LHASH\ *lh,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00099\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_doall(OPENSSL\_LHASH\ *lh,\ OPENSSL\_LH\_DOALL\_FUNC\ func);}
+\DoxyCodeLine{00100\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_doall\_arg(OPENSSL\_LHASH\ *lh,}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OPENSSL\_LH\_DOALL\_FUNCARG\ func,\ \textcolor{keywordtype}{void}\ *arg);}
+\DoxyCodeLine{00102\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_doall\_arg\_thunk(OPENSSL\_LHASH\ *lh,}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OPENSSL\_LH\_DOALL\_FUNCARG\_THUNK\ daaw,}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OPENSSL\_LH\_DOALL\_FUNCARG\ fn,\ \textcolor{keywordtype}{void}\ *arg);}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ OPENSSL\_LH\_strhash(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *c);}
+\DoxyCodeLine{00107\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ OPENSSL\_LH\_num\_items(\textcolor{keyword}{const}\ OPENSSL\_LHASH\ *lh);}
+\DoxyCodeLine{00108\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ OPENSSL\_LH\_get\_down\_load(\textcolor{keyword}{const}\ OPENSSL\_LHASH\ *lh);}
+\DoxyCodeLine{00109\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_set\_down\_load(OPENSSL\_LHASH\ *lh,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ down\_load);}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_STDIO}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_1}}
+\DoxyCodeLine{00113\ OSSL\_DEPRECATEDIN\_3\_1\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_stats(\textcolor{keyword}{const}\ OPENSSL\_LHASH\ *lh,\ FILE\ *fp);}
+\DoxyCodeLine{00114\ OSSL\_DEPRECATEDIN\_3\_1\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_node\_stats(\textcolor{keyword}{const}\ OPENSSL\_LHASH\ *lh,\ FILE\ *fp);}
+\DoxyCodeLine{00115\ OSSL\_DEPRECATEDIN\_3\_1\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_node\_usage\_stats(\textcolor{keyword}{const}\ OPENSSL\_LHASH\ *lh,\ FILE\ *fp);}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_1}}
+\DoxyCodeLine{00119\ OSSL\_DEPRECATEDIN\_3\_1\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_stats\_bio(\textcolor{keyword}{const}\ OPENSSL\_LHASH\ *lh,\ BIO\ *out);}
+\DoxyCodeLine{00120\ OSSL\_DEPRECATEDIN\_3\_1\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_node\_stats\_bio(\textcolor{keyword}{const}\ OPENSSL\_LHASH\ *lh,\ BIO\ *out);}
+\DoxyCodeLine{00121\ OSSL\_DEPRECATEDIN\_3\_1\ \textcolor{keywordtype}{void}\ OPENSSL\_LH\_node\_usage\_stats\_bio(\textcolor{keyword}{const}\ OPENSSL\_LHASH\ *lh,\ BIO\ *out);}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_1\_1\_0}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#\ \ define\ \_LHASH\ OPENSSL\_LHASH}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#\ \ define\ LHASH\_NODE\ OPENSSL\_LH\_NODE}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#\ \ define\ lh\_error\ OPENSSL\_LH\_error}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#\ \ define\ lh\_new\ OPENSSL\_LH\_new}}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#\ \ define\ lh\_free\ OPENSSL\_LH\_free}}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#\ \ define\ lh\_insert\ OPENSSL\_LH\_insert}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#\ \ define\ lh\_delete\ OPENSSL\_LH\_delete}}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\#\ \ define\ lh\_retrieve\ OPENSSL\_LH\_retrieve}}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#\ \ define\ lh\_doall\ OPENSSL\_LH\_doall}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{\#\ \ define\ lh\_doall\_arg\ OPENSSL\_LH\_doall\_arg}}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#\ \ define\ lh\_strhash\ OPENSSL\_LH\_strhash}}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#\ \ define\ lh\_num\_items\ OPENSSL\_LH\_num\_items}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_STDIO}}
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{\#\ \ \ define\ lh\_stats\ OPENSSL\_LH\_stats}}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{\#\ \ \ define\ lh\_node\_stats\ OPENSSL\_LH\_node\_stats}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#\ \ \ define\ lh\_node\_usage\_stats\ OPENSSL\_LH\_node\_usage\_stats}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\#\ \ define\ lh\_stats\_bio\ OPENSSL\_LH\_stats\_bio}}
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\#\ \ define\ lh\_node\_stats\_bio\ OPENSSL\_LH\_node\_stats\_bio}}
+\DoxyCodeLine{00144\ \textcolor{preprocessor}{\#\ \ define\ lh\_node\_usage\_stats\_bio\ OPENSSL\_LH\_node\_usage\_stats\_bio}}
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{comment}{/*\ Type\ checking...\ */}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#\ define\ LHASH\_OF(type)\ struct\ lhash\_st\_\#\#type}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{comment}{/*\ Helper\ macro\ for\ internal\ use\ */}}
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#\ define\ DEFINE\_LHASH\_OF\_INTERNAL(type)\ \(\backslash\)}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\ \ \ \ LHASH\_OF(type)\ \{\ \(\backslash\)}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ union\ lh\_\#\#type\#\#\_dummy\ \{\ void*\ d1;\ unsigned\ long\ d2;\ int\ d3;\ \}\ dummy;\ \(\backslash\)}}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\ \ \ \ \};\ \(\backslash\)}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\ \ \ \ typedef\ int\ (*lh\_\#\#type\#\#\_compfunc)(const\ type\ *a,\ const\ type\ *b);\ \(\backslash\)}}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\ \ \ \ typedef\ unsigned\ long\ (*lh\_\#\#type\#\#\_hashfunc)(const\ type\ *a);\ \(\backslash\)}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\ \ \ \ typedef\ void\ (*lh\_\#\#type\#\#\_doallfunc)(type\ *a);\ \(\backslash\)}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_inline\ unsigned\ long\ lh\_\#\#type\#\#\_hash\_thunk(const\ void\ *data,\ OPENSSL\_LH\_HASHFUNC\ hfn)\ \(\backslash\)}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ unsigned\ long\ (*hfn\_conv)(const\ type\ *)\ =\ (unsigned\ long\ (*)(const\ type\ *))hfn;\ \(\backslash\)}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ hfn\_conv((const\ type\ *)data);\ \(\backslash\)}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_inline\ int\ lh\_\#\#type\#\#\_comp\_thunk(const\ void\ *da,\ const\ void\ *db,\ OPENSSL\_LH\_COMPFUNC\ cfn)\ \(\backslash\)}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ int\ (*cfn\_conv)(const\ type\ *,\ const\ type\ *)\ =\ (int\ (*)(const\ type\ *,\ const\ type\ *))cfn;\ \(\backslash\)}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ cfn\_conv((const\ type\ *)da,\ (const\ type\ *)db);\ \(\backslash\)}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_inline\ void\ lh\_\#\#type\#\#\_doall\_thunk(void\ *node,\ OPENSSL\_LH\_DOALL\_FUNC\ doall)\ \(\backslash\)}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ void\ (*doall\_conv)(type\ *)\ =\ (void\ (*)(type\ *))doall;\ \(\backslash\)}}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ doall\_conv((type\ *)node);\ \(\backslash\)}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_inline\ void\ lh\_\#\#type\#\#\_doall\_arg\_thunk(void\ *node,\ void\ *arg,\ OPENSSL\_LH\_DOALL\_FUNCARG\ doall)\ \(\backslash\)}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ void\ (*doall\_conv)(type\ *,\ void\ *)\ =\ (void\ (*)(type\ *,\ void\ *))doall;\ \(\backslash\)}}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ doall\_conv((type\ *)node,\ arg);\ \(\backslash\)}}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ type\ *\(\backslash\)}}
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{\ \ \ \ ossl\_check\_\#\#type\#\#\_lh\_plain\_type(type\ *ptr)\ \(\backslash\)}}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ ptr;\ \(\backslash\)}}
+\DoxyCodeLine{00183\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ const\ type\ *\ \(\backslash\)}}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\ \ \ \ ossl\_check\_const\_\#\#type\#\#\_lh\_plain\_type(const\ type\ *ptr)\ \(\backslash\)}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ ptr;\ \(\backslash\)}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ const\ OPENSSL\_LHASH\ *\ \(\backslash\)}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\ \ \ \ ossl\_check\_const\_\#\#type\#\#\_lh\_type(const\ LHASH\_OF(type)\ *lh)\ \(\backslash\)}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (const\ OPENSSL\_LHASH\ *)lh;\ \(\backslash\)}}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ OPENSSL\_LHASH\ *\ \(\backslash\)}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\ \ \ \ ossl\_check\_\#\#type\#\#\_lh\_type(LHASH\_OF(type)\ *lh)\ \(\backslash\)}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (OPENSSL\_LHASH\ *)lh;\ \(\backslash\)}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ OPENSSL\_LH\_COMPFUNC\ \(\backslash\)}}
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\ \ \ \ ossl\_check\_\#\#type\#\#\_lh\_compfunc\_type(lh\_\#\#type\#\#\_compfunc\ cmp)\ \(\backslash\)}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (OPENSSL\_LH\_COMPFUNC)cmp;\ \(\backslash\)}}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ OPENSSL\_LH\_HASHFUNC\ \(\backslash\)}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\ \ \ \ ossl\_check\_\#\#type\#\#\_lh\_hashfunc\_type(lh\_\#\#type\#\#\_hashfunc\ hfn)\ \(\backslash\)}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (OPENSSL\_LH\_HASHFUNC)hfn;\ \(\backslash\)}}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00209\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ OPENSSL\_LH\_DOALL\_FUNC\ \(\backslash\)}}
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\ \ \ \ ossl\_check\_\#\#type\#\#\_lh\_doallfunc\_type(lh\_\#\#type\#\#\_doallfunc\ dfn)\ \(\backslash\)}}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (OPENSSL\_LH\_DOALL\_FUNC)dfn;\ \(\backslash\)}}
+\DoxyCodeLine{00213\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\ \ \ \ LHASH\_OF(type)}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_1}}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{\#\ \ define\ DEFINE\_LHASH\_OF\_DEPRECATED(type)\ \(\backslash\)}}
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_node\_stats\_bio(const\ LHASH\_OF(type)\ *lh,\ BIO\ *out)\ \(\backslash\)}}
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_LH\_node\_stats\_bio((const\ OPENSSL\_LHASH\ *)lh,\ out);\ \(\backslash\)}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00223\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_node\_usage\_stats\_bio(const\ LHASH\_OF(type)\ *lh,\ BIO\ *out)\ \(\backslash\)}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_LH\_node\_usage\_stats\_bio((const\ OPENSSL\_LHASH\ *)lh,\ out);\ \(\backslash\)}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_stats\_bio(const\ LHASH\_OF(type)\ *lh,\ BIO\ *out)\ \(\backslash\)}}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00231\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_LH\_stats\_bio((const\ OPENSSL\_LHASH\ *)lh,\ out);\ \(\backslash\)}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\ \ \ \ \}}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\#\ else}}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#\ \ define\ DEFINE\_LHASH\_OF\_DEPRECATED(type)}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\#\ define\ DEFINE\_LHASH\_OF\_EX(type)\ \(\backslash\)}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\ \ \ \ LHASH\_OF(type)\ \{\ \(\backslash\)}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ union\ lh\_\#\#type\#\#\_dummy\ \{\ void*\ d1;\ unsigned\ long\ d2;\ int\ d3;\ \}\ dummy;\ \(\backslash\)}}
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\ \ \ \ \};\ \(\backslash\)}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\ \ \ \ static\ unsigned\ long\ \(\backslash\)}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_hfn\_thunk(const\ void\ *data,\ OPENSSL\_LH\_HASHFUNC\ hfn)\ \(\backslash\)}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ unsigned\ long\ (*hfn\_conv)(const\ type\ *)\ =\ (unsigned\ long\ (*)(const\ type\ *))hfn;\ \(\backslash\)}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ hfn\_conv((const\ type\ *)data);\ \(\backslash\)}}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\ \ \ \ static\ int\ lh\_\#\#type\#\#\_cfn\_thunk(const\ void\ *da,\ const\ void\ *db,\ OPENSSL\_LH\_COMPFUNC\ cfn)\ \(\backslash\)}}
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00249\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ int\ (*cfn\_conv)(const\ type\ *,\ const\ type\ *)\ =\ (int\ (*)(const\ type\ *,\ const\ type\ *))cfn;\ \(\backslash\)}}
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ cfn\_conv((const\ type\ *)da,\ (const\ type\ *)db);\ \(\backslash\)}}
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00252\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_free(LHASH\_OF(type)\ *lh)\ \(\backslash\)}}
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_LH\_free((OPENSSL\_LHASH\ *)lh);\ \(\backslash\)}}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_flush(LHASH\_OF(type)\ *lh)\ \(\backslash\)}}
+\DoxyCodeLine{00259\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00260\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_LH\_flush((OPENSSL\_LHASH\ *)lh);\ \(\backslash\)}}
+\DoxyCodeLine{00261\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ type\ *\ \(\backslash\)}}
+\DoxyCodeLine{00263\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_insert(LHASH\_OF(type)\ *lh,\ type\ *d)\ \(\backslash\)}}
+\DoxyCodeLine{00264\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00265\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (type\ *)OPENSSL\_LH\_insert((OPENSSL\_LHASH\ *)lh,\ d);\ \(\backslash\)}}
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00267\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ type\ *\ \(\backslash\)}}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_delete(LHASH\_OF(type)\ *lh,\ const\ type\ *d)\ \(\backslash\)}}
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00270\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (type\ *)OPENSSL\_LH\_delete((OPENSSL\_LHASH\ *)lh,\ d);\ \(\backslash\)}}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ type\ *\ \(\backslash\)}}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_retrieve(LHASH\_OF(type)\ *lh,\ const\ type\ *d)\ \(\backslash\)}}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (type\ *)OPENSSL\_LH\_retrieve((OPENSSL\_LHASH\ *)lh,\ d);\ \(\backslash\)}}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ int\ \(\backslash\)}}
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_error(LHASH\_OF(type)\ *lh)\ \(\backslash\)}}
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00280\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ OPENSSL\_LH\_error((OPENSSL\_LHASH\ *)lh);\ \(\backslash\)}}
+\DoxyCodeLine{00281\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00282\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ unsigned\ long\ \(\backslash\)}}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_num\_items(LHASH\_OF(type)\ *lh)\ \(\backslash\)}}
+\DoxyCodeLine{00284\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ OPENSSL\_LH\_num\_items((OPENSSL\_LHASH\ *)lh);\ \(\backslash\)}}
+\DoxyCodeLine{00286\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00287\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ unsigned\ long\ \(\backslash\)}}
+\DoxyCodeLine{00288\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_get\_down\_load(LHASH\_OF(type)\ *lh)\ \(\backslash\)}}
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00290\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ OPENSSL\_LH\_get\_down\_load((OPENSSL\_LHASH\ *)lh);\ \(\backslash\)}}
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00293\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_set\_down\_load(LHASH\_OF(type)\ *lh,\ unsigned\ long\ dl)\ \(\backslash\)}}
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_LH\_set\_down\_load((OPENSSL\_LHASH\ *)lh,\ dl);\ \(\backslash\)}}
+\DoxyCodeLine{00296\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_doall\_thunk(void\ *node,\ OPENSSL\_LH\_DOALL\_FUNC\ doall)\ \(\backslash\)}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00300\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ void\ (*doall\_conv)(type\ *)\ =\ (void\ (*)(type\ *))doall;\ \(\backslash\)}}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ doall\_conv((type\ *)node);\ \(\backslash\)}}
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_doall\_arg\_thunk(void\ *node,\ void\ *arg,\ OPENSSL\_LH\_DOALL\_FUNCARG\ doall)\ \(\backslash\)}}
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ void\ (*doall\_conv)(type\ *,\ void\ *)\ =\ (void\ (*)(type\ *,\ void\ *))doall;\ \(\backslash\)}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ doall\_conv((type\ *)node,\ arg);\ \(\backslash\)}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_doall(LHASH\_OF(type)\ *lh,\ void\ (*doall)(type\ *))\ \(\backslash\)}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_LH\_doall((OPENSSL\_LHASH\ *)lh,\ (OPENSSL\_LH\_DOALL\_FUNC)doall);\ \(\backslash\)}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ LHASH\_OF(type)\ *\ \(\backslash\)}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_new(unsigned\ long\ (*hfn)(const\ type\ *),\ \(\backslash\)}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int\ (*cfn)(const\ type\ *,\ const\ type\ *))\ \(\backslash\)}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00318\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (LHASH\_OF(type)\ *)OPENSSL\_LH\_set\_thunks(OPENSSL\_LH\_new((OPENSSL\_LH\_HASHFUNC)hfn,\ (OPENSSL\_LH\_COMPFUNC)cfn),\ \(\backslash\)}}
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lh\_\#\#type\#\#\_hfn\_thunk,\ lh\_\#\#type\#\#\_cfn\_thunk,\ \(\backslash\)}}
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lh\_\#\#type\#\#\_doall\_thunk,\ \(\backslash\)}}
+\DoxyCodeLine{00321\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lh\_\#\#type\#\#\_doall\_arg\_thunk);\ \(\backslash\)}}
+\DoxyCodeLine{00322\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00324\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_doall\_arg(LHASH\_OF(type)\ *lh,\ \(\backslash\)}}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ void\ (*doallarg)(type\ *,\ void\ *),\ void\ *arg)\ \(\backslash\)}}
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_LH\_doall\_arg((OPENSSL\_LHASH\ *)lh,\ \(\backslash\)}}
+\DoxyCodeLine{00328\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (OPENSSL\_LH\_DOALL\_FUNCARG)doallarg,\ arg);\ \(\backslash\)}}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\ \ \ \ LHASH\_OF(type)}}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \textcolor{preprocessor}{\#\ define\ DEFINE\_LHASH\_OF(type)\ \(\backslash\)}}
+\DoxyCodeLine{00333\ \textcolor{preprocessor}{\ \ \ \ DEFINE\_LHASH\_OF\_EX(type);\ \(\backslash\)}}
+\DoxyCodeLine{00334\ \textcolor{preprocessor}{\ \ \ \ DEFINE\_LHASH\_OF\_DEPRECATED(type)\ \(\backslash\)}}
+\DoxyCodeLine{00335\ \textcolor{preprocessor}{\ \ \ \ LHASH\_OF(type)}}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \textcolor{preprocessor}{\#define\ IMPLEMENT\_LHASH\_DOALL\_ARG\_CONST(type,\ argtype)\ \(\backslash\)}}
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\ \ \ \ int\_implement\_lhash\_doall(type,\ argtype,\ const\ type)}}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \textcolor{preprocessor}{\#define\ IMPLEMENT\_LHASH\_DOALL\_ARG(type,\ argtype)\ \(\backslash\)}}
+\DoxyCodeLine{00341\ \textcolor{preprocessor}{\ \ \ \ int\_implement\_lhash\_doall(type,\ argtype,\ type)}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{\#define\ int\_implement\_lhash\_doall(type,\ argtype,\ cbargtype)\ \(\backslash\)}}
+\DoxyCodeLine{00344\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00345\ \textcolor{preprocessor}{\ \ \ \ lh\_\#\#type\#\#\_doall\_\#\#argtype\#\#\_thunk(void\ *node,\ void\ *arg,\ OPENSSL\_LH\_DOALL\_FUNCARG\ fn)\ \(\backslash\)}}
+\DoxyCodeLine{00346\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00347\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ void\ (*fn\_conv)(cbargtype\ *,\ argtype\ *)\ =\ (void\ (*)(cbargtype\ *,\ argtype\ *))fn;\ \(\backslash\)}}
+\DoxyCodeLine{00348\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ fn\_conv((cbargtype\ *)node,\ (argtype\ *)arg);\ \(\backslash\)}}
+\DoxyCodeLine{00349\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00350\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ void\ \(\backslash\)}}
+\DoxyCodeLine{00351\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ lh\_\#\#type\#\#\_doall\_\#\#argtype(LHASH\_OF(type)\ *lh,\ \(\backslash\)}}
+\DoxyCodeLine{00352\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ void\ (*fn)(cbargtype\ *,\ argtype\ *),\ \(\backslash\)}}
+\DoxyCodeLine{00353\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ argtype\ *arg)\ \(\backslash\)}}
+\DoxyCodeLine{00354\ \textcolor{preprocessor}{\ \ \ \ \{\ \(\backslash\)}}
+\DoxyCodeLine{00355\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_LH\_doall\_arg\_thunk((OPENSSL\_LHASH\ *)lh,\ \(\backslash\)}}
+\DoxyCodeLine{00356\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lh\_\#\#type\#\#\_doall\_\#\#argtype\#\#\_thunk,\ \(\backslash\)}}
+\DoxyCodeLine{00357\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (OPENSSL\_LH\_DOALL\_FUNCARG)fn,\ \(\backslash\)}}
+\DoxyCodeLine{00358\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (void\ *)arg);\ \(\backslash\)}}
+\DoxyCodeLine{00359\ \textcolor{preprocessor}{\ \ \ \ \}\ \(\backslash\)}}
+\DoxyCodeLine{00360\ \textcolor{preprocessor}{\ \ \ \ LHASH\_OF(type)}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ DEFINE\_LHASH\_OF\_INTERNAL(OPENSSL\_STRING);}
+\DoxyCodeLine{00363\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_new(hfn,\ cmp)\ ((LHASH\_OF(OPENSSL\_STRING)\ *)OPENSSL\_LH\_set\_thunks(OPENSSL\_LH\_new(ossl\_check\_OPENSSL\_STRING\_lh\_hashfunc\_type(hfn),\ ossl\_check\_OPENSSL\_STRING\_lh\_compfunc\_type(cmp)),\ lh\_OPENSSL\_STRING\_hash\_thunk,\ lh\_OPENSSL\_STRING\_comp\_thunk,\ lh\_OPENSSL\_STRING\_doall\_thunk,\ lh\_OPENSSL\_STRING\_doall\_arg\_thunk))}}
+\DoxyCodeLine{00364\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_free(lh)\ OPENSSL\_LH\_free(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh))}}
+\DoxyCodeLine{00365\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_flush(lh)\ OPENSSL\_LH\_flush(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh))}}
+\DoxyCodeLine{00366\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_insert(lh,\ ptr)\ ((OPENSSL\_STRING\ *)OPENSSL\_LH\_insert(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh),\ ossl\_check\_OPENSSL\_STRING\_lh\_plain\_type(ptr)))}}
+\DoxyCodeLine{00367\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_delete(lh,\ ptr)\ ((OPENSSL\_STRING\ *)OPENSSL\_LH\_delete(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh),\ ossl\_check\_const\_OPENSSL\_STRING\_lh\_plain\_type(ptr)))}}
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_retrieve(lh,\ ptr)\ ((OPENSSL\_STRING\ *)OPENSSL\_LH\_retrieve(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh),\ ossl\_check\_const\_OPENSSL\_STRING\_lh\_plain\_type(ptr)))}}
+\DoxyCodeLine{00369\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_error(lh)\ OPENSSL\_LH\_error(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh))}}
+\DoxyCodeLine{00370\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_num\_items(lh)\ OPENSSL\_LH\_num\_items(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh))}}
+\DoxyCodeLine{00371\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_node\_stats\_bio(lh,\ out)\ OPENSSL\_LH\_node\_stats\_bio(ossl\_check\_const\_OPENSSL\_STRING\_lh\_type(lh),\ out)}}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_node\_usage\_stats\_bio(lh,\ out)\ OPENSSL\_LH\_node\_usage\_stats\_bio(ossl\_check\_const\_OPENSSL\_STRING\_lh\_type(lh),\ out)}}
+\DoxyCodeLine{00373\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_stats\_bio(lh,\ out)\ OPENSSL\_LH\_stats\_bio(ossl\_check\_const\_OPENSSL\_STRING\_lh\_type(lh),\ out)}}
+\DoxyCodeLine{00374\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_get\_down\_load(lh)\ OPENSSL\_LH\_get\_down\_load(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh))}}
+\DoxyCodeLine{00375\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_set\_down\_load(lh,\ dl)\ OPENSSL\_LH\_set\_down\_load(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh),\ dl)}}
+\DoxyCodeLine{00376\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_STRING\_doall(lh,\ dfn)\ OPENSSL\_LH\_doall(ossl\_check\_OPENSSL\_STRING\_lh\_type(lh),\ ossl\_check\_OPENSSL\_STRING\_lh\_doallfunc\_type(dfn))}}
+\DoxyCodeLine{00377\ DEFINE\_LHASH\_OF\_INTERNAL(OPENSSL\_CSTRING);}
+\DoxyCodeLine{00378\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_new(hfn,\ cmp)\ ((LHASH\_OF(OPENSSL\_CSTRING)\ *)OPENSSL\_LH\_set\_thunks(OPENSSL\_LH\_new(ossl\_check\_OPENSSL\_CSTRING\_lh\_hashfunc\_type(hfn),\ ossl\_check\_OPENSSL\_CSTRING\_lh\_compfunc\_type(cmp)),\ lh\_OPENSSL\_CSTRING\_hash\_thunk,\ lh\_OPENSSL\_CSTRING\_comp\_thunk,\ lh\_OPENSSL\_CSTRING\_doall\_thunk,\ lh\_OPENSSL\_CSTRING\_doall\_arg\_thunk))}}
+\DoxyCodeLine{00379\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_free(lh)\ OPENSSL\_LH\_free(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh))}}
+\DoxyCodeLine{00380\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_flush(lh)\ OPENSSL\_LH\_flush(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh))}}
+\DoxyCodeLine{00381\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_insert(lh,\ ptr)\ ((OPENSSL\_CSTRING\ *)OPENSSL\_LH\_insert(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh),\ ossl\_check\_OPENSSL\_CSTRING\_lh\_plain\_type(ptr)))}}
+\DoxyCodeLine{00382\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_delete(lh,\ ptr)\ ((OPENSSL\_CSTRING\ *)OPENSSL\_LH\_delete(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh),\ ossl\_check\_const\_OPENSSL\_CSTRING\_lh\_plain\_type(ptr)))}}
+\DoxyCodeLine{00383\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_retrieve(lh,\ ptr)\ ((OPENSSL\_CSTRING\ *)OPENSSL\_LH\_retrieve(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh),\ ossl\_check\_const\_OPENSSL\_CSTRING\_lh\_plain\_type(ptr)))}}
+\DoxyCodeLine{00384\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_error(lh)\ OPENSSL\_LH\_error(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh))}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_num\_items(lh)\ OPENSSL\_LH\_num\_items(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh))}}
+\DoxyCodeLine{00386\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_node\_stats\_bio(lh,\ out)\ OPENSSL\_LH\_node\_stats\_bio(ossl\_check\_const\_OPENSSL\_CSTRING\_lh\_type(lh),\ out)}}
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_node\_usage\_stats\_bio(lh,\ out)\ OPENSSL\_LH\_node\_usage\_stats\_bio(ossl\_check\_const\_OPENSSL\_CSTRING\_lh\_type(lh),\ out)}}
+\DoxyCodeLine{00388\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_stats\_bio(lh,\ out)\ OPENSSL\_LH\_stats\_bio(ossl\_check\_const\_OPENSSL\_CSTRING\_lh\_type(lh),\ out)}}
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_get\_down\_load(lh)\ OPENSSL\_LH\_get\_down\_load(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh))}}
+\DoxyCodeLine{00390\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_set\_down\_load(lh,\ dl)\ OPENSSL\_LH\_set\_down\_load(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh),\ dl)}}
+\DoxyCodeLine{00391\ \textcolor{preprocessor}{\#define\ lh\_OPENSSL\_CSTRING\_doall(lh,\ dfn)\ OPENSSL\_LH\_doall(ossl\_check\_OPENSSL\_CSTRING\_lh\_type(lh),\ ossl\_check\_OPENSSL\_CSTRING\_lh\_doallfunc\_type(dfn))}}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \textcolor{preprocessor}{\#ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00395\ \}}
+\DoxyCodeLine{00396\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

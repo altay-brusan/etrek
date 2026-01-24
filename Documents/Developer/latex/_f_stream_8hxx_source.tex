@@ -1,0 +1,334 @@
+\doxysection{FStream.\+hxx}
+\hypertarget{_f_stream_8hxx_source}{}\label{_f_stream_8hxx_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtksys/FStream.hxx@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtksys/FStream.hxx}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Distributed\ under\ the\ OSI-\/approved\ BSD\ 3-\/Clause\ License.\ \ See\ accompanying}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ file\ Copyright.txt\ or\ https://cmake.org/licensing\#kwsys\ for\ details.\ \ */}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#ifndef\ vtksys\_FStream\_hxx}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#define\ vtksys\_FStream\_hxx}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vtksys/Configure.hxx>}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <vtksys/Encoding.hxx>}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#\ \ if\ !defined(\_MSC\_VER)\ \&\&\ vtksys\_CXX\_HAS\_EXT\_STDIO\_FILEBUF\_H}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#\ \ \ \ include\ <ext/stdio\_filebuf.h>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{namespace\ }vtksys\ \{}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)\ \&\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\ \ (defined(\_MSC\_VER)\ ||\ vtksys\_CXX\_HAS\_EXT\_STDIO\_FILEBUF\_H)}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#\ \ if\ defined(\_NOEXCEPT)}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#\ \ \ \ define\ vtksys\_FStream\_NOEXCEPT\ \_NOEXCEPT}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#\ \ else}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#\ \ \ \ define\ vtksys\_FStream\_NOEXCEPT}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#\ \ if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ CharType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00029\ \textcolor{keyword}{class\ }basic\_filebuf\ :\ \textcolor{keyword}{public}\ std::basic\_filebuf<CharType,\ Traits>}
+\DoxyCodeLine{00030\ \{}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#\ \ \ \ if\ \_MSC\_VER\ >=\ 1400}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00033\ \ \ \textcolor{keyword}{typedef}\ std::basic\_filebuf<CharType,\ Traits>\ my\_base\_type;}
+\DoxyCodeLine{00034\ \ \ basic\_filebuf*\ open(\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}*\ s,\ std::ios\_base::openmode\ mode)}
+\DoxyCodeLine{00035\ \ \ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{const}\ std::wstring\ wstr\ =\ Encoding::ToWindowsExtendedPath(s);}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}basic\_filebuf*\textcolor{keyword}{>}(my\_base\_type::open(wstr.c\_str(),\ mode));}
+\DoxyCodeLine{00038\ \ \ \}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#\ \ \ \ endif}}
+\DoxyCodeLine{00040\ \};}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#\ \ else}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{keyword}{inline}\ std::wstring\ getcmode(\textcolor{keyword}{const}\ std::ios\_base::openmode\ mode)}
+\DoxyCodeLine{00045\ \{}
+\DoxyCodeLine{00046\ \ \ std::wstring\ cmode;}
+\DoxyCodeLine{00047\ \ \ \textcolor{keywordtype}{bool}\ plus\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00048\ \ \ \textcolor{keywordflow}{if}\ (mode\ \&\ std::ios\_base::app)\ \{}
+\DoxyCodeLine{00049\ \ \ \ \ cmode\ +=\ L\textcolor{stringliteral}{"{}a"{}};}
+\DoxyCodeLine{00050\ \ \ \ \ plus\ =\ mode\ \&\ std::ios\_base::in\ ?\ true\ :\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00051\ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (mode\ \&\ std::ios\_base::trunc\ ||}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ (mode\ \&\ std::ios\_base::out\ \&\&\ (mode\ \&\ std::ios\_base::in)\ ==\ 0))\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ cmode\ +=\ L\textcolor{stringliteral}{"{}w"{}};}
+\DoxyCodeLine{00054\ \ \ \ \ plus\ =\ mode\ \&\ std::ios\_base::in\ ?\ true\ :\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00055\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ cmode\ +=\ L\textcolor{stringliteral}{"{}r"{}};}
+\DoxyCodeLine{00057\ \ \ \ \ plus\ =\ mode\ \&\ std::ios\_base::out\ ?\ true\ :\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00058\ \ \ \}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordflow}{if}\ (plus)\ \{}
+\DoxyCodeLine{00060\ \ \ \ \ cmode\ +=\ L\textcolor{stringliteral}{"{}+"{}};}
+\DoxyCodeLine{00061\ \ \ \}}
+\DoxyCodeLine{00062\ \ \ \textcolor{keywordflow}{if}\ (mode\ \&\ std::ios\_base::binary)\ \{}
+\DoxyCodeLine{00063\ \ \ \ \ cmode\ +=\ L\textcolor{stringliteral}{"{}b"{}};}
+\DoxyCodeLine{00064\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00065\ \ \ \ \ cmode\ +=\ L\textcolor{stringliteral}{"{}t"{}};}
+\DoxyCodeLine{00066\ \ \ \}}
+\DoxyCodeLine{00067\ \ \ \textcolor{keywordflow}{return}\ cmode;}
+\DoxyCodeLine{00068\ \};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ CharType,\ \textcolor{keyword}{typename}\ Traits\ =\ std::\textcolor{keywordtype}{char}\_traits<CharType>\ >}
+\DoxyCodeLine{00073\ \textcolor{keyword}{class\ }basic\_efilebuf}
+\DoxyCodeLine{00074\ \{}
+\DoxyCodeLine{00075\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#\ \ if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00077\ \ \ \textcolor{keyword}{typedef}\ basic\_filebuf<CharType,\ Traits>\ internal\_buffer\_type;}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#\ \ else}}
+\DoxyCodeLine{00079\ \ \ \textcolor{keyword}{typedef}\ \_\_gnu\_cxx::stdio\_filebuf<CharType,\ Traits>\ internal\_buffer\_type;}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ basic\_efilebuf()}
+\DoxyCodeLine{00083\ \ \ \ \ :\ file\_(0)}
+\DoxyCodeLine{00084\ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ buf\_\ =\ 0;}
+\DoxyCodeLine{00086\ \ \ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{keywordtype}{bool}\ \_open(\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}*\ file\_name,\ std::ios\_base::openmode\ mode)}
+\DoxyCodeLine{00089\ \ \ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{if}\ (\_is\_open()\ ||\ file\_)\ \{}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00092\ \ \ \ \ \}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#\ \ if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ success\ =\ buf\_-\/>open(file\_name,\ mode)\ !=\ 0;}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#\ \ else}}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keyword}{const}\ std::wstring\ wstr\ =\ Encoding::ToWindowsExtendedPath(file\_name);}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordtype}{bool}\ success\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00098\ \ \ \ \ std::wstring\ cmode\ =\ getcmode(mode);}
+\DoxyCodeLine{00099\ \ \ \ \ file\_\ =\ \_wfopen(wstr.c\_str(),\ cmode.c\_str());}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ \{}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (buf\_)\ \{}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ buf\_;}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ buf\_\ =\ \textcolor{keyword}{new}\ internal\_buffer\_type(file\_,\ mode);}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ success\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00106\ \ \ \ \ \}}
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordflow}{return}\ success;}
+\DoxyCodeLine{00109\ \ \ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{bool}\ \_is\_open()}
+\DoxyCodeLine{00112\ \ \ \{}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordflow}{if}\ (!buf\_)\ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00115\ \ \ \ \ \}}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordflow}{return}\ buf\_-\/>is\_open();}
+\DoxyCodeLine{00117\ \ \ \}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \textcolor{keywordtype}{bool}\ \_is\_open()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00120\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keywordflow}{if}\ (!buf\_)\ \{}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00123\ \ \ \ \ \}}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordflow}{return}\ buf\_-\/>is\_open();}
+\DoxyCodeLine{00125\ \ \ \}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordtype}{bool}\ \_close()}
+\DoxyCodeLine{00128\ \ \ \{}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordtype}{bool}\ success\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keywordflow}{if}\ (buf\_)\ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ success\ =\ buf\_-\/>close()\ !=\ 0;}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\#\ \ if\ !defined(\_MSC\_VER)}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ \{}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ success\ =\ fclose(file\_)\ ==\ 0\ ?\ success\ :\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ file\_\ =\ 0;}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00138\ \ \ \ \ \}}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{return}\ success;}
+\DoxyCodeLine{00140\ \ \ \}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \_set\_state(\textcolor{keywordtype}{bool}\ success,\ std::basic\_ios<CharType,\ Traits>*\ ios,}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ basic\_efilebuf*\ efilebuf)}
+\DoxyCodeLine{00144\ \ \ \{}
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#\ \ if\ !defined(\_MSC\_VER)}}
+\DoxyCodeLine{00146\ \ \ \ \ ios-\/>rdbuf(efilebuf-\/>buf\_);}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#\ \ else}}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{void}\textcolor{keyword}{>}(efilebuf);}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordflow}{if}\ (!success)\ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ ios-\/>setstate(std::ios\_base::failbit);}
+\DoxyCodeLine{00152\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ ios-\/>clear();}
+\DoxyCodeLine{00154\ \ \ \ \ \}}
+\DoxyCodeLine{00155\ \ \ \}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \string~basic\_efilebuf()}
+\DoxyCodeLine{00158\ \ \ \{}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keywordflow}{if}\ (buf\_)\ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \textcolor{keyword}{delete}\ buf\_;}
+\DoxyCodeLine{00161\ \ \ \ \ \}}
+\DoxyCodeLine{00162\ \ \ \}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00165\ \ \ internal\_buffer\_type*\ buf\_;}
+\DoxyCodeLine{00166\ \ \ FILE*\ file\_;}
+\DoxyCodeLine{00167\ \};}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ CharType,\ \textcolor{keyword}{typename}\ Traits\ =\ std::\textcolor{keywordtype}{char}\_traits<CharType>\ >}
+\DoxyCodeLine{00170\ \textcolor{keyword}{class\ }basic\_fstream}
+\DoxyCodeLine{00171\ \ \ :\ \textcolor{keyword}{public}\ std::basic\_iostream<CharType,\ Traits>}
+\DoxyCodeLine{00172\ \ \ ,\ \textcolor{keyword}{public}\ basic\_efilebuf<CharType,\ Traits>}
+\DoxyCodeLine{00173\ \{}
+\DoxyCodeLine{00174\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ basic\_efilebuf<CharType,\ Traits>::internal\_buffer\_type}
+\DoxyCodeLine{00176\ \ \ \ \ internal\_buffer\_type;}
+\DoxyCodeLine{00177\ \ \ \textcolor{keyword}{typedef}\ std::basic\_iostream<CharType,\ Traits>\ internal\_stream\_type;}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ basic\_fstream()}
+\DoxyCodeLine{00180\ \ \ \ \ :\ internal\_stream\_type(new\ internal\_buffer\_type())}
+\DoxyCodeLine{00181\ \ \ \{}
+\DoxyCodeLine{00182\ \ \ \ \ this-\/>buf\_\ =}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}internal\_buffer\_type*\textcolor{keyword}{>}(internal\_stream\_type::rdbuf());}
+\DoxyCodeLine{00184\ \ \ \}}
+\DoxyCodeLine{00185\ \ \ \textcolor{keyword}{explicit}\ basic\_fstream(\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}*\ file\_name,}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::ios\_base::openmode\ mode\ =\ std::ios\_base::in\ |}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::ios\_base::out)}
+\DoxyCodeLine{00188\ \ \ \ \ :\ internal\_stream\_type(new\ internal\_buffer\_type())}
+\DoxyCodeLine{00189\ \ \ \{}
+\DoxyCodeLine{00190\ \ \ \ \ this-\/>buf\_\ =}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}internal\_buffer\_type*\textcolor{keyword}{>}(internal\_stream\_type::rdbuf());}
+\DoxyCodeLine{00192\ \ \ \ \ open(file\_name,\ mode);}
+\DoxyCodeLine{00193\ \ \ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordtype}{void}\ open(\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}*\ file\_name,}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ std::ios\_base::openmode\ mode\ =\ std::ios\_base::in\ |}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::ios\_base::out)}
+\DoxyCodeLine{00198\ \ \ \{}
+\DoxyCodeLine{00199\ \ \ \ \ this-\/>\_set\_state(this-\/>\_open(file\_name,\ mode),\ \textcolor{keyword}{this},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{00200\ \ \ \}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \textcolor{keywordtype}{bool}\ is\_open()\ \{\ \textcolor{keywordflow}{return}\ this-\/>\_is\_open();\ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \textcolor{keywordtype}{void}\ close()\ \{\ this-\/>\_set\_state(this-\/>\_close(),\ \textcolor{keyword}{this},\ \textcolor{keyword}{this});\ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{using\ }basic\_efilebuf<CharType,\ Traits>::\_is\_open;}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ internal\_buffer\_type*\ rdbuf()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>buf\_;\ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \string~basic\_fstream()\ vtksys\_FStream\_NOEXCEPT\ \{\ close();\ \}}
+\DoxyCodeLine{00211\ \};}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ CharType,\ \textcolor{keyword}{typename}\ Traits\ =\ std::\textcolor{keywordtype}{char}\_traits<CharType>\ >}
+\DoxyCodeLine{00214\ \textcolor{keyword}{class\ }basic\_ifstream}
+\DoxyCodeLine{00215\ \ \ :\ \textcolor{keyword}{public}\ std::basic\_istream<CharType,\ Traits>}
+\DoxyCodeLine{00216\ \ \ ,\ \textcolor{keyword}{public}\ basic\_efilebuf<CharType,\ Traits>}
+\DoxyCodeLine{00217\ \{}
+\DoxyCodeLine{00218\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00219\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ basic\_efilebuf<CharType,\ Traits>::internal\_buffer\_type}
+\DoxyCodeLine{00220\ \ \ \ \ internal\_buffer\_type;}
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{typedef}\ std::basic\_istream<CharType,\ Traits>\ internal\_stream\_type;}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ basic\_ifstream()}
+\DoxyCodeLine{00224\ \ \ \ \ :\ internal\_stream\_type(new\ internal\_buffer\_type())}
+\DoxyCodeLine{00225\ \ \ \{}
+\DoxyCodeLine{00226\ \ \ \ \ this-\/>buf\_\ =}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}internal\_buffer\_type*\textcolor{keyword}{>}(internal\_stream\_type::rdbuf());}
+\DoxyCodeLine{00228\ \ \ \}}
+\DoxyCodeLine{00229\ \ \ \textcolor{keyword}{explicit}\ basic\_ifstream(\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}*\ file\_name,}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::ios\_base::openmode\ mode\ =\ std::ios\_base::in)}
+\DoxyCodeLine{00231\ \ \ \ \ :\ internal\_stream\_type(new\ internal\_buffer\_type())}
+\DoxyCodeLine{00232\ \ \ \{}
+\DoxyCodeLine{00233\ \ \ \ \ this-\/>buf\_\ =}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}internal\_buffer\_type*\textcolor{keyword}{>}(internal\_stream\_type::rdbuf());}
+\DoxyCodeLine{00235\ \ \ \ \ open(file\_name,\ mode);}
+\DoxyCodeLine{00236\ \ \ \}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \ \ \textcolor{keywordtype}{void}\ open(\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}*\ file\_name,}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ std::ios\_base::openmode\ mode\ =\ std::ios\_base::in)}
+\DoxyCodeLine{00240\ \ \ \{}
+\DoxyCodeLine{00241\ \ \ \ \ mode\ =\ mode\ |\ std::ios\_base::in;}
+\DoxyCodeLine{00242\ \ \ \ \ this-\/>\_set\_state(this-\/>\_open(file\_name,\ mode),\ \textcolor{keyword}{this},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{00243\ \ \ \}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \ \ \textcolor{keywordtype}{bool}\ is\_open()\ \{\ \textcolor{keywordflow}{return}\ this-\/>\_is\_open();\ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{keywordtype}{void}\ close()\ \{\ this-\/>\_set\_state(this-\/>\_close(),\ \textcolor{keyword}{this},\ \textcolor{keyword}{this});\ \}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \textcolor{keyword}{using\ }basic\_efilebuf<CharType,\ Traits>::\_is\_open;}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \ \ internal\_buffer\_type*\ rdbuf()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>buf\_;\ \}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \string~basic\_ifstream()\ vtksys\_FStream\_NOEXCEPT\ \{\ close();\ \}}
+\DoxyCodeLine{00254\ \};}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ CharType,\ \textcolor{keyword}{typename}\ Traits\ =\ std::\textcolor{keywordtype}{char}\_traits<CharType>\ >}
+\DoxyCodeLine{00257\ \textcolor{keyword}{class\ }basic\_ofstream}
+\DoxyCodeLine{00258\ \ \ :\ \textcolor{keyword}{public}\ std::basic\_ostream<CharType,\ Traits>}
+\DoxyCodeLine{00259\ \ \ ,\ \textcolor{keyword}{public}\ basic\_efilebuf<CharType,\ Traits>}
+\DoxyCodeLine{00260\ \{}
+\DoxyCodeLine{00261\ \ \ \textcolor{keyword}{using\ }basic\_efilebuf<CharType,\ Traits>::\_is\_open;}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00264\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ basic\_efilebuf<CharType,\ Traits>::internal\_buffer\_type}
+\DoxyCodeLine{00265\ \ \ \ \ internal\_buffer\_type;}
+\DoxyCodeLine{00266\ \ \ \textcolor{keyword}{typedef}\ std::basic\_ostream<CharType,\ Traits>\ internal\_stream\_type;}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ basic\_ofstream()}
+\DoxyCodeLine{00269\ \ \ \ \ :\ internal\_stream\_type(new\ internal\_buffer\_type())}
+\DoxyCodeLine{00270\ \ \ \{}
+\DoxyCodeLine{00271\ \ \ \ \ this-\/>buf\_\ =}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}internal\_buffer\_type*\textcolor{keyword}{>}(internal\_stream\_type::rdbuf());}
+\DoxyCodeLine{00273\ \ \ \}}
+\DoxyCodeLine{00274\ \ \ \textcolor{keyword}{explicit}\ basic\_ofstream(\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}*\ file\_name,}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::ios\_base::openmode\ mode\ =\ std::ios\_base::out)}
+\DoxyCodeLine{00276\ \ \ \ \ :\ internal\_stream\_type(new\ internal\_buffer\_type())}
+\DoxyCodeLine{00277\ \ \ \{}
+\DoxyCodeLine{00278\ \ \ \ \ this-\/>buf\_\ =}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}internal\_buffer\_type*\textcolor{keyword}{>}(internal\_stream\_type::rdbuf());}
+\DoxyCodeLine{00280\ \ \ \ \ open(file\_name,\ mode);}
+\DoxyCodeLine{00281\ \ \ \}}
+\DoxyCodeLine{00282\ \ \ \textcolor{keywordtype}{void}\ open(\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}*\ file\_name,}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ std::ios\_base::openmode\ mode\ =\ std::ios\_base::out)}
+\DoxyCodeLine{00284\ \ \ \{}
+\DoxyCodeLine{00285\ \ \ \ \ mode\ =\ mode\ |\ std::ios\_base::out;}
+\DoxyCodeLine{00286\ \ \ \ \ this-\/>\_set\_state(this-\/>\_open(file\_name,\ mode),\ \textcolor{keyword}{this},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{00287\ \ \ \}}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \textcolor{keywordtype}{void}\ close()\ \{\ this-\/>\_set\_state(this-\/>\_close(),\ \textcolor{keyword}{this},\ \textcolor{keyword}{this});\ \}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \ \ \textcolor{keywordtype}{bool}\ is\_open()\ \{\ \textcolor{keywordflow}{return}\ this-\/>\_is\_open();\ \}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \ \ internal\_buffer\_type*\ rdbuf()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>buf\_;\ \}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \ \ \string~basic\_ofstream()\ vtksys\_FStream\_NOEXCEPT\ \{\ close();\ \}}
+\DoxyCodeLine{00296\ \};}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \textcolor{keyword}{typedef}\ basic\_fstream<char>\ fstream;}
+\DoxyCodeLine{00299\ \textcolor{keyword}{typedef}\ basic\_ifstream<char>\ ifstream;}
+\DoxyCodeLine{00300\ \textcolor{keyword}{typedef}\ basic\_ofstream<char>\ ofstream;}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{\#\ \ undef\ vtksys\_FStream\_NOEXCEPT}}
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00304\ \textcolor{keyword}{using\ }std::fstream;}
+\DoxyCodeLine{00305\ \textcolor{keyword}{using\ }std::ofstream;}
+\DoxyCodeLine{00306\ \textcolor{keyword}{using\ }std::ifstream;}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \textcolor{keyword}{namespace\ }FStream\ \{}
+\DoxyCodeLine{00310\ \textcolor{keyword}{enum}\ BOM}
+\DoxyCodeLine{00311\ \{}
+\DoxyCodeLine{00312\ \ \ BOM\_None,}
+\DoxyCodeLine{00313\ \ \ BOM\_UTF8,}
+\DoxyCodeLine{00314\ \ \ BOM\_UTF16BE,}
+\DoxyCodeLine{00315\ \ \ BOM\_UTF16LE,}
+\DoxyCodeLine{00316\ \ \ BOM\_UTF32BE,}
+\DoxyCodeLine{00317\ \ \ BOM\_UTF32LE}
+\DoxyCodeLine{00318\ \};}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00320\ \textcolor{comment}{//\ Read\ a\ BOM,\ if\ one\ exists.}}
+\DoxyCodeLine{00321\ \textcolor{comment}{//\ If\ a\ BOM\ exists,\ the\ stream\ is\ advanced\ to\ after\ the\ BOM.}}
+\DoxyCodeLine{00322\ \textcolor{comment}{//\ This\ function\ requires\ a\ seekable\ stream\ (but\ not\ a\ relative}}
+\DoxyCodeLine{00323\ \textcolor{comment}{//\ seekable\ stream).}}
+\DoxyCodeLine{00324\ vtksys\_EXPORT\ BOM\ ReadBOM(std::istream\&\ in);}
+\DoxyCodeLine{00325\ \}}
+\DoxyCodeLine{00326\ \}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

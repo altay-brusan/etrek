@@ -1,0 +1,353 @@
+\doxysection{vtk\+FFT.\+h}
+\hypertarget{vtk_f_f_t_8h_source}{}\label{vtk_f_f_t_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkFFT.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkFFT.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ vtkFFT\_h}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ vtkFFT\_h}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}vtkAOSDataArrayTemplate.h"{}}\ \textcolor{comment}{//\ vtkAOSDataArrayTemplate}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}vtkCommonMathModule.h"{}}\ \ \ \ \ \textcolor{comment}{//\ export\ macro}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}vtkDataArray.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ vtkDataArray}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_data_array_range_8h}{vtkDataArrayRange.h}}"{}}\ \ \ \ \ \ \ \textcolor{comment}{//\ vtkDataArrayRange}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}vtkMath.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ vtkMath::Pi}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}vtkSMPTools.h"{}}\ \textcolor{comment}{//\ vtkSMPTools::Transform,\ vtkSMPTools::For}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}vtk\_kissfft.h"{}}\ \textcolor{comment}{//\ kiss\_fft\_scalar,\ kiss\_fft\_cpx}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ clang-\/format\ off}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ VTK\_KISSFFT\_HEADER(kiss\_fft.h)}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ VTK\_KISSFFT\_HEADER(tools/kiss\_fftr.h)}}
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ clang-\/format\ on}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#include\ <array>}\ \ \ \ \ \ \ \textcolor{comment}{//\ std::array}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#include\ <cmath>}\ \ \ \ \ \ \ \textcolor{comment}{//\ std::sin,\ std::cos,\ std::sqrt}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#include\ <numeric>}\ \ \ \ \ \textcolor{comment}{//\ std::accumulate,\ std::inner\_product}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#include\ <type\_traits>}\ \textcolor{comment}{//\ std::enable\_if,\ std::iterator\_traits}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#include\ <vector>}\ \ \ \ \ \ \textcolor{comment}{//\ std::vector}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00044\ \textcolor{keyword}{class\ }VTKCOMMONMATH\_EXPORT\ vtkFFT\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00045\ \{}
+\DoxyCodeLine{00046\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}\ =\ kiss\_fft\_scalar;}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{using\ }ComplexNumber\ =\ \doxymbox{\hyperlink{structkiss__fft__cpx}{kiss\_fft\_cpx}};}
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{static\_assert}(\textcolor{keyword}{sizeof}(ComplexNumber)\ ==\ 2\ *\ \textcolor{keyword}{sizeof}(\doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}),}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{stringliteral}{"{}vtkFFT::ComplexNumber\ definition\ is\ not\ valid"{}});}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{using\ }vtkScalarNumberArray\ =\ \doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate<vtkFFT::ScalarNumber>}};}
+\DoxyCodeLine{00076\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00077\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_f_f_t_1_1is_fft_type}{isFftType}}\ :\ \textcolor{keyword}{public}\ std::false\_type}
+\DoxyCodeLine{00078\ \ \ \{}
+\DoxyCodeLine{00079\ \ \ \};}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtk_f_f_t_a9a399084ea45bf4f96133dcb235556c1}{Octave}}}
+\DoxyCodeLine{00087\ \ \ \{}
+\DoxyCodeLine{00088\ \ \ \ \ Hz\_31\_5\ =\ 5,}
+\DoxyCodeLine{00089\ \ \ \ \ Hz\_63\ =\ 6,}
+\DoxyCodeLine{00090\ \ \ \ \ Hz\_125\ =\ 7,}
+\DoxyCodeLine{00091\ \ \ \ \ Hz\_250\ =\ 8,}
+\DoxyCodeLine{00092\ \ \ \ \ Hz\_500\ =\ 9,}
+\DoxyCodeLine{00093\ \ \ \ \ kHz\_1\ =\ 10,}
+\DoxyCodeLine{00094\ \ \ \ \ kHz\_2\ =\ 11,}
+\DoxyCodeLine{00095\ \ \ \ \ kHz\_4\ =\ 12,}
+\DoxyCodeLine{00096\ \ \ \ \ kHz\_8\ =\ 13,}
+\DoxyCodeLine{00097\ \ \ \ \ kHz\_16\ =\ 14}
+\DoxyCodeLine{00098\ \ \ \};}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00104\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1d34f335c3a7a0c9bba67ccfb8441eb5}{OctaveSubdivision}}}
+\DoxyCodeLine{00105\ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ Full,}
+\DoxyCodeLine{00107\ \ \ \ \ FirstHalf,}
+\DoxyCodeLine{00108\ \ \ \ \ SecondHalf,}
+\DoxyCodeLine{00109\ \ \ \ \ FirstThird,}
+\DoxyCodeLine{00110\ \ \ \ \ SecondThird,}
+\DoxyCodeLine{00111\ \ \ \ \ ThirdThird}
+\DoxyCodeLine{00112\ \ \ \};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{keyword}{static}\ std::vector<ComplexNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_a6d63791330253f47edc327437e1cffb5}{Fft}}(\textcolor{keyword}{const}\ std::vector<ScalarNumber>\&\ in);}
+\DoxyCodeLine{00123\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a6d63791330253f47edc327437e1cffb5}{Fft}}(\doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}*\ input,\ std::size\_t\ size,\ ComplexNumber*\ result);}
+\DoxyCodeLine{00124\ \ \ \textcolor{keyword}{static}\ std::vector<ComplexNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_a6d63791330253f47edc327437e1cffb5}{Fft}}(\textcolor{keyword}{const}\ std::vector<ComplexNumber>\&\ in);}
+\DoxyCodeLine{00125\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a6d63791330253f47edc327437e1cffb5}{Fft}}(ComplexNumber*\ input,\ std::size\_t\ size,\ ComplexNumber*\ result);}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#ifndef\ \_\_VTK\_WRAP\_\_}}
+\DoxyCodeLine{00127\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkScalarNumberArray>}}\ \doxymbox{\hyperlink{classvtk_f_f_t_a6d63791330253f47edc327437e1cffb5}{Fft}}(vtkScalarNumberArray*\ input);}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{keyword}{static}\ std::vector<ComplexNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_aa9756ef1b7828ed6d5e971a0292b17bd}{RFft}}(\textcolor{keyword}{const}\ std::vector<ScalarNumber>\&\ in);}
+\DoxyCodeLine{00139\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_aa9756ef1b7828ed6d5e971a0292b17bd}{RFft}}(\doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}*\ input,\ std::size\_t\ size,\ ComplexNumber*\ result);}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#ifndef\ \_\_VTK\_WRAP\_\_}}
+\DoxyCodeLine{00141\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkScalarNumberArray>}}\ \doxymbox{\hyperlink{classvtk_f_f_t_aa9756ef1b7828ed6d5e971a0292b17bd}{RFft}}(vtkScalarNumberArray*\ input);}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00155\ \ \ \textcolor{keyword}{static}\ std::vector<ComplexNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_ab6c5fa2b5b0161635b9855f7972d064e}{IFft}}(\textcolor{keyword}{const}\ std::vector<ComplexNumber>\&\ in);}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00165\ \ \ \textcolor{keyword}{static}\ std::vector<ScalarNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_a1f357058686e97b00a265cda2df1d70f}{IRFft}}(\textcolor{keyword}{const}\ std::vector<ComplexNumber>\&\ in);}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00170\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}\ \doxymbox{\hyperlink{classvtk_f_f_t_a42fc4bd0f6d517aa7c9073acb3edda23}{Abs}}(\textcolor{keyword}{const}\ ComplexNumber\&\ in);}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}\ \doxymbox{\hyperlink{classvtk_f_f_t_aa732431257d63c373c55be181f73b1f3}{SquaredAbs}}(\textcolor{keyword}{const}\ ComplexNumber\&\ in);}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00180\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ ComplexNumber\ \doxymbox{\hyperlink{classvtk_f_f_t_a55bea12fcc095ed86d1d5d982a495495}{Conjugate}}(\textcolor{keyword}{const}\ ComplexNumber\&\ in);}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00185\ \ \ \textcolor{keyword}{static}\ std::vector<ScalarNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_a6ce184ea1758bb31961e53dd55877a9b}{FftFreq}}(\textcolor{keywordtype}{int}\ windowLength,\ \textcolor{keywordtype}{double}\ sampleSpacing);}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00191\ \ \ \textcolor{keyword}{static}\ std::vector<ScalarNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_a85f5457a4c6784531a2cb4d0ad627ebf}{RFftFreq}}(\textcolor{keywordtype}{int}\ windowLength,\ \textcolor{keywordtype}{double}\ sampleSpacing);}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00200\ \ \ \textcolor{keyword}{static}\ std::array<double,\ 2>\ \doxymbox{\hyperlink{classvtk_f_f_t_a563598b46735e0c3a4c259a706f79d99}{GetOctaveFrequencyRange}}(\doxymbox{\hyperlink{classvtk_f_f_t_a9a399084ea45bf4f96133dcb235556c1}{Octave}}\ octave,}
+\DoxyCodeLine{00201\ \ \ \ \ \doxymbox{\hyperlink{classvtk_f_f_t_a1d34f335c3a7a0c9bba67ccfb8441eb5}{OctaveSubdivision}}\ octaveSubdivision\ =\ OctaveSubdivision::Full,\ \textcolor{keywordtype}{bool}\ baseTwo\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00223\ \textcolor{preprocessor}{\#ifndef\ \_\_VTK\_WRAP\_\_}}
+\DoxyCodeLine{00224\ \ \ template\ <typename\ T,\ typename\ TW,\ typename\ std::enable\_if<isFftType<T>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}*\ =\ \textcolor{keyword}{nullptr}>}
+\DoxyCodeLine{00225\ \ \ \textcolor{keyword}{static}\ std::vector<ComplexNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_adc2cb1e0017be4c36ad39412b136cd11}{OverlappingFft}}(\textcolor{keyword}{const}\ std::vector<T>\&\ signal,}
+\DoxyCodeLine{00226\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<TW>\&\ window,\ std::size\_t\ noverlap,\ \textcolor{keywordtype}{bool}\ detrend,\ \textcolor{keywordtype}{bool}\ onesided,}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ shape\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TW>}
+\DoxyCodeLine{00230\ \ \ \textcolor{keyword}{static}\ vtkFFT::ComplexNumber*\ \doxymbox{\hyperlink{classvtk_f_f_t_adc2cb1e0017be4c36ad39412b136cd11}{OverlappingFft}}(vtkFFT::vtkScalarNumberArray*\ signal,}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<TW>\&\ window,\ std::size\_t\ noverlap,\ \textcolor{keywordtype}{bool}\ detrend,\ \textcolor{keywordtype}{bool}\ onesided,}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ shape\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00239\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtk_f_f_t_ad22e18085321a2ecf6391a63d5351193}{Scaling}}\ :\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00240\ \ \ \{}
+\DoxyCodeLine{00241\ \ \ \ \ \doxymbox{\hyperlink{classvtk_f_f_t_ad22e18085321a2ecf6391a63d5351193a9f9a4494dfe2da580f0bce4bb0130b91}{Density}}\ =\ 0,\ }
+\DoxyCodeLine{00242\ \ \ \ \ \doxymbox{\hyperlink{classvtk_f_f_t_ad22e18085321a2ecf6391a63d5351193a1bdd15be4cf7d9b570c89337731a9ea0}{Spectrum}}\ \ \ \ \ }
+\DoxyCodeLine{00243\ \ \ \};}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00248\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1a73d80377bbe354b0554c43fad3398e}{SpectralMode}}\ :\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00249\ \ \ \{}
+\DoxyCodeLine{00250\ \ \ \ \ \doxymbox{\hyperlink{classvtk_f_f_t_a1a73d80377bbe354b0554c43fad3398ead66cca888818e49765298ec8c2df3576}{STFT}}\ =\ 0,\ }
+\DoxyCodeLine{00251\ \ \ \ \ \doxymbox{\hyperlink{classvtk_f_f_t_a1a73d80377bbe354b0554c43fad3398ea24a1f88315b6644275ff9d2c14b094f7}{PSD}}\ \ \ \ \ \ \ }
+\DoxyCodeLine{00252\ \ \ \};}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00280\ \textcolor{preprocessor}{\#ifndef\ \_\_VTK\_WRAP\_\_}}
+\DoxyCodeLine{00281\ \ \ template\ <typename\ T,\ typename\ TW,\ typename\ std::enable\_if<isFftType<T>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}*\ =\ \textcolor{keyword}{nullptr}>}
+\DoxyCodeLine{00282\ \ \ \textcolor{keyword}{static}\ std::vector<ComplexNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_a5935aae5d4fc177914d35bf3bf2b9377}{Spectrogram}}(\textcolor{keyword}{const}\ std::vector<T>\&\ signal,}
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<TW>\&\ window,\ \textcolor{keywordtype}{double}\ sampleRate,\ \textcolor{keywordtype}{int}\ noverlap,\ \textcolor{keywordtype}{bool}\ detrend,\ \textcolor{keywordtype}{bool}\ onesided,}
+\DoxyCodeLine{00284\ \ \ \ \ \doxymbox{\hyperlink{classvtk_f_f_t_ad22e18085321a2ecf6391a63d5351193}{vtkFFT::Scaling}}\ scaling,\ \doxymbox{\hyperlink{classvtk_f_f_t_a1a73d80377bbe354b0554c43fad3398e}{vtkFFT::SpectralMode}}\ mode,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ shape\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{keywordtype}{bool}\ transpose\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TW>}
+\DoxyCodeLine{00288\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkFFT::vtkScalarNumberArray>}}\ \doxymbox{\hyperlink{classvtk_f_f_t_a5935aae5d4fc177914d35bf3bf2b9377}{Spectrogram}}(}
+\DoxyCodeLine{00289\ \ \ \ \ vtkFFT::vtkScalarNumberArray*\ signal,\ \textcolor{keyword}{const}\ std::vector<TW>\&\ window,\ \textcolor{keywordtype}{double}\ sampleRate,}
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{keywordtype}{int}\ noverlap,\ \textcolor{keywordtype}{bool}\ detrend,\ \textcolor{keywordtype}{bool}\ onesided,\ \doxymbox{\hyperlink{classvtk_f_f_t_ad22e18085321a2ecf6391a63d5351193}{vtkFFT::Scaling}}\ scaling,\ \doxymbox{\hyperlink{classvtk_f_f_t_a1a73d80377bbe354b0554c43fad3398e}{vtkFFT::SpectralMode}}\ mode,}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ shape\ =\ \textcolor{keyword}{nullptr},\ \textcolor{keywordtype}{bool}\ transpose\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\#ifndef\ \_\_VTK\_WRAP\_\_}}
+\DoxyCodeLine{00318\ \ \ template\ <typename\ T,\ typename\ TW,\ typename\ std::enable\_if<isFftType<T>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}*\ =\ \textcolor{keyword}{nullptr}>}
+\DoxyCodeLine{00319\ \ \ \textcolor{keyword}{static}\ std::vector<vtkFFT::ScalarNumber>\ \doxymbox{\hyperlink{classvtk_f_f_t_a69b56baf0f647dda9d8d288d86c4e936}{Csd}}(\textcolor{keyword}{const}\ std::vector<T>\&\ signal,}
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<TW>\&\ window,\ \textcolor{keywordtype}{double}\ sampleRate,\ \textcolor{keywordtype}{int}\ noverlap,\ \textcolor{keywordtype}{bool}\ detrend,\ \textcolor{keywordtype}{bool}\ onesided,}
+\DoxyCodeLine{00321\ \ \ \ \ \doxymbox{\hyperlink{classvtk_f_f_t_ad22e18085321a2ecf6391a63d5351193}{vtkFFT::Scaling}}\ scaling);}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TW>}
+\DoxyCodeLine{00324\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkFFT::vtkScalarNumberArray>}}\ \doxymbox{\hyperlink{classvtk_f_f_t_a69b56baf0f647dda9d8d288d86c4e936}{Csd}}(vtkScalarNumberArray*\ signal,}
+\DoxyCodeLine{00325\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<TW>\&\ window,\ \textcolor{keywordtype}{double}\ sampleRate,\ \textcolor{keywordtype}{int}\ noverlap,\ \textcolor{keywordtype}{bool}\ detrend,\ \textcolor{keywordtype}{bool}\ onesided,}
+\DoxyCodeLine{00326\ \ \ \ \ \doxymbox{\hyperlink{classvtk_f_f_t_ad22e18085321a2ecf6391a63d5351193}{vtkFFT::Scaling}}\ scaling);}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00340\ \textcolor{preprocessor}{\#ifndef\ \_\_VTK\_WRAP\_\_}}
+\DoxyCodeLine{00341\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00342\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a457f1164ac183123dfcc7bc790f8ae4c}{Transpose}}(T*\ data,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ shape);}
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00355\ \ \ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{classvtk_f_f_t_a1545cf0c2002c32368ef81f14532745d}{WindowGenerator}}\ =\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}\ (*)(std::size\_t,\ std::size\_t);}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}\ HanningGenerator(std::size\_t\ x,\ std::size\_t\ size);}
+\DoxyCodeLine{00358\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}\ BartlettGenerator(std::size\_t\ x,\ std::size\_t\ size);}
+\DoxyCodeLine{00359\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}\ SineGenerator(std::size\_t\ x,\ std::size\_t\ size);}
+\DoxyCodeLine{00360\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}\ BlackmanGenerator(std::size\_t\ x,\ std::size\_t\ size);}
+\DoxyCodeLine{00361\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}\ RectangularGenerator(std::size\_t\ x,\ std::size\_t\ size);}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00368\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00369\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a61a5742c5d87b5f7ca9558fa10ae654c}{GenerateKernel1D}}(T*\ kernel,\ std::size\_t\ n,\ \doxymbox{\hyperlink{classvtk_f_f_t_a1545cf0c2002c32368ef81f14532745d}{WindowGenerator}}\ generator);}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00375\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00376\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a559dc15fb68b9a403f065dbb9c9c1d91}{GenerateKernel2D}}(T*\ kernel,\ std::size\_t\ n,\ std::size\_t\ m,\ \doxymbox{\hyperlink{classvtk_f_f_t_a1545cf0c2002c32368ef81f14532745d}{WindowGenerator}}\ generator);}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \textcolor{keyword}{static}\ vtkFFT*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00379\ \ \ vtkTypeMacro(vtkFFT,\ vtkObject);}
+\DoxyCodeLine{00380\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_ae92607794e43689f307aaf7c439d8231}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00383\ \ \ vtkFFT()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00384\ \ \ \string~vtkFFT()\ \textcolor{keyword}{override}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00389\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00390\ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{static}\ T\ \doxymbox{\hyperlink{classvtk_f_f_t_aa46d97e04e77944bf906c8eacf2dd241}{Zero}}();}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \textcolor{preprocessor}{\#ifndef\ \_\_VTK\_WRAP\_\_}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00397\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ InputIt>}
+\DoxyCodeLine{00398\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{typename}\ std::iterator\_traits<InputIt>::value\_type\ \doxymbox{\hyperlink{classvtk_f_f_t_a638294889a592e1f5c4d995eab9e1d4e}{ComputeScaling}}(}
+\DoxyCodeLine{00399\ \ \ \ \ InputIt\ begin,\ InputIt\ end,\ \doxymbox{\hyperlink{classvtk_f_f_t_ad22e18085321a2ecf6391a63d5351193}{Scaling}}\ scaling,\ \textcolor{keywordtype}{double}\ fs);}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00405\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ TW>}
+\DoxyCodeLine{00406\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a6516a52aff6add4785543aec554c4ad3}{PreprocessAndDispatchFft}}(\textcolor{keyword}{const}\ T*\ segment,\ \textcolor{keyword}{const}\ std::vector<TW>\&\ window,}
+\DoxyCodeLine{00407\ \ \ \ \ \textcolor{keywordtype}{bool}\ detrend,\ \textcolor{keywordtype}{bool}\ onesided,\ vtkFFT::ComplexNumber*\ result);}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00417\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a3cf640f3b40673607ec287b60ed19b3a}{RFft}}(ComplexNumber*\ input,\ std::size\_t\ size,\ ComplexNumber*\ result);}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00422\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TW>}
+\DoxyCodeLine{00423\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a260d7f52c787f2f390fcd6946031585d}{ScaleFft}}(ComplexNumber*\ fft,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ shape[2],\ \textcolor{keyword}{const}\ std::vector<TW>\&\ window,}
+\DoxyCodeLine{00424\ \ \ \ \ \textcolor{keywordtype}{double}\ sampleRate,\ \textcolor{keywordtype}{bool}\ onesided,\ \doxymbox{\hyperlink{classvtk_f_f_t_ad22e18085321a2ecf6391a63d5351193}{vtkFFT::Scaling}}\ scaling,\ \doxymbox{\hyperlink{classvtk_f_f_t_a1a73d80377bbe354b0554c43fad3398e}{vtkFFT::SpectralMode}}\ mode);}
+\DoxyCodeLine{00425\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00428\ \ \ vtkFFT(\textcolor{keyword}{const}\ vtkFFT\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00429\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkFFT\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00430\ \};}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00433\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00434\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_f_f_t_1_1is_fft_type}{vtkFFT::isFftType}}<vtkFFT::\doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{ScalarNumber}}>\ :\ \textcolor{keyword}{public}\ std::true\_type}
+\DoxyCodeLine{00435\ \{}
+\DoxyCodeLine{00436\ \};}
+\DoxyCodeLine{00437\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00438\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_f_f_t_1_1is_fft_type}{vtkFFT::isFftType}}<vtkFFT::ComplexNumber>\ :\ \textcolor{keyword}{public}\ std::true\_type}
+\DoxyCodeLine{00439\ \{}
+\DoxyCodeLine{00440\ \};}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00442\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00443\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00444\ \textcolor{keyword}{constexpr}\ T\ \doxymbox{\hyperlink{classvtk_f_f_t_aa46d97e04e77944bf906c8eacf2dd241}{vtkFFT::Zero}}()}
+\DoxyCodeLine{00445\ \{}
+\DoxyCodeLine{00446\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}T\textcolor{keyword}{>}(0);}
+\DoxyCodeLine{00447\ \}}
+\DoxyCodeLine{00448\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{00449\ \textcolor{keyword}{constexpr}\ vtkFFT::ComplexNumber\ \doxymbox{\hyperlink{classvtk_f_f_t_aa46d97e04e77944bf906c8eacf2dd241}{vtkFFT::Zero}}()}
+\DoxyCodeLine{00450\ \{}
+\DoxyCodeLine{00451\ \ \ \textcolor{keywordflow}{return}\ vtkFFT::ComplexNumber\{\ 0.0,\ 0.0\ \};}
+\DoxyCodeLine{00452\ \}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00455\ \textcolor{keyword}{inline}\ vtkFFT::ComplexNumber\ operator+(}
+\DoxyCodeLine{00456\ \ \ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ lhs,\ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ rhs)}
+\DoxyCodeLine{00457\ \{}
+\DoxyCodeLine{00458\ \ \ \textcolor{keywordflow}{return}\ vtkFFT::ComplexNumber\{\ lhs.r\ +\ rhs.r,\ lhs.i\ +\ rhs.i\ \};}
+\DoxyCodeLine{00459\ \}}
+\DoxyCodeLine{00460\ \textcolor{keyword}{inline}\ vtkFFT::ComplexNumber\ operator-\/(}
+\DoxyCodeLine{00461\ \ \ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ lhs,\ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ rhs)}
+\DoxyCodeLine{00462\ \{}
+\DoxyCodeLine{00463\ \ \ \textcolor{keywordflow}{return}\ vtkFFT::ComplexNumber\{\ lhs.r\ -\/\ rhs.r,\ lhs.i\ -\/\ rhs.i\ \};}
+\DoxyCodeLine{00464\ \}}
+\DoxyCodeLine{00465\ \textcolor{keyword}{inline}\ vtkFFT::ComplexNumber\ operator*(}
+\DoxyCodeLine{00466\ \ \ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ lhs,\ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ rhs)}
+\DoxyCodeLine{00467\ \{}
+\DoxyCodeLine{00468\ \ \ \textcolor{keywordflow}{return}\ vtkFFT::ComplexNumber\{\ (lhs.r\ *\ rhs.r)\ -\/\ (lhs.i\ *\ rhs.i),}
+\DoxyCodeLine{00469\ \ \ \ \ (lhs.r\ *\ rhs.i)\ +\ (lhs.i\ *\ rhs.r)\ \};}
+\DoxyCodeLine{00470\ \}}
+\DoxyCodeLine{00471\ \textcolor{keyword}{inline}\ vtkFFT::ComplexNumber\ operator*(}
+\DoxyCodeLine{00472\ \ \ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ lhs,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{vtkFFT::ScalarNumber}}\&\ rhs)}
+\DoxyCodeLine{00473\ \{}
+\DoxyCodeLine{00474\ \ \ \textcolor{keywordflow}{return}\ vtkFFT::ComplexNumber\{\ lhs.r\ *\ rhs,\ lhs.i\ *\ rhs\ \};}
+\DoxyCodeLine{00475\ \}}
+\DoxyCodeLine{00476\ \textcolor{keyword}{inline}\ vtkFFT::ComplexNumber\ operator/(}
+\DoxyCodeLine{00477\ \ \ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ lhs,\ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ rhs)}
+\DoxyCodeLine{00478\ \{}
+\DoxyCodeLine{00479\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ divisor\ =\ rhs.r\ *\ rhs.r\ +\ rhs.i\ *\ rhs.i;}
+\DoxyCodeLine{00480\ \ \ \textcolor{keywordflow}{return}\ vtkFFT::ComplexNumber\{\ ((lhs.r\ *\ rhs.r)\ +\ (lhs.i\ *\ rhs.i))\ /\ divisor,}
+\DoxyCodeLine{00481\ \ \ \ \ ((lhs.i\ *\ rhs.r)\ -\/\ (lhs.r\ *\ rhs.i))\ /\ divisor\ \};}
+\DoxyCodeLine{00482\ \}}
+\DoxyCodeLine{00483\ \textcolor{keyword}{inline}\ vtkFFT::ComplexNumber\ operator/(}
+\DoxyCodeLine{00484\ \ \ \textcolor{keyword}{const}\ vtkFFT::ComplexNumber\&\ lhs,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{vtkFFT::ScalarNumber}}\&\ rhs)}
+\DoxyCodeLine{00485\ \{}
+\DoxyCodeLine{00486\ \ \ \textcolor{keywordflow}{return}\ vtkFFT::ComplexNumber\{\ lhs.r\ /\ rhs,\ lhs.i\ /\ rhs\ \};}
+\DoxyCodeLine{00487\ \}}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00489\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00490\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{vtkFFT::ScalarNumber}}\ \doxymbox{\hyperlink{classvtk_f_f_t_a42fc4bd0f6d517aa7c9073acb3edda23}{vtkFFT::Abs}}(\textcolor{keyword}{const}\ ComplexNumber\&\ in)}
+\DoxyCodeLine{00491\ \{}
+\DoxyCodeLine{00492\ \ \ \textcolor{keywordflow}{return}\ std::sqrt(in.r\ *\ in.r\ +\ in.i\ *\ in.i);}
+\DoxyCodeLine{00493\ \}}
+\DoxyCodeLine{00494\ }
+\DoxyCodeLine{00495\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00496\ \doxymbox{\hyperlink{classvtk_f_f_t_a1cbfbb961b91211116bc1d71de240f56}{vtkFFT::ScalarNumber}}\ \doxymbox{\hyperlink{classvtk_f_f_t_aa732431257d63c373c55be181f73b1f3}{vtkFFT::SquaredAbs}}(\textcolor{keyword}{const}\ ComplexNumber\&\ in)}
+\DoxyCodeLine{00497\ \{}
+\DoxyCodeLine{00498\ \ \ \textcolor{keywordflow}{return}\ in.r\ *\ in.r\ +\ in.i\ *\ in.i;}
+\DoxyCodeLine{00499\ \}}
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00501\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00502\ vtkFFT::ComplexNumber\ \doxymbox{\hyperlink{classvtk_f_f_t_a55bea12fcc095ed86d1d5d982a495495}{vtkFFT::Conjugate}}(\textcolor{keyword}{const}\ ComplexNumber\&\ in)}
+\DoxyCodeLine{00503\ \{}
+\DoxyCodeLine{00504\ \ \ \textcolor{keywordflow}{return}\ ComplexNumber\{\ in.r,\ -\/in.i\ \};}
+\DoxyCodeLine{00505\ \}}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00508\ \textcolor{keywordtype}{double}\ vtkFFT::HanningGenerator(std::size\_t\ x,\ std::size\_t\ size)}
+\DoxyCodeLine{00509\ \{}
+\DoxyCodeLine{00510\ \ \ \textcolor{keywordflow}{return}\ 0.5\ *\ (1.0\ -\/\ std::cos(2.0\ *\ \doxymbox{\hyperlink{classvtk_math_a89b816871404e5b2ff3c36aef6818621}{vtkMath::Pi}}()\ *\ x\ /\ (size\ -\/\ 1)));}
+\DoxyCodeLine{00511\ \}}
+\DoxyCodeLine{00512\ }
+\DoxyCodeLine{00513\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00514\ \textcolor{keywordtype}{double}\ vtkFFT::BartlettGenerator(std::size\_t\ x,\ std::size\_t\ size)}
+\DoxyCodeLine{00515\ \{}
+\DoxyCodeLine{00516\ \ \ \textcolor{keywordflow}{return}\ 2.0\ *\ x\ /\ (size\ -\/\ 1);}
+\DoxyCodeLine{00517\ \}}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00520\ \textcolor{keywordtype}{double}\ vtkFFT::SineGenerator(std::size\_t\ x,\ std::size\_t\ size)}
+\DoxyCodeLine{00521\ \{}
+\DoxyCodeLine{00522\ \ \ \textcolor{keywordflow}{return}\ std::sin(\doxymbox{\hyperlink{classvtk_math_a89b816871404e5b2ff3c36aef6818621}{vtkMath::Pi}}()\ *\ x\ /\ (size\ -\/\ 1));}
+\DoxyCodeLine{00523\ \}}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00526\ \textcolor{keywordtype}{double}\ vtkFFT::BlackmanGenerator(std::size\_t\ x,\ std::size\_t\ size)}
+\DoxyCodeLine{00527\ \{}
+\DoxyCodeLine{00528\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ cosin\ =\ std::cos((2.0\ *\ \doxymbox{\hyperlink{classvtk_math_a89b816871404e5b2ff3c36aef6818621}{vtkMath::Pi}}()\ *\ x)\ /\ (size\ -\/\ 1));}
+\DoxyCodeLine{00529\ \ \ \textcolor{keywordflow}{return}\ 0.42\ -\/\ 0.5\ *\ cosin\ +\ 0.08\ *\ (2.0\ *\ cosin\ *\ cosin\ -\/\ 1.0);}
+\DoxyCodeLine{00530\ \}}
+\DoxyCodeLine{00531\ }
+\DoxyCodeLine{00532\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00533\ \textcolor{keywordtype}{double}\ vtkFFT::RectangularGenerator(std::size\_t,\ std::size\_t)}
+\DoxyCodeLine{00534\ \{}
+\DoxyCodeLine{00535\ \ \ \textcolor{keywordflow}{return}\ 1.0;}
+\DoxyCodeLine{00536\ \}}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00538\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00539\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00540\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a61a5742c5d87b5f7ca9558fa10ae654c}{vtkFFT::GenerateKernel1D}}(T*\ kernel,\ std::size\_t\ n,\ \doxymbox{\hyperlink{classvtk_f_f_t_a1545cf0c2002c32368ef81f14532745d}{WindowGenerator}}\ generator)}
+\DoxyCodeLine{00541\ \{}
+\DoxyCodeLine{00542\ \ \ std::size\_t\ half\ =\ (n\ /\ 2)\ +\ (n\ \%\ 2);}
+\DoxyCodeLine{00543\ \ \ \textcolor{keywordflow}{for}\ (std::size\_t\ i\ =\ 0;\ i\ <\ half;\ ++i)}
+\DoxyCodeLine{00544\ \ \ \{}
+\DoxyCodeLine{00545\ \ \ \ \ kernel[i]\ =\ kernel[n\ -\/\ 1\ -\/\ i]\ =\ generator(i,\ n);}
+\DoxyCodeLine{00546\ \ \ \}}
+\DoxyCodeLine{00547\ \}}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00550\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00551\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_f_f_t_a559dc15fb68b9a403f065dbb9c9c1d91}{vtkFFT::GenerateKernel2D}}(T*\ kernel,\ std::size\_t\ n,\ std::size\_t\ m,\ \doxymbox{\hyperlink{classvtk_f_f_t_a1545cf0c2002c32368ef81f14532745d}{WindowGenerator}}\ generator)}
+\DoxyCodeLine{00552\ \{}
+\DoxyCodeLine{00553\ \ \ \textcolor{keyword}{const}\ std::size\_t\ halfX\ =\ (n\ /\ 2)\ +\ (n\ \%\ 2);}
+\DoxyCodeLine{00554\ \ \ \textcolor{keyword}{const}\ std::size\_t\ halfY\ =\ (m\ /\ 2)\ +\ (m\ \%\ 2);}
+\DoxyCodeLine{00555\ \ \ \textcolor{keywordflow}{for}\ (std::size\_t\ i\ =\ 0;\ i\ <\ halfX;\ ++i)}
+\DoxyCodeLine{00556\ \ \ \{}
+\DoxyCodeLine{00557\ \ \ \ \ \textcolor{keywordflow}{for}\ (std::size\_t\ j\ =\ 0;\ j\ <\ halfY;\ ++j)}
+\DoxyCodeLine{00558\ \ \ \ \ \{}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \textcolor{comment}{//\ clang-\/format\ off}}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ kernel[i][j]}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ =\ kernel[n\ -\/\ 1\ -\/\ i][j]}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ =\ kernel[i][m\ -\/\ 1\ -\/\ j]}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ =\ kernel[n\ -\/\ 1\ -\/\ i][m\ -\/\ 1\ -\/\ j]}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ =\ generator(i,\ n)\ *\ generator(j,\ m);}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \textcolor{comment}{//\ clang-\/format\ on}}
+\DoxyCodeLine{00566\ \ \ \ \ \}}
+\DoxyCodeLine{00567\ \ \ \}}
+\DoxyCodeLine{00568\ \}}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00572\ \textcolor{preprocessor}{\#include\ "{}vtkFFT.txx"{}}\ \textcolor{comment}{//\ complex\ templated\ functions\ not\ wrapped\ by\ python}}
+\DoxyCodeLine{00573\ }
+\DoxyCodeLine{00574\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkFFT\_h}}
+
+\end{DoxyCode}

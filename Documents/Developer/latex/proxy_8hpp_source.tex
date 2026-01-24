@@ -1,0 +1,363 @@
+\doxysection{proxy.\+hpp}
+\hypertarget{proxy_8hpp_source}{}\label{proxy_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/proxy.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/proxy.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_PROXY\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_PROXY\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}coroutine.hpp"{}}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00007\ \{}
+\DoxyCodeLine{00009\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy}{Master::Proxy}}}
+\DoxyCodeLine{00010\ \ \ \{}
+\DoxyCodeLine{00011\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00012\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_1_1_enqueue_iterator}{EnqueueIterator}};}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keyword}{using\ }IncomingQueues\ =\ std::map<int,\ \ \ \ \ MemoryBuffer>;}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{keyword}{using\ }OutgoingQueues\ =\ std::map<BlockID,\ MemoryBuffer>;}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Proxy(\doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}*\ master\_\_,\ \textcolor{keywordtype}{int}\ gid\_\_,}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_i_exchange_info}{IExchangeInfo}}*\ \ iexchange\_\_\ =\ 0):}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gid\_(gid\_\_),}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master\_(master\_\_),}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iexchange\_(iexchange\_\_),}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ collectives\_(\&master\_\_-\/>collectives(gid\_\_))}
+\DoxyCodeLine{00023\ \ \ \ \ \{}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ fill\_incoming();}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ move\ outgoing\_\ back\ into\ proxy,\ in\ case\ it's\ a\ multi-\/foreach\ round}}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!iexchange\_)}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ master\_-\/>outgoing(gid\_))}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ access\ =\ x.second.access();}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!access-\/>empty())}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ outgoing\_.emplace(x.first,\ access-\/>back().move());}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ access-\/>pop\_back();}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00037\ \ \ \ \ \}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{//\ delete\ copy\ constructor\ to\ avoid\ coping\ incoming\_\ and\ outgoing\_\ (plus\ it}}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ won't\ work\ otherwise\ because\ MemoryBuffer\ has\ a\ deleted\ copy}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ constructor)}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Proxy(\textcolor{keyword}{const}\ Proxy\&)\ \ \ \ \ =\textcolor{keyword}{delete};}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Proxy(Proxy\&\&)\ \ \ \ \ \ \ \ \ \ =\textcolor{keywordflow}{default};}
+\DoxyCodeLine{00044\ \ \ \ \ Proxy\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ operator=(\textcolor{keyword}{const}\ Proxy\&)\ =\textcolor{keyword}{delete};}
+\DoxyCodeLine{00045\ \ \ \ \ Proxy\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ operator=(Proxy\&\&)\ \ \ \ \ \ =\textcolor{keywordflow}{default};}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \string~Proxy()}
+\DoxyCodeLine{00048\ \ \ \ \ \{}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ outgoing\ =\ master\_-\/>outgoing(gid\_);}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ incoming\ =\ master\_-\/>incoming(gid\_);}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ out\ outgoing\_}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ outgoing\_)}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ outgoing[x.first].access()-\/>emplace\_back(std::move(x.second));}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iexchange\_)}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iexchange\_-\/>inc\_work();}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ move\ incoming\_\ back\ into\ master,\ in\ case\ it's\ a\ multi-\/foreach\ round}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!iexchange\_)}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ incoming\_)}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ incoming[x.first].access()-\/>emplace\_front(std::move(x.second));}
+\DoxyCodeLine{00064\ \ \ \ \ \}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ init()}
+\DoxyCodeLine{00067\ \ \ \ \ \{}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ collectives\_\ =\ \&master()-\/>collectives(gid());}
+\DoxyCodeLine{00069\ \ \ \ \ \}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gid()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ gid\_;\ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fill\_incoming()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00074\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ exists\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ incoming\_.clear();}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ fill\ incoming\_}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ master\_-\/>incoming(gid\_))}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ access\ =\ x.second.access();}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!access-\/>empty())}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ exists\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ incoming\_.emplace(x.first,\ access-\/>front().move());}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ access-\/>pop\_front();}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iexchange\_)}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iexchange\_-\/>dec\_work();}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ exists;}
+\DoxyCodeLine{00094\ \ \ \ \ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\&\ \ to,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\&\ \ \ \ \ \ \ \ x,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}})(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ \textcolor{keyword}{const}\ T\&)\ =\ \&::diy::save\ \ \ \ }
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00102\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}(outgoing\_[to],\ x);}
+\DoxyCodeLine{00104\ \ \ \ \ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enqueue(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\&\ \ to,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T*\ \ \ \ \ \ \ \ x,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ n,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}})(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ \textcolor{keyword}{const}\ T\&)\ =\ \&::diy::save\ \ \ \ }
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keywordtype}{void}\ \textcolor{keyword}{inline}\ \ \ \ \ \ \ \ \ enqueue\_blob}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\&\ \ to,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \ \ \ \ x,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ from,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ x,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*load)(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ T\&)\ =\ \&::diy::load\ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00128\ \textcolor{keyword}{\ \ \ \ }\{\ load(incoming\_[from],\ x);\ \}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dequeue(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ from,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T*\ \ \ \ \ \ \ \ \ \ \ \ \ \ x,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ n,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*load)(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ T\&)\ =\ \&::diy::load\ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a3e05b1421248da03d62b12800f578055}{dequeue}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\&\ \ from,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ x,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*load)(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ T\&)\ =\ \&::diy::load\ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(from.gid,\ x,\ load);\ \}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_aeef65996f0c96cf3bd6b6760422f42ce}{dequeue}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\&\ \ from,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T*\ \ \ \ \ \ \ \ \ \ \ \ \ \ x,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ n,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*load)(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ T\&)\ =\ \&::diy::load\ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(from.gid,\ x,\ n,\ load);\ \}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_binary_blob}{BinaryBlob}}\ \textcolor{keyword}{inline}\ \ \ dequeue\_blob}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{int}\ \ from)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00161\ \ \ \ \ EnqueueIterator<T>\ \ enqueuer(\textcolor{keyword}{const}\ T\&\ x,}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}})(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ \textcolor{keyword}{const}\ T\&)\ =\ \&::diy::save\ \ \ )\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00163\ \textcolor{keyword}{\ \ \ \ }\{\ \textcolor{keywordflow}{return}\ EnqueueIterator<T>(\textcolor{keyword}{this},\ x,\ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}});\ \}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ IncomingQueues*\ \ \ \ \ incoming()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ \&incoming\_;\ \}}
+\DoxyCodeLine{00166\ \ \ \ \ MemoryBuffer\&\ \ \ \ \ \ \ incoming(\textcolor{keywordtype}{int}\ from)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ incoming\_[from];\ \}}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ incoming(std::vector<int>\&\ v)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ fill\ v\ with\ every\ gid\ from\ which\ we\ have\ a\ message}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \ \ OutgoingQueues*\ \ \ \ \ outgoing()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ \&outgoing\_;\ \}}
+\DoxyCodeLine{00170\ \ \ \ \ MemoryBuffer\&\ \ \ \ \ \ \ outgoing(\textcolor{keyword}{const}\ BlockID\&\ to)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ outgoing\_[to];\ \}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ empty\_incoming\_queues()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ empty\_outgoing\_queues()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ empty\_queues()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T,\ \textcolor{keyword}{class}\ Op>}
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a518226048e7e5bf67ed040082b057a7c}{all\_reduce}}(\textcolor{keyword}{const}\ T\&\ in,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Op\ op\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{keyword}{inline}\ T\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_ad317ef88a82a556b31885968c48cc48a}{read}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keyword}{inline}\ T\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a6ab43d669675ba3184ff46fc71931e4b}{get}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ scratch(\textcolor{keyword}{const}\ T\&\ in)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00207\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_collectives_list}{CollectivesList}}*\ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_ae3831de1b092a40490839a74a882b6c3}{collectives}}()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ collectives\_;\ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}*\ \ \ \ \ \ \ \ \ \ \ \ \ master()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ master\_;\ \}}
+\DoxyCodeLine{00210\ \ \ \ \ IExchangeInfo*\ \ \ \ \ \ iexchange()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ iexchange\_;\ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{comment}{//\ Coroutine\ machinery}}
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_main(coroutine::cothread\_t\ main)\ \ \ \ \ \ \ \ \ \ \ \ \{\ main\_\ =\ main;\ \}}
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ yield()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ coroutine::co\_switch(main\_);\ \}}
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_done(\textcolor{keywordtype}{bool}\ x)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ done\_\ =\ x;\ \}}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ done()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ done\_;\ \}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gid\_;}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ Master*\ \ \ \ \ \ \ \ \ \ \ master\_;}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ IExchangeInfo*\ \ \ \ iexchange\_;}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ these\ are\ marked\ mutable\ to\ not\ have\ to\ undo\ consts\ on\ enqueue/dequeue,\ in\ case\ it\ breaks\ things;}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ eventually,\ implement\ this\ change}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \textcolor{keyword}{mutable}\ IncomingQueues\ \ \ \ incoming\_;}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \textcolor{keyword}{mutable}\ OutgoingQueues\ \ \ \ outgoing\_;}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \ \ \ \ CollectivesList*\ \ collectives\_;}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \ \ \ \ coroutine::cothread\_t\ main\_;}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ done\_\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00232\ \ \ \};}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00235\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_1_1_enqueue_iterator}{Master::Proxy::EnqueueIterator}}}
+\DoxyCodeLine{00236\ \ \ \{}
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ void\ (*SaveT)(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ \textcolor{keyword}{const}\ T\&);}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ EnqueueIterator(\textcolor{keyword}{const}\ Proxy*\ proxy,\ \textcolor{keyword}{const}\ T\&\ x,}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SaveT\ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}\ =\ \&::diy::save<T>):}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ proxy\_(proxy),\ x\_(x),\ save\_(\doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \ \ EnqueueIterator\&\ \ \ \ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\&\ to)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ proxy\_-\/>enqueue(to,\ x\_,\ save\_);\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00244\ \ \ \ \ EnqueueIterator\&\ \ \ \ operator*()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00245\ \ \ \ \ EnqueueIterator\&\ \ \ \ operator++()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00246\ \ \ \ \ EnqueueIterator\&\ \ \ \ operator++(\textcolor{keywordtype}{int})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \textcolor{keyword}{const}\ Proxy*\ \ proxy\_;}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\&\ \ \ \ \ \ x\_;}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ SaveT\ \ \ \ \ \ \ \ \ save\_;}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \};}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_with_link}{Master::ProxyWithLink}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy}{Master::Proxy}}}
+\DoxyCodeLine{00256\ \ \ \{}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ ProxyWithLink(Proxy\&\&\ \ \ \ \ \ \ \ \ proxy,}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ \ \ \ \ \ \ \ \ \ \ block\_\_,}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_link}{Link}}*\ \ \ \ \ \ \ \ \ \ \ link\_\_):}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Proxy(std::move(proxy)),}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ block\_(block\_\_),}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link\_(link\_\_)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_link}{Link}}*\ \ \ link()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ link\_;\ \}}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ \ \ block()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ block\_;\ \}}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ \ \ \ \ \ \ \ \ \ \ \ \ block\_;}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_link}{Link}}*\ \ \ \ \ \ \ \ \ \ \ \ \ link\_;}
+\DoxyCodeLine{00270\ \ \ \};}
+\DoxyCodeLine{00271\ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ diy\ namespace}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00274\ diy::Master::Proxy::}
+\DoxyCodeLine{00275\ incoming(std::vector<int>\&\ v)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00276\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00277\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ incoming\_)}
+\DoxyCodeLine{00278\ \ \ \ \ v.push\_back(x.first);}
+\DoxyCodeLine{00279\ \}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00282\ diy::Master::Proxy::}
+\DoxyCodeLine{00283\ empty\_incoming\_queues()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00284\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ *incoming())}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (x.second)}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00288\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00289\ \}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00292\ diy::Master::Proxy::}
+\DoxyCodeLine{00293\ empty\_outgoing\_queues()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00294\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ *outgoing())}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (x.second.size())}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00299\ \}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00302\ diy::Master::Proxy::}
+\DoxyCodeLine{00303\ empty\_queues()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00304\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keywordflow}{return}\ empty\_incoming\_queues()\ \&\&\ empty\_outgoing\_queues();}
+\DoxyCodeLine{00306\ \}}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T,\ \textcolor{keyword}{class}\ Op>}
+\DoxyCodeLine{00310\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00311\ diy::Master::Proxy::}
+\DoxyCodeLine{00312\ all\_reduce(\textcolor{keyword}{const}\ T\&\ \doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ Op\ op)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00313\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00314\ \ \ collectives\_-\/>push\_back(\doxymbox{\hyperlink{structdiy_1_1_master_1_1_collective}{Collective}}(\textcolor{keyword}{new}\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_all_reduce_op}{detail::AllReduceOp<T,Op>}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ op)));}
+\DoxyCodeLine{00315\ \}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00318\ T}
+\DoxyCodeLine{00319\ diy::Master::Proxy::}
+\DoxyCodeLine{00320\ read()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00321\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00322\ \ \ T\ res;}
+\DoxyCodeLine{00323\ \ \ collectives\_-\/>front().result\_out(\&res);}
+\DoxyCodeLine{00324\ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00325\ \}}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00328\ T}
+\DoxyCodeLine{00329\ diy::Master::Proxy::}
+\DoxyCodeLine{00330\ get()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00331\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00332\ \ \ T\ res\ =\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_ad317ef88a82a556b31885968c48cc48a}{read<T>}}();}
+\DoxyCodeLine{00333\ \ \ collectives\_-\/>pop\_front();}
+\DoxyCodeLine{00334\ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00335\ \}}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00338\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00339\ diy::Master::Proxy::}
+\DoxyCodeLine{00340\ scratch(\textcolor{keyword}{const}\ T\&\ \doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00341\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00342\ \ \ collectives\_-\/>push\_back(\doxymbox{\hyperlink{structdiy_1_1_master_1_1_collective}{Collective}}(\textcolor{keyword}{new}\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_scratch}{detail::Scratch<T>}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}})));}
+\DoxyCodeLine{00343\ \}}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00346\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00347\ diy::Master::Proxy::}
+\DoxyCodeLine{00348\ enqueue(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\&\ to,\ \textcolor{keyword}{const}\ T*\ x,\ \textcolor{keywordtype}{size\_t}\ n,}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*\doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}})(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ \textcolor{keyword}{const}\ T\&))\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00350\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00351\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&\ \ \ bb\ \ =\ outgoing\_[to];}
+\DoxyCodeLine{00352\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}\ ==\ (\textcolor{keywordtype}{void}\ (*)(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ \textcolor{keyword}{const}\ T\&))\ \&::diy::save<T>)}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(bb,\ x,\ n);\ \ \ \ \ \ \ \textcolor{comment}{//\ optimized\ for\ unspecialized\ types}}
+\DoxyCodeLine{00354\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ n;\ ++i)}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}(bb,\ x[i]);}
+\DoxyCodeLine{00357\ \}}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00360\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00361\ diy::Master::Proxy::}
+\DoxyCodeLine{00362\ dequeue(\textcolor{keywordtype}{int}\ from,\ T*\ x,\ \textcolor{keywordtype}{size\_t}\ n,}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*load)(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ T\&))\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00364\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00365\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&\ \ \ bb\ =\ incoming\_[from];}
+\DoxyCodeLine{00366\ \ \ \ \ \textcolor{keywordflow}{if}\ (load\ ==\ (\textcolor{keywordtype}{void}\ (*)(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&,\ T\&))\ \&::diy::load<T>)}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{diy::load}}(bb,\ x,\ n);\ \ \ \ \ \ \ \textcolor{comment}{//\ optimized\ for\ unspecialized\ types}}
+\DoxyCodeLine{00368\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ n;\ ++i)}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ load(bb,\ x[i]);}
+\DoxyCodeLine{00371\ \}}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00374\ diy::Master::Proxy::}
+\DoxyCodeLine{00375\ enqueue\_blob(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\&\ to,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ x,\ \textcolor{keywordtype}{size\_t}\ n)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00376\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00377\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&\ \ \ bb\ \ =\ outgoing\_[to];}
+\DoxyCodeLine{00378\ \ \ \ \ bb.save\_binary\_blob(x,n);}
+\DoxyCodeLine{00379\ \}}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ diy::BinaryBlob}
+\DoxyCodeLine{00382\ diy::Master::Proxy::}
+\DoxyCodeLine{00383\ dequeue\_blob(\textcolor{keywordtype}{int}\ from)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00384\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00385\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&\ \ \ bb\ =\ incoming\_[from];}
+\DoxyCodeLine{00386\ \ \ \ \ \textcolor{keywordflow}{return}\ bb.load\_binary\_blob();}
+\DoxyCodeLine{00387\ \}}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

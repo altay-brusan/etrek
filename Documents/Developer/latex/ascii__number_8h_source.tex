@@ -1,0 +1,594 @@
+\doxysection{ascii\+\_\+number.\+h}
+\hypertarget{ascii__number_8h_source}{}\label{ascii__number_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/ascii\_number.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/ascii\_number.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ FASTFLOAT\_ASCII\_NUMBER\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ FASTFLOAT\_ASCII\_NUMBER\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <cctype>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <limits>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}float\_common.h"{}}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_SSE2}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <emmintrin.h>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_NEON}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <arm\_neon.h>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{namespace\ }fast\_float\ \{}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>\ fastfloat\_really\_inline\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{bool}\ has\_simd\_opt()\ \{}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_HAS\_SIMD}}
+\DoxyCodeLine{00025\ \ \ \textcolor{keywordflow}{return}\ std::is\_same<UC,\ char16\_t>::value;}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00027\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00029\ \}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ Next\ function\ can\ be\ micro-\/optimized,\ but\ compilers\ are\ entirely}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ able\ to\ optimize\ it\ well.}}
+\DoxyCodeLine{00033\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00034\ fastfloat\_really\_inline\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{bool}\ is\_integer(UC\ c)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00035\ \ \ \textcolor{keywordflow}{return}\ !(c\ >\ UC(\textcolor{charliteral}{'9'})\ ||\ c\ <\ UC(\textcolor{charliteral}{'0'}));}
+\DoxyCodeLine{00036\ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ fastfloat\_really\_inline\ \textcolor{keyword}{constexpr}\ uint64\_t\ byteswap(uint64\_t\ val)\ \{}
+\DoxyCodeLine{00039\ \ \ \textcolor{keywordflow}{return}\ (val\ \&\ 0xFF00000000000000)\ >>\ 56\ |\ (val\ \&\ 0x00FF000000000000)\ >>\ 40\ |}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ (val\ \&\ 0x0000FF0000000000)\ >>\ 24\ |\ (val\ \&\ 0x000000FF00000000)\ >>\ 8\ |}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ (val\ \&\ 0x00000000FF000000)\ <<\ 8\ |\ (val\ \&\ 0x0000000000FF0000)\ <<\ 24\ |}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ (val\ \&\ 0x000000000000FF00)\ <<\ 40\ |\ (val\ \&\ 0x00000000000000FF)\ <<\ 56;}
+\DoxyCodeLine{00043\ \}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ Read\ 8\ UC\ into\ a\ u64.\ Truncates\ UC\ if\ not\ char.}}
+\DoxyCodeLine{00046\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00047\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ uint64\_t}
+\DoxyCodeLine{00048\ read8\_to\_u64(UC\ \textcolor{keyword}{const}\ *chars)\ \{}
+\DoxyCodeLine{00049\ \ \ \textcolor{keywordflow}{if}\ (cpp20\_and\_in\_constexpr()\ ||\ !std::is\_same<UC,\ char>::value)\ \{}
+\DoxyCodeLine{00050\ \ \ \ \ uint64\_t\ val\ =\ 0;}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 8;\ ++i)\ \{}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ val\ |=\ uint64\_t(uint8\_t(*chars))\ <<\ (i\ *\ 8);}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ ++chars;}
+\DoxyCodeLine{00054\ \ \ \ \ \}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordflow}{return}\ val;}
+\DoxyCodeLine{00056\ \ \ \}}
+\DoxyCodeLine{00057\ \ \ uint64\_t\ val;}
+\DoxyCodeLine{00058\ \ \ ::memcpy(\&val,\ chars,\ \textcolor{keyword}{sizeof}(uint64\_t));}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#if\ FASTFLOAT\_IS\_BIG\_ENDIAN\ ==\ 1}}
+\DoxyCodeLine{00060\ \ \ \textcolor{comment}{//\ Need\ to\ read\ as-\/if\ the\ number\ was\ in\ little-\/endian\ order.}}
+\DoxyCodeLine{00061\ \ \ val\ =\ byteswap(val);}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00063\ \ \ \textcolor{keywordflow}{return}\ val;}
+\DoxyCodeLine{00064\ \}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_SSE2}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ fastfloat\_really\_inline\ uint64\_t\ simd\_read8\_to\_u64(\_\_m128i\ \textcolor{keyword}{const}\ data)\ \{}
+\DoxyCodeLine{00069\ \ \ FASTFLOAT\_SIMD\_DISABLE\_WARNINGS}
+\DoxyCodeLine{00070\ \ \ \_\_m128i\ \textcolor{keyword}{const}\ packed\ =\ \_mm\_packus\_epi16(data,\ data);}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_64BIT}}
+\DoxyCodeLine{00072\ \ \ \textcolor{keywordflow}{return}\ uint64\_t(\_mm\_cvtsi128\_si64(packed));}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00074\ \ \ uint64\_t\ value;}
+\DoxyCodeLine{00075\ \ \ \textcolor{comment}{//\ Visual\ Studio\ +\ older\ versions\ of\ GCC\ don't\ support\ \_mm\_storeu\_si64}}
+\DoxyCodeLine{00076\ \ \ \_mm\_storel\_epi64(\textcolor{keyword}{reinterpret\_cast<}\_\_m128i\ *\textcolor{keyword}{>}(\&value),\ packed);}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordflow}{return}\ value;}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00079\ \ \ FASTFLOAT\_SIMD\_RESTORE\_WARNINGS}
+\DoxyCodeLine{00080\ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ fastfloat\_really\_inline\ uint64\_t\ simd\_read8\_to\_u64(\textcolor{keywordtype}{char16\_t}\ \textcolor{keyword}{const}\ *chars)\ \{}
+\DoxyCodeLine{00083\ \ \ FASTFLOAT\_SIMD\_DISABLE\_WARNINGS}
+\DoxyCodeLine{00084\ \ \ \textcolor{keywordflow}{return}\ simd\_read8\_to\_u64(}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \_mm\_loadu\_si128(\textcolor{keyword}{reinterpret\_cast<}\_\_m128i\ \textcolor{keyword}{const\ }*\textcolor{keyword}{>}(chars)));}
+\DoxyCodeLine{00086\ \ \ FASTFLOAT\_SIMD\_RESTORE\_WARNINGS}
+\DoxyCodeLine{00087\ \}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#elif\ defined(FASTFLOAT\_NEON)}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ fastfloat\_really\_inline\ uint64\_t\ simd\_read8\_to\_u64(uint16x8\_t\ \textcolor{keyword}{const}\ data)\ \{}
+\DoxyCodeLine{00092\ \ \ FASTFLOAT\_SIMD\_DISABLE\_WARNINGS}
+\DoxyCodeLine{00093\ \ \ uint8x8\_t\ utf8\_packed\ =\ vmovn\_u16(data);}
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordflow}{return}\ vget\_lane\_u64(vreinterpret\_u64\_u8(utf8\_packed),\ 0);}
+\DoxyCodeLine{00095\ \ \ FASTFLOAT\_SIMD\_RESTORE\_WARNINGS}
+\DoxyCodeLine{00096\ \}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ fastfloat\_really\_inline\ uint64\_t\ simd\_read8\_to\_u64(\textcolor{keywordtype}{char16\_t}\ \textcolor{keyword}{const}\ *chars)\ \{}
+\DoxyCodeLine{00099\ \ \ FASTFLOAT\_SIMD\_DISABLE\_WARNINGS}
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordflow}{return}\ simd\_read8\_to\_u64(}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ vld1q\_u16(\textcolor{keyword}{reinterpret\_cast<}uint16\_t\ \textcolor{keyword}{const\ }*\textcolor{keyword}{>}(chars)));}
+\DoxyCodeLine{00102\ \ \ FASTFLOAT\_SIMD\_RESTORE\_WARNINGS}
+\DoxyCodeLine{00103\ \}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ FASTFLOAT\_SSE2}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{comment}{//\ MSVC\ SFINAE\ is\ broken\ pre-\/VS2017}}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)\ \&\&\ \_MSC\_VER\ <=\ 1900}}
+\DoxyCodeLine{00109\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00111\ template\ <typename\ UC,\ FASTFLOAT\_ENABLE\_IF(!has\_simd\_opt<UC>())\ =\ 0>}
+\DoxyCodeLine{00112\ \#endif}
+\DoxyCodeLine{00113\ \textcolor{comment}{//\ dummy\ for\ compile}}
+\DoxyCodeLine{00114\ uint64\_t\ simd\_read8\_to\_u64(UC\ \textcolor{keyword}{const}\ *)\ \{}
+\DoxyCodeLine{00115\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00116\ \}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{comment}{//\ credit\ \ @aqrit}}
+\DoxyCodeLine{00119\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR14\ uint32\_t}
+\DoxyCodeLine{00120\ parse\_eight\_digits\_unrolled(uint64\_t\ val)\ \{}
+\DoxyCodeLine{00121\ \ \ uint64\_t\ \textcolor{keyword}{const}\ mask\ =\ 0x000000FF000000FF;}
+\DoxyCodeLine{00122\ \ \ uint64\_t\ \textcolor{keyword}{const}\ mul1\ =\ 0x000F424000000064;\ \textcolor{comment}{//\ 100\ +\ (1000000ULL\ <<\ 32)}}
+\DoxyCodeLine{00123\ \ \ uint64\_t\ \textcolor{keyword}{const}\ mul2\ =\ 0x0000271000000001;\ \textcolor{comment}{//\ 1\ +\ (10000ULL\ <<\ 32)}}
+\DoxyCodeLine{00124\ \ \ val\ -\/=\ 0x3030303030303030;}
+\DoxyCodeLine{00125\ \ \ val\ =\ (val\ *\ 10)\ +\ (val\ >>\ 8);\ \textcolor{comment}{//\ val\ =\ (val\ *\ 2561)\ >>\ 8;}}
+\DoxyCodeLine{00126\ \ \ val\ =\ (((val\ \&\ mask)\ *\ mul1)\ +\ (((val\ >>\ 16)\ \&\ mask)\ *\ mul2))\ >>\ 32;}
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordflow}{return}\ uint32\_t(val);}
+\DoxyCodeLine{00128\ \}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{comment}{//\ Call\ this\ if\ chars\ are\ definitely\ 8\ digits.}}
+\DoxyCodeLine{00131\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00132\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ uint32\_t}
+\DoxyCodeLine{00133\ parse\_eight\_digits\_unrolled(UC\ \textcolor{keyword}{const}\ *chars)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordflow}{if}\ (cpp20\_and\_in\_constexpr()\ ||\ !has\_simd\_opt<UC>())\ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordflow}{return}\ parse\_eight\_digits\_unrolled(read8\_to\_u64(chars));\ \textcolor{comment}{//\ truncation\ okay}}
+\DoxyCodeLine{00136\ \ \ \}}
+\DoxyCodeLine{00137\ \ \ \textcolor{keywordflow}{return}\ parse\_eight\_digits\_unrolled(simd\_read8\_to\_u64(chars));}
+\DoxyCodeLine{00138\ \}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{comment}{//\ credit\ @aqrit}}
+\DoxyCodeLine{00141\ fastfloat\_really\_inline\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00142\ is\_made\_of\_eight\_digits\_fast(uint64\_t\ val)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00143\ \ \ \textcolor{keywordflow}{return}\ !((((val\ +\ 0x4646464646464646)\ |\ (val\ -\/\ 0x3030303030303030))\ \&}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ 0x8080808080808080));}
+\DoxyCodeLine{00145\ \}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_HAS\_SIMD}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{comment}{//\ Call\ this\ if\ chars\ might\ not\ be\ 8\ digits.}}
+\DoxyCodeLine{00150\ \textcolor{comment}{//\ Using\ this\ style\ (instead\ of\ is\_made\_of\_eight\_digits\_fast()\ then}}
+\DoxyCodeLine{00151\ \textcolor{comment}{//\ parse\_eight\_digits\_unrolled())\ ensures\ we\ don't\ load\ SIMD\ registers\ twice.}}
+\DoxyCodeLine{00152\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00153\ simd\_parse\_if\_eight\_digits\_unrolled(\textcolor{keywordtype}{char16\_t}\ \textcolor{keyword}{const}\ *chars,}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint64\_t\ \&i)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00155\ \ \ \textcolor{keywordflow}{if}\ (cpp20\_and\_in\_constexpr())\ \{}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00157\ \ \ \}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_SSE2}}
+\DoxyCodeLine{00159\ \ \ FASTFLOAT\_SIMD\_DISABLE\_WARNINGS}
+\DoxyCodeLine{00160\ \ \ \_\_m128i\ \textcolor{keyword}{const}\ data\ =}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \_mm\_loadu\_si128(\textcolor{keyword}{reinterpret\_cast<}\_\_m128i\ \textcolor{keyword}{const\ }*\textcolor{keyword}{>}(chars));}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \textcolor{comment}{//\ (x\ -\/\ '0')\ <=\ 9}}
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{//\ http://0x80.pl/articles/simd-\/parsing-\/int-\/sequences.html}}
+\DoxyCodeLine{00165\ \ \ \_\_m128i\ \textcolor{keyword}{const}\ t0\ =\ \_mm\_add\_epi16(data,\ \_mm\_set1\_epi16(32720));}
+\DoxyCodeLine{00166\ \ \ \_\_m128i\ \textcolor{keyword}{const}\ t1\ =\ \_mm\_cmpgt\_epi16(t0,\ \_mm\_set1\_epi16(-\/32759));}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordflow}{if}\ (\_mm\_movemask\_epi8(t1)\ ==\ 0)\ \{}
+\DoxyCodeLine{00169\ \ \ \ \ i\ =\ i\ *\ 100000000\ +\ parse\_eight\_digits\_unrolled(simd\_read8\_to\_u64(data));}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00171\ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00173\ \ \ FASTFLOAT\_SIMD\_RESTORE\_WARNINGS}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\#elif\ defined(FASTFLOAT\_NEON)}}
+\DoxyCodeLine{00175\ \ \ FASTFLOAT\_SIMD\_DISABLE\_WARNINGS}
+\DoxyCodeLine{00176\ \ \ uint16x8\_t\ \textcolor{keyword}{const}\ data\ =\ vld1q\_u16(\textcolor{keyword}{reinterpret\_cast<}uint16\_t\ \textcolor{keyword}{const\ }*\textcolor{keyword}{>}(chars));}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \textcolor{comment}{//\ (x\ -\/\ '0')\ <=\ 9}}
+\DoxyCodeLine{00179\ \ \ \textcolor{comment}{//\ http://0x80.pl/articles/simd-\/parsing-\/int-\/sequences.html}}
+\DoxyCodeLine{00180\ \ \ uint16x8\_t\ \textcolor{keyword}{const}\ t0\ =\ vsubq\_u16(data,\ vmovq\_n\_u16(\textcolor{charliteral}{'0'}));}
+\DoxyCodeLine{00181\ \ \ uint16x8\_t\ \textcolor{keyword}{const}\ mask\ =\ vcltq\_u16(t0,\ vmovq\_n\_u16(\textcolor{charliteral}{'9'}\ -\/\ \textcolor{charliteral}{'0'}\ +\ 1));}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{keywordflow}{if}\ (vminvq\_u16(mask)\ ==\ 0xFFFF)\ \{}
+\DoxyCodeLine{00184\ \ \ \ \ i\ =\ i\ *\ 100000000\ +\ parse\_eight\_digits\_unrolled(simd\_read8\_to\_u64(data));}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00186\ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00188\ \ \ FASTFLOAT\_SIMD\_RESTORE\_WARNINGS}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00190\ \ \ (void)chars;}
+\DoxyCodeLine{00191\ \ \ (void)i;}
+\DoxyCodeLine{00192\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ FASTFLOAT\_SSE2}}
+\DoxyCodeLine{00194\ \}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ FASTFLOAT\_HAS\_SIMD}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \textcolor{comment}{//\ MSVC\ SFINAE\ is\ broken\ pre-\/VS2017}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)\ \&\&\ \_MSC\_VER\ <=\ 1900}}
+\DoxyCodeLine{00200\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00202\ template\ <typename\ UC,\ FASTFLOAT\_ENABLE\_IF(!has\_simd\_opt<UC>())\ =\ 0>}
+\DoxyCodeLine{00203\ \#endif}
+\DoxyCodeLine{00204\ \textcolor{comment}{//\ dummy\ for\ compile}}
+\DoxyCodeLine{00205\ \textcolor{keywordtype}{bool}\ simd\_parse\_if\_eight\_digits\_unrolled(UC\ \textcolor{keyword}{const}\ *,\ uint64\_t\ \&)\ \{}
+\DoxyCodeLine{00206\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00207\ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC,\ FASTFLOAT\_ENABLE\_IF(!std::is\_same<UC,\ \textcolor{keywordtype}{char}>::value)\ =\ 0>}
+\DoxyCodeLine{00210\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00211\ loop\_parse\_if\_eight\_digits(UC\ \textcolor{keyword}{const}\ *\&p,\ UC\ \textcolor{keyword}{const}\ *\textcolor{keyword}{const}\ pend,\ uint64\_t\ \&i)\ \{}
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordflow}{if}\ (!has\_simd\_opt<UC>())\ \{}
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00214\ \ \ \}}
+\DoxyCodeLine{00215\ \ \ \textcolor{keywordflow}{while}\ ((std::distance(p,\ pend)\ >=\ 8)\ \&\&}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ simd\_parse\_if\_eight\_digits\_unrolled(}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ p,\ i))\ \{\ \textcolor{comment}{//\ in\ rare\ cases,\ this\ will\ overflow,\ but\ that's\ ok}}
+\DoxyCodeLine{00218\ \ \ \ \ p\ +=\ 8;}
+\DoxyCodeLine{00219\ \ \ \}}
+\DoxyCodeLine{00220\ \}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00223\ loop\_parse\_if\_eight\_digits(\textcolor{keywordtype}{char}\ \textcolor{keyword}{const}\ *\&p,\ \textcolor{keywordtype}{char}\ \textcolor{keyword}{const}\ *\textcolor{keyword}{const}\ pend,}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint64\_t\ \&i)\ \{}
+\DoxyCodeLine{00225\ \ \ \textcolor{comment}{//\ optimizes\ better\ than\ parse\_if\_eight\_digits\_unrolled()\ for\ UC\ =\ char.}}
+\DoxyCodeLine{00226\ \ \ \textcolor{keywordflow}{while}\ ((std::distance(p,\ pend)\ >=\ 8)\ \&\&}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ is\_made\_of\_eight\_digits\_fast(read8\_to\_u64(p)))\ \{}
+\DoxyCodeLine{00228\ \ \ \ \ i\ =\ i\ *\ 100000000\ +}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ parse\_eight\_digits\_unrolled(read8\_to\_u64(}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ p));\ \textcolor{comment}{//\ in\ rare\ cases,\ this\ will\ overflow,\ but\ that's\ ok}}
+\DoxyCodeLine{00231\ \ \ \ \ p\ +=\ 8;}
+\DoxyCodeLine{00232\ \ \ \}}
+\DoxyCodeLine{00233\ \}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{keyword}{enum\ class}\ parse\_error\ \{}
+\DoxyCodeLine{00236\ \ \ no\_error,}
+\DoxyCodeLine{00237\ \ \ \textcolor{comment}{//\ [JSON-\/only]\ The\ minus\ sign\ must\ be\ followed\ by\ an\ integer.}}
+\DoxyCodeLine{00238\ \ \ missing\_integer\_after\_sign,}
+\DoxyCodeLine{00239\ \ \ \textcolor{comment}{//\ A\ sign\ must\ be\ followed\ by\ an\ integer\ or\ dot.}}
+\DoxyCodeLine{00240\ \ \ missing\_integer\_or\_dot\_after\_sign,}
+\DoxyCodeLine{00241\ \ \ \textcolor{comment}{//\ [JSON-\/only]\ The\ integer\ part\ must\ not\ have\ leading\ zeros.}}
+\DoxyCodeLine{00242\ \ \ leading\_zeros\_in\_integer\_part,}
+\DoxyCodeLine{00243\ \ \ \textcolor{comment}{//\ [JSON-\/only]\ The\ integer\ part\ must\ have\ at\ least\ one\ digit.}}
+\DoxyCodeLine{00244\ \ \ no\_digits\_in\_integer\_part,}
+\DoxyCodeLine{00245\ \ \ \textcolor{comment}{//\ [JSON-\/only]\ If\ there\ is\ a\ decimal\ point,\ there\ must\ be\ digits\ in\ the}}
+\DoxyCodeLine{00246\ \ \ \textcolor{comment}{//\ fractional\ part.}}
+\DoxyCodeLine{00247\ \ \ no\_digits\_in\_fractional\_part,}
+\DoxyCodeLine{00248\ \ \ \textcolor{comment}{//\ The\ mantissa\ must\ have\ at\ least\ one\ digit.}}
+\DoxyCodeLine{00249\ \ \ no\_digits\_in\_mantissa,}
+\DoxyCodeLine{00250\ \ \ \textcolor{comment}{//\ Scientific\ notation\ requires\ an\ exponential\ part.}}
+\DoxyCodeLine{00251\ \ \ missing\_exponential\_part,}
+\DoxyCodeLine{00252\ \};}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structfast__float_1_1parsed__number__string__t}{parsed\_number\_string\_t}}\ \{}
+\DoxyCodeLine{00255\ \ \ int64\_t\ exponent\{0\};}
+\DoxyCodeLine{00256\ \ \ uint64\_t\ mantissa\{0\};}
+\DoxyCodeLine{00257\ \ \ UC\ \textcolor{keyword}{const}\ *lastmatch\{\textcolor{keyword}{nullptr}\};}
+\DoxyCodeLine{00258\ \ \ \textcolor{keywordtype}{bool}\ negative\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00259\ \ \ \textcolor{keywordtype}{bool}\ valid\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00260\ \ \ \textcolor{keywordtype}{bool}\ too\_many\_digits\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00261\ \ \ \textcolor{comment}{//\ contains\ the\ range\ of\ the\ significant\ digits}}
+\DoxyCodeLine{00262\ \ \ \doxymbox{\hyperlink{structfast__float_1_1span}{span<UC\ const>}}\ integer\{\};\ \ \textcolor{comment}{//\ non-\/nullable}}
+\DoxyCodeLine{00263\ \ \ \doxymbox{\hyperlink{structfast__float_1_1span}{span<UC\ const>}}\ fraction\{\};\ \textcolor{comment}{//\ nullable}}
+\DoxyCodeLine{00264\ \ \ parse\_error\ error\{parse\_error::no\_error\};}
+\DoxyCodeLine{00265\ \};}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \textcolor{keyword}{using\ }byte\_span\ =\ \doxymbox{\hyperlink{structfast__float_1_1span}{span<char\ const>}};}
+\DoxyCodeLine{00268\ \textcolor{keyword}{using\ }parsed\_number\_string\ =\ \doxymbox{\hyperlink{structfast__float_1_1parsed__number__string__t}{parsed\_number\_string\_t<char>}};}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00271\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \doxymbox{\hyperlink{structfast__float_1_1parsed__number__string__t}{parsed\_number\_string\_t<UC>}}}
+\DoxyCodeLine{00272\ report\_parse\_error(UC\ \textcolor{keyword}{const}\ *p,\ parse\_error\ error)\ \{}
+\DoxyCodeLine{00273\ \ \ \doxymbox{\hyperlink{structfast__float_1_1parsed__number__string__t}{parsed\_number\_string\_t<UC>}}\ answer;}
+\DoxyCodeLine{00274\ \ \ answer.valid\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00275\ \ \ answer.lastmatch\ =\ p;}
+\DoxyCodeLine{00276\ \ \ answer.error\ =\ error;}
+\DoxyCodeLine{00277\ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00278\ \}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \textcolor{comment}{//\ Assuming\ that\ you\ use\ no\ more\ than\ 19\ digits,\ this\ will}}
+\DoxyCodeLine{00281\ \textcolor{comment}{//\ parse\ an\ ASCII\ string.}}
+\DoxyCodeLine{00282\ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{bool}\ basic\_json\_fmt,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00283\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ parsed\_number\_string\_t<UC>}
+\DoxyCodeLine{00284\ parse\_number\_string(UC\ \textcolor{keyword}{const}\ *p,\ UC\ \textcolor{keyword}{const}\ *pend,}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ parse\_options\_t<UC>\ options)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00286\ \ \ chars\_format\ \textcolor{keyword}{const}\ fmt\ =\ detail::adjust\_for\_feature\_macros(options.format);}
+\DoxyCodeLine{00287\ \ \ UC\ \textcolor{keyword}{const}\ decimal\_point\ =\ options.decimal\_point;}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ parsed\_number\_string\_t<UC>\ answer;}
+\DoxyCodeLine{00290\ \ \ answer.valid\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00291\ \ \ answer.too\_many\_digits\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00292\ \ \ \textcolor{comment}{//\ assume\ p\ <\ pend,\ so\ dereference\ without\ checks;}}
+\DoxyCodeLine{00293\ \ \ answer.negative\ =\ (*p\ ==\ UC(\textcolor{charliteral}{'-\/'}));}
+\DoxyCodeLine{00294\ \ \ \textcolor{comment}{//\ C++17\ 20.19.3.(7.1)\ explicitly\ forbids\ '+'\ sign\ here}}
+\DoxyCodeLine{00295\ \ \ \textcolor{keywordflow}{if}\ ((*p\ ==\ UC(\textcolor{charliteral}{'-\/'}))\ ||\ (uint64\_t(fmt\ \&\ chars\_format::allow\_leading\_plus)\ \&\&}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !basic\_json\_fmt\ \&\&\ *p\ ==\ UC(\textcolor{charliteral}{'+'})))\ \{}
+\DoxyCodeLine{00297\ \ \ \ \ ++p;}
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{keywordflow}{if}\ (p\ ==\ pend)\ \{}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ report\_parse\_error<UC>(}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ p,\ parse\_error::missing\_integer\_or\_dot\_after\_sign);}
+\DoxyCodeLine{00301\ \ \ \ \ \}}
+\DoxyCodeLine{00302\ \ \ \ \ FASTFLOAT\_IF\_CONSTEXPR17(basic\_json\_fmt)\ \{}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!is\_integer(*p))\ \{\ \textcolor{comment}{//\ a\ sign\ must\ be\ followed\ by\ an\ integer}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ report\_parse\_error<UC>(p,}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ parse\_error::missing\_integer\_after\_sign);}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00307\ \ \ \ \ \}}
+\DoxyCodeLine{00308\ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!is\_integer(*p)\ \&\&}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ (*p\ !=}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ decimal\_point))\ \{\ \textcolor{comment}{//\ a\ sign\ must\ be\ followed\ by\ an\ integer\ or\ the\ dot}}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ report\_parse\_error<UC>(}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ p,\ parse\_error::missing\_integer\_or\_dot\_after\_sign);}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00315\ \ \ \ \ \}}
+\DoxyCodeLine{00316\ \ \ \}}
+\DoxyCodeLine{00317\ \ \ UC\ \textcolor{keyword}{const}\ *\textcolor{keyword}{const}\ start\_digits\ =\ p;}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \ \ uint64\_t\ i\ =\ 0;\ \textcolor{comment}{//\ an\ unsigned\ int\ avoids\ signed\ overflows\ (which\ are\ bad)}}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \ \ \textcolor{keywordflow}{while}\ ((p\ !=\ pend)\ \&\&\ is\_integer(*p))\ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \textcolor{comment}{//\ a\ multiplication\ by\ 10\ is\ cheaper\ than\ an\ arbitrary\ integer}}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{comment}{//\ multiplication}}
+\DoxyCodeLine{00324\ \ \ \ \ i\ =\ 10\ *\ i\ +}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ uint64\_t(*p\ -\/}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ UC(\textcolor{charliteral}{'0'}));\ \textcolor{comment}{//\ might\ overflow,\ we\ will\ handle\ the\ overflow\ later}}
+\DoxyCodeLine{00327\ \ \ \ \ ++p;}
+\DoxyCodeLine{00328\ \ \ \}}
+\DoxyCodeLine{00329\ \ \ UC\ \textcolor{keyword}{const}\ *\textcolor{keyword}{const}\ end\_of\_integer\_part\ =\ p;}
+\DoxyCodeLine{00330\ \ \ int64\_t\ digit\_count\ =\ int64\_t(end\_of\_integer\_part\ -\/\ start\_digits);}
+\DoxyCodeLine{00331\ \ \ answer.integer\ =\ span<UC\ const>(start\_digits,\ \textcolor{keywordtype}{size\_t}(digit\_count));}
+\DoxyCodeLine{00332\ \ \ FASTFLOAT\_IF\_CONSTEXPR17(basic\_json\_fmt)\ \{}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{comment}{//\ at\ least\ 1\ digit\ in\ integer\ part,\ without\ leading\ zeros}}
+\DoxyCodeLine{00334\ \ \ \ \ \textcolor{keywordflow}{if}\ (digit\_count\ ==\ 0)\ \{}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ report\_parse\_error<UC>(p,\ parse\_error::no\_digits\_in\_integer\_part);}
+\DoxyCodeLine{00336\ \ \ \ \ \}}
+\DoxyCodeLine{00337\ \ \ \ \ \textcolor{keywordflow}{if}\ ((start\_digits[0]\ ==\ UC(\textcolor{charliteral}{'0'})\ \&\&\ digit\_count\ >\ 1))\ \{}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ report\_parse\_error<UC>(start\_digits,}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ parse\_error::leading\_zeros\_in\_integer\_part);}
+\DoxyCodeLine{00340\ \ \ \ \ \}}
+\DoxyCodeLine{00341\ \ \ \}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \ \ int64\_t\ exponent\ =\ 0;}
+\DoxyCodeLine{00344\ \ \ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ has\_decimal\_point\ =\ (p\ !=\ pend)\ \&\&\ (*p\ ==\ decimal\_point);}
+\DoxyCodeLine{00345\ \ \ \textcolor{keywordflow}{if}\ (has\_decimal\_point)\ \{}
+\DoxyCodeLine{00346\ \ \ \ \ ++p;}
+\DoxyCodeLine{00347\ \ \ \ \ UC\ \textcolor{keyword}{const}\ *before\ =\ p;}
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{comment}{//\ can\ occur\ at\ most\ twice\ without\ overflowing,\ but\ let\ it\ occur\ more,\ since}}
+\DoxyCodeLine{00349\ \ \ \ \ \textcolor{comment}{//\ for\ integers\ with\ many\ digits,\ digit\ parsing\ is\ the\ primary\ bottleneck.}}
+\DoxyCodeLine{00350\ \ \ \ \ loop\_parse\_if\_eight\_digits(p,\ pend,\ i);}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ \ \ \ \ \textcolor{keywordflow}{while}\ ((p\ !=\ pend)\ \&\&\ is\_integer(*p))\ \{}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ uint8\_t\ digit\ =\ uint8\_t(*p\ -\/\ UC(\textcolor{charliteral}{'0'}));}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ ++p;}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ i\ =\ i\ *\ 10\ +\ digit;\ \textcolor{comment}{//\ in\ rare\ cases,\ this\ will\ overflow,\ but\ that's\ ok}}
+\DoxyCodeLine{00356\ \ \ \ \ \}}
+\DoxyCodeLine{00357\ \ \ \ \ exponent\ =\ before\ -\/\ p;}
+\DoxyCodeLine{00358\ \ \ \ \ answer.fraction\ =\ span<UC\ const>(before,\ \textcolor{keywordtype}{size\_t}(p\ -\/\ before));}
+\DoxyCodeLine{00359\ \ \ \ \ digit\_count\ -\/=\ exponent;}
+\DoxyCodeLine{00360\ \ \ \}}
+\DoxyCodeLine{00361\ \ \ FASTFLOAT\_IF\_CONSTEXPR17(basic\_json\_fmt)\ \{}
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{comment}{//\ at\ least\ 1\ digit\ in\ fractional\ part}}
+\DoxyCodeLine{00363\ \ \ \ \ \textcolor{keywordflow}{if}\ (has\_decimal\_point\ \&\&\ exponent\ ==\ 0)\ \{}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ report\_parse\_error<UC>(p,}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ parse\_error::no\_digits\_in\_fractional\_part);}
+\DoxyCodeLine{00366\ \ \ \ \ \}}
+\DoxyCodeLine{00367\ \ \ \}}
+\DoxyCodeLine{00368\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (digit\_count\ ==\ 0)\ \{\ \textcolor{comment}{//\ we\ must\ have\ encountered\ at\ least\ one\ integer!}}
+\DoxyCodeLine{00369\ \ \ \ \ \textcolor{keywordflow}{return}\ report\_parse\_error<UC>(p,\ parse\_error::no\_digits\_in\_mantissa);}
+\DoxyCodeLine{00370\ \ \ \}}
+\DoxyCodeLine{00371\ \ \ int64\_t\ exp\_number\ =\ 0;\ \textcolor{comment}{//\ explicit\ exponential\ part}}
+\DoxyCodeLine{00372\ \ \ \textcolor{keywordflow}{if}\ ((uint64\_t(fmt\ \&\ chars\_format::scientific)\ \&\&\ (p\ !=\ pend)\ \&\&}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ ((UC(\textcolor{charliteral}{'e'})\ ==\ *p)\ ||\ (UC(\textcolor{charliteral}{'E'})\ ==\ *p)))\ ||}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ (uint64\_t(fmt\ \&\ detail::basic\_fortran\_fmt)\ \&\&\ (p\ !=\ pend)\ \&\&}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ ((UC(\textcolor{charliteral}{'+'})\ ==\ *p)\ ||\ (UC(\textcolor{charliteral}{'-\/'})\ ==\ *p)\ ||\ (UC(\textcolor{charliteral}{'d'})\ ==\ *p)\ ||}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ (UC(\textcolor{charliteral}{'D'})\ ==\ *p))))\ \{}
+\DoxyCodeLine{00377\ \ \ \ \ UC\ \textcolor{keyword}{const}\ *location\_of\_e\ =\ p;}
+\DoxyCodeLine{00378\ \ \ \ \ \textcolor{keywordflow}{if}\ ((UC(\textcolor{charliteral}{'e'})\ ==\ *p)\ ||\ (UC(\textcolor{charliteral}{'E'})\ ==\ *p)\ ||\ (UC(\textcolor{charliteral}{'d'})\ ==\ *p)\ ||}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ (UC(\textcolor{charliteral}{'D'})\ ==\ *p))\ \{}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ ++p;}
+\DoxyCodeLine{00381\ \ \ \ \ \}}
+\DoxyCodeLine{00382\ \ \ \ \ \textcolor{keywordtype}{bool}\ neg\_exp\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{keywordflow}{if}\ ((p\ !=\ pend)\ \&\&\ (UC(\textcolor{charliteral}{'-\/'})\ ==\ *p))\ \{}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ neg\_exp\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ ++p;}
+\DoxyCodeLine{00386\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ ((p\ !=\ pend)\ \&\&}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (UC(\textcolor{charliteral}{'+'})\ ==}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *p))\ \{\ \textcolor{comment}{//\ '+'\ on\ exponent\ is\ allowed\ by\ C++17\ 20.19.3.(7.1)}}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ ++p;}
+\DoxyCodeLine{00390\ \ \ \ \ \}}
+\DoxyCodeLine{00391\ \ \ \ \ \textcolor{keywordflow}{if}\ ((p\ ==\ pend)\ ||\ !is\_integer(*p))\ \{}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!uint64\_t(fmt\ \&\ chars\_format::fixed))\ \{}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ The\ exponential\ part\ is\ invalid\ for\ scientific\ notation,\ so\ it\ must}}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ be\ a\ trailing\ token\ for\ fixed\ notation.\ However,\ fixed\ notation\ is}}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ disabled,\ so\ report\ a\ scientific\ notation\ error.}}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ report\_parse\_error<UC>(p,\ parse\_error::missing\_exponential\_part);}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \textcolor{comment}{//\ Otherwise,\ we\ will\ be\ ignoring\ the\ 'e'.}}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ p\ =\ location\_of\_e;}
+\DoxyCodeLine{00400\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ ((p\ !=\ pend)\ \&\&\ is\_integer(*p))\ \{}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ uint8\_t\ digit\ =\ uint8\_t(*p\ -\/\ UC(\textcolor{charliteral}{'0'}));}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (exp\_number\ <\ 0x10000000)\ \{}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \ \ exp\_number\ =\ 10\ *\ exp\_number\ +\ digit;}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ ++p;}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (neg\_exp)\ \{}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ exp\_number\ =\ -\/exp\_number;}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ exponent\ +=\ exp\_number;}
+\DoxyCodeLine{00412\ \ \ \ \ \}}
+\DoxyCodeLine{00413\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00414\ \ \ \ \ \textcolor{comment}{//\ If\ it\ scientific\ and\ not\ fixed,\ we\ have\ to\ bail\ out.}}
+\DoxyCodeLine{00415\ \ \ \ \ \textcolor{keywordflow}{if}\ (uint64\_t(fmt\ \&\ chars\_format::scientific)\ \&\&}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ !uint64\_t(fmt\ \&\ chars\_format::fixed))\ \{}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ report\_parse\_error<UC>(p,\ parse\_error::missing\_exponential\_part);}
+\DoxyCodeLine{00418\ \ \ \ \ \}}
+\DoxyCodeLine{00419\ \ \ \}}
+\DoxyCodeLine{00420\ \ \ answer.lastmatch\ =\ p;}
+\DoxyCodeLine{00421\ \ \ answer.valid\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00423\ \ \ \textcolor{comment}{//\ If\ we\ frequently\ had\ to\ deal\ with\ long\ strings\ of\ digits,}}
+\DoxyCodeLine{00424\ \ \ \textcolor{comment}{//\ we\ could\ extend\ our\ code\ by\ using\ a\ 128-\/bit\ integer\ instead}}
+\DoxyCodeLine{00425\ \ \ \textcolor{comment}{//\ of\ a\ 64-\/bit\ integer.\ However,\ this\ is\ uncommon.}}
+\DoxyCodeLine{00426\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00427\ \ \ \textcolor{comment}{//\ We\ can\ deal\ with\ up\ to\ 19\ digits.}}
+\DoxyCodeLine{00428\ \ \ \textcolor{keywordflow}{if}\ (digit\_count\ >\ 19)\ \{\ \textcolor{comment}{//\ this\ is\ uncommon}}
+\DoxyCodeLine{00429\ \ \ \ \ \textcolor{comment}{//\ It\ is\ possible\ that\ the\ integer\ had\ an\ overflow.}}
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{comment}{//\ We\ have\ to\ handle\ the\ case\ where\ we\ have\ 0.0000somenumber.}}
+\DoxyCodeLine{00431\ \ \ \ \ \textcolor{comment}{//\ We\ need\ to\ be\ mindful\ of\ the\ case\ where\ we\ only\ have\ zeroes...}}
+\DoxyCodeLine{00432\ \ \ \ \ \textcolor{comment}{//\ E.g.,\ 0.000000000...000.}}
+\DoxyCodeLine{00433\ \ \ \ \ UC\ \textcolor{keyword}{const}\ *start\ =\ start\_digits;}
+\DoxyCodeLine{00434\ \ \ \ \ \textcolor{keywordflow}{while}\ ((start\ !=\ pend)\ \&\&\ (*start\ ==\ UC(\textcolor{charliteral}{'0'})\ ||\ *start\ ==\ decimal\_point))\ \{}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*start\ ==\ UC(\textcolor{charliteral}{'0'}))\ \{}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ digit\_count-\/-\/;}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ start++;}
+\DoxyCodeLine{00439\ \ \ \ \ \}}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \ \ \ \ \textcolor{keywordflow}{if}\ (digit\_count\ >\ 19)\ \{}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ answer.too\_many\_digits\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \textcolor{comment}{//\ Let\ us\ start\ again,\ this\ time,\ avoiding\ overflows.}}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \textcolor{comment}{//\ We\ don't\ need\ to\ check\ if\ is\_integer,\ since\ we\ use\ the}}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \textcolor{comment}{//\ pre-\/tokenized\ spans\ from\ above.}}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ i\ =\ 0;}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ p\ =\ answer.integer.ptr;}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ UC\ \textcolor{keyword}{const}\ *int\_end\ =\ p\ +\ answer.integer.len();}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ uint64\_t\ \textcolor{keyword}{const}\ minimal\_nineteen\_digit\_integer\{1000000000000000000\};}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ ((i\ <\ minimal\_nineteen\_digit\_integer)\ \&\&\ (p\ !=\ int\_end))\ \{}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ i\ =\ i\ *\ 10\ +\ uint64\_t(*p\ -\/\ UC(\textcolor{charliteral}{'0'}));}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ ++p;}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ >=\ minimal\_nineteen\_digit\_integer)\ \{\ \textcolor{comment}{//\ We\ have\ a\ big\ integers}}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ exponent\ =\ end\_of\_integer\_part\ -\/\ p\ +\ exp\_number;}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{\ \textcolor{comment}{//\ We\ have\ a\ value\ with\ a\ fractional\ component.}}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ p\ =\ answer.fraction.ptr;}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ UC\ \textcolor{keyword}{const}\ *frac\_end\ =\ p\ +\ answer.fraction.len();}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ ((i\ <\ minimal\_nineteen\_digit\_integer)\ \&\&\ (p\ !=\ frac\_end))\ \{}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ i\ =\ i\ *\ 10\ +\ uint64\_t(*p\ -\/\ UC(\textcolor{charliteral}{'0'}));}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ ++p;}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ exponent\ =\ answer.fraction.ptr\ -\/\ p\ +\ exp\_number;}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \textcolor{comment}{//\ We\ have\ now\ corrected\ both\ exponent\ and\ i,\ to\ a\ truncated\ value}}
+\DoxyCodeLine{00466\ \ \ \ \ \}}
+\DoxyCodeLine{00467\ \ \ \}}
+\DoxyCodeLine{00468\ \ \ answer.exponent\ =\ exponent;}
+\DoxyCodeLine{00469\ \ \ answer.mantissa\ =\ i;}
+\DoxyCodeLine{00470\ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00471\ \}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00474\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ from\_chars\_result\_t<UC>}
+\DoxyCodeLine{00475\ parse\_int\_string(UC\ \textcolor{keyword}{const}\ *p,\ UC\ \textcolor{keyword}{const}\ *pend,\ T\ \&value,}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ parse\_options\_t<UC>\ options)\ \{}
+\DoxyCodeLine{00477\ \ \ chars\_format\ \textcolor{keyword}{const}\ fmt\ =\ detail::adjust\_for\_feature\_macros(options.format);}
+\DoxyCodeLine{00478\ \ \ \textcolor{keywordtype}{int}\ \textcolor{keyword}{const}\ base\ =\ options.base;}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \ \ from\_chars\_result\_t<UC>\ answer;}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \ \ UC\ \textcolor{keyword}{const}\ *\textcolor{keyword}{const}\ first\ =\ p;}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \ \ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ negative\ =\ (*p\ ==\ UC(\textcolor{charliteral}{'-\/'}));}
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_VISUAL\_STUDIO}}
+\DoxyCodeLine{00486\ \textcolor{preprocessor}{\#pragma\ warning(push)}}
+\DoxyCodeLine{00487\ \textcolor{preprocessor}{\#pragma\ warning(disable\ :\ 4127)}}
+\DoxyCodeLine{00488\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00489\ \ \ \textcolor{keywordflow}{if}\ (!std::is\_signed<T>::value\ \&\&\ negative)\ \{}
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_VISUAL\_STUDIO}}
+\DoxyCodeLine{00491\ \textcolor{preprocessor}{\#pragma\ warning(pop)}}
+\DoxyCodeLine{00492\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00493\ \ \ \ \ answer.ec\ =\ std::errc::invalid\_argument;}
+\DoxyCodeLine{00494\ \ \ \ \ answer.ptr\ =\ first;}
+\DoxyCodeLine{00495\ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00496\ \ \ \}}
+\DoxyCodeLine{00497\ \ \ \textcolor{keywordflow}{if}\ ((*p\ ==\ UC(\textcolor{charliteral}{'-\/'}))\ ||}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ (uint64\_t(fmt\ \&\ chars\_format::allow\_leading\_plus)\ \&\&\ (*p\ ==\ UC(\textcolor{charliteral}{'+'}))))\ \{}
+\DoxyCodeLine{00499\ \ \ \ \ ++p;}
+\DoxyCodeLine{00500\ \ \ \}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \ \ UC\ \textcolor{keyword}{const}\ *\textcolor{keyword}{const}\ start\_num\ =\ p;}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ \ \ \textcolor{keywordflow}{while}\ (p\ !=\ pend\ \&\&\ *p\ ==\ UC(\textcolor{charliteral}{'0'}))\ \{}
+\DoxyCodeLine{00505\ \ \ \ \ ++p;}
+\DoxyCodeLine{00506\ \ \ \}}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \ \ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ has\_leading\_zeros\ =\ p\ >\ start\_num;}
+\DoxyCodeLine{00509\ }
+\DoxyCodeLine{00510\ \ \ UC\ \textcolor{keyword}{const}\ *\textcolor{keyword}{const}\ start\_digits\ =\ p;}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ uint64\_t\ i\ =\ 0;}
+\DoxyCodeLine{00513\ \ \ \textcolor{keywordflow}{if}\ (base\ ==\ 10)\ \{}
+\DoxyCodeLine{00514\ \ \ \ \ loop\_parse\_if\_eight\_digits(p,\ pend,\ i);\ \textcolor{comment}{//\ use\ SIMD\ if\ possible}}
+\DoxyCodeLine{00515\ \ \ \}}
+\DoxyCodeLine{00516\ \ \ \textcolor{keywordflow}{while}\ (p\ !=\ pend)\ \{}
+\DoxyCodeLine{00517\ \ \ \ \ uint8\_t\ digit\ =\ ch\_to\_digit(*p);}
+\DoxyCodeLine{00518\ \ \ \ \ \textcolor{keywordflow}{if}\ (digit\ >=\ base)\ \{}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00520\ \ \ \ \ \}}
+\DoxyCodeLine{00521\ \ \ \ \ i\ =\ uint64\_t(base)\ *\ i\ +\ digit;\ \textcolor{comment}{//\ might\ overflow,\ check\ this\ later}}
+\DoxyCodeLine{00522\ \ \ \ \ p++;}
+\DoxyCodeLine{00523\ \ \ \}}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \ \ \textcolor{keywordtype}{size\_t}\ digit\_count\ =\ size\_t(p\ -\/\ start\_digits);}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \ \ \textcolor{keywordflow}{if}\ (digit\_count\ ==\ 0)\ \{}
+\DoxyCodeLine{00528\ \ \ \ \ \textcolor{keywordflow}{if}\ (has\_leading\_zeros)\ \{}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ value\ =\ 0;}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ answer.ec\ =\ std::errc();}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ answer.ptr\ =\ p;}
+\DoxyCodeLine{00532\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ answer.ec\ =\ std::errc::invalid\_argument;}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ answer.ptr\ =\ first;}
+\DoxyCodeLine{00535\ \ \ \ \ \}}
+\DoxyCodeLine{00536\ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00537\ \ \ \}}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ \ \ answer.ptr\ =\ p;}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00541\ \ \ \textcolor{comment}{//\ check\ u64\ overflow}}
+\DoxyCodeLine{00542\ \ \ \textcolor{keywordtype}{size\_t}\ max\_digits\ =\ max\_digits\_u64(base);}
+\DoxyCodeLine{00543\ \ \ \textcolor{keywordflow}{if}\ (digit\_count\ >\ max\_digits)\ \{}
+\DoxyCodeLine{00544\ \ \ \ \ answer.ec\ =\ std::errc::result\_out\_of\_range;}
+\DoxyCodeLine{00545\ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00546\ \ \ \}}
+\DoxyCodeLine{00547\ \ \ \textcolor{comment}{//\ this\ check\ can\ be\ eliminated\ for\ all\ other\ types,\ but\ they\ will\ all\ require}}
+\DoxyCodeLine{00548\ \ \ \textcolor{comment}{//\ a\ max\_digits(base)\ equivalent}}
+\DoxyCodeLine{00549\ \ \ \textcolor{keywordflow}{if}\ (digit\_count\ ==\ max\_digits\ \&\&\ i\ <\ min\_safe\_u64(base))\ \{}
+\DoxyCodeLine{00550\ \ \ \ \ answer.ec\ =\ std::errc::result\_out\_of\_range;}
+\DoxyCodeLine{00551\ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00552\ \ \ \}}
+\DoxyCodeLine{00553\ }
+\DoxyCodeLine{00554\ \ \ \textcolor{comment}{//\ check\ other\ types\ overflow}}
+\DoxyCodeLine{00555\ \ \ \textcolor{keywordflow}{if}\ (!std::is\_same<T,\ uint64\_t>::value)\ \{}
+\DoxyCodeLine{00556\ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ >\ uint64\_t(std::numeric\_limits<T>::max())\ +\ uint64\_t(negative))\ \{}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ answer.ec\ =\ std::errc::result\_out\_of\_range;}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00559\ \ \ \ \ \}}
+\DoxyCodeLine{00560\ \ \ \}}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ \ \ \textcolor{keywordflow}{if}\ (negative)\ \{}
+\DoxyCodeLine{00563\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_VISUAL\_STUDIO}}
+\DoxyCodeLine{00564\ \textcolor{preprocessor}{\#pragma\ warning(push)}}
+\DoxyCodeLine{00565\ \textcolor{preprocessor}{\#pragma\ warning(disable\ :\ 4146)}}
+\DoxyCodeLine{00566\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00567\ \ \ \ \ \textcolor{comment}{//\ this\ weird\ workaround\ is\ required\ because:}}
+\DoxyCodeLine{00568\ \ \ \ \ \textcolor{comment}{//\ -\/\ converting\ unsigned\ to\ signed\ when\ its\ value\ is\ greater\ than\ signed\ max}}
+\DoxyCodeLine{00569\ \ \ \ \ \textcolor{comment}{//\ is\ UB\ pre-\/C++23.}}
+\DoxyCodeLine{00570\ \ \ \ \ \textcolor{comment}{//\ -\/\ reinterpret\_casting\ (\string~i\ +\ 1)\ would\ work,\ but\ it\ is\ not\ constexpr}}
+\DoxyCodeLine{00571\ \ \ \ \ \textcolor{comment}{//\ this\ is\ always\ optimized\ into\ a\ neg\ instruction\ (note:\ T\ is\ an\ integer}}
+\DoxyCodeLine{00572\ \ \ \ \ \textcolor{comment}{//\ type)}}
+\DoxyCodeLine{00573\ \ \ \ \ value\ =\ T(-\/std::numeric\_limits<T>::max()\ -\/}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T(i\ -\/\ uint64\_t(std::numeric\_limits<T>::max())));}
+\DoxyCodeLine{00575\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_VISUAL\_STUDIO}}
+\DoxyCodeLine{00576\ \textcolor{preprocessor}{\#pragma\ warning(pop)}}
+\DoxyCodeLine{00577\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00578\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00579\ \ \ \ \ value\ =\ T(i);}
+\DoxyCodeLine{00580\ \ \ \}}
+\DoxyCodeLine{00581\ }
+\DoxyCodeLine{00582\ \ \ answer.ec\ =\ std::errc();}
+\DoxyCodeLine{00583\ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00584\ \}}
+\DoxyCodeLine{00585\ }
+\DoxyCodeLine{00586\ \}\ \textcolor{comment}{//\ namespace\ fast\_float}}
+\DoxyCodeLine{00587\ }
+\DoxyCodeLine{00588\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

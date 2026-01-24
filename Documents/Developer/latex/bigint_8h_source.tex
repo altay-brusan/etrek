@@ -1,0 +1,644 @@
+\doxysection{bigint.\+h}
+\hypertarget{bigint_8h_source}{}\label{bigint_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/bigint.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/bigint.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ FASTFLOAT\_BIGINT\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ FASTFLOAT\_BIGINT\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <climits>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}float\_common.h"{}}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{keyword}{namespace\ }fast\_float\ \{}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ the\ limb\ width:\ we\ want\ efficient\ multiplication\ of\ double\ the\ bits\ in}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ limb,\ or\ for\ 64-\/bit\ limbs,\ at\ least\ 64-\/bit\ multiplication\ where\ we\ can}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ extract\ the\ high\ and\ low\ parts\ efficiently.\ this\ is\ every\ 64-\/bit}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ architecture\ except\ for\ sparc,\ which\ emulates\ 128-\/bit\ multiplication.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{//\ we\ might\ have\ platforms\ where\ \`{}CHAR\_BIT`\ is\ not\ 8,\ so\ let's\ avoid}}
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ doing\ \`{}8\ *\ sizeof(limb)`.}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#if\ defined(FASTFLOAT\_64BIT)\ \&\&\ !defined(\_\_sparc)}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#define\ FASTFLOAT\_64BIT\_LIMB\ 1}}
+\DoxyCodeLine{00021\ \textcolor{keyword}{typedef}\ uint64\_t\ limb;}
+\DoxyCodeLine{00022\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{size\_t}\ limb\_bits\ =\ 64;}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ FASTFLOAT\_32BIT\_LIMB}}
+\DoxyCodeLine{00025\ \textcolor{keyword}{typedef}\ uint32\_t\ limb;}
+\DoxyCodeLine{00026\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{size\_t}\ limb\_bits\ =\ 32;}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{keyword}{typedef}\ span<limb>\ limb\_span;}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ number\ of\ bits\ in\ a\ bigint.\ this\ needs\ to\ be\ at\ least\ the\ number}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ of\ bits\ required\ to\ store\ the\ largest\ bigint,\ which\ is}}
+\DoxyCodeLine{00033\ \textcolor{comment}{//\ \`{}log2(10**(digits\ +\ max\_exp))`,\ or\ \`{}log2(10**(767\ +\ 342))`,\ or}}
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ \string~3600\ bits,\ so\ we\ round\ to\ 4000.}}
+\DoxyCodeLine{00035\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{size\_t}\ bigint\_bits\ =\ 4000;}
+\DoxyCodeLine{00036\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{size\_t}\ bigint\_limbs\ =\ bigint\_bits\ /\ limb\_bits;}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ vector-\/like\ type\ that\ is\ allocated\ on\ the\ stack.\ the\ entire}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ buffer\ is\ pre-\/allocated,\ and\ only\ the\ length\ changes.}}
+\DoxyCodeLine{00040\ \textcolor{keyword}{template}\ <u\textcolor{keywordtype}{int}16\_t\ size>\ \textcolor{keyword}{struct\ }stackvec\ \{}
+\DoxyCodeLine{00041\ \ \ limb\ data[size];}
+\DoxyCodeLine{00042\ \ \ \textcolor{comment}{//\ we\ never\ need\ more\ than\ 150\ limbs}}
+\DoxyCodeLine{00043\ \ \ uint16\_t\ length\{0\};}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ stackvec()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00046\ \ \ stackvec(stackvec\ \textcolor{keyword}{const}\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00047\ \ \ stackvec\ \&operator=(stackvec\ \textcolor{keyword}{const}\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00048\ \ \ stackvec(stackvec\ \&\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00049\ \ \ stackvec\ \&operator=(stackvec\ \&\&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{//\ create\ stack\ vector\ from\ existing\ limb\ span.}}
+\DoxyCodeLine{00052\ \ \ FASTFLOAT\_CONSTEXPR20\ stackvec(limb\_span\ s)\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ FASTFLOAT\_ASSERT(try\_extend(s));}
+\DoxyCodeLine{00054\ \ \ \}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ FASTFLOAT\_CONSTEXPR14\ limb\ \&operator[](\textcolor{keywordtype}{size\_t}\ index)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00057\ \ \ \ \ FASTFLOAT\_DEBUG\_ASSERT(index\ <\ length);}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{return}\ data[index];}
+\DoxyCodeLine{00059\ \ \ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ FASTFLOAT\_CONSTEXPR14\ \textcolor{keyword}{const}\ limb\ \&operator[](\textcolor{keywordtype}{size\_t}\ index)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00062\ \ \ \ \ FASTFLOAT\_DEBUG\_ASSERT(index\ <\ length);}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordflow}{return}\ data[index];}
+\DoxyCodeLine{00064\ \ \ \}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{//\ index\ from\ the\ end\ of\ the\ container}}
+\DoxyCodeLine{00067\ \ \ FASTFLOAT\_CONSTEXPR14\ \textcolor{keyword}{const}\ limb\ \&rindex(\textcolor{keywordtype}{size\_t}\ index)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00068\ \ \ \ \ FASTFLOAT\_DEBUG\_ASSERT(index\ <\ length);}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ rindex\ =\ length\ -\/\ index\ -\/\ 1;}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{return}\ data[rindex];}
+\DoxyCodeLine{00071\ \ \ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \textcolor{comment}{//\ set\ the\ length,\ without\ bounds\ checking.}}
+\DoxyCodeLine{00074\ \ \ FASTFLOAT\_CONSTEXPR14\ \textcolor{keywordtype}{void}\ set\_len(\textcolor{keywordtype}{size\_t}\ len)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00075\ \ \ \ \ length\ =\ uint16\_t(len);}
+\DoxyCodeLine{00076\ \ \ \}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{size\_t}\ len()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ length;\ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{bool}\ is\_empty()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ length\ ==\ 0;\ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{size\_t}\ capacity()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ size;\ \}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \textcolor{comment}{//\ append\ item\ to\ vector,\ without\ bounds\ checking}}
+\DoxyCodeLine{00085\ \ \ FASTFLOAT\_CONSTEXPR14\ \textcolor{keywordtype}{void}\ push\_unchecked(limb\ value)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00086\ \ \ \ \ data[length]\ =\ value;}
+\DoxyCodeLine{00087\ \ \ \ \ length++;}
+\DoxyCodeLine{00088\ \ \ \}}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \textcolor{comment}{//\ append\ item\ to\ vector,\ returning\ if\ item\ was\ added}}
+\DoxyCodeLine{00091\ \ \ FASTFLOAT\_CONSTEXPR14\ \textcolor{keywordtype}{bool}\ try\_push(limb\ value)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{if}\ (len()\ <\ capacity())\ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ push\_unchecked(value);}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00095\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00097\ \ \ \ \ \}}
+\DoxyCodeLine{00098\ \ \ \}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \textcolor{comment}{//\ add\ items\ to\ the\ vector,\ from\ a\ span,\ without\ bounds\ checking}}
+\DoxyCodeLine{00101\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{void}\ extend\_unchecked(limb\_span\ s)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00102\ \ \ \ \ limb\ *ptr\ =\ data\ +\ length;}
+\DoxyCodeLine{00103\ \ \ \ \ std::copy\_n(s.ptr,\ s.len(),\ ptr);}
+\DoxyCodeLine{00104\ \ \ \ \ set\_len(len()\ +\ s.len());}
+\DoxyCodeLine{00105\ \ \ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \textcolor{comment}{//\ try\ to\ add\ items\ to\ the\ vector,\ returning\ if\ items\ were\ added}}
+\DoxyCodeLine{00108\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ try\_extend(limb\_span\ s)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{if}\ (len()\ +\ s.len()\ <=\ capacity())\ \{}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ extend\_unchecked(s);}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00112\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00114\ \ \ \ \ \}}
+\DoxyCodeLine{00115\ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \textcolor{comment}{//\ resize\ the\ vector,\ without\ bounds\ checking}}
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{//\ if\ the\ new\ size\ is\ longer\ than\ the\ vector,\ assign\ value\ to\ each}}
+\DoxyCodeLine{00119\ \ \ \textcolor{comment}{//\ appended\ item.}}
+\DoxyCodeLine{00120\ \ \ FASTFLOAT\_CONSTEXPR20}
+\DoxyCodeLine{00121\ \ \ \textcolor{keywordtype}{void}\ resize\_unchecked(\textcolor{keywordtype}{size\_t}\ new\_len,\ limb\ value)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordflow}{if}\ (new\_len\ >\ len())\ \{}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ count\ =\ new\_len\ -\/\ len();}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ limb\ *first\ =\ data\ +\ len();}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ limb\ *last\ =\ first\ +\ count;}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ ::std::fill(first,\ last,\ value);}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ set\_len(new\_len);}
+\DoxyCodeLine{00128\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ set\_len(new\_len);}
+\DoxyCodeLine{00130\ \ \ \ \ \}}
+\DoxyCodeLine{00131\ \ \ \}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{//\ try\ to\ resize\ the\ vector,\ returning\ if\ the\ vector\ was\ resized.}}
+\DoxyCodeLine{00134\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ try\_resize(\textcolor{keywordtype}{size\_t}\ new\_len,\ limb\ value)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordflow}{if}\ (new\_len\ >\ capacity())\ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00137\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ resize\_unchecked(new\_len,\ value);}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00140\ \ \ \ \ \}}
+\DoxyCodeLine{00141\ \ \ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \textcolor{comment}{//\ check\ if\ any\ limbs\ are\ non-\/zero\ after\ the\ given\ index.}}
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{//\ this\ needs\ to\ be\ done\ in\ reverse\ order,\ since\ the\ index}}
+\DoxyCodeLine{00145\ \ \ \textcolor{comment}{//\ is\ relative\ to\ the\ most\ significant\ limbs.}}
+\DoxyCodeLine{00146\ \ \ FASTFLOAT\_CONSTEXPR14\ \textcolor{keywordtype}{bool}\ nonzero(\textcolor{keywordtype}{size\_t}\ index)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordflow}{while}\ (index\ <\ len())\ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rindex(index)\ !=\ 0)\ \{}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ index++;}
+\DoxyCodeLine{00152\ \ \ \ \ \}}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00154\ \ \ \}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \textcolor{comment}{//\ normalize\ the\ big\ integer,\ so\ most-\/significant\ zero\ limbs\ are\ removed.}}
+\DoxyCodeLine{00157\ \ \ FASTFLOAT\_CONSTEXPR14\ \textcolor{keywordtype}{void}\ normalize()\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{while}\ (len()\ >\ 0\ \&\&\ rindex(0)\ ==\ 0)\ \{}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ length-\/-\/;}
+\DoxyCodeLine{00160\ \ \ \ \ \}}
+\DoxyCodeLine{00161\ \ \ \}}
+\DoxyCodeLine{00162\ \};}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR14\ uint64\_t}
+\DoxyCodeLine{00165\ empty\_hi64(\textcolor{keywordtype}{bool}\ \&truncated)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00166\ \ \ truncated\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00168\ \}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ uint64\_t}
+\DoxyCodeLine{00171\ uint64\_hi64(uint64\_t\ r0,\ \textcolor{keywordtype}{bool}\ \&truncated)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00172\ \ \ truncated\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00173\ \ \ \textcolor{keywordtype}{int}\ shl\ =\ leading\_zeroes(r0);}
+\DoxyCodeLine{00174\ \ \ \textcolor{keywordflow}{return}\ r0\ <<\ shl;}
+\DoxyCodeLine{00175\ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ uint64\_t}
+\DoxyCodeLine{00178\ uint64\_hi64(uint64\_t\ r0,\ uint64\_t\ r1,\ \textcolor{keywordtype}{bool}\ \&truncated)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{int}\ shl\ =\ leading\_zeroes(r0);}
+\DoxyCodeLine{00180\ \ \ \textcolor{keywordflow}{if}\ (shl\ ==\ 0)\ \{}
+\DoxyCodeLine{00181\ \ \ \ \ truncated\ =\ r1\ !=\ 0;}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keywordflow}{return}\ r0;}
+\DoxyCodeLine{00183\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordtype}{int}\ shr\ =\ 64\ -\/\ shl;}
+\DoxyCodeLine{00185\ \ \ \ \ truncated\ =\ (r1\ <<\ shl)\ !=\ 0;}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keywordflow}{return}\ (r0\ <<\ shl)\ |\ (r1\ >>\ shr);}
+\DoxyCodeLine{00187\ \ \ \}}
+\DoxyCodeLine{00188\ \}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ uint64\_t}
+\DoxyCodeLine{00191\ uint32\_hi64(uint32\_t\ r0,\ \textcolor{keywordtype}{bool}\ \&truncated)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00192\ \ \ \textcolor{keywordflow}{return}\ uint64\_hi64(r0,\ truncated);}
+\DoxyCodeLine{00193\ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ uint64\_t}
+\DoxyCodeLine{00196\ uint32\_hi64(uint32\_t\ r0,\ uint32\_t\ r1,\ \textcolor{keywordtype}{bool}\ \&truncated)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00197\ \ \ uint64\_t\ x0\ =\ r0;}
+\DoxyCodeLine{00198\ \ \ uint64\_t\ x1\ =\ r1;}
+\DoxyCodeLine{00199\ \ \ \textcolor{keywordflow}{return}\ uint64\_hi64((x0\ <<\ 32)\ |\ x1,\ truncated);}
+\DoxyCodeLine{00200\ \}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ uint64\_t}
+\DoxyCodeLine{00203\ uint32\_hi64(uint32\_t\ r0,\ uint32\_t\ r1,\ uint32\_t\ r2,\ \textcolor{keywordtype}{bool}\ \&truncated)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00204\ \ \ uint64\_t\ x0\ =\ r0;}
+\DoxyCodeLine{00205\ \ \ uint64\_t\ x1\ =\ r1;}
+\DoxyCodeLine{00206\ \ \ uint64\_t\ x2\ =\ r2;}
+\DoxyCodeLine{00207\ \ \ \textcolor{keywordflow}{return}\ uint64\_hi64(x0,\ (x1\ <<\ 32)\ |\ x2,\ truncated);}
+\DoxyCodeLine{00208\ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{comment}{//\ add\ two\ small\ integers,\ checking\ for\ overflow.}}
+\DoxyCodeLine{00211\ \textcolor{comment}{//\ we\ want\ an\ efficient\ operation.\ for\ msvc,\ where}}
+\DoxyCodeLine{00212\ \textcolor{comment}{//\ we\ don't\ have\ built-\/in\ intrinsics,\ this\ is\ still}}
+\DoxyCodeLine{00213\ \textcolor{comment}{//\ pretty\ fast.}}
+\DoxyCodeLine{00214\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ limb}
+\DoxyCodeLine{00215\ scalar\_add(limb\ x,\ limb\ y,\ \textcolor{keywordtype}{bool}\ \&overflow)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00216\ \ \ limb\ z;}
+\DoxyCodeLine{00217\ \textcolor{comment}{//\ gcc\ and\ clang}}
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\#if\ defined(\_\_has\_builtin)}}
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\#if\ \_\_has\_builtin(\_\_builtin\_add\_overflow)}}
+\DoxyCodeLine{00220\ \ \ \textcolor{keywordflow}{if}\ (!cpp20\_and\_in\_constexpr())\ \{}
+\DoxyCodeLine{00221\ \ \ \ \ overflow\ =\ \_\_builtin\_add\_overflow(x,\ y,\ \&z);}
+\DoxyCodeLine{00222\ \ \ \ \ \textcolor{keywordflow}{return}\ z;}
+\DoxyCodeLine{00223\ \ \ \}}
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{comment}{//\ generic,\ this\ still\ optimizes\ correctly\ on\ MSVC.}}
+\DoxyCodeLine{00228\ \ \ z\ =\ x\ +\ y;}
+\DoxyCodeLine{00229\ \ \ overflow\ =\ z\ <\ x;}
+\DoxyCodeLine{00230\ \ \ \textcolor{keywordflow}{return}\ z;}
+\DoxyCodeLine{00231\ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \textcolor{comment}{//\ multiply\ two\ small\ integers,\ getting\ both\ the\ high\ and\ low\ bits.}}
+\DoxyCodeLine{00234\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ limb}
+\DoxyCodeLine{00235\ scalar\_mul(limb\ x,\ limb\ y,\ limb\ \&carry)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_64BIT\_LIMB}}
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\#if\ defined(\_\_SIZEOF\_INT128\_\_)}}
+\DoxyCodeLine{00238\ \ \ \textcolor{comment}{//\ GCC\ and\ clang\ both\ define\ it\ as\ an\ extension.}}
+\DoxyCodeLine{00239\ \ \ \_\_uint128\_t\ z\ =\ \_\_uint128\_t(x)\ *\ \_\_uint128\_t(y)\ +\ \_\_uint128\_t(carry);}
+\DoxyCodeLine{00240\ \ \ carry\ =\ limb(z\ >>\ limb\_bits);}
+\DoxyCodeLine{00241\ \ \ \textcolor{keywordflow}{return}\ limb(z);}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00243\ \ \ \textcolor{comment}{//\ fallback,\ no\ native\ 128-\/bit\ integer\ multiplication\ with\ carry.}}
+\DoxyCodeLine{00244\ \ \ \textcolor{comment}{//\ on\ msvc,\ this\ optimizes\ identically,\ somehow.}}
+\DoxyCodeLine{00245\ \ \ value128\ z\ =\ full\_multiplication(x,\ y);}
+\DoxyCodeLine{00246\ \ \ \textcolor{keywordtype}{bool}\ overflow;}
+\DoxyCodeLine{00247\ \ \ z.low\ =\ scalar\_add(z.low,\ carry,\ overflow);}
+\DoxyCodeLine{00248\ \ \ z.high\ +=\ uint64\_t(overflow);\ \textcolor{comment}{//\ cannot\ overflow}}
+\DoxyCodeLine{00249\ \ \ carry\ =\ z.high;}
+\DoxyCodeLine{00250\ \ \ \textcolor{keywordflow}{return}\ z.low;}
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00252\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00253\ \ \ uint64\_t\ z\ =\ uint64\_t(x)\ *\ uint64\_t(y)\ +\ uint64\_t(carry);}
+\DoxyCodeLine{00254\ \ \ carry\ =\ limb(z\ >>\ limb\_bits);}
+\DoxyCodeLine{00255\ \ \ \textcolor{keywordflow}{return}\ limb(z);}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00257\ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{comment}{//\ add\ scalar\ value\ to\ bigint\ starting\ from\ offset.}}
+\DoxyCodeLine{00260\ \textcolor{comment}{//\ used\ in\ grade\ school\ multiplication}}
+\DoxyCodeLine{00261\ \textcolor{keyword}{template}\ <u\textcolor{keywordtype}{int}16\_t\ size>}
+\DoxyCodeLine{00262\ \textcolor{keyword}{inline}\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ small\_add\_from(stackvec<size>\ \&vec,\ limb\ y,}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ start)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00264\ \ \ \textcolor{keywordtype}{size\_t}\ index\ =\ start;}
+\DoxyCodeLine{00265\ \ \ limb\ carry\ =\ y;}
+\DoxyCodeLine{00266\ \ \ \textcolor{keywordtype}{bool}\ overflow;}
+\DoxyCodeLine{00267\ \ \ \textcolor{keywordflow}{while}\ (carry\ !=\ 0\ \&\&\ index\ <\ vec.len())\ \{}
+\DoxyCodeLine{00268\ \ \ \ \ vec[index]\ =\ scalar\_add(vec[index],\ carry,\ overflow);}
+\DoxyCodeLine{00269\ \ \ \ \ carry\ =\ limb(overflow);}
+\DoxyCodeLine{00270\ \ \ \ \ index\ +=\ 1;}
+\DoxyCodeLine{00271\ \ \ \}}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordflow}{if}\ (carry\ !=\ 0)\ \{}
+\DoxyCodeLine{00273\ \ \ \ \ FASTFLOAT\_TRY(vec.try\_push(carry));}
+\DoxyCodeLine{00274\ \ \ \}}
+\DoxyCodeLine{00275\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00276\ \}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \textcolor{comment}{//\ add\ scalar\ value\ to\ bigint.}}
+\DoxyCodeLine{00279\ \textcolor{keyword}{template}\ <u\textcolor{keywordtype}{int}16\_t\ size>}
+\DoxyCodeLine{00280\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00281\ small\_add(stackvec<size>\ \&vec,\ limb\ y)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00282\ \ \ \textcolor{keywordflow}{return}\ small\_add\_from(vec,\ y,\ 0);}
+\DoxyCodeLine{00283\ \}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{comment}{//\ multiply\ bigint\ by\ scalar\ value.}}
+\DoxyCodeLine{00286\ \textcolor{keyword}{template}\ <u\textcolor{keywordtype}{int}16\_t\ size>}
+\DoxyCodeLine{00287\ \textcolor{keyword}{inline}\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ small\_mul(stackvec<size>\ \&vec,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ limb\ y)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00289\ \ \ limb\ carry\ =\ 0;}
+\DoxyCodeLine{00290\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ index\ =\ 0;\ index\ <\ vec.len();\ index++)\ \{}
+\DoxyCodeLine{00291\ \ \ \ \ vec[index]\ =\ scalar\_mul(vec[index],\ y,\ carry);}
+\DoxyCodeLine{00292\ \ \ \}}
+\DoxyCodeLine{00293\ \ \ \textcolor{keywordflow}{if}\ (carry\ !=\ 0)\ \{}
+\DoxyCodeLine{00294\ \ \ \ \ FASTFLOAT\_TRY(vec.try\_push(carry));}
+\DoxyCodeLine{00295\ \ \ \}}
+\DoxyCodeLine{00296\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00297\ \}}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \textcolor{comment}{//\ add\ bigint\ to\ bigint\ starting\ from\ index.}}
+\DoxyCodeLine{00300\ \textcolor{comment}{//\ used\ in\ grade\ school\ multiplication}}
+\DoxyCodeLine{00301\ \textcolor{keyword}{template}\ <u\textcolor{keywordtype}{int}16\_t\ size>}
+\DoxyCodeLine{00302\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ large\_add\_from(stackvec<size>\ \&x,\ limb\_span\ y,}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ start)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00304\ \ \ \textcolor{comment}{//\ the\ effective\ x\ buffer\ is\ from\ \`{}xstart..x.len()`,\ so\ exit\ early}}
+\DoxyCodeLine{00305\ \ \ \textcolor{comment}{//\ if\ we\ can't\ get\ that\ current\ range.}}
+\DoxyCodeLine{00306\ \ \ \textcolor{keywordflow}{if}\ (x.len()\ <\ start\ ||\ y.len()\ >\ x.len()\ -\/\ start)\ \{}
+\DoxyCodeLine{00307\ \ \ \ \ FASTFLOAT\_TRY(x.try\_resize(y.len()\ +\ start,\ 0));}
+\DoxyCodeLine{00308\ \ \ \}}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \textcolor{keywordtype}{bool}\ carry\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00311\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ index\ =\ 0;\ index\ <\ y.len();\ index++)\ \{}
+\DoxyCodeLine{00312\ \ \ \ \ limb\ xi\ =\ x[index\ +\ start];}
+\DoxyCodeLine{00313\ \ \ \ \ limb\ yi\ =\ y[index];}
+\DoxyCodeLine{00314\ \ \ \ \ \textcolor{keywordtype}{bool}\ c1\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{keywordtype}{bool}\ c2\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00316\ \ \ \ \ xi\ =\ scalar\_add(xi,\ yi,\ c1);}
+\DoxyCodeLine{00317\ \ \ \ \ \textcolor{keywordflow}{if}\ (carry)\ \{}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ xi\ =\ scalar\_add(xi,\ 1,\ c2);}
+\DoxyCodeLine{00319\ \ \ \ \ \}}
+\DoxyCodeLine{00320\ \ \ \ \ x[index\ +\ start]\ =\ xi;}
+\DoxyCodeLine{00321\ \ \ \ \ carry\ =\ c1\ |\ c2;}
+\DoxyCodeLine{00322\ \ \ \}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \ \ \textcolor{comment}{//\ handle\ overflow}}
+\DoxyCodeLine{00325\ \ \ \textcolor{keywordflow}{if}\ (carry)\ \{}
+\DoxyCodeLine{00326\ \ \ \ \ FASTFLOAT\_TRY(small\_add\_from(x,\ 1,\ y.len()\ +\ start));}
+\DoxyCodeLine{00327\ \ \ \}}
+\DoxyCodeLine{00328\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00329\ \}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \textcolor{comment}{//\ add\ bigint\ to\ bigint.}}
+\DoxyCodeLine{00332\ \textcolor{keyword}{template}\ <u\textcolor{keywordtype}{int}16\_t\ size>}
+\DoxyCodeLine{00333\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00334\ large\_add\_from(stackvec<size>\ \&x,\ limb\_span\ y)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00335\ \ \ \textcolor{keywordflow}{return}\ large\_add\_from(x,\ y,\ 0);}
+\DoxyCodeLine{00336\ \}}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \textcolor{comment}{//\ grade-\/school\ multiplication\ algorithm}}
+\DoxyCodeLine{00339\ \textcolor{keyword}{template}\ <u\textcolor{keywordtype}{int}16\_t\ size>}
+\DoxyCodeLine{00340\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ long\_mul(stackvec<size>\ \&x,\ limb\_span\ y)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00341\ \ \ limb\_span\ xs\ =\ limb\_span(x.data,\ x.len());}
+\DoxyCodeLine{00342\ \ \ stackvec<size>\ z(xs);}
+\DoxyCodeLine{00343\ \ \ limb\_span\ zs\ =\ limb\_span(z.data,\ z.len());}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \ \ \textcolor{keywordflow}{if}\ (y.len()\ !=\ 0)\ \{}
+\DoxyCodeLine{00346\ \ \ \ \ limb\ y0\ =\ y[0];}
+\DoxyCodeLine{00347\ \ \ \ \ FASTFLOAT\_TRY(small\_mul(x,\ y0));}
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ index\ =\ 1;\ index\ <\ y.len();\ index++)\ \{}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ limb\ yi\ =\ y[index];}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ stackvec<size>\ zi;}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (yi\ !=\ 0)\ \{}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ re-\/use\ the\ same\ buffer\ throughout}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ zi.set\_len(0);}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ FASTFLOAT\_TRY(zi.try\_extend(zs));}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ FASTFLOAT\_TRY(small\_mul(zi,\ yi));}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ limb\_span\ zis\ =\ limb\_span(zi.data,\ zi.len());}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ FASTFLOAT\_TRY(large\_add\_from(x,\ zis,\ index));}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00359\ \ \ \ \ \}}
+\DoxyCodeLine{00360\ \ \ \}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ x.normalize();}
+\DoxyCodeLine{00363\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00364\ \}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{comment}{//\ grade-\/school\ multiplication\ algorithm}}
+\DoxyCodeLine{00367\ \textcolor{keyword}{template}\ <u\textcolor{keywordtype}{int}16\_t\ size>}
+\DoxyCodeLine{00368\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ large\_mul(stackvec<size>\ \&x,\ limb\_span\ y)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00369\ \ \ \textcolor{keywordflow}{if}\ (y.len()\ ==\ 1)\ \{}
+\DoxyCodeLine{00370\ \ \ \ \ FASTFLOAT\_TRY(small\_mul(x,\ y[0]));}
+\DoxyCodeLine{00371\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00372\ \ \ \ \ FASTFLOAT\_TRY(long\_mul(x,\ y));}
+\DoxyCodeLine{00373\ \ \ \}}
+\DoxyCodeLine{00374\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00375\ \}}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ =\ \textcolor{keywordtype}{void}>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structfast__float_1_1pow5__tables}{pow5\_tables}}\ \{}
+\DoxyCodeLine{00378\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ uint32\_t\ large\_step\ =\ 135;}
+\DoxyCodeLine{00379\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ uint64\_t\ small\_power\_of\_5[]\ =\ \{}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ 1UL,}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ 5UL,}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ 25UL,}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ 125UL,}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ 625UL,}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ 3125UL,}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ 15625UL,}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ 78125UL,}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ 390625UL,}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ 1953125UL,}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ 9765625UL,}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ 48828125UL,}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ 244140625UL,}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ 1220703125UL,}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ 6103515625UL,}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ 30517578125UL,}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ 152587890625UL,}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ 762939453125UL,}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ 3814697265625UL,}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ 19073486328125UL,}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ 95367431640625UL,}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ 476837158203125UL,}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ 2384185791015625UL,}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ 11920928955078125UL,}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ 59604644775390625UL,}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ 298023223876953125UL,}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ 1490116119384765625UL,}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ 7450580596923828125UL,}
+\DoxyCodeLine{00408\ \ \ \};}
+\DoxyCodeLine{00409\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_64BIT\_LIMB}}
+\DoxyCodeLine{00410\ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{static}\ limb\ large\_power\_of\_5[]\ =\ \{}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ 1414648277510068013UL,\ 9180637584431281687UL,\ 4539964771860779200UL,}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ 10482974169319127550UL,\ 198276706040285095UL\};}
+\DoxyCodeLine{00413\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00414\ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{static}\ limb\ large\_power\_of\_5[]\ =\ \{}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ 4279965485U,\ 329373468U,\ \ 4020270615U,\ 2137533757U,\ 4287402176U,}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ 1057042919U,\ 1071430142U,\ 2440757623U,\ 381945767U,\ \ 46164893U\};}
+\DoxyCodeLine{00417\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00418\ \};}
+\DoxyCodeLine{00419\ }
+\DoxyCodeLine{00420\ \textcolor{preprocessor}{\#if\ FASTFLOAT\_DETAIL\_MUST\_DEFINE\_CONSTEXPR\_VARIABLE}}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{constexpr}\ uint32\_t\ pow5\_tables<T>::large\_step;}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{constexpr}\ uint64\_t\ pow5\_tables<T>::small\_power\_of\_5[];}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{constexpr}\ limb\ pow5\_tables<T>::large\_power\_of\_5[];}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00428\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00430\ \textcolor{comment}{//\ big\ integer\ type.\ implements\ a\ small\ subset\ of\ big\ integer}}
+\DoxyCodeLine{00431\ \textcolor{comment}{//\ arithmetic,\ using\ simple\ algorithms\ since\ asymptotically}}
+\DoxyCodeLine{00432\ \textcolor{comment}{//\ faster\ algorithms\ are\ slower\ for\ a\ small\ number\ of\ limbs.}}
+\DoxyCodeLine{00433\ \textcolor{comment}{//\ all\ operations\ assume\ the\ big-\/integer\ is\ normalized.}}
+\DoxyCodeLine{00434\ \textcolor{keyword}{struct\ }bigint\ :\ \doxymbox{\hyperlink{structfast__float_1_1pow5__tables}{pow5\_tables}}<>\ \{}
+\DoxyCodeLine{00435\ \ \ \textcolor{comment}{//\ storage\ of\ the\ limbs,\ in\ little-\/endian\ order.}}
+\DoxyCodeLine{00436\ \ \ \doxymbox{\hyperlink{structfast__float_1_1stackvec}{stackvec<bigint\_limbs>}}\ vec;}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \ \ FASTFLOAT\_CONSTEXPR20\ bigint()\ :\ vec()\ \{\}}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \ \ bigint(bigint\ \textcolor{keyword}{const}\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00441\ \ \ bigint\ \&operator=(bigint\ \textcolor{keyword}{const}\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00442\ \ \ bigint(bigint\ \&\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00443\ \ \ bigint\ \&operator=(bigint\ \&\&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ \ \ FASTFLOAT\_CONSTEXPR20\ bigint(uint64\_t\ value)\ :\ vec()\ \{}
+\DoxyCodeLine{00446\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_64BIT\_LIMB}}
+\DoxyCodeLine{00447\ \ \ \ \ vec.push\_unchecked(value);}
+\DoxyCodeLine{00448\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00449\ \ \ \ \ vec.push\_unchecked(uint32\_t(value));}
+\DoxyCodeLine{00450\ \ \ \ \ vec.push\_unchecked(uint32\_t(value\ >>\ 32));}
+\DoxyCodeLine{00451\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00452\ \ \ \ \ vec.normalize();}
+\DoxyCodeLine{00453\ \ \ \}}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \ \ \textcolor{comment}{//\ get\ the\ high\ 64\ bits\ from\ the\ vector,\ and\ if\ bits\ were\ truncated.}}
+\DoxyCodeLine{00456\ \ \ \textcolor{comment}{//\ this\ is\ to\ get\ the\ significant\ digits\ for\ the\ float.}}
+\DoxyCodeLine{00457\ \ \ FASTFLOAT\_CONSTEXPR20\ uint64\_t\ hi64(\textcolor{keywordtype}{bool}\ \&truncated)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00458\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_64BIT\_LIMB}}
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{keywordflow}{if}\ (vec.len()\ ==\ 0)\ \{}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ empty\_hi64(truncated);}
+\DoxyCodeLine{00461\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (vec.len()\ ==\ 1)\ \{}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ uint64\_hi64(vec.rindex(0),\ truncated);}
+\DoxyCodeLine{00463\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ uint64\_t\ result\ =\ uint64\_hi64(vec.rindex(0),\ vec.rindex(1),\ truncated);}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ truncated\ |=\ vec.nonzero(2);}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00467\ \ \ \ \ \}}
+\DoxyCodeLine{00468\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00469\ \ \ \ \ \textcolor{keywordflow}{if}\ (vec.len()\ ==\ 0)\ \{}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ empty\_hi64(truncated);}
+\DoxyCodeLine{00471\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (vec.len()\ ==\ 1)\ \{}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ uint32\_hi64(vec.rindex(0),\ truncated);}
+\DoxyCodeLine{00473\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (vec.len()\ ==\ 2)\ \{}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ uint32\_hi64(vec.rindex(0),\ vec.rindex(1),\ truncated);}
+\DoxyCodeLine{00475\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ uint64\_t\ result\ =}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \ \ uint32\_hi64(vec.rindex(0),\ vec.rindex(1),\ vec.rindex(2),\ truncated);}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ truncated\ |=\ vec.nonzero(3);}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00480\ \ \ \ \ \}}
+\DoxyCodeLine{00481\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00482\ \ \ \}}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \ \ \textcolor{comment}{//\ compare\ two\ big\ integers,\ returning\ the\ large\ value.}}
+\DoxyCodeLine{00485\ \ \ \textcolor{comment}{//\ assumes\ both\ are\ normalized.\ if\ the\ return\ value\ is}}
+\DoxyCodeLine{00486\ \ \ \textcolor{comment}{//\ negative,\ other\ is\ larger,\ if\ the\ return\ value\ is}}
+\DoxyCodeLine{00487\ \ \ \textcolor{comment}{//\ positive,\ this\ is\ larger,\ otherwise\ they\ are\ equal.}}
+\DoxyCodeLine{00488\ \ \ \textcolor{comment}{//\ the\ limbs\ are\ stored\ in\ little-\/endian\ order,\ so\ we}}
+\DoxyCodeLine{00489\ \ \ \textcolor{comment}{//\ must\ compare\ the\ limbs\ in\ ever\ order.}}
+\DoxyCodeLine{00490\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{int}\ compare(bigint\ \textcolor{keyword}{const}\ \&other)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00491\ \ \ \ \ \textcolor{keywordflow}{if}\ (vec.len()\ >\ other.vec.len())\ \{}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{00493\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (vec.len()\ <\ other.vec.len())\ \{}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00495\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ index\ =\ vec.len();\ index\ >\ 0;\ index-\/-\/)\ \{}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ limb\ xi\ =\ vec[index\ -\/\ 1];}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ limb\ yi\ =\ other.vec[index\ -\/\ 1];}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (xi\ >\ yi)\ \{}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (xi\ <\ yi)\ \{}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00506\ \ \ \ \ \}}
+\DoxyCodeLine{00507\ \ \ \}}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00509\ \ \ \textcolor{comment}{//\ shift\ left\ each\ limb\ n\ bits,\ carrying\ over\ to\ the\ new\ limb}}
+\DoxyCodeLine{00510\ \ \ \textcolor{comment}{//\ returns\ true\ if\ we\ were\ able\ to\ shift\ all\ the\ digits.}}
+\DoxyCodeLine{00511\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ shl\_bits(\textcolor{keywordtype}{size\_t}\ n)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00512\ \ \ \ \ \textcolor{comment}{//\ Internally,\ for\ each\ item,\ we\ shift\ left\ by\ n,\ and\ add\ the\ previous}}
+\DoxyCodeLine{00513\ \ \ \ \ \textcolor{comment}{//\ right\ shifted\ limb-\/bits.}}
+\DoxyCodeLine{00514\ \ \ \ \ \textcolor{comment}{//\ For\ example,\ we\ transform\ (for\ u8)\ shifted\ left\ 2,\ to:}}
+\DoxyCodeLine{00515\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ b10100100\ b01000010}}
+\DoxyCodeLine{00516\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ b10\ b10010001\ b00001000}}
+\DoxyCodeLine{00517\ \ \ \ \ FASTFLOAT\_DEBUG\_ASSERT(n\ !=\ 0);}
+\DoxyCodeLine{00518\ \ \ \ \ FASTFLOAT\_DEBUG\_ASSERT(n\ <\ \textcolor{keyword}{sizeof}(limb)\ *\ 8);}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ shl\ =\ n;}
+\DoxyCodeLine{00521\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ shr\ =\ limb\_bits\ -\/\ shl;}
+\DoxyCodeLine{00522\ \ \ \ \ limb\ prev\ =\ 0;}
+\DoxyCodeLine{00523\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ index\ =\ 0;\ index\ <\ vec.len();\ index++)\ \{}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ limb\ xi\ =\ vec[index];}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ vec[index]\ =\ (xi\ <<\ shl)\ |\ (prev\ >>\ shr);}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ prev\ =\ xi;}
+\DoxyCodeLine{00527\ \ \ \ \ \}}
+\DoxyCodeLine{00528\ }
+\DoxyCodeLine{00529\ \ \ \ \ limb\ carry\ =\ prev\ >>\ shr;}
+\DoxyCodeLine{00530\ \ \ \ \ \textcolor{keywordflow}{if}\ (carry\ !=\ 0)\ \{}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ vec.try\_push(carry);}
+\DoxyCodeLine{00532\ \ \ \ \ \}}
+\DoxyCodeLine{00533\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00534\ \ \ \}}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00536\ \ \ \textcolor{comment}{//\ move\ the\ limbs\ left\ by\ \`{}n`\ limbs.}}
+\DoxyCodeLine{00537\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ shl\_limbs(\textcolor{keywordtype}{size\_t}\ n)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00538\ \ \ \ \ FASTFLOAT\_DEBUG\_ASSERT(n\ !=\ 0);}
+\DoxyCodeLine{00539\ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ +\ vec.len()\ >\ vec.capacity())\ \{}
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00541\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!vec.is\_empty())\ \{}
+\DoxyCodeLine{00542\ \ \ \ \ \ \ \textcolor{comment}{//\ move\ limbs}}
+\DoxyCodeLine{00543\ \ \ \ \ \ \ limb\ *dst\ =\ vec.data\ +\ n;}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ limb\ \textcolor{keyword}{const}\ *src\ =\ vec.data;}
+\DoxyCodeLine{00545\ \ \ \ \ \ \ std::copy\_backward(src,\ src\ +\ vec.len(),\ dst\ +\ vec.len());}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \textcolor{comment}{//\ fill\ in\ empty\ limbs}}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ limb\ *first\ =\ vec.data;}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ limb\ *last\ =\ first\ +\ n;}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ ::std::fill(first,\ last,\ 0);}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ vec.set\_len(n\ +\ vec.len());}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00552\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00554\ \ \ \ \ \}}
+\DoxyCodeLine{00555\ \ \ \}}
+\DoxyCodeLine{00556\ }
+\DoxyCodeLine{00557\ \ \ \textcolor{comment}{//\ move\ the\ limbs\ left\ by\ \`{}n`\ bits.}}
+\DoxyCodeLine{00558\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ shl(\textcolor{keywordtype}{size\_t}\ n)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00559\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ rem\ =\ n\ \%\ limb\_bits;}
+\DoxyCodeLine{00560\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ div\ =\ n\ /\ limb\_bits;}
+\DoxyCodeLine{00561\ \ \ \ \ \textcolor{keywordflow}{if}\ (rem\ !=\ 0)\ \{}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ FASTFLOAT\_TRY(shl\_bits(rem));}
+\DoxyCodeLine{00563\ \ \ \ \ \}}
+\DoxyCodeLine{00564\ \ \ \ \ \textcolor{keywordflow}{if}\ (div\ !=\ 0)\ \{}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ FASTFLOAT\_TRY(shl\_limbs(div));}
+\DoxyCodeLine{00566\ \ \ \ \ \}}
+\DoxyCodeLine{00567\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00568\ \ \ \}}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ \ \ \textcolor{comment}{//\ get\ the\ number\ of\ leading\ zeros\ in\ the\ bigint.}}
+\DoxyCodeLine{00571\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{int}\ ctlz()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00572\ \ \ \ \ \textcolor{keywordflow}{if}\ (vec.is\_empty())\ \{}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00574\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00575\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_64BIT\_LIMB}}
+\DoxyCodeLine{00576\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ leading\_zeroes(vec.rindex(0));}
+\DoxyCodeLine{00577\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00578\ \ \ \ \ \ \ \textcolor{comment}{//\ no\ use\ defining\ a\ specialized\ leading\_zeroes\ for\ a\ 32-\/bit\ type.}}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ uint64\_t\ r0\ =\ vec.rindex(0);}
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ leading\_zeroes(r0\ <<\ 32);}
+\DoxyCodeLine{00581\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00582\ \ \ \ \ \}}
+\DoxyCodeLine{00583\ \ \ \}}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \ \ \textcolor{comment}{//\ get\ the\ number\ of\ bits\ in\ the\ bigint.}}
+\DoxyCodeLine{00586\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{int}\ bit\_length()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00587\ \ \ \ \ \textcolor{keywordtype}{int}\ lz\ =\ ctlz();}
+\DoxyCodeLine{00588\ \ \ \ \ \textcolor{keywordflow}{return}\ int(limb\_bits\ *\ vec.len())\ -\/\ lz;}
+\DoxyCodeLine{00589\ \ \ \}}
+\DoxyCodeLine{00590\ }
+\DoxyCodeLine{00591\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ mul(limb\ y)\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ small\_mul(vec,\ y);\ \}}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ add(limb\ y)\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ small\_add(vec,\ y);\ \}}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \ \ \textcolor{comment}{//\ multiply\ as\ if\ by\ 2\ raised\ to\ a\ power.}}
+\DoxyCodeLine{00596\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ pow2(uint32\_t\ exp)\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ shl(exp);\ \}}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \ \ \textcolor{comment}{//\ multiply\ as\ if\ by\ 5\ raised\ to\ a\ power.}}
+\DoxyCodeLine{00599\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ pow5(uint32\_t\ exp)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00600\ \ \ \ \ \textcolor{comment}{//\ multiply\ by\ a\ power\ of\ 5}}
+\DoxyCodeLine{00601\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ large\_length\ =\ \textcolor{keyword}{sizeof}(large\_power\_of\_5)\ /\ \textcolor{keyword}{sizeof}(limb);}
+\DoxyCodeLine{00602\ \ \ \ \ limb\_span\ large\ =\ limb\_span(large\_power\_of\_5,\ large\_length);}
+\DoxyCodeLine{00603\ \ \ \ \ \textcolor{keywordflow}{while}\ (exp\ >=\ large\_step)\ \{}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ FASTFLOAT\_TRY(large\_mul(vec,\ large));}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ exp\ -\/=\ large\_step;}
+\DoxyCodeLine{00606\ \ \ \ \ \}}
+\DoxyCodeLine{00607\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_64BIT\_LIMB}}
+\DoxyCodeLine{00608\ \ \ \ \ uint32\_t\ small\_step\ =\ 27;}
+\DoxyCodeLine{00609\ \ \ \ \ limb\ max\_native\ =\ 7450580596923828125UL;}
+\DoxyCodeLine{00610\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00611\ \ \ \ \ uint32\_t\ small\_step\ =\ 13;}
+\DoxyCodeLine{00612\ \ \ \ \ limb\ max\_native\ =\ 1220703125U;}
+\DoxyCodeLine{00613\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00614\ \ \ \ \ \textcolor{keywordflow}{while}\ (exp\ >=\ small\_step)\ \{}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ FASTFLOAT\_TRY(small\_mul(vec,\ max\_native));}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ exp\ -\/=\ small\_step;}
+\DoxyCodeLine{00617\ \ \ \ \ \}}
+\DoxyCodeLine{00618\ \ \ \ \ \textcolor{keywordflow}{if}\ (exp\ !=\ 0)\ \{}
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \textcolor{comment}{//\ Work\ around\ clang\ bug\ https://godbolt.org/z/zedh7rrhc}}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \textcolor{comment}{//\ This\ is\ similar\ to\ https://github.com/llvm/llvm-\/project/issues/47746,}}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \textcolor{comment}{//\ except\ the\ workaround\ described\ there\ don't\ work\ here}}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ FASTFLOAT\_TRY(small\_mul(}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \ \ \ \ vec,\ limb(((\textcolor{keywordtype}{void})small\_power\_of\_5[0],\ small\_power\_of\_5[exp]))));}
+\DoxyCodeLine{00624\ \ \ \ \ \}}
+\DoxyCodeLine{00625\ }
+\DoxyCodeLine{00626\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00627\ \ \ \}}
+\DoxyCodeLine{00628\ }
+\DoxyCodeLine{00629\ \ \ \textcolor{comment}{//\ multiply\ as\ if\ by\ 10\ raised\ to\ a\ power.}}
+\DoxyCodeLine{00630\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}\ pow10(uint32\_t\ exp)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00631\ \ \ \ \ FASTFLOAT\_TRY(pow5(exp));}
+\DoxyCodeLine{00632\ \ \ \ \ \textcolor{keywordflow}{return}\ pow2(exp);}
+\DoxyCodeLine{00633\ \ \ \}}
+\DoxyCodeLine{00634\ \};}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \}\ \textcolor{comment}{//\ namespace\ fast\_float}}
+\DoxyCodeLine{00637\ }
+\DoxyCodeLine{00638\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

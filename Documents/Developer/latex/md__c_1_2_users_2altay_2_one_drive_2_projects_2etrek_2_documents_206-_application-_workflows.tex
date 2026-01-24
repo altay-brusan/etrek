@@ -1,0 +1,1348 @@
+\chapter{Etrek Application Workflows }
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows}{}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows}\index{Etrek Application Workflows@{Etrek Application Workflows}}
+\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md461}%
+\Hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md461}%
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md462}{}\doxysection{\texorpdfstring{Overview}{Overview}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md462}
+This document provides comprehensive documentation of all major workflows in the Etrek medical imaging application, including application initialization, authentication, DICOM worklist management, and PACS integration.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md463}{}\doxysection{\texorpdfstring{Table of Contents}{Table of Contents}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md463}
+
+\begin{DoxyEnumerate}
+\item Application Initialization
+\item Authentication Workflow
+\item DICOM Worklist Query Workflow
+\item Launch Strategies
+\item PACS Integration Workflow
+\item Examination Workflow
+\item Context Management
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md465}{}\doxysection{\texorpdfstring{1. Application Initialization}{1. Application Initialization}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md465}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md466}{}\doxysubsection{\texorpdfstring{Entry Point (main.\+cpp)}{Entry Point (main.\+cpp)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md466}
+\doxylink{requirements_The}{The} application starts with a robust initialization sequence that ensures single-\/instance execution and proper resource setup.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md467}{}\doxysubsubsection{\texorpdfstring{Step-\/by-\/\+Step Initialization}{Step-\/by-\/\+Step Initialization}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md467}
+{\bfseries{1. Application Setup}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main(\textcolor{keywordtype}{int}\ argc,\ \textcolor{keywordtype}{char}\ *argv[])\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Enable\ memory\ leak\ detection\ (Windows\ debug\ builds)}}
+\DoxyCodeLine{\textcolor{preprocessor}{\ \ \ \ \#if\ defined(\_DEBUG)\ \&\&\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \_CrtSetDbgFlag(\_CRTDBG\_ALLOC\_MEM\_DF\ |\ \_CRTDBG\_LEAK\_CHECK\_DF);}
+\DoxyCodeLine{\textcolor{preprocessor}{\ \ \ \ \#endif}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ Qt\ application}}
+\DoxyCodeLine{\ \ \ \ QApplication\ app(argc,\ argv);}
+\DoxyCodeLine{\ \ \ \ QCoreApplication::setApplicationName(\textcolor{stringliteral}{"{}EtrekApp"{}});}
+\DoxyCodeLine{\ \ \ \ QCoreApplication::setOrganizationName(\textcolor{stringliteral}{"{}Etrek"{}});}
+\DoxyCodeLine{\ \ \ \ QCoreApplication::setApplicationVersion(\textcolor{stringliteral}{"{}1.0.0"{}});}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{2. Single Instance Lock}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Prevent\ multiple\ instances\ from\ running}}
+\DoxyCodeLine{QString\ lockPath\ =\ QStandardPaths::writableLocation(QStandardPaths::TempLocation)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ +\ \textcolor{stringliteral}{"{}/etrek\_app.lock"{}};}
+\DoxyCodeLine{QLockFile\ lock(lockPath);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordflow}{if}\ (!lock.tryLock(0))\ \{}
+\DoxyCodeLine{\ \ \ \ QMessageBox::warning(\textcolor{keyword}{nullptr},\ \textcolor{stringliteral}{"{}Application\ Already\ Running"{}},}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Another\ instance\ of\ Etrek\ is\ already\ running."{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ EXIT\_FAILURE;}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{3. Signal Handling}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Install\ OS\ signal\ handlers\ for\ graceful/immediate\ shutdown}}
+\DoxyCodeLine{SignalGuard\ signalGuard;}
+\DoxyCodeLine{\textcolor{comment}{//\ Captures\ SIGINT,\ SIGTERM}}
+\DoxyCodeLine{\textcolor{comment}{//\ Calls\ std::\_Exit(EXIT\_FAILURE)\ for\ immediate\ termination}}
+
+\end{DoxyCode}
+
+
+{\bfseries{4. Logger Shutdown Hook}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Ensure\ logger\ is\ properly\ shutdown\ when\ application\ quits}}
+\DoxyCodeLine{QObject::connect(\&app,\ \&QCoreApplication::aboutToQuit,\ []()\ \{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_etrek_1_1_core_1_1_log_1_1_logger_provider_a817a2ecb3c9a52ac9a774aebcbd61484}{Etrek::Core::Log::LoggerProvider::Instance}}().\doxymbox{\hyperlink{class_etrek_1_1_core_1_1_log_1_1_logger_provider_a5e29627392d094049b023151e850fe70}{Shutdown}}();}
+\DoxyCodeLine{\});}
+
+\end{DoxyCode}
+
+
+{\bfseries{5. Parse Launch Mode}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ arguments\ =\ QCoreApplication::arguments();}
+\DoxyCodeLine{\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ mode\ =\ Etrek::Specification::ParseLaunchMode(arguments);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Supported\ modes:}}
+\DoxyCodeLine{\textcolor{comment}{//\ -\/\ MainApp\ (default)}}
+\DoxyCodeLine{\textcolor{comment}{//\ -\/\ UserManager\ (usermgr)}}
+\DoxyCodeLine{\textcolor{comment}{//\ -\/\ SettingManager\ (settingmgr)}}
+\DoxyCodeLine{\textcolor{comment}{//\ -\/\ Demo\ (demo)}}
+\DoxyCodeLine{\textcolor{comment}{//\ -\/\ Developer\ (developer)}}
+
+\end{DoxyCode}
+
+
+{\bfseries{6. Create and Initialize Application\+Service}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_etrek_1_1_application_1_1_service_1_1_application_service}{Etrek::Application::Service::ApplicationService}}\ applicationService(\&app);}
+\DoxyCodeLine{applicationService.initialize(mode);}
+
+\end{DoxyCode}
+
+
+{\bfseries{7. Run Event Loop}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordflow}{return}\ app.exec();}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md468}{}\doxysubsection{\texorpdfstring{Application\+Service Initialization Sequence}{Application\+Service Initialization Sequence}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md468}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md469}{}\doxysubsubsection{\texorpdfstring{Initialization Dispatcher}{Initialization Dispatcher}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md469}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ApplicationService::initialize(LaunchMode\ mode)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ 1.\ Register\ Qt\ meta-\/types\ for\ signal/slot\ communication}}
+\DoxyCodeLine{\ \ \ \ qRegisterMetaType<Role>(\textcolor{stringliteral}{"{}Role"{}});}
+\DoxyCodeLine{\ \ \ \ qRegisterMetaType<User>(\textcolor{stringliteral}{"{}User"{}});}
+\DoxyCodeLine{\ \ \ \ qRegisterMetaType<QVector<int>>(\textcolor{stringliteral}{"{}QVector<int>"{}});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ 2.\ Create\ and\ execute\ launch\ strategy}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ strategy\ =\ createLaunchStrategy(mode);\ \ \textcolor{comment}{//\ Factory\ pattern}}
+\DoxyCodeLine{\ \ \ \ strategy-\/>launch(\textcolor{keyword}{this});\ \ \textcolor{comment}{//\ Polymorphic\ execution}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md470}{}\doxysubsubsection{\texorpdfstring{Main\+App\+Launch\+Strategy (Full Application Launch)}{Main\+App\+Launch\+Strategy (Full Application Launch)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md470}
+{\bfseries{Progress}}:\+ 0\% → 100\%
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ Splash\ Screen:\ "{}Loading\ Etrek..."{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 1.\ Load\ Settings\ (10\%)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Read\ ./setting/Settings.json\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Parse\ database\ connection\ settings\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Parse\ RIS\ connection\ configurations\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Parse\ file\ logger\ settings\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 2.\ Setup\ Logger\ (10\%)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Initialize\ spdlog\ file\ logger\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Create\ ApplicationService\ logger\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Configure\ log\ rotation\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 3.\ Initialize\ Database\ (15\%)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Connect\ to\ MySQL\ database\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Create\ database\ if\ missing\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Execute\ schema\ setup\ script\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Verify\ tables\ exist\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 4.\ Initialize\ Authentication\ (30\%)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Create\ AuthenticationService\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Initialize\ CryptoManager\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Load\ user\ roles\ from\ database\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 5.\ Initialize\ RIS\ Connections\ (20\%)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Create\ ModalityWorklistManager\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Load\ worklist\ profiles\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Start\ DICOM\ C-\/FIND\ timer\ (5\ min\ interval)\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Start\ DICOM\ C-\/ECHO\ timer\ (30\ sec\ interval)\ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 6.\ Load\ Main\ Window\ (10\%)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Use\ MainWindowBuilder\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Create\ MainWindow\ +\ MainWindowDelegate\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Inject\ DelegateParameter\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 7.\ Connect\ Signals\ (1\%)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Wire\ inter-\/service\ communication\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 8.\ Close\ Splash\ Screen\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 9.\ Authenticate\ User\ (blocking)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Show\ LoginDialog\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Validate\ credentials\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Create\ SessionContext\ on\ success\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ ┌───────────┴───────────┐}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ \ \ ┌──────────────┐\ \ \ \ \ \ ┌──────────────┐}
+\DoxyCodeLine{\ \ \ \ │\ Success\ \ \ \ \ \ │\ \ \ \ \ \ │\ Failure\ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ │\ Show\ MainWin\ │\ \ \ \ \ \ │\ Exit\ App\ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ └──────────────┘\ \ \ \ \ \ └──────────────┘}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md471}{}\doxysubsection{\texorpdfstring{Service Initialization Dependencies}{Service Initialization Dependencies}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md471}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{SettingProvider\ (JSON\ files)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{LoggerProvider\ (spdlog)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{DatabaseSetupManager\ (MySQL\ +\ Qt\ SQL)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ Repository\ Layer\ (all\ require\ database)\ \ \ \ │}
+\DoxyCodeLine{├─\ AuthenticationRepository\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{├─\ WorklistRepository\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{├─\ DeviceRepository\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{├─\ PacsNodeRepository\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─\ ScanProtocolRepository\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌─────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ Service\ Layer\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{├─\ AuthenticationService\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{├─\ ModalityWorklistManager\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─\ ContextManager\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{MainWindow\ +\ MainWindowDelegate}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md473}{}\doxysection{\texorpdfstring{2. Authentication Workflow}{2. Authentication Workflow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md473}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md474}{}\doxysubsection{\texorpdfstring{Two-\/\+Phase Authentication}{Two-\/\+Phase Authentication}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md474}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md475}{}\doxysubsubsection{\texorpdfstring{Phase 1:\+ Initialization}{Phase 1:\+ Initialization}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md475}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ApplicationService::intializeAuthentication(ProgressCallback\ callback)\ \{}
+\DoxyCodeLine{\ \ \ \ callback(\textcolor{stringliteral}{"{}Initializing\ Authentication\ Service..."{}},\ 30);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ authentication\ service}}
+\DoxyCodeLine{\ \ \ \ m\_authService\ =\ \textcolor{keyword}{new}\ AuthenticationService(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_authRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_cryptoManager,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{this}\ \ \textcolor{comment}{//\ Qt\ parent}}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ callback(\textcolor{stringliteral}{"{}Authentication\ Service\ Ready"{}},\ 30);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md476}{}\doxysubsubsection{\texorpdfstring{Phase 2:\+ User Login}{Phase 2:\+ User Login}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md476}
+{\bfseries{Step-\/by-\/\+Step Login Flow}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ApplicationService::authenticateUser()}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 1.\ Query\ Active\ Users\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ AuthenticationRepository::getAllActiveUsers()\ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Filter\ by\ is\_active\ =\ TRUE\ AND\ is\_deleted\ =\ FALSE\ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ \ Decision:\ Any\ active\ users?}
+\DoxyCodeLine{\ \ \ \ ↓\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ YES\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ NO}
+\DoxyCodeLine{\ \ \ \ ↓\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ┌──────────────────────┐}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Show\ User\ Manager\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Create\ first\ admin\ \ \ │}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └──────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 2.\ Display\ Login\ Dialog\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Show\ list\ of\ active\ usernames\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ User\ selects\ username\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ User\ enters\ password\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 3.\ Retrieve\ User\ Credentials\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ LoginDialog::getLoginCredentials()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Returns:\ (User,\ QString\ password)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 4.\ Fetch\ User\ from\ Database\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ AuthenticationRepository::getUser(username)\ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Returns\ User\ entity\ with\ encrypted\ PasswordHash\ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 5.\ Decrypt\ and\ Verify\ Password\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ CryptoManager::decryptPassword(passwordHash)\ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Compare\ entered\ password\ with\ decrypted\ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Case-\/insensitive\ comparison\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ \ Decision:\ Password\ matches?}
+\DoxyCodeLine{\ \ \ \ ↓\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ YES\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ NO}
+\DoxyCodeLine{\ \ \ \ ↓\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ┌──────────────────────┐}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Clear\ password\ field\ │}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Retry\ login\ dialog\ \ \ │}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └──────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 6.\ Create\ Session\ Context\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ SessionContext(user,\ workstation)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ ContextManager::setSessionContext(sessionCtx)\ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 7.\ Return\ Authenticated\ User\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ Result<std::optional<User>>::Success(user)\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ 8.\ Show\ Main\ Window\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ -\/\ ApplicationService::showMainWindow()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md477}{}\doxysubsection{\texorpdfstring{User Entity}{User Entity}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md477}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }User\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ Id\ =\ -\/1;}
+\DoxyCodeLine{\ \ \ \ QString\ Username;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Unique,\ login\ identifier}}
+\DoxyCodeLine{\ \ \ \ QString\ Name;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ First\ name}}
+\DoxyCodeLine{\ \ \ \ QString\ Surname;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Last\ name}}
+\DoxyCodeLine{\ \ \ \ QString\ PasswordHash;\ \ \ \ \ \ \textcolor{comment}{//\ Encrypted\ password\ (OpenSSL)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ IsActive\ =\ \textcolor{keyword}{true};\ \ \ \ \ \ \textcolor{comment}{//\ Can\ login?}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ IsDeleted\ =\ \textcolor{keyword}{false};\ \ \ \ \textcolor{comment}{//\ Soft\ delete}}
+\DoxyCodeLine{\ \ \ \ QDateTime\ CreateDate;}
+\DoxyCodeLine{\ \ \ \ QDateTime\ UpdateDate;}
+\DoxyCodeLine{\ \ \ \ QVector<Role>\ Roles;\ \ \ \ \ \ \ \textcolor{comment}{//\ RBAC\ roles}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md478}{}\doxysubsection{\texorpdfstring{Password Security}{Password Security}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md478}
+{\bfseries{Encryption}}:\+ Open\+SSL-\/based cryptography via {\ttfamily Crypto\+Manager}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Password\ hashing\ during\ user\ creation}}
+\DoxyCodeLine{QString\ encryptedPassword\ =\ cryptoManager.encryptPassword(plainPassword);}
+\DoxyCodeLine{user.PasswordHash\ =\ encryptedPassword;}
+\DoxyCodeLine{repository.createUser(user);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Password\ verification\ during\ login}}
+\DoxyCodeLine{QString\ decryptedPassword\ =\ cryptoManager.decryptPassword(user.PasswordHash);}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ isValid\ =\ (plainPassword.compare(decryptedPassword,\ Qt::CaseInsensitive)\ ==\ 0);}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md480}{}\doxysection{\texorpdfstring{3. DICOM Worklist Query Workflow}{3. DICOM Worklist Query Workflow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md480}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md481}{}\doxysubsection{\texorpdfstring{Architecture Overview}{Architecture Overview}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md481}
+\doxylink{requirements_The}{The} worklist system uses a {\bfseries{multi-\/threaded producer-\/consumer pattern}}:\+
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Main Thread}}:\+ UI updates, timer management
+\item {\bfseries{Worker Thread}}:\+ DCMTK DICOM operations (C-\/\+FIND, C-\/\+ECHO)
+\item {\bfseries{Synchronization}}:\+ Qt signals/\+slots, {\ttfamily QMutex} for thread safety
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md482}{}\doxysubsection{\texorpdfstring{Components}{Components}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md482}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ Main\ Thread\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ ┌──────────────────────────────────────────────────┐\ \ │}
+\DoxyCodeLine{│\ \ │\ \ ModalityWorklistManager\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Owns\ WorklistQueryService\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Manages\ QThread\ (worker\ thread)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Owns\ QTimer\ (C-\/FIND\ every\ 5\ min)\ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Owns\ QTimer\ (C-\/ECHO\ every\ 30\ sec)\ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ └──────────────────────────────────────────────────┘\ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↕\ (signals/slots)}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ Worker\ Thread\ (QThread)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ ┌──────────────────────────────────────────────────┐\ \ │}
+\DoxyCodeLine{│\ \ │\ \ WorklistQueryService\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Owns\ DcmSCU\ (DCMTK\ DICOM\ SCU)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Performs\ C-\/FIND\ operations\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Performs\ C-\/ECHO\ operations\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Parses\ DICOM\ datasets\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │}
+\DoxyCodeLine{│\ \ └──────────────────────────────────────────────────┘\ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ↕\ (DICOM\ network)}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ PACS/RIS\ Server\ (DICOM\ SCP)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Modality\ Worklist\ SCP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Responds\ to\ C-\/FIND\ requests\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Sends\ worklist\ entries\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md483}{}\doxysubsection{\texorpdfstring{Step-\/by-\/\+Step Worklist Query Flow}{Step-\/by-\/\+Step Worklist Query Flow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md483}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md484}{}\doxysubsubsection{\texorpdfstring{Initialization Phase}{Initialization Phase}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md484}
+{\bfseries{1. RIS Connection Initialization}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ApplicationService::initializeRisConnections(ProgressCallback\ callback)\ \{}
+\DoxyCodeLine{\ \ \ \ callback(\textcolor{stringliteral}{"{}Initializing\ RIS\ Connections..."{}},\ 20);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ worklist\ repository}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ worklistRepository\ =\ std::make\_shared<WorklistRepository>(m\_databaseConnectionSetting);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Load\ RIS\ connection\ settings}}
+\DoxyCodeLine{\ \ \ \ RisConnectionSetting\ risStd\ =\ m\_settingProvider-\/>getRisConnectionSetting();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ modality\ worklist\ manager}}
+\DoxyCodeLine{\ \ \ \ m\_modalityWorklistManager\ =\ \textcolor{keyword}{new}\ ModalityWorklistManager(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ worklistRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ risStd,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{this}\ \ \textcolor{comment}{//\ Qt\ parent}}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Load\ worklist\ profiles\ from\ database}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ profiles\ =\ worklistRepository-\/>getProfiles();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Set\ default\ profile\ (e.g.,\ "{}DxWorklist"{})}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (!profiles.value.isEmpty())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_modalityWorklistManager-\/>setActiveProfile(profiles.value.first());}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Start\ periodic\ C-\/FIND\ queries}}
+\DoxyCodeLine{\ \ \ \ m\_modalityWorklistManager-\/>startWorklistQueryFromRis();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ callback(\textcolor{stringliteral}{"{}RIS\ Connections\ Ready"{}},\ 20);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{2. Query Service Setup}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ModalityWorklistManager::setActiveProfile(\textcolor{keyword}{const}\ WorklistProfile\&\ profile)\ \{}
+\DoxyCodeLine{\ \ \ \ m\_profile\ =\ profile;}
+\DoxyCodeLine{\ \ \ \ prepareQueryService();}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ModalityWorklistManager::prepareQueryService()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Stop\ existing\ query\ service}}
+\DoxyCodeLine{\ \ \ \ stopWorklistQueryFromRis();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Load\ DICOM\ tags\ for\ this\ profile}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ tagResult\ =\ m\_repository-\/>getTagsByProfile(m\_profile.Id);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ new\ query\ service}}
+\DoxyCodeLine{\ \ \ \ m\_queryService\ =\ std::make\_unique<WorklistQueryService>();}
+\DoxyCodeLine{\ \ \ \ m\_queryService-\/>setSettings(m\_risSettings);}
+\DoxyCodeLine{\ \ \ \ m\_queryService-\/>setPresentationContext(m\_profile.Context);}
+\DoxyCodeLine{\ \ \ \ m\_queryService-\/>setWorklistTags(tagResult.value);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ worker\ thread}}
+\DoxyCodeLine{\ \ \ \ m\_queryThread\ =\ \textcolor{keyword}{new}\ QThread(\textcolor{keyword}{this});}
+\DoxyCodeLine{\ \ \ \ m\_queryService-\/>moveToThread(m\_queryThread);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Wire\ signals}}
+\DoxyCodeLine{\ \ \ \ connect(m\_queryThread,\ \&QThread::started,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&ModalityWorklistManager::performWorklistQuery);}
+\DoxyCodeLine{\ \ \ \ connect(\textcolor{keyword}{this},\ \&ModalityWorklistManager::QueryRequested,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ m\_queryService.get(),\ \&WorklistQueryService::getWorklistEntries);}
+\DoxyCodeLine{\ \ \ \ connect(m\_queryService.get(),\ \&WorklistQueryService::QueryCompleted,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&ModalityWorklistManager::handleNewQueryResults,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ Qt::QueuedConnection);\ \ \textcolor{comment}{//\ Cross-\/thread}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Start\ thread}}
+\DoxyCodeLine{\ \ \ \ m\_queryThread-\/>start();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md485}{}\doxysubsubsection{\texorpdfstring{Timer-\/\+Based Query Execution}{Timer-\/\+Based Query Execution}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md485}
+{\bfseries{3. Start Periodic Queries}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ModalityWorklistManager::startWorklistQueryFromRis()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ C-\/FIND\ timer\ (default\ 5\ minutes)}}
+\DoxyCodeLine{\ \ \ \ m\_findTimer\ =\ \textcolor{keyword}{new}\ QTimer(\textcolor{keyword}{this});}
+\DoxyCodeLine{\ \ \ \ m\_findTimer-\/>setInterval(300000);\ \ \textcolor{comment}{//\ 5\ minutes\ in\ milliseconds}}
+\DoxyCodeLine{\ \ \ \ connect(m\_findTimer,\ \&QTimer::timeout,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&ModalityWorklistManager::performWorklistQuery);}
+\DoxyCodeLine{\ \ \ \ m\_findTimer-\/>start();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ C-\/ECHO\ timer\ (30\ seconds)}}
+\DoxyCodeLine{\ \ \ \ m\_echoTimer\ =\ \textcolor{keyword}{new}\ QTimer(\textcolor{keyword}{this});}
+\DoxyCodeLine{\ \ \ \ m\_echoTimer-\/>setInterval(30000);\ \ \textcolor{comment}{//\ 30\ seconds}}
+\DoxyCodeLine{\ \ \ \ connect(m\_echoTimer,\ \&QTimer::timeout,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&ModalityWorklistManager::performEchoRequest);}
+\DoxyCodeLine{\ \ \ \ m\_echoTimer-\/>start();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Perform\ initial\ query\ immediately}}
+\DoxyCodeLine{\ \ \ \ performWorklistQuery();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{4. Perform Worklist Query (Timer Callback)}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ModalityWorklistManager::performWorklistQuery()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (m\_isFindRunning)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ qDebug()\ <<\ \textcolor{stringliteral}{"{}[WARN]\ C-\/FIND\ skipped:\ Previous\ request\ still\ running."{}};}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};\ \ \textcolor{comment}{//\ Prevent\ overlapping\ requests}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (m\_queryService\ \&\&\ m\_queryThread\ \&\&\ m\_queryThread-\/>isRunning())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_isFindRunning\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ emit\ QueryRequested();\ \ \textcolor{comment}{//\ Signal\ to\ worker\ thread}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md486}{}\doxysubsubsection{\texorpdfstring{DCMTK C-\/\+FIND Operation (Worker Thread)}{DCMTK C-\/\+FIND Operation (Worker Thread)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md486}
+{\bfseries{5. Execute C-\/\+FIND Request}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorklistQueryService::getWorklistEntries()\ \{}
+\DoxyCodeLine{\ \ \ \ QList<WorklistEntry>\ worklistEntries;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Ensure\ DICOM\ association\ is\ ready}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (!isConnected())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ prepareResult\ =\ prepareAssociation();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!prepareResult.isSuccess)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ emit\ QueryCompleted(worklistEntries);\ \ \textcolor{comment}{//\ Empty\ result}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Build\ DICOM\ query\ dataset\ from\ tags}}
+\DoxyCodeLine{\ \ \ \ std::unique\_ptr<DcmDataset>\ query\ =\ createWorklistQuery(m\_worklistTags);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Execute\ C-\/FIND\ request\ (presentation\ context\ ID\ =\ 3)}}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_o_f_list}{OFList<QRResponse*>}}\ responses;}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ cond\ =\ m\_dcmScu-\/>sendFINDRequest(3,\ query.get(),\ \&responses);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (cond.\doxymbox{\hyperlink{class_o_f_condition_ad8aa629cc1e2297447eec6ab70eb761f}{good}}())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Parse\ responses}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}*\ rsp\ :\ responses)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (rsp-\/>m\_status\ ==\ STATUS\_Success\ ||\ rsp-\/>m\_status\ ==\ STATUS\_Pending)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ WorklistEntry\ entry\ =\ parseDatasetToWorklist(rsp-\/>m\_dataset,\ m\_worklistTags);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ worklistEntries.append(entry);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ rsp;\ \ \textcolor{comment}{//\ Clean\ up\ response}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Emit\ results\ (cross-\/thread\ signal)}}
+\DoxyCodeLine{\ \ \ \ emit\ QueryCompleted(worklistEntries);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{6. Create DICOM Query Dataset}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::unique\_ptr<DcmDataset>\ WorklistQueryService::createWorklistQuery(}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ QList<DicomTag>\&\ tags)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ dataset\ =\ std::make\_unique<DcmDataset>();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ tag\ :\ tags)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ DICOM\ tag\ identifier}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_tag_key}{DcmTagKey}}\ tagKey(tag.GroupHex,\ tag.ElementHex);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Handle\ sequences\ (nested\ tags)}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (tag.PgroupHex\ !=\ 0\ \&\&\ tag.PelementHex\ !=\ 0)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Nested\ tag\ in\ sequence\ (e.g.,\ ScheduledProcedureStepSequence)}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_tag_key}{DcmTagKey}}\ parentKey(tag.PgroupHex,\ tag.PelementHex);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ or\ create\ parent\ sequence}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_sequence_of_items}{DcmSequenceOfItems}}*\ seq\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ dataset-\/>findAndGetSequence(parentKey,\ seq);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!seq)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dataset-\/>insertEmptyElement(parentKey);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dataset-\/>findAndGetSequence(parentKey,\ seq);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Insert\ tag\ into\ sequence\ item}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_item}{DcmItem}}*\ item\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_dcm_item}{DcmItem}}();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ item-\/>\doxymbox{\hyperlink{class_dcm_item_a3f50f98ed115428f7dc226f498030c33}{insertEmptyElement}}(tagKey);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ seq-\/>insert(item);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Top-\/level\ tag}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ dataset-\/>insertEmptyElement(tagKey);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ dataset;}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{7. Parse DICOM Response to Worklist\+Entry}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{WorklistEntry\ WorklistQueryService::parseDatasetToWorklist(}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ dataset,}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ QList<DicomTag>\&\ tags)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ WorklistEntry\ entry;}
+\DoxyCodeLine{\ \ \ \ entry.Source\ =\ Source::RIS;}
+\DoxyCodeLine{\ \ \ \ entry.Status\ =\ ProcedureStepStatus::PENDING;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Extract\ ScheduledProcedureStepSequence\ if\ present}}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_dcm_sequence_of_items}{DcmSequenceOfItems}}*\ spsSeq\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\ \ \ \ dataset-\/>\doxymbox{\hyperlink{class_dcm_item_a68808ab30d3dd24b0af6484346bec3a9}{findAndGetSequence}}(DCM\_ScheduledProcedureStepSequence,\ spsSeq);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ tag\ :\ tags)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_tag_key}{DcmTagKey}}\ tagKey(tag.GroupHex,\ tag.ElementHex);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ valueStr;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Extract\ from\ sequence\ or\ top-\/level}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (spsSeq\ \&\&\ tag.PgroupHex\ !=\ 0)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_item}{DcmItem}}*\ spsItem\ =\ spsSeq-\/>\doxymbox{\hyperlink{class_dcm_sequence_of_items_a490dda9557eea97260fd0bf579ac3c8f}{getItem}}(0);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ spsItem-\/>\doxymbox{\hyperlink{class_dcm_item_a68b4831354e6666e7cc9ef594a919e10}{findAndGetOFString}}(tagKey,\ valueStr);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ dataset-\/>\doxymbox{\hyperlink{class_dcm_item_a68b4831354e6666e7cc9ef594a919e10}{findAndGetOFString}}(tagKey,\ valueStr);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ WorklistAttribute}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ WorklistAttribute\ attr;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ attr.DicomTagId\ =\ tag.Id;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ attr.TagValue\ =\ QString::fromStdString(valueStr.\doxymbox{\hyperlink{class_o_f_string_a34af3adf9f398a8d6e24be9e259a4965}{c\_str}}());}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ entry.Attributes.append(attr);}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ entry;}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md487}{}\doxysubsubsection{\texorpdfstring{Result Handling (Main Thread)}{Result Handling (Main Thread)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md487}
+{\bfseries{8. Handle Query Results}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ModalityWorklistManager::handleNewQueryResults(\textcolor{keyword}{const}\ QList<WorklistEntry>\&\ entries)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Reset\ running\ flag}}
+\DoxyCodeLine{\ \ \ \ m\_isFindRunning\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Process\ each\ worklist\ entry}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ entry\ :\ entries)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ if\ entry\ already\ exists}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ existingResult\ =\ m\_repository-\/>getWorklistEntry(entry,\ m\_profile);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!existingResult.isSuccess)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ New\ entry:\ insert\ into\ database}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ WorklistEntry\ newEntry\ =\ entry;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ newEntry.Source\ =\ Source::RIS;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ newEntry.Status\ =\ ProcedureStepStatus::PENDING;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ newEntry.ProfileId\ =\ m\_profile.Id;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ createResult\ =\ m\_repository-\/>createWorklistEntry(newEntry);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (createResult.isSuccess)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ qDebug()\ <<\ \textcolor{stringliteral}{"{}New\ worklist\ entry\ added:"{}}\ <<\ newEntry.Id;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Existing\ entry:\ update\ logic\ (currently\ commented\ out)}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Can\ implement\ update\ logic\ here}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Emit\ signal\ to\ notify\ UI}}
+\DoxyCodeLine{\ \ \ \ emit\ WorklistUpdated();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md488}{}\doxysubsection{\texorpdfstring{DICOM Association Management}{DICOM Association Management}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md488}
+{\bfseries{9. Prepare Association}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{Result<void>\ WorklistQueryService::prepareAssociation()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Release\ existing\ association}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (m\_dcmScu-\/>isConnected())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_dcmScu-\/>releaseAssociation();}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Setup\ connection\ parameters}}
+\DoxyCodeLine{\ \ \ \ setupTheConnectionParameters();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Add\ presentation\ contexts}}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ C-\/ECHO}}
+\DoxyCodeLine{\ \ \ \ m\_dcmScu-\/>addPresentationContext(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ UID\_VerificationSOPClass,\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 1.2.840.10008.1.1}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dcuid_8h_a429a299bcb3efb799a7a7dbff26d6759}{UID\_LittleEndianImplicitTransferSyntax}}}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ C-\/FIND\ (Modality\ Worklist)}}
+\DoxyCodeLine{\ \ \ \ m\_dcmScu-\/>addPresentationContext(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ UID\_ModalityWorklistInformationModelFIND,\ \ \textcolor{comment}{//\ 1.2.840.10008.5.1.4.31}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dcuid_8h_ab88cd5f35ff621e585cc6f3392c46122}{UID\_LittleEndianExplicitTransferSyntax}}}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Initialize\ network}}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ initCond\ =\ m\_dcmScu-\/>initNetwork();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (initCond.\doxymbox{\hyperlink{class_o_f_condition_a3f4403465a6f1805fef021c87d8d278b}{bad}}())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Result<void>::Failure(\textcolor{stringliteral}{"{}Failed\ to\ initialize\ DICOM\ network"{}});}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Negotiate\ association}}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ assocCond\ =\ m\_dcmScu-\/>negotiateAssociation();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (assocCond.\doxymbox{\hyperlink{class_o_f_condition_a3f4403465a6f1805fef021c87d8d278b}{bad}}())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Result<void>::Failure(\textcolor{stringliteral}{"{}Failed\ to\ negotiate\ DICOM\ association"{}});}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Validate\ with\ C-\/ECHO}}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ echoCond\ =\ m\_dcmScu-\/>sendECHORequest(0);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (echoCond.\doxymbox{\hyperlink{class_o_f_condition_a3f4403465a6f1805fef021c87d8d278b}{bad}}())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Result<void>::Failure(\textcolor{stringliteral}{"{}C-\/ECHO\ verification\ failed"{}});}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ Result<void>::Success();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{10. Connection Parameters}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorklistQueryService::setupTheConnectionParameters()\ \{}
+\DoxyCodeLine{\ \ \ \ m\_dcmScu-\/>setAETitle(m\_settings-\/>getCallingAETitle());\ \ \ \ \ \ \textcolor{comment}{//\ Local\ AE\ (e.g.,\ "{}ETREK-\/MODALITY"{})}}
+\DoxyCodeLine{\ \ \ \ m\_dcmScu-\/>setPeerAETitle(m\_settings-\/>getCalledAETitle());\ \ \ \textcolor{comment}{//\ Remote\ AE\ (e.g.,\ "{}PACS-\/WORKLIST"{})}}
+\DoxyCodeLine{\ \ \ \ m\_dcmScu-\/>setPeerHostName(m\_settings-\/>getHostIP());\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ PACS\ IP\ (e.g.,\ "{}192.168.1.100"{})}}
+\DoxyCodeLine{\ \ \ \ m\_dcmScu-\/>setPeerPort(m\_settings-\/>getPort());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DICOM\ port\ (e.g.,\ 104)}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md489}{}\doxysubsection{\texorpdfstring{Data Flow Summary}{Data Flow Summary}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md489}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Timer:\ 5\ min]\ ────────────────┐}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ┌─────────────────────────────────────┐}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ ModalityWorklistManager\ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ (Main\ Thread)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ └─────────────────┬───────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ emit\ QueryRequested}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ┌─────────────────────────────────────┐}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ WorklistQueryService\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ (Worker\ Thread)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ 1.\ Prepare\ association\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ 2.\ Create\ DICOM\ query\ dataset\ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ 3.\ Send\ C-\/FIND\ request\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ 4.\ Parse\ responses\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ └─────────────────┬───────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ emit\ QueryCompleted(entries)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ┌─────────────────────────────────────┐}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ ModalityWorklistManager\ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ (Main\ Thread)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ 1.\ Check\ for\ existing\ entries\ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ 2.\ Insert\ new\ entries\ to\ database\ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ 3.\ Emit\ WorklistUpdated\ signal\ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ └─────────────────┬───────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ WorklistUpdated\ signal}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ┌─────────────────────────────────────┐}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ WorkListPageDelegate\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ (Main\ Thread)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ 1.\ Refresh\ table\ model\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ 2.\ Update\ UI\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ └─────────────────────────────────────┘}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md491}{}\doxysection{\texorpdfstring{4. Launch Strategies}{4. Launch Strategies}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md491}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md492}{}\doxysubsection{\texorpdfstring{Strategy Pattern Implementation}{Strategy Pattern Implementation}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md492}
+Etrek uses the Strategy pattern to support different application launch modes.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md493}{}\doxysubsection{\texorpdfstring{Launch\+Mode Enum}{Launch\+Mode Enum}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md493}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{namespace\ }Etrek::Specification\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{enum\ class}\ LaunchMode\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ MainApp,\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Full\ application\ with\ authentication}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ UserManager,\ \ \ \ \textcolor{comment}{//\ User\ administration\ only}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ SettingManager,\ \textcolor{comment}{//\ Settings\ editor\ only}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ Demo,\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Demo/testing\ mode}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ Developer,\ \ \ \ \ \ \textcolor{comment}{//\ Developer\ diagnostics}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ Unknown}
+\DoxyCodeLine{\ \ \ \ \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ LaunchMode\ ParseLaunchMode(\textcolor{keyword}{const}\ QStringList\&\ args)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (args.contains(\textcolor{stringliteral}{"{}usermgr"{}},\ Qt::CaseInsensitive))}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ LaunchMode::UserManager;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (args.contains(\textcolor{stringliteral}{"{}settingmgr"{}},\ Qt::CaseInsensitive))}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ LaunchMode::SettingManager;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (args.contains(\textcolor{stringliteral}{"{}demo"{}},\ Qt::CaseInsensitive))}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ LaunchMode::Demo;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (args.contains(\textcolor{stringliteral}{"{}developer"{}},\ Qt::CaseInsensitive))}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ LaunchMode::Developer;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ LaunchMode::MainApp;}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md494}{}\doxysubsection{\texorpdfstring{ILaunch\+Strategy Interface}{ILaunch\+Strategy Interface}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md494}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ILaunchStrategy\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \string~ILaunchStrategy()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ launch(ApplicationService*\ service)\ =\ 0;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md495}{}\doxysubsection{\texorpdfstring{Strategy Factory}{Strategy Factory}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md495}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::unique\_ptr<ILaunchStrategy>\ ApplicationService::createLaunchStrategy(LaunchMode\ mode)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{switch}\ (mode)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ LaunchMode::MainApp:}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<MainAppLaunchStrategy>();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ LaunchMode::UserManager:}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<UserManagerLaunchStrategy>();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ LaunchMode::SettingManager:}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<SettingManagerLaunchStrategy>();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ LaunchMode::Demo:}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<DemoLaunchStrategy>();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ LaunchMode::Developer:}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<DeveloperLaunchStrategy>();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_unique<MainAppLaunchStrategy>();}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md496}{}\doxysubsection{\texorpdfstring{Main\+App\+Launch\+Strategy Details}{Main\+App\+Launch\+Strategy Details}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md496}
+See Application Initialization section above for complete flow.
+
+{\bfseries{Key Characteristics}}:\+
+\begin{DoxyItemize}
+\item Full service initialization (logger, database, auth, RIS, PACS)
+\item Requires user authentication
+\item Displays splash screen with progress
+\item Initializes all modules
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md497}{}\doxysubsection{\texorpdfstring{Other Launch Strategies (Stubs)}{Other Launch Strategies (Stubs)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md497}
+{\bfseries{Demo\+Launch\+Strategy}}:\+
+\begin{DoxyItemize}
+\item Intended for demo/\+testing without database
+\item Currently logs "{}\+Demo mode launched"{}
+\item Future:\+ Mock data, limited functionality
+\end{DoxyItemize}
+
+{\bfseries{Developer\+Launch\+Strategy}}:\+
+\begin{DoxyItemize}
+\item Intended for developer shortcuts and debugging
+\item Currently stub implementation
+\item Future:\+ Debug panels, diagnostic tools
+\end{DoxyItemize}
+
+{\bfseries{User\+Manager\+Launch\+Strategy}}:\+
+\begin{DoxyItemize}
+\item Intended for user administration interface
+\item Currently stub implementation
+\item Future:\+ CRUD operations on users/\+roles without full app
+\end{DoxyItemize}
+
+{\bfseries{Setting\+Manager\+Launch\+Strategy}}:\+
+\begin{DoxyItemize}
+\item Intended for settings editor
+\item Currently stub implementation
+\item Future:\+ Edit configuration files without full app
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md499}{}\doxysection{\texorpdfstring{5. PACS Integration Workflow}{5. PACS Integration Workflow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md499}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md500}{}\doxysubsection{\texorpdfstring{PACS Node Configuration}{PACS Node Configuration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md500}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md501}{}\doxysubsubsection{\texorpdfstring{Pacs\+Node Entity}{Pacs\+Node Entity}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md501}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }PacsNode\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ Id\ =\ -\/1;}
+\DoxyCodeLine{\ \ \ \ PacsEntityType\ Type;\ \ \ \ \ \ \textcolor{comment}{//\ Archive,\ MPPS,\ MWL,\ etc.}}
+\DoxyCodeLine{\ \ \ \ QString\ HostName;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DNS\ name}}
+\DoxyCodeLine{\ \ \ \ QString\ HostIp;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ IP\ address\ (preferred\ for\ connection)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ Port\ =\ 0;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DICOM\ port\ (typically\ 104)}}
+\DoxyCodeLine{\ \ \ \ QString\ CalledAet;\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Remote\ AE\ Title\ (SCP)}}
+\DoxyCodeLine{\ \ \ \ QString\ CallingAet;\ \ \ \ \ \ \ \textcolor{comment}{//\ Local\ AE\ Title\ (SCU)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ IsDefault\ =\ \textcolor{keyword}{false};\ \ \ \textcolor{comment}{//\ Default\ node\ for\ this\ type}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md502}{}\doxysubsubsection{\texorpdfstring{Pacs\+Entity\+Type Enum}{Pacs\+Entity\+Type Enum}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md502}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{enum\ class}\ PacsEntityType\ \{}
+\DoxyCodeLine{\ \ \ \ Archive,\ \ \ \ \ \ \textcolor{comment}{//\ DICOM\ Archive\ (C-\/STORE\ SCP)}}
+\DoxyCodeLine{\ \ \ \ MPPS,\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Modality\ Performed\ Procedure\ Step}}
+\DoxyCodeLine{\ \ \ \ MWL,\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Modality\ Worklist\ (C-\/FIND\ SCP)}}
+\DoxyCodeLine{\ \ \ \ PrintScp,\ \ \ \ \ \textcolor{comment}{//\ Print\ SCP}}
+\DoxyCodeLine{\ \ \ \ CustomEntity\ \ \textcolor{comment}{//\ Custom/user-\/defined}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md503}{}\doxysubsection{\texorpdfstring{PACS Configuration Workflow}{PACS Configuration Workflow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md503}
+{\bfseries{1. Add PACS Node}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{PacsNodeRepository\ pacsRepo(dbConnection);}
+\DoxyCodeLine{}
+\DoxyCodeLine{PacsNode\ archiveNode;}
+\DoxyCodeLine{archiveNode.Type\ =\ PacsEntityType::Archive;}
+\DoxyCodeLine{archiveNode.HostName\ =\ \textcolor{stringliteral}{"{}pacs01.hospital.org"{}};}
+\DoxyCodeLine{archiveNode.HostIp\ =\ \textcolor{stringliteral}{"{}192.168.1.100"{}};}
+\DoxyCodeLine{archiveNode.Port\ =\ 104;}
+\DoxyCodeLine{archiveNode.CalledAet\ =\ \textcolor{stringliteral}{"{}PACS-\/ARCHIVE"{}};}
+\DoxyCodeLine{archiveNode.CallingAet\ =\ \textcolor{stringliteral}{"{}ETREK-\/MODALITY"{}};}
+\DoxyCodeLine{archiveNode.IsDefault\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ addResult\ =\ pacsRepo.addPacsNode(archiveNode);}
+
+\end{DoxyCode}
+
+
+{\bfseries{2. Retrieve PACS Nodes}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ allNodes\ =\ pacsRepo.getPacsNodes();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Filter\ by\ type}}
+\DoxyCodeLine{QList<PacsNode>\ archives;}
+\DoxyCodeLine{\textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ node\ :\ allNodes.value)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (node.Type\ ==\ PacsEntityType::Archive)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ archives.append(node);}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md504}{}\doxysubsection{\texorpdfstring{Multi-\/\+PACS Support Architecture}{Multi-\/\+PACS Support Architecture}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md504}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ Etrek\ Modality\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ AE\ Title:\ "{}ETREK-\/MODALITY"{}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────┬───────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ┌─────────┼─────────┬─────────┐}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌──────────┐\ ┌──────────┐\ ┌──────────┐\ ┌──────────┐}
+\DoxyCodeLine{│\ Archive\ \ │\ │\ \ \ MWL\ \ \ \ │\ │\ \ \ MPPS\ \ \ │\ │\ \ Print\ \ \ │}
+\DoxyCodeLine{│\ \ \ PACS\ \ \ │\ │\ \ \ PACS\ \ \ │\ │\ \ \ PACS\ \ \ │\ │\ \ \ SCP\ \ \ \ │}
+\DoxyCodeLine{│\ \ \ SCP\ \ \ \ │\ │\ \ \ SCP\ \ \ \ │\ │\ \ \ SCP\ \ \ \ │\ │\ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────┘\ └──────────┘\ └──────────┘\ └──────────┘}
+\DoxyCodeLine{\ \ C-\/STORE\ \ \ \ \ \ C-\/FIND\ \ \ \ \ \ \ N-\/CREATE\ \ \ \ \ N-\/PRINT}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md505}{}\doxysubsection{\texorpdfstring{PACS-\/\+Worklist Integration}{PACS-\/\+Worklist Integration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md505}
+\doxylink{requirements_The}{The} worklist system acts as the consumer of MWL (Modality Worklist) PACS:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ PACS\ Server\ (Worklist\ SCP)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Maintains\ scheduled\ procedures\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Responds\ to\ C-\/FIND\ requests\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────┬───────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ C-\/FIND\ Response\ (WorklistEntry\ objects)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ WorklistQueryService\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Periodic\ C-\/FIND\ queries\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Parses\ DICOM\ datasets\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────┬───────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ WorklistEntry\ objects}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ ModalityWorklistManager\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Receives\ worklist\ entries\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Checks\ for\ duplicates\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────┬───────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Persist\ to\ local\ database}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ WorklistRepository\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Stores\ worklist\ entries\ locally\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Enables\ offline\ operation\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────┬───────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Display\ in\ UI}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ WorkListPage\ (UI)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ User\ selects\ worklist\ entry\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Initiates\ examination\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────┬───────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ After\ examination}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ C-\/STORE\ to\ Archive\ PACS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Send\ acquired\ images\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ MPPS\ Status\ Update\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ -\/\ Report\ procedure\ completion\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md507}{}\doxysection{\texorpdfstring{6. Examination Workflow}{6. Examination Workflow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md507}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md508}{}\doxysubsection{\texorpdfstring{Workflow Context Pattern}{Workflow Context Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md508}
+When a user selects a worklist entry to start an examination, Etrek uses the Context \doxylink{class_manager}{Manager} to maintain examination state.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md509}{}\doxysubsection{\texorpdfstring{Step-\/by-\/\+Step Examination Flow}{Step-\/by-\/\+Step Examination Flow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md509}
+{\bfseries{1. User Selects Worklist Entry}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ In\ WorkListPage}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPage::onTableDoubleClicked(\textcolor{keyword}{const}\ QModelIndex\&\ index)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ entryId\ =\ getEntryIdFromRow(index.row());}
+\DoxyCodeLine{\ \ \ \ emit\ worklistItemDoubleClicked(entryId);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{2. Work\+List\+Page\+Delegate Handles Selection}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPageDelegate::onWorklistItemDoubleClicked(\textcolor{keywordtype}{int}\ entryId)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Retrieve\ worklist\ entry}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ entryResult\ =\ repository-\/>getWorklistEntryById(entryId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (!entryResult.isSuccess)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ examination\ context}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ examContext\ =\ std::make\_shared<ExaminationContext>(entryResult.value);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Set\ workflow\ context}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ ctxMgr\ =\ contextManager.lock())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ctxMgr-\/>setWorkflowContext(\textcolor{stringliteral}{"{}Examination"{}},\ examContext);}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Signal\ to\ start\ examination}}
+\DoxyCodeLine{\ \ \ \ emit\ startExamination(entryId);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{3. Open View Selection Dialog}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ MainWindowDelegate\ or\ WorkListPageDelegate}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ onStartExamination(\textcolor{keywordtype}{int}\ entryId)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Build\ view\ selection\ dialog}}
+\DoxyCodeLine{\ \ \ \ ViewSelectionDialogBuilder\ builder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [dialog,\ delegate]\ =\ builder.build(m\_params,\ mainWindow,\ \textcolor{keyword}{this});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Connect\ delegate\ signals}}
+\DoxyCodeLine{\ \ \ \ connect(delegate,\ \&ViewSelectionDialogDelegate::examinationReady,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ [\textcolor{keyword}{this}](\textcolor{keywordtype}{int}\ procedureId,\ \textcolor{keyword}{const}\ QVector<int>\&\ viewIds)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Start\ examination\ with\ selected\ procedure\ and\ views}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ startExaminationWithViews(procedureId,\ viewIds);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ dialog-\/>exec();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{4. User Selects Procedure and Views}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ ViewSelectionDialogDelegate}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ViewSelectionDialogDelegate::onAcceptSelection()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ selectedProcedureId\ =\ ui-\/>getSelectedProcedureId();}
+\DoxyCodeLine{\ \ \ \ QVector<int>\ selectedViewIds\ =\ ui-\/>getSelectedViewIds();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ emit\ examinationReady(selectedProcedureId,\ selectedViewIds);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{5. Start Imaging Acquisition}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ startExaminationWithViews(\textcolor{keywordtype}{int}\ procedureId,\ \textcolor{keyword}{const}\ QVector<int>\&\ viewIds)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Retrieve\ procedure\ and\ views}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ procedureResult\ =\ scanProtocolRepository-\/>getProcedureById(procedureId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ viewsResult\ =\ scanProtocolRepository-\/>getViewsByIds(viewIds);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ examination\ page}}
+\DoxyCodeLine{\ \ \ \ ExaminationPageBuilder\ builder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [examPage,\ examDelegate]\ =\ builder.build(m\_params,\ \textcolor{keyword}{nullptr},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Configure\ examination}}
+\DoxyCodeLine{\ \ \ \ examDelegate-\/>setProcedure(procedureResult.value);}
+\DoxyCodeLine{\ \ \ \ examDelegate-\/>setViews(viewsResult.value);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Display\ examination\ page}}
+\DoxyCodeLine{\ \ \ \ mainWindow-\/>loadPage(examPage);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md510}{}\doxysubsection{\texorpdfstring{Examination Context}{Examination Context}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md510}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ExaminationContext\ :\ \textcolor{keyword}{public}\ IWorkflowContext\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ ExaminationContext(\textcolor{keyword}{const}\ WorklistEntry\&\ entry)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ :\ m\_worklistEntry(entry)\ \{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ WorklistEntry\ worklistEntry()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_worklistEntry;\ \}}
+\DoxyCodeLine{\ \ \ \ QString\ patientName()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ getAttributeValue(\textcolor{stringliteral}{"{}PatientName"{}});\ \}}
+\DoxyCodeLine{\ \ \ \ QString\ patientId()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ getAttributeValue(\textcolor{stringliteral}{"{}PatientID"{}});\ \}}
+\DoxyCodeLine{\ \ \ \ QString\ accessionNumber()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ getAttributeValue(\textcolor{stringliteral}{"{}AccessionNumber"{}});\ \}}
+\DoxyCodeLine{\ \ \ \ QString\ bodyPartExamined()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ getAttributeValue(\textcolor{stringliteral}{"{}BodyPartExamined"{}});\ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ WorklistEntry\ m\_worklistEntry;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ QString\ getAttributeValue(\textcolor{keyword}{const}\ QString\&\ tagName)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ attr\ :\ m\_worklistEntry.Attributes)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (attr.TagName\ ==\ tagName)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ attr.TagValue;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ QString();}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md512}{}\doxysection{\texorpdfstring{7. Context Management}{7. Context Management}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md512}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md513}{}\doxysubsection{\texorpdfstring{Context Types}{Context Types}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md513}
+Etrek uses two categories of context:\+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md514}{}\doxysubsubsection{\texorpdfstring{Session Context (Persistent)}{Session Context (Persistent)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md514}
+Created after successful login, persists for entire user session:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }SessionContext\ :\ \textcolor{keyword}{public}\ ISessionContext\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ SessionContext(\textcolor{keyword}{const}\ User\&\ user,\ \textcolor{keyword}{const}\ QString\&\ workstation)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ :\ m\_user(user),}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ m\_signInTime(QDateTime::currentDateTime()),}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ m\_workstationName(workstation.isEmpty()\ ?\ QHostInfo::localHostName()\ :\ workstation)}
+\DoxyCodeLine{\ \ \ \ \{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ User\ currentUser()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ m\_user;\ \}}
+\DoxyCodeLine{\ \ \ \ QString\ username()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ m\_user.Username;\ \}}
+\DoxyCodeLine{\ \ \ \ QString\ userFullName()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ m\_user.Name\ +\ \textcolor{stringliteral}{"{}\ "{}}\ +\ m\_user.Surname;\ \}}
+\DoxyCodeLine{\ \ \ \ QDateTime\ signInTime()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ m\_signInTime;\ \}}
+\DoxyCodeLine{\ \ \ \ QString\ workstationName()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ m\_workstationName;\ \}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isLoggedIn()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ m\_user.Id\ !=\ -\/1;\ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ User\ m\_user;}
+\DoxyCodeLine{\ \ \ \ QDateTime\ m\_signInTime;}
+\DoxyCodeLine{\ \ \ \ QString\ m\_workstationName;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md515}{}\doxysubsubsection{\texorpdfstring{Workflow Context (Transient)}{Workflow Context (Transient)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md515}
+Created for specific workflows, cleared when workflow completes:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }IWorkflowContext\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \string~IWorkflowContext()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ QString\ workflowType()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Example:\ ExaminationContext}}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ExaminationContext\ :\ \textcolor{keyword}{public}\ IWorkflowContext\ \{}
+\DoxyCodeLine{\ \ \ \ WorklistEntry\ m\_entry;}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ QString\ workflowType()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}Examination"{}};\ \}}
+\DoxyCodeLine{\ \ \ \ WorklistEntry\ worklistEntry()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_entry;\ \}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md516}{}\doxysubsection{\texorpdfstring{Context Manager}{Context Manager}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md516}
+Thread-\/safe context storage and retrieval:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ContextManager\ :\ \textcolor{keyword}{public}\ IContextManager\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Session\ context}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setSessionContext(std::shared\_ptr<ISessionContext>\ context)\textcolor{keyword}{\ override\ }\{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QMutexLocker\ locker(\&m\_mutex);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_sessionContext\ =\ context;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ emit\ sessionContextChanged();}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<ISessionContext>\ sessionContext()\textcolor{keyword}{\ const\ override\ }\{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QMutexLocker\ locker(\&m\_mutex);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_sessionContext;}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Workflow\ context}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setWorkflowContext(\textcolor{keyword}{const}\ QString\&\ key,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<IWorkflowContext>\ context)\textcolor{keyword}{\ override\ }\{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QMutexLocker\ locker(\&m\_mutex);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_workflowContexts[key]\ =\ context;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ emit\ workflowContextChanged(key);}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<IWorkflowContext>\ workflowContext(\textcolor{keyword}{const}\ QString\&\ key)\textcolor{keyword}{\ const\ override\ }\{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QMutexLocker\ locker(\&m\_mutex);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_workflowContexts.value(key,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{signals:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ sessionContextChanged();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ workflowContextChanged(\textcolor{keyword}{const}\ QString\&\ key);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{mutable}\ QMutex\ m\_mutex;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<ISessionContext>\ m\_sessionContext;}
+\DoxyCodeLine{\ \ \ \ QMap<QString,\ std::shared\_ptr<IWorkflowContext>>\ m\_workflowContexts;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md517}{}\doxysubsection{\texorpdfstring{Context Usage in Delegates}{Context Usage in Delegates}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md517}
+{\bfseries{Accessing Session Context}}:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Via\ DelegateParameter}}
+\DoxyCodeLine{WorkListPageDelegate::WorkListPageDelegate(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,\ ...)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (params.sessionContext)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QString\ currentUser\ =\ params.sessionContext-\/>userFullName();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ qDebug()\ <<\ \textcolor{stringliteral}{"{}Logged\ in\ as:"{}}\ <<\ currentUser;}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Via\ ContextManager}}
+\DoxyCodeLine{\textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ ctxMgr\ =\ params.contextManager.lock())\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ sessionCtx\ =\ ctxMgr-\/>sessionContext();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (sessionCtx)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ User\ user\ =\ sessionCtx-\/>currentUser();}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Setting Workflow Context}}:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ When\ starting\ examination}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ examContext\ =\ std::make\_shared<ExaminationContext>(worklistEntry);}
+\DoxyCodeLine{\textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ ctxMgr\ =\ contextManager.lock())\ \{}
+\DoxyCodeLine{\ \ \ \ ctxMgr-\/>setWorkflowContext(\textcolor{stringliteral}{"{}Examination"{}},\ examContext);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Retrieving Workflow Context}}:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ In\ ExaminationPageDelegate}}
+\DoxyCodeLine{\textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ ctxMgr\ =\ params.contextManager.lock())\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ workflowCtx\ =\ ctxMgr-\/>workflowContext(\textcolor{stringliteral}{"{}Examination"{}});}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ examCtx\ =\ std::dynamic\_pointer\_cast<ExaminationContext>(workflowCtx))\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QString\ patientName\ =\ examCtx-\/>patientName();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QString\ accessionNo\ =\ examCtx-\/>accessionNumber();}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md519}{}\doxysection{\texorpdfstring{Summary}{Summary}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows_autotoc_md519}
+This comprehensive workflow documentation covers all major application flows:\+
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Application Initialization}}:\+ Robust multi-\/phase startup with progress tracking
+\item {\bfseries{Authentication}}:\+ Secure login with encrypted passwords and RBAC
+\item {\bfseries{DICOM Worklist Query}}:\+ Multi-\/threaded C-\/\+FIND operations with periodic updates
+\item {\bfseries{Launch Strategies}}:\+ Flexible application modes for different use cases
+\item {\bfseries{PACS Integration}}:\+ Multi-\/\+PACS support for Archive, MWL, and MPPS
+\item {\bfseries{Examination Workflow}}:\+ Context-\/driven imaging acquisition
+\item {\bfseries{Context Management}}:\+ Thread-\/safe session and workflow state management
+\end{DoxyEnumerate}
+
+All workflows follow established patterns:\+
+\begin{DoxyItemize}
+\item {\bfseries{Builder Pattern}}:\+ Lazy construction of UI components
+\item {\bfseries{Model-\/\+View-\/\+Delegate}}:\+ Clear separation of concerns
+\item {\bfseries{Repository Pattern}}:\+ Abstracted data access
+\item {\bfseries{Strategy Pattern}}:\+ Pluggable initialization strategies
+\item {\bfseries{Observer Pattern}}:\+ Qt signals/\+slots for loose coupling
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+
+
+{\bfseries{See Also}}:\+
+\begin{DoxyItemize}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern}{Model-\/\+View-\/\+Delegate Pattern}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern}{Builder Pattern}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_201-_architecture-_overview}{Architecture Overview}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema}{Database Schema}{0} 
+\end{DoxyItemize}

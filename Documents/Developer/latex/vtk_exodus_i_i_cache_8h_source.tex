@@ -1,0 +1,172 @@
+\doxysection{vtk\+Exodus\+IICache.\+h}
+\hypertarget{vtk_exodus_i_i_cache_8h_source}{}\label{vtk_exodus_i_i_cache_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkExodusIICache.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkExodusIICache.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#ifndef\ vtkExodusIICache\_h}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#define\ vtkExodusIICache\_h}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ ============================================================================}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ The\ following\ classes\ define\ an\ LRU\ cache\ for\ data\ arrays}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ loaded\ by\ the\ Exodus\ reader.\ Here's\ how\ they\ work:}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ The\ actual\ cache\ consists\ of\ two\ STL\ containers:\ a\ set\ of}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ cache\ entries\ (vtkExodusIICacheEntry)\ and\ a\ list\ of}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ cache\ references\ (vtkExodusIICacheRef).\ The\ entries\ in}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ these\ containers\ are\ sorted\ for\ fast\ retrieval:}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ 1.\ The\ cache\ entries\ are\ indexed\ by\ the\ timestep,\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ \ \ \ object\ type\ (edge\ block,\ face\ set,\ ...),\ and\ the}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ \ \ \ object\ ID\ (if\ one\ exists).\ When\ you\ call\ Find()\ to}}
+\DoxyCodeLine{00017\ \textcolor{comment}{//\ \ \ \ retrieve\ a\ cache\ entry,\ you\ provide\ a\ key\ containing}}
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ \ \ \ this\ information\ and\ the\ array\ is\ returned\ if\ it\ exists.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{//\ 2.\ The\ list\ of\ cache\ references\ are\ stored\ in\ "{}least-\/recently-\/used"{}}}
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ \ \ \ order.\ The\ least\ recently\ referenced\ array\ is\ the\ first\ in}}
+\DoxyCodeLine{00021\ \textcolor{comment}{//\ \ \ \ the\ list.\ Whenever\ you\ request\ an\ entry\ with\ Find(),\ it\ is}}
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ \ \ \ moved\ to\ the\ back\ of\ the\ list\ if\ it\ exists.}}
+\DoxyCodeLine{00023\ \textcolor{comment}{//\ This\ makes\ retrieving\ arrays\ O(n\ log\ n)\ and\ popping\ LRU}}
+\DoxyCodeLine{00024\ \textcolor{comment}{//\ entries\ O(1).\ Each\ cache\ entry\ stores\ an\ iterator\ into}}
+\DoxyCodeLine{00025\ \textcolor{comment}{//\ the\ list\ of\ references\ so\ that\ it\ can\ be\ located\ quickly\ for}}
+\DoxyCodeLine{00026\ \textcolor{comment}{//\ removal.}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}vtkIOExodusModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ <list>}\ \textcolor{comment}{//\ use\ for\ LRU\ ordering}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <map>}\ \ \textcolor{comment}{//\ used\ for\ cache\ storage}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00035\ \textcolor{keyword}{class\ }VTKIOEXODUS\_EXPORT\ vtkExodusIICacheKey}
+\DoxyCodeLine{00036\ \{}
+\DoxyCodeLine{00037\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00038\ \ \ \textcolor{keywordtype}{int}\ Time;}
+\DoxyCodeLine{00039\ \ \ \textcolor{keywordtype}{int}\ ObjectType;}
+\DoxyCodeLine{00040\ \ \ \textcolor{keywordtype}{int}\ ObjectId;}
+\DoxyCodeLine{00041\ \ \ \textcolor{keywordtype}{int}\ ArrayId;}
+\DoxyCodeLine{00042\ \ \ vtkExodusIICacheKey()}
+\DoxyCodeLine{00043\ \ \ \{}
+\DoxyCodeLine{00044\ \ \ \ \ Time\ =\ -\/1;}
+\DoxyCodeLine{00045\ \ \ \ \ ObjectType\ =\ -\/1;}
+\DoxyCodeLine{00046\ \ \ \ \ ObjectId\ =\ -\/1;}
+\DoxyCodeLine{00047\ \ \ \ \ ArrayId\ =\ -\/1;}
+\DoxyCodeLine{00048\ \ \ \}}
+\DoxyCodeLine{00049\ \ \ vtkExodusIICacheKey(\textcolor{keywordtype}{int}\ time,\ \textcolor{keywordtype}{int}\ objType,\ \textcolor{keywordtype}{int}\ objId,\ \textcolor{keywordtype}{int}\ arrId)}
+\DoxyCodeLine{00050\ \ \ \{}
+\DoxyCodeLine{00051\ \ \ \ \ Time\ =\ time;}
+\DoxyCodeLine{00052\ \ \ \ \ ObjectType\ =\ objType;}
+\DoxyCodeLine{00053\ \ \ \ \ ObjectId\ =\ objId;}
+\DoxyCodeLine{00054\ \ \ \ \ ArrayId\ =\ arrId;}
+\DoxyCodeLine{00055\ \ \ \}}
+\DoxyCodeLine{00056\ \ \ vtkExodusIICacheKey(\textcolor{keyword}{const}\ vtkExodusIICacheKey\&\ src)}
+\DoxyCodeLine{00057\ \ \ \{}
+\DoxyCodeLine{00058\ \ \ \ \ Time\ =\ src.Time;}
+\DoxyCodeLine{00059\ \ \ \ \ ObjectType\ =\ src.ObjectType;}
+\DoxyCodeLine{00060\ \ \ \ \ ObjectId\ =\ src.ObjectId;}
+\DoxyCodeLine{00061\ \ \ \ \ ArrayId\ =\ src.ArrayId;}
+\DoxyCodeLine{00062\ \ \ \}}
+\DoxyCodeLine{00063\ \ \ vtkExodusIICacheKey\&\ operator=(\textcolor{keyword}{const}\ vtkExodusIICacheKey\&\ src)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordtype}{bool}\ match(\textcolor{keyword}{const}\ vtkExodusIICacheKey\&\ other,\ \textcolor{keyword}{const}\ vtkExodusIICacheKey\&\ pattern)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00065\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordflow}{if}\ (pattern.Time\ \&\&\ this-\/>Time\ !=\ other.Time)}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordflow}{if}\ (pattern.ObjectType\ \&\&\ this-\/>ObjectType\ !=\ other.ObjectType)}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{if}\ (pattern.ObjectId\ \&\&\ this-\/>ObjectId\ !=\ other.ObjectId)}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{if}\ (pattern.ArrayId\ \&\&\ this-\/>ArrayId\ !=\ other.ArrayId)}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00075\ \ \ \}}
+\DoxyCodeLine{00076\ \ \ \textcolor{keywordtype}{bool}\ operator<(\textcolor{keyword}{const}\ vtkExodusIICacheKey\&\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00077\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>Time\ <\ other.Time)}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (this-\/>Time\ >\ other.Time)}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>ObjectType\ <\ other.ObjectType)}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (this-\/>ObjectType\ >\ other.ObjectType)}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>ObjectId\ <\ other.ObjectId)}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (this-\/>ObjectId\ >\ other.ObjectId)}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>ArrayId\ <\ other.ArrayId)}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00093\ \ \ \}}
+\DoxyCodeLine{00094\ \};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_exodus_i_i_cache_entry}{vtkExodusIICacheEntry}};}
+\DoxyCodeLine{00097\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_exodus_i_i_cache}{vtkExodusIICache}};}
+\DoxyCodeLine{00098\ \textcolor{keyword}{class\ }vtkDataArray;}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{keyword}{typedef}\ std::map<vtkExodusIICacheKey,\ vtkExodusIICacheEntry*>\ vtkExodusIICacheSet;}
+\DoxyCodeLine{00101\ \textcolor{keyword}{typedef}\ std::map<vtkExodusIICacheKey,\ vtkExodusIICacheEntry*>::iterator\ vtkExodusIICacheRef;}
+\DoxyCodeLine{00102\ \textcolor{keyword}{typedef}\ std::list<vtkExodusIICacheRef>\ vtkExodusIICacheLRU;}
+\DoxyCodeLine{00103\ \textcolor{keyword}{typedef}\ std::list<vtkExodusIICacheRef>::iterator\ vtkExodusIICacheLRURef;}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{keyword}{class\ }VTKIOEXODUS\_EXPORT\ vtkExodusIICacheEntry}
+\DoxyCodeLine{00106\ \{}
+\DoxyCodeLine{00107\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00108\ \ \ vtkExodusIICacheEntry();}
+\DoxyCodeLine{00109\ \ \ vtkExodusIICacheEntry(vtkDataArray*\ arr);}
+\DoxyCodeLine{00110\ \ \ vtkExodusIICacheEntry(\textcolor{keyword}{const}\ vtkExodusIICacheEntry\&\ other);}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \string~vtkExodusIICacheEntry();}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ vtkDataArray*\ GetValue()\ \{\ \textcolor{keywordflow}{return}\ this-\/>Value;\ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00117\ \ \ vtkDataArray*\ Value;}
+\DoxyCodeLine{00118\ \ \ vtkExodusIICacheLRURef\ LRUEntry;}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }vtkExodusIICache;}
+\DoxyCodeLine{00121\ \};}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{keyword}{class\ }VTKIOEXODUS\_EXPORT\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a6efbe6912e4fef436acaa7df73378744}{vtkExodusIICache}}\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00124\ \{}
+\DoxyCodeLine{00125\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00126\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a6efbe6912e4fef436acaa7df73378744}{vtkExodusIICache}}*\ New();}
+\DoxyCodeLine{00127\ \ \ vtkTypeMacro(\doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a6efbe6912e4fef436acaa7df73378744}{vtkExodusIICache}},\ vtkObject);}
+\DoxyCodeLine{00128\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a64ecc81f57410b1e8c2b477a9397400d}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a049f1bb3aa15a72f6c6e9e28c5ebb8e8}{Clear}}();}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00135\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a051294275a06f0a06164628cccbef331}{SetCacheCapacity}}(\textcolor{keywordtype}{double}\ sizeInMiB);}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_ac747c74d0403e9ff4b22947ae97c399a}{GetSpaceLeft}}()\ \{\ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a78b80cc86cf3e1a17a4cce3705e12632}{Capacity}}\ -\/\ this-\/>\doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a5030b20c6040ab5f7ada14ca18d7c49a}{Size}};\ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00146\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a8601d83358bcbf08f1cfa9d1cf4685bf}{ReduceToSize}}(\textcolor{keywordtype}{double}\ newSize);}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_ad6c97973ca26de9a6f83d684b29a2060}{Insert}}(\doxymbox{\hyperlink{classvtk_exodus_i_i_cache_key}{vtkExodusIICacheKey}}\&\ key,\ vtkDataArray*\ value);}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00154\ \ \ vtkDataArray*\&\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a656cbbc0ba3da9e0c67ec27e8585c58d}{Find}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_key}{vtkExodusIICacheKey}}\&);}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a79c0551b8d997db543bc45d5f62b522d}{Invalidate}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_key}{vtkExodusIICacheKey}}\&\ key);}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00171\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_af1ab5f4892e4d9a092f6df191ac4709f}{Invalidate}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_key}{vtkExodusIICacheKey}}\&\ key,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_key}{vtkExodusIICacheKey}}\&\ pattern);}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00175\ \ \ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a6efbe6912e4fef436acaa7df73378744}{vtkExodusIICache}}();}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00178\ \ \ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_aa26079b05b97c2310096ca34c5bc6c33}{\string~vtkExodusIICache}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00181\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_aa8013f119416699c7a70cbd1c29d616e}{RecomputeSize}}();}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a78b80cc86cf3e1a17a4cce3705e12632}{Capacity}};}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00188\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a5030b20c6040ab5f7ada14ca18d7c49a}{Size}};}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00196\ \ \ vtkExodusIICacheSet\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_af1a2bb9a49a05ebb07c27a19f41ec352}{Cache}};}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00199\ \ \ vtkExodusIICacheLRU\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a3bed2743695a7811612d0dd9a39f868d}{LRU}};}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00202\ \ \ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a6efbe6912e4fef436acaa7df73378744}{vtkExodusIICache}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a6efbe6912e4fef436acaa7df73378744}{vtkExodusIICache}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00203\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_exodus_i_i_cache_a6efbe6912e4fef436acaa7df73378744}{vtkExodusIICache}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00204\ \};}
+\DoxyCodeLine{00205\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkExodusIICache\_h}}
+
+\end{DoxyCode}

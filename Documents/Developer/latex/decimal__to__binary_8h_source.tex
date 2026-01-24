@@ -1,0 +1,203 @@
+\doxysection{decimal\+\_\+to\+\_\+binary.\+h}
+\hypertarget{decimal__to__binary_8h_source}{}\label{decimal__to__binary_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/decimal\_to\_binary.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/decimal\_to\_binary.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ FASTFLOAT\_DECIMAL\_TO\_BINARY\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ FASTFLOAT\_DECIMAL\_TO\_BINARY\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}float\_common.h"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}fast\_table.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cfloat>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <cinttypes>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <cstdlib>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{keyword}{namespace\ }fast\_float\ \{}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ This\ will\ compute\ or\ rather\ approximate\ w\ *\ 5**q\ and\ return\ a\ pair\ of\ 64-\/bit}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ words\ approximating\ the\ result,\ with\ the\ "{}high"{}\ part\ corresponding\ to\ the}}
+\DoxyCodeLine{00017\ \textcolor{comment}{//\ most\ significant\ bits\ and\ the\ low\ part\ corresponding\ to\ the\ least\ significant}}
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ bits.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{//}}
+\DoxyCodeLine{00020\ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{int}\ bit\_precision>}
+\DoxyCodeLine{00021\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ value128}
+\DoxyCodeLine{00022\ compute\_product\_approximation(int64\_t\ q,\ uint64\_t\ w)\ \{}
+\DoxyCodeLine{00023\ \ \ \textcolor{keywordtype}{int}\ \textcolor{keyword}{const}\ index\ =\ 2\ *\ int(q\ -\/\ powers::smallest\_power\_of\_five);}
+\DoxyCodeLine{00024\ \ \ \textcolor{comment}{//\ For\ small\ values\ of\ q,\ e.g.,\ q\ in\ [0,27],\ the\ answer\ is\ always\ exact}}
+\DoxyCodeLine{00025\ \ \ \textcolor{comment}{//\ because\ The\ line\ value128\ firstproduct\ =\ full\_multiplication(w,}}
+\DoxyCodeLine{00026\ \ \ \textcolor{comment}{//\ power\_of\_five\_128[index]);\ gives\ the\ exact\ answer.}}
+\DoxyCodeLine{00027\ \ \ value128\ firstproduct\ =}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ full\_multiplication(w,\ powers::power\_of\_five\_128[index]);}
+\DoxyCodeLine{00029\ \ \ \textcolor{keyword}{static\_assert}((bit\_precision\ >=\ 0)\ \&\&\ (bit\_precision\ <=\ 64),}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\ precision\ should\ \ be\ in\ (0,64]"{}});}
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{constexpr}\ uint64\_t\ precision\_mask\ =}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ (bit\_precision\ <\ 64)\ ?\ (uint64\_t(0xFFFFFFFFFFFFFFFF)\ >>\ bit\_precision)}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ uint64\_t(0xFFFFFFFFFFFFFFFF);}
+\DoxyCodeLine{00034\ \ \ \textcolor{keywordflow}{if}\ ((firstproduct.high\ \&\ precision\_mask)\ ==}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ precision\_mask)\ \{\ \textcolor{comment}{//\ could\ further\ guard\ with\ \ (lower\ +\ w\ <\ lower)}}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{comment}{//\ regarding\ the\ second\ product,\ we\ only\ need\ secondproduct.high,\ but\ our}}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{comment}{//\ expectation\ is\ that\ the\ compiler\ will\ optimize\ this\ extra\ work\ away\ if}}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{//\ needed.}}
+\DoxyCodeLine{00039\ \ \ \ \ value128\ secondproduct\ =}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ full\_multiplication(w,\ powers::power\_of\_five\_128[index\ +\ 1]);}
+\DoxyCodeLine{00041\ \ \ \ \ firstproduct.low\ +=\ secondproduct.high;}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordflow}{if}\ (secondproduct.high\ >\ firstproduct.low)\ \{}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ firstproduct.high++;}
+\DoxyCodeLine{00044\ \ \ \ \ \}}
+\DoxyCodeLine{00045\ \ \ \}}
+\DoxyCodeLine{00046\ \ \ \textcolor{keywordflow}{return}\ firstproduct;}
+\DoxyCodeLine{00047\ \}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{keyword}{namespace\ }detail\ \{}
+\DoxyCodeLine{00065\ \textcolor{keyword}{constexpr}\ fastfloat\_really\_inline\ int32\_t\ power(int32\_t\ q)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00066\ \ \ \textcolor{keywordflow}{return}\ (((152170\ +\ 65536)\ *\ q)\ >>\ 16)\ +\ 63;}
+\DoxyCodeLine{00067\ \}}
+\DoxyCodeLine{00068\ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{comment}{//\ create\ an\ adjusted\ mantissa,\ biased\ by\ the\ invalid\ power2}}
+\DoxyCodeLine{00071\ \textcolor{comment}{//\ for\ significant\ digits\ already\ multiplied\ by\ 10\ **\ q.}}
+\DoxyCodeLine{00072\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ binary>}
+\DoxyCodeLine{00073\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR14\ adjusted\_mantissa}
+\DoxyCodeLine{00074\ compute\_error\_scaled(int64\_t\ q,\ uint64\_t\ w,\ \textcolor{keywordtype}{int}\ lz)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00075\ \ \ \textcolor{keywordtype}{int}\ hilz\ =\ int(w\ >>\ 63)\ \string^\ 1;}
+\DoxyCodeLine{00076\ \ \ adjusted\_mantissa\ answer;}
+\DoxyCodeLine{00077\ \ \ answer.mantissa\ =\ w\ <<\ hilz;}
+\DoxyCodeLine{00078\ \ \ \textcolor{keywordtype}{int}\ bias\ =\ binary::mantissa\_explicit\_bits()\ -\/\ binary::minimum\_exponent();}
+\DoxyCodeLine{00079\ \ \ answer.power2\ =\ int32\_t(detail::power(int32\_t(q))\ +\ bias\ -\/\ hilz\ -\/\ lz\ -\/\ 62\ +}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ invalid\_am\_bias);}
+\DoxyCodeLine{00081\ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00082\ \}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{comment}{//\ w\ *\ 10\ **\ q,\ without\ rounding\ the\ representation\ up.}}
+\DoxyCodeLine{00085\ \textcolor{comment}{//\ the\ power2\ in\ the\ exponent\ will\ be\ adjusted\ by\ invalid\_am\_bias.}}
+\DoxyCodeLine{00086\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ binary>}
+\DoxyCodeLine{00087\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ adjusted\_mantissa}
+\DoxyCodeLine{00088\ compute\_error(int64\_t\ q,\ uint64\_t\ w)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00089\ \ \ \textcolor{keywordtype}{int}\ lz\ =\ leading\_zeroes(w);}
+\DoxyCodeLine{00090\ \ \ w\ <<=\ lz;}
+\DoxyCodeLine{00091\ \ \ value128\ product\ =}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ compute\_product\_approximation<binary::mantissa\_explicit\_bits()\ +\ 3>(q,\ w);}
+\DoxyCodeLine{00093\ \ \ \textcolor{keywordflow}{return}\ compute\_error\_scaled<binary>(q,\ product.high,\ lz);}
+\DoxyCodeLine{00094\ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{comment}{//\ Computers\ w\ *\ 10\ **\ q.}}
+\DoxyCodeLine{00097\ \textcolor{comment}{//\ The\ returned\ value\ should\ be\ a\ valid\ number\ that\ simply\ needs\ to\ be}}
+\DoxyCodeLine{00098\ \textcolor{comment}{//\ packed.\ However,\ in\ some\ very\ rare\ cases,\ the\ computation\ will\ fail.\ In\ such}}
+\DoxyCodeLine{00099\ \textcolor{comment}{//\ cases,\ we\ return\ an\ adjusted\_mantissa\ with\ a\ negative\ power\ of\ 2:\ the\ caller}}
+\DoxyCodeLine{00100\ \textcolor{comment}{//\ should\ recompute\ in\ such\ cases.}}
+\DoxyCodeLine{00101\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ binary>}
+\DoxyCodeLine{00102\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ adjusted\_mantissa}
+\DoxyCodeLine{00103\ compute\_float(int64\_t\ q,\ uint64\_t\ w)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00104\ \ \ adjusted\_mantissa\ answer;}
+\DoxyCodeLine{00105\ \ \ \textcolor{keywordflow}{if}\ ((w\ ==\ 0)\ ||\ (q\ <\ binary::smallest\_power\_of\_ten()))\ \{}
+\DoxyCodeLine{00106\ \ \ \ \ answer.power2\ =\ 0;}
+\DoxyCodeLine{00107\ \ \ \ \ answer.mantissa\ =\ 0;}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{comment}{//\ result\ should\ be\ zero}}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00110\ \ \ \}}
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordflow}{if}\ (q\ >\ binary::largest\_power\_of\_ten())\ \{}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{comment}{//\ we\ want\ to\ get\ infinity:}}
+\DoxyCodeLine{00113\ \ \ \ \ answer.power2\ =\ binary::infinite\_power();}
+\DoxyCodeLine{00114\ \ \ \ \ answer.mantissa\ =\ 0;}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00116\ \ \ \}}
+\DoxyCodeLine{00117\ \ \ \textcolor{comment}{//\ At\ this\ point\ in\ time\ q\ is\ in\ [powers::smallest\_power\_of\_five,}}
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{//\ powers::largest\_power\_of\_five].}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \textcolor{comment}{//\ We\ want\ the\ most\ significant\ bit\ of\ i\ to\ be\ 1.\ Shift\ if\ needed.}}
+\DoxyCodeLine{00121\ \ \ \textcolor{keywordtype}{int}\ lz\ =\ leading\_zeroes(w);}
+\DoxyCodeLine{00122\ \ \ w\ <<=\ lz;}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{//\ The\ required\ precision\ is\ binary::mantissa\_explicit\_bits()\ +\ 3\ because}}
+\DoxyCodeLine{00125\ \ \ \textcolor{comment}{//\ 1.\ We\ need\ the\ implicit\ bit}}
+\DoxyCodeLine{00126\ \ \ \textcolor{comment}{//\ 2.\ We\ need\ an\ extra\ bit\ for\ rounding\ purposes}}
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{//\ 3.\ We\ might\ lose\ a\ bit\ due\ to\ the\ "{}upperbit"{}\ routine\ (result\ too\ small,}}
+\DoxyCodeLine{00128\ \ \ \textcolor{comment}{//\ requiring\ a\ shift)}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ value128\ product\ =}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ compute\_product\_approximation<binary::mantissa\_explicit\_bits()\ +\ 3>(q,\ w);}
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{//\ The\ computed\ 'product'\ is\ always\ sufficient.}}
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{//\ Mathematical\ proof:}}
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{//\ Noble\ Mushtak\ and\ Daniel\ Lemire,\ Fast\ Number\ Parsing\ Without\ Fallback\ (to}}
+\DoxyCodeLine{00135\ \ \ \textcolor{comment}{//\ appear)\ See\ script/mushtak\_lemire.py}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \textcolor{comment}{//\ The\ "{}compute\_product\_approximation"{}\ function\ can\ be\ slightly\ slower\ than\ a}}
+\DoxyCodeLine{00138\ \ \ \textcolor{comment}{//\ branchless\ approach:\ value128\ product\ =\ compute\_product(q,\ w);\ but\ in}}
+\DoxyCodeLine{00139\ \ \ \textcolor{comment}{//\ practice,\ we\ can\ win\ big\ with\ the\ compute\_product\_approximation\ if\ its}}
+\DoxyCodeLine{00140\ \ \ \textcolor{comment}{//\ additional\ branch\ is\ easily\ predicted.\ Which\ is\ best\ is\ data\ specific.}}
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordtype}{int}\ upperbit\ =\ int(product.high\ >>\ 63);}
+\DoxyCodeLine{00142\ \ \ \textcolor{keywordtype}{int}\ shift\ =\ upperbit\ +\ 64\ -\/\ binary::mantissa\_explicit\_bits()\ -\/\ 3;}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ answer.mantissa\ =\ product.high\ >>\ shift;}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ answer.power2\ =\ int32\_t(detail::power(int32\_t(q))\ +\ upperbit\ -\/\ lz\ -\/}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ binary::minimum\_exponent());}
+\DoxyCodeLine{00148\ \ \ \textcolor{keywordflow}{if}\ (answer.power2\ <=\ 0)\ \{\ \textcolor{comment}{//\ we\ have\ a\ subnormal?}}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{comment}{//\ Here\ have\ that\ answer.power2\ <=\ 0\ so\ -\/answer.power2\ >=\ 0}}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordflow}{if}\ (-\/answer.power2\ +\ 1\ >=}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ 64)\ \{\ \textcolor{comment}{//\ if\ we\ have\ more\ than\ 64\ bits\ below\ the\ minimum\ exponent,\ you}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ have\ a\ zero\ for\ sure.}}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ answer.power2\ =\ 0;}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ answer.mantissa\ =\ 0;}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \textcolor{comment}{//\ result\ should\ be\ zero}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00157\ \ \ \ \ \}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{comment}{//\ next\ line\ is\ safe\ because\ -\/answer.power2\ +\ 1\ <\ 64}}
+\DoxyCodeLine{00159\ \ \ \ \ answer.mantissa\ >>=\ -\/answer.power2\ +\ 1;}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{comment}{//\ Thankfully,\ we\ can't\ have\ both\ "{}round-\/to-\/even"{}\ and\ subnormals\ because}}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{comment}{//\ "{}round-\/to-\/even"{}\ only\ occurs\ for\ powers\ close\ to\ 0\ in\ the\ 32-\/bit\ and}}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{comment}{//\ and\ 64-\/bit\ case\ (with\ no\ more\ than\ 19\ digits).}}
+\DoxyCodeLine{00163\ \ \ \ \ answer.mantissa\ +=\ (answer.mantissa\ \&\ 1);\ \textcolor{comment}{//\ round\ up}}
+\DoxyCodeLine{00164\ \ \ \ \ answer.mantissa\ >>=\ 1;}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{comment}{//\ There\ is\ a\ weird\ scenario\ where\ we\ don't\ have\ a\ subnormal\ but\ just.}}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{comment}{//\ Suppose\ we\ start\ with\ 2.2250738585072013e-\/308,\ we\ end\ up}}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{comment}{//\ with\ 0x3fffffffffffff\ x\ 2\string^-\/1023-\/53\ which\ is\ technically\ subnormal}}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{comment}{//\ whereas\ 0x40000000000000\ x\ 2\string^-\/1023-\/53\ \ is\ normal.\ Now,\ we\ need\ to\ round}}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{comment}{//\ up\ 0x3fffffffffffff\ x\ 2\string^-\/1023-\/53\ \ and\ once\ we\ do,\ we\ are\ no\ longer}}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{//\ subnormal,\ but\ we\ can\ only\ know\ this\ after\ rounding.}}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{comment}{//\ So\ we\ only\ declare\ a\ subnormal\ if\ we\ are\ smaller\ than\ the\ threshold.}}
+\DoxyCodeLine{00172\ \ \ \ \ answer.power2\ =}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ (answer.mantissa\ <\ (uint64\_t(1)\ <<\ binary::mantissa\_explicit\_bits()))}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ ?\ 0}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ :\ 1;}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00177\ \ \ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{comment}{//\ usually,\ we\ round\ *up*,\ but\ if\ we\ fall\ right\ in\ between\ and\ and\ we\ have\ an}}
+\DoxyCodeLine{00180\ \ \ \textcolor{comment}{//\ even\ basis,\ we\ need\ to\ round\ down}}
+\DoxyCodeLine{00181\ \ \ \textcolor{comment}{//\ We\ are\ only\ concerned\ with\ the\ cases\ where\ 5**q\ fits\ in\ single\ 64-\/bit\ word.}}
+\DoxyCodeLine{00182\ \ \ \textcolor{keywordflow}{if}\ ((product.low\ <=\ 1)\ \&\&\ (q\ >=\ binary::min\_exponent\_round\_to\_even())\ \&\&}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ (q\ <=\ binary::max\_exponent\_round\_to\_even())\ \&\&}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ ((answer.mantissa\ \&\ 3)\ ==\ 1))\ \{\ \textcolor{comment}{//\ we\ may\ fall\ between\ two\ floats!}}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{comment}{//\ To\ be\ in-\/between\ two\ floats\ we\ need\ that\ in\ doing}}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{comment}{//\ \ \ answer.mantissa\ =\ product.high\ >>\ (upperbit\ +\ 64\ -\/}}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{comment}{//\ \ \ binary::mantissa\_explicit\_bits()\ -\/\ 3);}}
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{comment}{//\ ...\ we\ dropped\ out\ only\ zeroes.\ But\ if\ this\ happened,\ then\ we\ can\ go}}
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{comment}{//\ back!!!}}
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{keywordflow}{if}\ ((answer.mantissa\ <<\ shift)\ ==\ product.high)\ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ answer.mantissa\ \&=\ \string~uint64\_t(1);\ \textcolor{comment}{//\ flip\ it\ so\ that\ we\ do\ not\ round\ up}}
+\DoxyCodeLine{00192\ \ \ \ \ \}}
+\DoxyCodeLine{00193\ \ \ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ answer.mantissa\ +=\ (answer.mantissa\ \&\ 1);\ \textcolor{comment}{//\ round\ up}}
+\DoxyCodeLine{00196\ \ \ answer.mantissa\ >>=\ 1;}
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordflow}{if}\ (answer.mantissa\ >=\ (uint64\_t(2)\ <<\ binary::mantissa\_explicit\_bits()))\ \{}
+\DoxyCodeLine{00198\ \ \ \ \ answer.mantissa\ =\ (uint64\_t(1)\ <<\ binary::mantissa\_explicit\_bits());}
+\DoxyCodeLine{00199\ \ \ \ \ answer.power2++;\ \textcolor{comment}{//\ undo\ previous\ addition}}
+\DoxyCodeLine{00200\ \ \ \}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ answer.mantissa\ \&=\ \string~(uint64\_t(1)\ <<\ binary::mantissa\_explicit\_bits());}
+\DoxyCodeLine{00203\ \ \ \textcolor{keywordflow}{if}\ (answer.power2\ >=\ binary::infinite\_power())\ \{\ \textcolor{comment}{//\ infinity}}
+\DoxyCodeLine{00204\ \ \ \ \ answer.power2\ =\ binary::infinite\_power();}
+\DoxyCodeLine{00205\ \ \ \ \ answer.mantissa\ =\ 0;}
+\DoxyCodeLine{00206\ \ \ \}}
+\DoxyCodeLine{00207\ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00208\ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \}\ \textcolor{comment}{//\ namespace\ fast\_float}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

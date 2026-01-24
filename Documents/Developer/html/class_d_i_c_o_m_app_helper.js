@@ -1,0 +1,28 @@
+var class_d_i_c_o_m_app_helper =
+[
+    [ "DICOMAppHelper", "class_d_i_c_o_m_app_helper.html#a791bf49c9eca479996ac9286e5bc5d8d", null ],
+    [ "~DICOMAppHelper", "class_d_i_c_o_m_app_helper.html#a022a623769820fe76cd161e6751390a8", null ],
+    [ "Clear", "class_d_i_c_o_m_app_helper.html#a5a17435bd8d1a475a5f455e7929a6752", null ],
+    [ "GetBitsAllocated", "class_d_i_c_o_m_app_helper.html#ada96ac8985e077442b0b2462c3b3a461", null ],
+    [ "GetDimensions", "class_d_i_c_o_m_app_helper.html#aa8ba0219a0dcbd9db990ea6634892728", null ],
+    [ "GetHeight", "class_d_i_c_o_m_app_helper.html#a9a033b693e33955dea895a9a5ccff7b6", null ],
+    [ "GetImageData", "class_d_i_c_o_m_app_helper.html#a656e8520eed79a0eb608e053bcb09b04", null ],
+    [ "GetImageOrientationPatient", "class_d_i_c_o_m_app_helper.html#a431ce113f1acb3eb5586c59ecdeba832", null ],
+    [ "GetImagePositionPatient", "class_d_i_c_o_m_app_helper.html#ac35dcfe18c5f1b18c3a0a3420091acd8", null ],
+    [ "GetNumberOfComponents", "class_d_i_c_o_m_app_helper.html#a361bc2c677c6ebba648a5494a3cff2c1", null ],
+    [ "GetPixelRepresentation", "class_d_i_c_o_m_app_helper.html#a53400da1048744f51842788d07fa5459", null ],
+    [ "GetPixelSpacing", "class_d_i_c_o_m_app_helper.html#a93d1025cf6b2eedde5cd1a77a2d3fd95", null ],
+    [ "GetSeriesUIDs", "class_d_i_c_o_m_app_helper.html#ac726c350cb0829181a22465f42d6d29f", null ],
+    [ "GetSliceNumber", "class_d_i_c_o_m_app_helper.html#a73fb4af925b6a0cafdf9aec56bc80d66", null ],
+    [ "GetSliceNumberFilenamePairs", "class_d_i_c_o_m_app_helper.html#a09a84be672cb9af6ecb7a54994816bae", null ],
+    [ "GetSliceNumberFilenamePairs", "class_d_i_c_o_m_app_helper.html#a84ecb74f25128cf5cf18397216b2c912", null ],
+    [ "GetTransferSyntaxUID", "class_d_i_c_o_m_app_helper.html#a41e718b40dd567081d899ec9eabcf91d", null ],
+    [ "GetWidth", "class_d_i_c_o_m_app_helper.html#a1cf452503a4ab298962a15c3288d9aea", null ],
+    [ "OutputSeries", "class_d_i_c_o_m_app_helper.html#a45c76c0c550812b2e8316233264f92fd", null ],
+    [ "RegisterCallbacks", "class_d_i_c_o_m_app_helper.html#a8e3fbf023ea0da4013bf218f2029bc1b", null ],
+    [ "RegisterPixelDataCallback", "class_d_i_c_o_m_app_helper.html#aae5992af0f04f74d5403dec3c29f4c37", null ],
+    [ "RescaledImageDataIsFloat", "class_d_i_c_o_m_app_helper.html#ae3d6e7a3829cc3b92fc1f167e964de8d", null ],
+    [ "RescaledImageDataIsSigned", "class_d_i_c_o_m_app_helper.html#a835c5ca0b48d51dd42b90bb16de17cd6", null ],
+    [ "RescaleSlopeCallback", "class_d_i_c_o_m_app_helper.html#ac2699bd5cd2a1f7a44a5e9284be31dd9", null ],
+    [ "TransferSyntaxUIDDescription", "class_d_i_c_o_m_app_helper.html#a7bc140ff5fbe5c940e193419062e7c67", null ]
+];

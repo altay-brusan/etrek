@@ -1,0 +1,86 @@
+\doxysection{Dynamic\+Loader.\+hxx}
+\hypertarget{_dynamic_loader_8hxx_source}{}\label{_dynamic_loader_8hxx_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtksys/DynamicLoader.hxx@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtksys/DynamicLoader.hxx}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Distributed\ under\ the\ OSI-\/approved\ BSD\ 3-\/Clause\ License.\ \ See\ accompanying}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ file\ Copyright.txt\ or\ https://cmake.org/licensing\#kwsys\ for\ details.\ \ */}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#ifndef\ vtksys\_DynamicLoader\_hxx}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#define\ vtksys\_DynamicLoader\_hxx}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vtksys/Configure.hxx>}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#if\ defined(\_\_hpux)}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#\ \ include\ <dl.h>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#elif\ defined(\_WIN32)\ \&\&\ !defined(\_\_CYGWIN\_\_)}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#\ \ include\ <windows.h>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#elif\ defined(\_\_APPLE\_\_)}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#\ \ include\ <AvailabilityMacros.h>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#\ \ if\ MAC\_OS\_X\_VERSION\_MAX\_ALLOWED\ <\ 1030}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#\ \ \ \ include\ <mach-\/o/dyld.h>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#elif\ defined(\_\_BEOS\_\_)}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#\ \ include\ <be/kernel/image.h>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{namespace\ }vtksys\ \{}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{keyword}{class\ }vtksys\_EXPORT\ \doxymbox{\hyperlink{classvtksys_1_1_dynamic_loader}{DynamicLoader}}}
+\DoxyCodeLine{00046\ \{}
+\DoxyCodeLine{00047\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00048\ \textcolor{comment}{//\ Ugly\ stuff\ for\ library\ handles}}
+\DoxyCodeLine{00049\ \textcolor{comment}{//\ They\ are\ different\ on\ several\ different\ OS's}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#if\ defined(\_\_hpux)}}
+\DoxyCodeLine{00051\ \ \ \textcolor{keyword}{typedef}\ shl\_t\ LibraryHandle;}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#elif\ defined(\_WIN32)\ \&\&\ !defined(\_\_CYGWIN\_\_)}}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{typedef}\ HMODULE\ LibraryHandle;}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#elif\ defined(\_\_APPLE\_\_)}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#\ \ if\ MAC\_OS\_X\_VERSION\_MAX\_ALLOWED\ <\ 1030}}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{typedef}\ NSModule\ LibraryHandle;}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#\ \ else}}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}*\ LibraryHandle;}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#elif\ defined(\_\_BEOS\_\_)}}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{typedef}\ image\_id\ LibraryHandle;}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ POSIX}}
+\DoxyCodeLine{00063\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}*\ LibraryHandle;}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{comment}{//\ Return\ type\ from\ DynamicLoader::GetSymbolAddress.}}
+\DoxyCodeLine{00067\ \ \ \textcolor{keyword}{typedef}\ void\ (*SymbolPointer)();}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \textcolor{keyword}{enum}\ OpenFlags}
+\DoxyCodeLine{00070\ \ \ \{}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{//\ Search\ for\ dependent\ libraries\ beside\ the\ library\ being\ loaded.}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{comment}{//\ This\ is\ currently\ only\ supported\ on\ Windows.}}
+\DoxyCodeLine{00074\ \ \ \ \ SearchBesideLibrary\ =\ 0x00000001,}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{comment}{//\ Make\ loaded\ symbols\ visible\ globally}}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{//\ This\ is\ currently\ only\ supported\ on\ *nix\ systems.}}
+\DoxyCodeLine{00079\ \ \ \ \ RTLDGlobal\ =\ 0x00000002,}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ AllOpenFlags\ =\ SearchBesideLibrary\ |\ RTLDGlobal}
+\DoxyCodeLine{00082\ \ \ \};}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{keyword}{static}\ LibraryHandle\ \doxymbox{\hyperlink{classvtksys_1_1_dynamic_loader_af096108e57fbb5d3f538cb08384d5344}{OpenLibrary}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00090\ \ \ \textcolor{keyword}{static}\ LibraryHandle\ \doxymbox{\hyperlink{classvtksys_1_1_dynamic_loader_af096108e57fbb5d3f538cb08384d5344}{OpenLibrary}}(\textcolor{keyword}{const}\ std::string\&,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00094\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtksys_1_1_dynamic_loader_aa46f923d9eb5a36613737b902f9046a2}{CloseLibrary}}(LibraryHandle);}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00097\ \ \ \textcolor{keyword}{static}\ SymbolPointer\ \doxymbox{\hyperlink{classvtksys_1_1_dynamic_loader_a2b21cd46a01b27ba27c0e454b0f9403d}{GetSymbolAddress}}(LibraryHandle,\ \textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00100\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_dynamic_loader_adac4369f9f3bfb0caea31a5474c08d45}{LibPrefix}}()\ \{\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}"{}};\ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00103\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_dynamic_loader_a4242e0afd433e6c2938121c81a0738e9}{LibExtension}}()\ \{\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}.dll"{}};\ \}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00106\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_dynamic_loader_a41f3a57a99b4362056c0295656cc20a1}{LastError}}();}
+\DoxyCodeLine{00107\ \};\ \textcolor{comment}{//\ End\ Class:\ DynamicLoader}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \}\ \textcolor{comment}{//\ namespace\ vtksys}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

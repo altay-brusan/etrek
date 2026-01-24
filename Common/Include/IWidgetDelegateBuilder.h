@@ -1,3 +1,19 @@
+/**
+ * @file IWidgetDelegateBuilder.h
+ * @brief Template interface for widget-delegate builder pattern.
+ *
+ * @details Defines the IWidgetDelegateBuilder template interface that standardizes
+ *          the construction of widget-delegate pairs throughout the application.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see DelegateParameter
+ * @see IDelegate
+ */
+
 #ifndef IWIDGETDELEGATEBUILDER_H
 #define IWIDGETDELEGATEBUILDER_H
 

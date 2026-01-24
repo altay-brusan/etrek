@@ -1,0 +1,101 @@
+\doxysection{Type.\+h}
+\hypertarget{_type_8h_source}{}\label{_type_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/token/Type.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/token/Type.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#ifndef\ token\_Type\_h}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#define\ token\_Type\_h}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}token/Compiler.h"{}}\ \textcolor{comment}{//\ For\ compiler\ ID.}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}token/CxxABIConfigure.h"{}}\ \textcolor{comment}{//\ For\ demangling.}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}token/Token.h"{}}\ \textcolor{comment}{//\ For\ tokenized\ type-\/name.}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <cstring>}\ \ \textcolor{comment}{//\ For\ std::strlen.}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <string>}\ \ \ \textcolor{comment}{//\ For\ return\ value.}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <typeinfo>}\ \textcolor{comment}{//\ For\ typeid().}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ token\_BEGIN\_NAMESPACE}
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacedetail}{detail}}}
+\DoxyCodeLine{00017\ \{}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ObjectType>}
+\DoxyCodeLine{00020\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdetail_1_1name}{name}}}
+\DoxyCodeLine{00021\ \{}
+\DoxyCodeLine{00022\ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}\ std::string\ value()}
+\DoxyCodeLine{00023\ \ \ \{}
+\DoxyCodeLine{00024\ \ \ \ \ std::string\ result\ =\ \textcolor{keyword}{typeid}(ObjectType).\doxymbox{\hyperlink{structdetail_1_1name}{name}}();}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#ifdef\ token\_HAS\_CXXABI\_DEMANGLE}}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{int}\ status\ =\ 0;}
+\DoxyCodeLine{00027\ \ \ \ \ std::size\_t\ size\ =\ 0;}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{char}*\ demangledSymbol\ =\ abi::\_\_cxa\_demangle(result.c\_str(),\ \textcolor{keyword}{nullptr},\ \&size,\ \&status);}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordflow}{if}\ (!status\ \&\&\ size\ >\ 0)}
+\DoxyCodeLine{00030\ \ \ \ \ \{}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ result\ =\ demangledSymbol;}
+\DoxyCodeLine{00032\ \ \ \ \ \}}
+\DoxyCodeLine{00033\ \ \ \ \ free(demangledSymbol);}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{comment}{//\ Now\ that\ we\ have\ a\ (probably)\ demangled\ symbol,\ we\ need\ to\ remove}}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{comment}{//\ MSVC-\/specific\ cruft\ from\ the\ symbol\ name.}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#ifdef\ token\_COMPILER\_MSC}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{//\ MSVC\ returns\ a\ name\ with\ "{}class\ "{}\ or\ "{}struct\ "{}\ prepended.\ Remove\ it}}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ for\ consistency\ with\ other\ platforms.\ Note\ that\ template\ parameters}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ also\ include\ "{}class\ "{}\ or\ "{}struct\ "{},\ so\ we\ must\ search\ and\ replace}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{//\ repeatedly.}}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordflow}{for}\ (std::string::size\_type\ pos\ =\ result.find(\textcolor{stringliteral}{"{}class\ "{}});\ pos\ !=\ std::string::npos;}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ pos\ =\ result.find(\textcolor{stringliteral}{"{}class\ "{}},\ pos\ +\ 1))}
+\DoxyCodeLine{00045\ \ \ \ \ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ result\ =\ result.substr(0,\ pos)\ +\ result.substr(pos\ +\ 6);}
+\DoxyCodeLine{00047\ \ \ \ \ \}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{for}\ (std::string::size\_type\ pos\ =\ result.find(\textcolor{stringliteral}{"{}struct\ "{}});\ pos\ !=\ std::string::npos;}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ pos\ =\ result.find(\textcolor{stringliteral}{"{}struct\ "{}},\ pos\ +\ 1))}
+\DoxyCodeLine{00050\ \ \ \ \ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ result\ =\ result.substr(0,\ pos)\ +\ result.substr(pos\ +\ 7);}
+\DoxyCodeLine{00052\ \ \ \ \ \}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{//\ MSVC\ reports\ anonymous\ namespaces\ like\ so:\ \`{}anonymous\ namespace'}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ while\ others\ report\ them\ like\ so:\ (anonymous\ namespace).\ Fix\ it}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{//\ to\ be\ consistent.}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{for}\ (std::string::size\_type\ pos\ =\ result.find(\textcolor{stringliteral}{"{}\`{}anonymous\ namespace'"{}});}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ pos\ !=\ std::string::npos;\ pos\ =\ result.find(\textcolor{stringliteral}{"{}\`{}anonymous\ namespace'"{}},\ pos\ +\ 1))}
+\DoxyCodeLine{00058\ \ \ \ \ \{}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ result\ =\ result.substr(0,\ pos)\ +\ \textcolor{stringliteral}{"{}(anonymous\ namespace)"{}}\ +\ result.substr(pos\ +\ 21);}
+\DoxyCodeLine{00060\ \ \ \ \ \}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{//\ MSVC\ does\ not\ include\ spaces\ after\ commas\ separating\ template}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{comment}{//\ parameters.\ Add\ it\ in:}}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordflow}{for}\ (std::string::size\_type\ pos\ =\ result.find(\textcolor{charliteral}{','});\ pos\ !=\ std::string::npos;}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ pos\ =\ result.find(\textcolor{charliteral}{','},\ pos\ +\ 1))}
+\DoxyCodeLine{00065\ \ \ \ \ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ result\ =\ result.substr(0,\ pos)\ +\ \textcolor{stringliteral}{"{},\ "{}}\ +\ result.substr(pos\ +\ 1);}
+\DoxyCodeLine{00067\ \ \ \ \ \}}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00070\ \ \ \}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00078\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ Hash\ \doxymbox{\hyperlink{structdetail_1_1name_a1e270268110e5c21445fbad00b13add3}{token}}()}
+\DoxyCodeLine{00079\ \ \ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keyword}{auto}\ nameStr\ =\ name<ObjectType>::value();}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keyword}{auto}\ result\ =\ \doxymbox{\hyperlink{class_token_aeed361078bb6c12350fafffd4dc0319c}{Token::stringHash}}(nameStr.c\_str(),\ nameStr.size());}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00083\ \ \ \}}
+\DoxyCodeLine{00084\ \};}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00095\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ObjectType>}
+\DoxyCodeLine{00096\ \textcolor{keyword}{inline}\ TOKEN\_ALWAYS\_EXPORT\ std::string\ typeName()}
+\DoxyCodeLine{00097\ \{}
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordflow}{return}\ detail::name<ObjectType>::value();}
+\DoxyCodeLine{00099\ \}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00111\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ObjectType>}
+\DoxyCodeLine{00112\ \textcolor{keyword}{inline}\ TOKEN\_ALWAYS\_EXPORT\ \doxymbox{\hyperlink{class_token}{Token}}\ typeToken()}
+\DoxyCodeLine{00113\ \{}
+\DoxyCodeLine{00114\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_token}{Token}}(\doxymbox{\hyperlink{structdetail_1_1name_a1e270268110e5c21445fbad00b13add3}{detail::name<ObjectType>::token}}());}
+\DoxyCodeLine{00115\ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ token\_CLOSE\_NAMESPACE}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ token\_Type\_h}}
+
+\end{DoxyCode}

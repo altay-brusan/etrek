@@ -1,0 +1,27 @@
+var classvtk_parallel_coordinates_histogram_representation =
+[
+    [ "ApplyViewTheme", "classvtk_parallel_coordinates_histogram_representation.html#a38ae77a4961ec5de8e5436783c7cc362", null ],
+    [ "ComputeDataProperties", "classvtk_parallel_coordinates_histogram_representation.html#a215ce525f2935288a5a7200336684345", null ],
+    [ "GetHistogramImage", "classvtk_parallel_coordinates_histogram_representation.html#acf90f8b3dd2ffd3f0aff6452ce1cffb6", null ],
+    [ "GetOutlierData", "classvtk_parallel_coordinates_histogram_representation.html#a7c333f64ce69b3f61d0b3346cde899b4", null ],
+    [ "PlaceCurves", "classvtk_parallel_coordinates_histogram_representation.html#a07575e43abffba85f55cdfc8158fecd0", null ],
+    [ "PlaceHistogramCurveQuads", "classvtk_parallel_coordinates_histogram_representation.html#af1f1b69fe9c9c336a8f83eb45dabd8b6", null ],
+    [ "PlaceHistogramLineQuads", "classvtk_parallel_coordinates_histogram_representation.html#abd656613f88139a09c2e248166866429", null ],
+    [ "PlaceLines", "classvtk_parallel_coordinates_histogram_representation.html#a479ff1449f504886a40eb533540779a3", null ],
+    [ "PlaceSelection", "classvtk_parallel_coordinates_histogram_representation.html#a4ca65dc696255e300b2b7d448ef8df7a", null ],
+    [ "PrintSelf", "classvtk_parallel_coordinates_histogram_representation.html#a3c00ed14df513a1375cbf92ee6ad9b6d", null ],
+    [ "RequestData", "classvtk_parallel_coordinates_histogram_representation.html#a8825d3cf5bc7910d572cd4848cbb903d", null ],
+    [ "SetNumberOfHistogramBins", "classvtk_parallel_coordinates_histogram_representation.html#aa4a9790d5ad9adafd241c8626dc313d4", null ],
+    [ "SetPreferredNumberOfOutliers", "classvtk_parallel_coordinates_histogram_representation.html#a473dcfa38a5fa926335c9a1bb02c9811", null ],
+    [ "SetRangeAtPosition", "classvtk_parallel_coordinates_histogram_representation.html#a42d7f4d834afcd001dd83f58a1ac37f7", null ],
+    [ "SetShowOutliers", "classvtk_parallel_coordinates_histogram_representation.html#af12ac84c23a82db15fde663fea19daeb", null ],
+    [ "SetUseHistograms", "classvtk_parallel_coordinates_histogram_representation.html#ad8f4e73aaf4b2368e2710eb8d1d11fb8", null ],
+    [ "SwapAxisPositions", "classvtk_parallel_coordinates_histogram_representation.html#a3c916c981609daa578da4b32cfca912c", null ],
+    [ "UpdatePlotProperties", "classvtk_parallel_coordinates_histogram_representation.html#a6cd377a8fb9ad2b08c71db186c9c8faf", null ],
+    [ "vtkSetVector2Macro", "classvtk_parallel_coordinates_histogram_representation.html#a87398d723daa6e12f20b43c1b6dba5c7", null ],
+    [ "HistogramLookupTableRange", "classvtk_parallel_coordinates_histogram_representation.html#a50ef3c04608b4e200c03135469878c62", null ],
+    [ "NumberOfHistogramBins", "classvtk_parallel_coordinates_histogram_representation.html#a244703276e47c63a7a33dfd77628896e", null ],
+    [ "PreferredNumberOfOutliers", "classvtk_parallel_coordinates_histogram_representation.html#a0d597e0460a6739a0f350be2f3992bed", null ],
+    [ "ShowOutliers", "classvtk_parallel_coordinates_histogram_representation.html#adaf128ad5b0b36446af41676bbdc72ac", null ],
+    [ "UseHistograms", "classvtk_parallel_coordinates_histogram_representation.html#a085edb6dfaf20ab31b7ec8c4366afb0d", null ]
+];

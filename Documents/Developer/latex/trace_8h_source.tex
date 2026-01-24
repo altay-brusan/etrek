@@ -1,0 +1,327 @@
+\doxysection{trace.\+h}
+\hypertarget{trace_8h_source}{}\label{trace_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/trace.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/trace.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Copyright\ 2019-\/2023\ The\ OpenSSL\ Project\ Authors.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Licensed\ under\ the\ Apache\ License\ 2.0\ (the\ "{}License"{}).\ \ You\ may\ not\ use}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ this\ file\ except\ in\ compliance\ with\ the\ License.\ \ You\ can\ obtain\ a\ copy}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ in\ the\ file\ LICENSE\ in\ the\ source\ distribution\ or\ at}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ https://www.openssl.org/source/license.html}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_TRACE\_H}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#\ define\ OPENSSL\_TRACE\_H}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#\ pragma\ once}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#\ include\ <stdarg.h>}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#\ include\ <openssl/bio.h>}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#\ ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00019\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *\ TRACE\ CATEGORIES}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ *\ The\ trace\ messages\ of\ the\ OpenSSL\ libraries\ are\ organized\ into\ different}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ *\ categories.\ For\ every\ trace\ category,\ the\ application\ can\ register\ a\ separate}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ *\ tracer\ callback.\ When\ a\ callback\ is\ registered,\ a\ so\ called\ trace\ channel\ is}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *\ created\ for\ this\ category.\ This\ channel\ consists\ essentially\ of\ an\ internal}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ *\ BIO\ which\ sends\ all\ trace\ output\ it\ receives\ to\ the\ registered\ application}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ callback.}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ The\ ALL\ category\ can\ be\ used\ as\ a\ fallback\ category\ to\ register\ a\ single}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ channel\ which\ receives\ the\ output\ from\ all\ categories.\ However,\ if\ the}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ application\ intends\ to\ print\ the\ trace\ channel\ name\ in\ the\ line\ prefix,}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *\ it\ is\ better\ to\ register\ channels\ for\ all\ categories\ separately.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *\ (This\ is\ how\ the\ openssl\ application\ does\ it.)}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_ALL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0\ }\textcolor{comment}{/*\ The\ fallback\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_TRACE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_INIT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_TLS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_TLS\_CIPHER\ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_CONF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_ENGINE\_TABLE\ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_ENGINE\_REF\_COUNT\ \ \ \ 7}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_PKCS5V2\ \ \ \ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_PKCS12\_KEYGEN\ \ \ \ \ \ \ 9}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_PKCS12\_DECRYPT\ \ \ \ \ 10}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_X509V3\_POLICY\ \ \ \ \ \ 11}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_BN\_CTX\ \ \ \ \ \ \ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_CMP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_STORE\ \ \ \ \ \ \ \ \ \ \ \ \ \ 14}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_DECODER\ \ \ \ \ \ \ \ \ \ \ \ 15}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_ENCODER\ \ \ \ \ \ \ \ \ \ \ \ 16}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_REF\_COUNT\ \ \ \ \ \ \ \ \ \ 17}}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_HTTP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 18}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_PROVIDER\ \ \ \ \ \ \ \ \ \ \ 19}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_QUERY\ \ \ \ \ \ \ \ \ \ \ \ \ \ 20}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CATEGORY\_NUM\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 21}}
+\DoxyCodeLine{00062\ \textcolor{comment}{/*\ KEEP\ THIS\ LIST\ IN\ SYNC\ with\ trace\_categories[]\ in\ crypto/trace.c\ */}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{comment}{/*\ Returns\ the\ trace\ category\ number\ for\ the\ given\ |name|\ */}}
+\DoxyCodeLine{00065\ \textcolor{keywordtype}{int}\ OSSL\_trace\_get\_category\_num(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{comment}{/*\ Returns\ the\ trace\ category\ name\ for\ the\ given\ |num|\ */}}
+\DoxyCodeLine{00068\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *OSSL\_trace\_get\_category\_name(\textcolor{keywordtype}{int}\ num);}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ *\ TRACE\ CONSUMERS}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ *\ Enables\ tracing\ for\ the\ given\ |category|\ by\ providing\ a\ BIO\ sink}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ *\ as\ |channel|.\ If\ a\ null\ pointer\ is\ passed\ as\ |channel|,\ an\ existing}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ *\ trace\ channel\ is\ removed\ and\ tracing\ for\ the\ category\ is\ disabled.}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ *\ Returns\ 1\ on\ success\ and\ 0\ on\ failure}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00081\ \textcolor{keywordtype}{int}\ OSSL\_trace\_set\_channel(\textcolor{keywordtype}{int}\ category,\ BIO*\ channel);}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *\ Attach\ a\ prefix\ and\ a\ suffix\ to\ the\ given\ |category|,\ to\ be\ printed\ at\ the}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ *\ beginning\ and\ at\ the\ end\ of\ each\ trace\ output\ group,\ i.e.\ when}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ *\ OSSL\_trace\_begin()\ and\ OSSL\_trace\_end()\ are\ called.}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ *\ If\ a\ null\ pointer\ is\ passed\ as\ argument,\ the\ existing\ prefix\ or\ suffix\ is}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ *\ removed.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ *\ They\ return\ 1\ on\ success\ and\ 0\ on\ failure}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00092\ \textcolor{keywordtype}{int}\ OSSL\_trace\_set\_prefix(\textcolor{keywordtype}{int}\ category,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *prefix);}
+\DoxyCodeLine{00093\ \textcolor{keywordtype}{int}\ OSSL\_trace\_set\_suffix(\textcolor{keywordtype}{int}\ category,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *suffix);}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ *\ OSSL\_trace\_cb\ is\ the\ type\ tracing\ callback\ provided\ by\ the\ application.}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ *\ It\ MUST\ return\ the\ number\ of\ bytes\ written,\ or\ 0\ on\ error\ (in\ other\ words,}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ *\ it\ can\ never\ write\ zero\ bytes).}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ *\ The\ |buffer|\ will\ always\ contain\ text,\ which\ may\ consist\ of\ several\ lines.}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ *\ The\ |data|\ argument\ points\ to\ whatever\ data\ was\ provided\ by\ the\ application}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ *\ when\ registering\ the\ tracer\ function.}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ *\ The\ |category|\ number\ is\ given,\ as\ well\ as\ a\ |cmd|\ number,\ described\ below.}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00106\ \textcolor{keyword}{typedef}\ size\_t\ (*OSSL\_trace\_cb)(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *buffer,\ \textcolor{keywordtype}{size\_t}\ count,}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ category,\ \textcolor{keywordtype}{int}\ cmd,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00108\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ *\ Possible\ |cmd|\ numbers.}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CTRL\_BEGIN\ \ 0}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CTRL\_WRITE\ \ 1}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE\_CTRL\_END\ \ \ \ 2}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ *\ Enables\ tracing\ for\ the\ given\ |category|\ by\ creating\ an\ internal}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ *\ trace\ channel\ which\ sends\ the\ output\ to\ the\ given\ |callback|.}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ *\ If\ a\ null\ pointer\ is\ passed\ as\ callback,\ an\ existing\ trace\ channel}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ *\ is\ removed\ and\ tracing\ for\ the\ category\ is\ disabled.}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ *\ NOTE:\ OSSL\_trace\_set\_channel()\ and\ OSSL\_trace\_set\_callback()\ are\ mutually}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ *\ \ \ \ \ \ \ exclusive.}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ *\ Returns\ 1\ on\ success\ and\ 0\ on\ failure}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00126\ \textcolor{keywordtype}{int}\ OSSL\_trace\_set\_callback(\textcolor{keywordtype}{int}\ category,\ OSSL\_trace\_cb\ callback,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ *\ TRACE\ PRODUCERS}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ *\ Returns\ 1\ if\ tracing\ for\ the\ specified\ category\ is\ enabled,\ otherwise\ 0}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00135\ \textcolor{keywordtype}{int}\ OSSL\_trace\_enabled(\textcolor{keywordtype}{int}\ category);}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ *\ Wrap\ a\ group\ of\ tracing\ output\ calls.\ \ OSSL\_trace\_begin()\ locks\ tracing\ and}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ *\ returns\ the\ trace\ channel\ associated\ with\ the\ given\ category,\ or\ NULL\ if\ no}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ *\ channel\ is\ associated\ with\ the\ category.\ \ OSSL\_trace\_end()\ unlocks\ tracing.}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ *\ Usage:}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ *\ \ \ \ BIO\ *out;}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ *\ \ \ \ if\ ((out\ =\ OSSL\_trace\_begin(category))\ !=\ NULL)\ \{}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ ...}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ BIO\_fprintf(out,\ ...);}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ ...}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ OSSL\_trace\_end(category,\ out);}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ *\ \ \ \ \}}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ *\ See\ also\ the\ convenience\ macros\ OSSL\_TRACE\_BEGIN\ and\ OSSL\_TRACE\_END\ below.}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00154\ BIO\ *OSSL\_trace\_begin(\textcolor{keywordtype}{int}\ category);}
+\DoxyCodeLine{00155\ \textcolor{keywordtype}{void}\ OSSL\_trace\_end(\textcolor{keywordtype}{int}\ category,\ BIO\ *channel);}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ *\ OSSL\_TRACE*\ Convenience\ Macros}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00162\ \textcolor{comment}{\ *\ When\ the\ tracing\ feature\ is\ disabled,\ these\ macros\ are\ defined\ to}}
+\DoxyCodeLine{00163\ \textcolor{comment}{\ *\ produce\ dead\ code,\ which\ a\ good\ compiler\ should\ eliminate.}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ *\ OSSL\_TRACE\_BEGIN,\ OSSL\_TRACE\_END\ -\/\ Define\ a\ Trace\ Group}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ *\ These\ two\ macros\ can\ be\ used\ to\ create\ a\ block\ which\ is\ executed\ only}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ *\ if\ the\ corresponding\ trace\ category\ is\ enabled.\ Inside\ this\ block,\ a}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ *\ local\ variable\ named\ |trc\_out|\ is\ defined,\ which\ points\ to\ the\ channel}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ *\ associated\ with\ the\ given\ trace\ category.}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ *\ Usage:\ (using\ 'TLS'\ as\ an\ example\ category)}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ *\ \ \ \ \ OSSL\_TRACE\_BEGIN(TLS)\ \{}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ BIO\_fprintf(trc\_out,\ ...\ );}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ *\ \ \ \ \ \}\ OSSL\_TRACE\_END(TLS);}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ *\ This\ expands\ to\ the\ following\ code}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ *\ \ \ \ \ do\ \{}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ BIO\ *trc\_out\ =\ OSSL\_trace\_begin(OSSL\_TRACE\_CATEGORY\_TLS);}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ if\ (trc\_out\ !=\ NULL)\ \{}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ ...}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ BIO\_fprintf(trc\_out,\ ...);}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ OSSL\_trace\_end(OSSL\_TRACE\_CATEGORY\_TLS,\ trc\_out);}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ *\ \ \ \ \ \}\ while\ (0);}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ *\ The\ use\ of\ the\ inner\ '\{...\}'\ group\ and\ the\ trailing\ ';'\ is\ enforced}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ *\ by\ the\ definition\ of\ the\ macros\ in\ order\ to\ make\ the\ code\ look\ as\ much}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ *\ like\ C\ code\ as\ possible.}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ *\ Before\ returning\ from\ inside\ the\ trace\ block,\ it\ is\ necessary\ to}}
+\DoxyCodeLine{00199\ \textcolor{comment}{\ *\ call\ OSSL\_TRACE\_CANCEL(category).}}
+\DoxyCodeLine{00200\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\#\ if\ !defined\ OPENSSL\_NO\_TRACE\ \&\&\ !defined\ FIPS\_MODULE}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACE\_BEGIN(category)\ \(\backslash\)}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\ \ \ \ do\ \{\ \(\backslash\)}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ BIO\ *trc\_out\ =\ OSSL\_trace\_begin(OSSL\_TRACE\_CATEGORY\_\#\#category);\ \(\backslash\)}}
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{\ \(\backslash\)}}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ if\ (trc\_out\ !=\ NULL)}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACE\_END(category)\ \(\backslash\)}}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OSSL\_trace\_end(OSSL\_TRACE\_CATEGORY\_\#\#category,\ trc\_out);\ \(\backslash\)}}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\ \ \ \ \}\ while\ (0)}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACE\_CANCEL(category)\ \(\backslash\)}}
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OSSL\_trace\_end(OSSL\_TRACE\_CATEGORY\_\#\#category,\ trc\_out)\ \(\backslash\)}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{}}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{\#\ else}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACE\_BEGIN(category)\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\ \ \ \ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ BIO\ *trc\_out\ =\ NULL;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ if\ (0)}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACE\_END(category)\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\ \ \ \ \}\ while(0)}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACE\_CANCEL(category)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\ \ \ \ ((void)0)}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00233\ \textcolor{comment}{\ *\ OSSL\_TRACE\_ENABLED()\ -\/\ Check\ whether\ tracing\ is\ enabled\ for\ |category|}}
+\DoxyCodeLine{00234\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ *\ Usage:}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00237\ \textcolor{comment}{\ *\ \ \ \ \ if\ (OSSL\_TRACE\_ENABLED(TLS))\ \{}}
+\DoxyCodeLine{00238\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ ...}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ *\ \ \ \ \ \}}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\#\ if\ !defined\ OPENSSL\_NO\_TRACE\ \&\&\ !defined\ FIPS\_MODULE}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACE\_ENABLED(category)\ \(\backslash\)}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\ \ \ \ OSSL\_trace\_enabled(OSSL\_TRACE\_CATEGORY\_\#\#category)}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\#\ else}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACE\_ENABLED(category)\ (0)}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ *\ OSSL\_TRACE*()\ -\/\ OneShot\ Trace\ Macros}}
+\DoxyCodeLine{00254\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00255\ \textcolor{comment}{\ *\ These\ macros\ are\ intended\ to\ produce\ a\ simple\ printf-\/style\ trace\ output.}}
+\DoxyCodeLine{00256\ \textcolor{comment}{\ *\ Unfortunately,\ C90\ macros\ don't\ support\ variable\ arguments,\ so\ the}}
+\DoxyCodeLine{00257\ \textcolor{comment}{\ *\ "{}vararg"{}\ OSSL\_TRACEV()\ macro\ has\ a\ rather\ weird\ usage\ pattern:}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ *\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ "{}format\ string"{},\ ...args...));}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ *\ Where\ 'channel'\ is\ the\ literal\ symbol\ of\ this\ name,\ not\ a\ variable.}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ *\ For\ that\ reason,\ it\ is\ currently\ not\ intended\ to\ be\ used\ directly,}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ *\ but\ only\ as\ helper\ macro\ for\ the\ other\ oneshot\ trace\ macros}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ *\ OSSL\_TRACE(),\ OSSL\_TRACE1(),\ OSSL\_TRACE2(),\ ...}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00266\ \textcolor{comment}{\ *\ Usage:}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00268\ \textcolor{comment}{\ *\ \ \ \ OSSL\_TRACE(INIT,\ "{}Hello\ world!\(\backslash\)n"{});}}
+\DoxyCodeLine{00269\ \textcolor{comment}{\ *\ \ \ \ OSSL\_TRACE1(TLS,\ "{}The\ answer\ is\ \%d\(\backslash\)n"{},\ 42);}}
+\DoxyCodeLine{00270\ \textcolor{comment}{\ *\ \ \ \ OSSL\_TRACE2(TLS,\ "{}The\ ultimate\ question\ to\ answer\ \%d\ is\ '\%s'\(\backslash\)n"{},}}
+\DoxyCodeLine{00271\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 42,\ "{}What\ do\ you\ get\ when\ you\ multiply\ six\ by\ nine?"{});}}
+\DoxyCodeLine{00272\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\#\ if\ !defined\ OPENSSL\_NO\_TRACE\ \&\&\ !defined\ FIPS\_MODULE}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACEV(category,\ args)\ \(\backslash\)}}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACE\_BEGIN(category)\ \(\backslash\)}}
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ BIO\_printf\ args;\ \(\backslash\)}}
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACE\_END(category)}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \textcolor{preprocessor}{\#\ else}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_TRACEV(category,\ args)\ ((void)0)}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE(category,\ text)\ \(\backslash\)}}
+\DoxyCodeLine{00288\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ "{}\%s"{},\ text))}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE1(category,\ format,\ arg1)\ \(\backslash\)}}
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ format,\ arg1))}}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE2(category,\ format,\ arg1,\ arg2)\ \(\backslash\)}}
+\DoxyCodeLine{00293\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ format,\ arg1,\ arg2))}}
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE3(category,\ format,\ arg1,\ arg2,\ arg3)\ \(\backslash\)}}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ format,\ arg1,\ arg2,\ arg3))}}
+\DoxyCodeLine{00296\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE4(category,\ format,\ arg1,\ arg2,\ arg3,\ arg4)\ \(\backslash\)}}
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ format,\ arg1,\ arg2,\ arg3,\ arg4))}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE5(category,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5)\ \(\backslash\)}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5))}}
+\DoxyCodeLine{00300\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE6(category,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5,\ arg6)\ \(\backslash\)}}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5,\ arg6))}}
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE7(category,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5,\ arg6,\ arg7)\ \(\backslash\)}}
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5,\ arg6,\ arg7))}}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE8(category,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5,\ arg6,\ arg7,\ arg8)\ \(\backslash\)}}
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5,\ arg6,\ arg7,\ arg8))}}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\#\ define\ OSSL\_TRACE9(category,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5,\ arg6,\ arg7,\ arg8,\ arg9)\ \(\backslash\)}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACEV(category,\ (trc\_out,\ format,\ arg1,\ arg2,\ arg3,\ arg4,\ arg5,\ arg6,\ arg7,\ arg8,\ arg9))}}
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\#define\ OSSL\_TRACE\_STRING\_MAX\ 80}}
+\DoxyCodeLine{00310\ \textcolor{keywordtype}{int}\ OSSL\_trace\_string(BIO\ *out,\ \textcolor{keywordtype}{int}\ text,\ \textcolor{keywordtype}{int}\ full,}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *data,\ \textcolor{keywordtype}{size\_t}\ size);}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#define\ OSSL\_TRACE\_STRING(category,\ text,\ full,\ data,\ len)\ \(\backslash\)}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\ \ \ \ OSSL\_TRACE\_BEGIN(category)\ \{\ \(\backslash\)}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OSSL\_trace\_string(trc\_out,\ text,\ full,\ data,\ len);\ \ \(\backslash\)}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\ \ \ \ \}\ OSSL\_TRACE\_END(category)}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\#\ ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00318\ \}}
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

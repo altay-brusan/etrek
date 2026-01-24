@@ -1,3 +1,20 @@
+/**
+ * @file CalibrationExaminationStrategy.h
+ * @brief Strategy implementation for equipment calibration mode.
+ *
+ * @details Implements the IExaminationModeStrategy interface for detector
+ *          and generator calibration procedures.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see IExaminationModeStrategy
+ * @see ExaminationMode
+ * @see ExaminationModeStrategyFactory
+ */
+
 #ifndef ETREK_APPLICATION_STRATEGY_CALIBRATIONEXAMINATIONSTRATEGY_H
 #define ETREK_APPLICATION_STRATEGY_CALIBRATIONEXAMINATIONSTRATEGY_H
 
@@ -11,14 +28,27 @@ namespace Etrek::Application::Strategy {
  * @class CalibrationExaminationStrategy
  * @brief Strategy for detector and generator calibration mode.
  *
- * This mode is used for equipment calibration procedures such as:
- * - Flat-field (gain) calibration
- * - Dark-field (offset) calibration
- * - Defect pixel mapping
- * - Generator output verification
+ * @details This mode is used for equipment calibration procedures including:
+ *          - Flat-field (gain) calibration
+ *          - Dark-field (offset) calibration
+ *          - Defect pixel mapping
+ *          - Generator output verification
  *
- * Calibration images may be persisted locally for analysis but are
- * not sent to PACS or associated with patient records.
+ *          Key characteristics:
+ *          - Local persistence of calibration images for analysis
+ *          - No DICOM patient objects created
+ *          - No PACS transmission
+ *          - No worklist status updates
+ *          - Separate calibration data storage
+ *
+ *          Calibration data is stored locally and used by the detector
+ *          and image processing systems to ensure optimal image quality.
+ *
+ * @see IExaminationModeStrategy
+ * @see ClinicalExaminationStrategy
+ * @see TestExaminationStrategy
+ *
+ * @ingroup Examination
  */
 class CalibrationExaminationStrategy : public Etrek::Examination::IExaminationModeStrategy {
 public:

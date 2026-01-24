@@ -1,0 +1,37 @@
+var class_t_i_d1600___image_library =
+[
+    [ "AddImageMode", "class_t_i_d1600___image_library.html#a706ca743412bfec63a4fd558465918c0", [
+      [ "withoutDescriptors", "class_t_i_d1600___image_library.html#a706ca743412bfec63a4fd558465918c0a8fa311103155ba542994c73aae088bec", null ],
+      [ "withAllDescriptors", "class_t_i_d1600___image_library.html#a706ca743412bfec63a4fd558465918c0ad1e8695925b10a097cdf7b09c8629e85", null ],
+      [ "withSelectedDescriptors", "class_t_i_d1600___image_library.html#a706ca743412bfec63a4fd558465918c0a4a6b1891c8404e0cbe9360bc354f1a41", null ],
+      [ "withoutSelectedDescriptors", "class_t_i_d1600___image_library.html#a706ca743412bfec63a4fd558465918c0a2ef8ea32417b816a35dc8cd93b3f3869", null ]
+    ] ],
+    [ "TID1600_ImageLibrary", "class_t_i_d1600___image_library.html#a0c86a415838939ec9ccddf5935f1d2f5", null ],
+    [ "addComputedTomographyDescriptors", "class_t_i_d1600___image_library.html#a29830b9f1e6b45143f7c1db0fbb9c34c", null ],
+    [ "addCrossSectionalModalitiesDescriptors", "class_t_i_d1600___image_library.html#aa2ef31dee46be5027b5eee96d00b321a", null ],
+    [ "addImageEntry", "class_t_i_d1600___image_library.html#a26780ef72c39211e576c57868e4e16d5", null ],
+    [ "addImageEntryDescriptors", "class_t_i_d1600___image_library.html#a1de989595e348f0e118736ececff4ea8", null ],
+    [ "addImageGroup", "class_t_i_d1600___image_library.html#a75f2fb906ff48e3634a9470a6cafd8f7", null ],
+    [ "addImageGroupDescriptors", "class_t_i_d1600___image_library.html#ace1c111a84291bc73fa0c292597b2699", null ],
+    [ "addMagneticResonanceDescriptors", "class_t_i_d1600___image_library.html#a9775e79aa97a6430252b243a6a9a24d1", null ],
+    [ "addModalitySpecificDescriptors", "class_t_i_d1600___image_library.html#a5f170791753689c9bb43577c93210a04", null ],
+    [ "addPositronEmissionTomographyDescriptors", "class_t_i_d1600___image_library.html#a441c2ba7be7b55ca9cb84d5cbdd38144", null ],
+    [ "addProjectionRadiographyDescriptors", "class_t_i_d1600___image_library.html#a4239b45a97a0a0175cbe8e2cf817d8d3", null ],
+    [ "createImageLibrary", "class_t_i_d1600___image_library.html#a6baac8ba78d4b142136193de04c70e89", null ],
+    [ "createNewImageLibrary", "class_t_i_d1600___image_library.html#a0dbad9f870edead66196e83cbb2c1274", null ],
+    [ "getImageEntryModality", "class_t_i_d1600___image_library.html#a481a978afc406d255b80e06b7a3d0a10", null ],
+    [ "goAndCheckImageLibraryEntry", "class_t_i_d1600___image_library.html#a3b2348bd93ca30aa372ef1b301f153bf", null ],
+    [ "hasImageLibrary", "class_t_i_d1600___image_library.html#a8eab77bdb5c2b69e40bed69bb0281dca", null ],
+    [ "hasImageLibraryGroup", "class_t_i_d1600___image_library.html#a6c86488a7bf43a623b5548c04478cea1", null ],
+    [ "isValid", "class_t_i_d1600___image_library.html#a38ed00eacc159ece758d5b25a15855d2", null ],
+    [ "moveCommonImageDescriptorsToImageGroups", "class_t_i_d1600___image_library.html#afed240da21088df901ebd3c1999d960f", null ],
+    [ "setCodeContentItemFromValue", "class_t_i_d1600___image_library.html#a082461550a708bfb3c44b8216f1a8fa8", null ],
+    [ "setNumericContentItemFromValue", "class_t_i_d1600___image_library.html#a517d7fcecf4839aba4847490ba4b1f68", null ],
+    [ "setPETImageRadionuclide", "class_t_i_d1600___image_library.html#a639808793868915755f5cdfe02b52909", null ],
+    [ "setPETImageRadionuclideTotalDose", "class_t_i_d1600___image_library.html#a9a9429808be17d1101f16c480f8d7555", null ],
+    [ "setPETImageRadiopharmaceuticalAgent", "class_t_i_d1600___image_library.html#ad076e966c43d15724879b0f5130d1370", null ],
+    [ "setPETImageRadiopharmaceuticalStartDateTime", "class_t_i_d1600___image_library.html#ac483dd3a69ec3af3ddf33cffd22ef635", null ],
+    [ "setPETImageRadiopharmaceuticalStopDateTime", "class_t_i_d1600___image_library.html#aa9fe8c2e92147da55be1da911b48da2b", null ],
+    [ "setPETImageRadiopharmaceuticalVolume", "class_t_i_d1600___image_library.html#a54d5b28738b93bb2d61029d524e6ffd3", null ],
+    [ "setStringContentItemFromValue", "class_t_i_d1600___image_library.html#ab06267c58369a77ea205447eeb6c80b3", null ]
+];

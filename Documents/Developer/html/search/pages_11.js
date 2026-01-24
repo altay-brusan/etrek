@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['gap_0',['⚠️ MEDIUM: Exception Safety Gap',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md117',1,'']]],
+  ['general_20properties_1',['General Properties',['../index.html#autotoc_md993',1,'']]],
+  ['general_20usage_3a_20how_20to_20include_20the_20xmlparser_20library_20inside_20your_20project_2',['General usage: How to include the XMLParser library inside your project.',['../xmlparser.html#xmlparser_usage',1,'']]],
+  ['general_5fequipments_3',['general_equipments',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema.html#autotoc_md303',1,'']]],
+  ['generated_20columns_20for_20constraints_4',['4. Generated Columns for Constraints',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema.html#autotoc_md345',1,'']]],
+  ['generation_5',['🔍 LOW: Connection Name Generation',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md118',1,'']]],
+  ['generatorconfigurationdelegate_20h_3a10_6',['❌ VIOLATION: GeneratorConfigurationDelegate.h:10',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md99',1,'']]],
+  ['generatorconfigurationdelegate_20h_3a8_7',['⚠️ MEDIUM: GeneratorConfigurationDelegate.h:8',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md105',1,'']]],
+  ['generators_8',['generators',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema.html#autotoc_md304',1,'']]],
+  ['generatortablemodel_9',['GeneratorTableModel',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern.html#autotoc_md378',1,'']]],
+  ['good_3a_20const_20methods_10',['✅ GOOD: Const Methods',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md133',1,'']]],
+  ['good_3a_20delegate_20constructors_11',['✅ GOOD: Delegate Constructors',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md110',1,'']]],
+  ['good_3a_20loggerprovider_20uses_20qreadwritelock_20correctly_20l61_20l66_20l85_12',['✅ GOOD: LoggerProvider uses QReadWriteLock correctly (L61, L66, L85)',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md71',1,'']]],
+  ['good_3a_20no_20pimpl_20pattern_20used_20in_20core_20package_13',['✅ GOOD: No pimpl pattern used in Core package',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md76',1,'']]],
+  ['good_3a_20no_20trailing_20namespace_20comments_14',['✅ GOOD: No Trailing Namespace Comments',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md142',1,'']]],
+  ['good_3a_20repository_20shared_20pointer_15',['✅ GOOD: Repository Shared Pointer',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md113',1,'']]],
+  ['good_3a_20smart_20pointer_20usage_16',['✅ GOOD: Smart Pointer Usage',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md122',1,'']]],
+  ['grey_20cases_17',['tetrahedra with grey cases',['../classvtk_fiber_surface.html#Marching',1,'']]],
+  ['grid_18',['Angle from Rectified to Skew Grid',['../classoperation_1_1_conversion.html#angle_from_recitfied_to_skrew_grid',1,'']]],
+  ['grid_20query_20responders_19',['Cell-grid query responders',['../classvtk_cell_grid_responders.html#autotoc_md790',1,'']]],
+  ['group_20documentation_20',['8. Module/Group Documentation',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_212-_doxygen-_documentation-_standards.html#autotoc_md772',1,'']]],
+  ['guard_21',['🔍 LOW: WorkflowConfigurationDelegate.h - Inconsistent Header Guard',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md106',1,'']]],
+  ['guards_20consistency_22',['🔍 LOW: Missing include guards consistency',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md63',1,'']]],
+  ['guide_23',['Settings and Configuration Guide',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_205-_settings-_configuration.html',1,'']]]
+];

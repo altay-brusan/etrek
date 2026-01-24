@@ -1,0 +1,28 @@
+var classvtk_point_handle_representation3_d =
+[
+    [ "AllOn", "classvtk_point_handle_representation3_d.html#a0a10c067f1a03f74eb7c82d053227e75", null ],
+    [ "GetActors", "classvtk_point_handle_representation3_d.html#a99a3cf0b7d8bfebb473afd7796ae1e8e", null ],
+    [ "GetBounds", "classvtk_point_handle_representation3_d.html#a7eb3f23618142907db1b4a87b1d2dd62", null ],
+    [ "HasTranslucentPolygonalGeometry", "classvtk_point_handle_representation3_d.html#a2f8160bd71e0eaf91de9fb21583643d3", null ],
+    [ "MoveFocusRequest", "classvtk_point_handle_representation3_d.html#a1d780150af400446edaed72a7b22ac9d", null ],
+    [ "PrintSelf", "classvtk_point_handle_representation3_d.html#a9d044e158ae12722bde290cd0d025879", null ],
+    [ "RegisterPickers", "classvtk_point_handle_representation3_d.html#a81a00f94080c763d08dfb5651a5950b0", null ],
+    [ "ReleaseGraphicsResources", "classvtk_point_handle_representation3_d.html#a9703b8c9f7799fcc9d6cdc370b349281", null ],
+    [ "RenderOpaqueGeometry", "classvtk_point_handle_representation3_d.html#a1bf5e0032ffd051b0e66605bbe7e62bf", null ],
+    [ "SetHandleSize", "classvtk_point_handle_representation3_d.html#a0f0dc7cd90ae5fea67450d44bfdec4af", null ],
+    [ "SetInteractionColor", "classvtk_point_handle_representation3_d.html#a49d382b8c11580e103328727d9ca247a", null ],
+    [ "SetOutline", "classvtk_point_handle_representation3_d.html#a6af579484ea014952206ae92ac5637a2", null ],
+    [ "SetProperty", "classvtk_point_handle_representation3_d.html#a739f5042d274a29d97ac5f1194a6af42", null ],
+    [ "SetTranslationMode", "classvtk_point_handle_representation3_d.html#ac1f77dd20cc88336dc00dc15c1b8c837", null ],
+    [ "SetVisibility", "classvtk_point_handle_representation3_d.html#aa62ed2bf62f3785c1d42fa8b540bf63f", null ],
+    [ "SetWorldPosition", "classvtk_point_handle_representation3_d.html#afefac4fae99a0e933e74fbebad8d801a", null ],
+    [ "SetXShadows", "classvtk_point_handle_representation3_d.html#a9b71797af65bc4dab22180b87077c7cc", null ],
+    [ "SetYShadows", "classvtk_point_handle_representation3_d.html#a29cc2879f6699317bb9eeb34f7c9d907", null ],
+    [ "SetZShadows", "classvtk_point_handle_representation3_d.html#a8043975dc8a503a6ae75e39730096973", null ],
+    [ "ShallowCopy", "classvtk_point_handle_representation3_d.html#a9aadd3d17ee5666e443f21f17185629e", null ],
+    [ "Translate", "classvtk_point_handle_representation3_d.html#af44d19a899a1eef1eaefd2d1f87083e1", null ],
+    [ "Translate", "classvtk_point_handle_representation3_d.html#ab5c69c7ef798bdcfb9727b879d972e78", null ],
+    [ "vtkSetClampMacro", "classvtk_point_handle_representation3_d.html#a3fc3d3a48c7da57e8a0fa5c9045b5a74", null ],
+    [ "vtkSetMacro", "classvtk_point_handle_representation3_d.html#a64ca41b94bbcf0647f22c40bb7ff4d98", null ],
+    [ "vtkTypeMacro", "classvtk_point_handle_representation3_d.html#aa641d0b4ab2277584ea9144b7413e585", null ]
+];

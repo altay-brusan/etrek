@@ -1,0 +1,27 @@
+var class_i_o_d_u_s_fo_r_module =
+[
+    [ "IODUSFoRModule", "class_i_o_d_u_s_fo_r_module.html#abf5bf334ae1336f3894543465398c8b9", null ],
+    [ "IODUSFoRModule", "class_i_o_d_u_s_fo_r_module.html#ad6546e097e2e727c1e36567c5430c37c", null ],
+    [ "~IODUSFoRModule", "class_i_o_d_u_s_fo_r_module.html#abbce08ff2567f4a58fe9d66b9975b090", null ],
+    [ "getApexPosition", "class_i_o_d_u_s_fo_r_module.html#adb3c84e1c65a9adc8168650634f90cf8", null ],
+    [ "getApexPosition", "class_i_o_d_u_s_fo_r_module.html#a66ebd7515d5f43d5ed6a87c55a81c6ba", null ],
+    [ "getName", "class_i_o_d_u_s_fo_r_module.html#aa9b56eb2222ce1a2d24a537d91111226", null ],
+    [ "getPatientFrameofReferenceSource", "class_i_o_d_u_s_fo_r_module.html#a91346d3654572363c84f48558302e81e", null ],
+    [ "getTableFrameofReferenceUID", "class_i_o_d_u_s_fo_r_module.html#a57c93eb206278394b07a64017e5f90f9", null ],
+    [ "getUltrasoundAcquisitionGeometry", "class_i_o_d_u_s_fo_r_module.html#a54cfaa63725257080e09eb1e7667e4be", null ],
+    [ "getVolumeFrameOfReferenceUID", "class_i_o_d_u_s_fo_r_module.html#a1618b397d01259826dada78f3aa5c358", null ],
+    [ "getVolumetoTableMappingMatrix", "class_i_o_d_u_s_fo_r_module.html#ad0fddc4eb96d389b4929e45ac839cc31", null ],
+    [ "getVolumetoTableMappingMatrix", "class_i_o_d_u_s_fo_r_module.html#a83a7bc6bf7055f26f1c54e6fd78663b3", null ],
+    [ "getVolumetoTransducerMappingMatrix", "class_i_o_d_u_s_fo_r_module.html#a097287b583dd932533ae1043082f2360", null ],
+    [ "getVolumetoTransducerMappingMatrix", "class_i_o_d_u_s_fo_r_module.html#a6ea1d02ede1df94f5462ebbfb8fded05", null ],
+    [ "getVolumetoTransducerRelationship", "class_i_o_d_u_s_fo_r_module.html#acbcaf2cbd54afc3df826b2c48a2ac73f", null ],
+    [ "resetRules", "class_i_o_d_u_s_fo_r_module.html#a9bdc39a478624512ffcc943fb971fa21", null ],
+    [ "setApexPosition", "class_i_o_d_u_s_fo_r_module.html#a8d5914825514ad75084c0ad33f73edea", null ],
+    [ "setPatientFrameOfReferenceSource", "class_i_o_d_u_s_fo_r_module.html#ab7163ef531398e75c7c102264bc0dbf4", null ],
+    [ "setTableFrameofReferenceUID", "class_i_o_d_u_s_fo_r_module.html#a5c5291d3271519d137dff5b4fadef30e", null ],
+    [ "setUltrasoundAcquisitionGeometry", "class_i_o_d_u_s_fo_r_module.html#ae5d9c37ac3c131701e75e4ccbaca874c", null ],
+    [ "setVolumeFrameOfReferenceUID", "class_i_o_d_u_s_fo_r_module.html#a1bf95cf9311d47a48fd43b9b569aa9e8", null ],
+    [ "setVolumeToTableMappingMatrix", "class_i_o_d_u_s_fo_r_module.html#a96a6ff42c5264c149c4ae7ee70645aac", null ],
+    [ "setVolumetoTransducerMappingMatrix", "class_i_o_d_u_s_fo_r_module.html#a06d7dff482f8fb21648f3767e5203e65", null ],
+    [ "setVolumetoTransducerRelationship", "class_i_o_d_u_s_fo_r_module.html#a670bea9d647c986db18db9049e032267", null ]
+];

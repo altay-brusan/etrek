@@ -1,0 +1,416 @@
+\doxysection{ofxml.\+h}
+\hypertarget{ofxml_8h_source}{}\label{ofxml_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofxml.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofxml.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2011-\/2022,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ slightly\ modified\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *\ \ For\ the\ original\ copyright,\ see\ the\ following\ paragraphs.}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ All\ modifications\ in\ the\ code\ are\ marked\ with\ a\ "{}DCMTK:"{}\ comment.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Module:\ \ ofstd}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ Simple\ non-\/validating\ XML\ parser}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{/****************************************************************************/}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#ifndef\ OFXML\_H}}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#define\ OFXML\_H}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{comment}{//\ DCMTK:\ we\ need\ this\ header\ file\ at\ the\ beginning\ of\ each\ file}}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\#include\ <cstdlib>}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofdefine.h"{}}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{comment}{//\ DCMTK:\ The\ XML\ parser\ is\ compiled\ in\ wide\ char\ (UTF-\/16)\ mode\ if\ and\ only\ if\ this\ macro\ is\ defined.}}
+\DoxyCodeLine{00146\ \textcolor{comment}{//\ We\ want\ this\ to\ be\ independent\ from\ the\ UNICODE/\_UNICODE\ macros.}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#ifdef\ WIDE\_CHAR\_XML\_PARSER}}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#define\ \_XMLWIDECHAR}}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#if\ defined(WIN32)\ ||\ defined(UNDER\_CE)\ ||\ defined(\_WIN32)\ ||\ defined(WIN64)\ ||\ defined(\_\_BORLANDC\_\_)}}
+\DoxyCodeLine{00152\ \textcolor{comment}{//\ comment\ the\ next\ line\ if\ you\ are\ under\ windows\ and\ the\ compiler\ is\ not\ Microsoft\ Visual\ Studio\ (6.0\ or\ .NET)\ or\ Borland}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#define\ \_XMLWINDOWS}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \textcolor{comment}{//\ DCMTK:\ Simplified\ to\ use\ our\ own\ version\ in\ ofstd}}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#define\ XMLDLLENTRY\ DCMTK\_OFSTD\_EXPORT}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{comment}{//\ DCMTK:\ we\ don't\ want\ wide\ characters\ on\ other\ systems\ than\ Windows}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#if\ !defined(\_XMLWINDOWS)\ ||\ !defined(\_XMLWIDECHAR)}}
+\DoxyCodeLine{00161\ \textcolor{comment}{//\ uncomment\ the\ next\ line\ if\ you\ want\ no\ support\ for\ wchar\_t*\ (no\ need\ for\ the\ <wchar.h>\ or\ <tchar.h>\ libraries\ anymore\ to\ compile)}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#define\ XML\_NO\_WIDE\_CHAR}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#ifdef\ XML\_NO\_WIDE\_CHAR}}
+\DoxyCodeLine{00166\ \textcolor{comment}{//\ DCMTK:\ we\ definitely\ need\ the\ following\ define\ on\ Windows\ systems}}
+\DoxyCodeLine{00167\ \textcolor{comment}{//\#undef\ \_XMLWINDOWS}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#undef\ \_XMLWIDECHAR}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\#ifdef\ \_XMLWINDOWS}}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\#include\ <\doxymbox{\hyperlink{tchar_8h}{tchar.h}}>}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\#ifndef\ XML\_NO\_WIDE\_CHAR}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#include\ <wchar.h>}\ \textcolor{comment}{//\ to\ have\ 'wcsrtombs'\ for\ ANSI\ version}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ to\ have\ 'mbsrtowcs'\ for\ WIDECHAR\ version}}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{comment}{//\ Some\ common\ types\ for\ char\ set\ portable\ code}}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#ifdef\ \_XMLWIDECHAR}}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\ \ \ \ \#define\ \_CXML(c)\ L\ \#\#\ c}}
+\DoxyCodeLine{00183\ \textcolor{preprocessor}{\ \ \ \ \#define\ XMLCSTR\ const\ wchar\_t\ *}}
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\ \ \ \ \#define\ XMLSTR\ \ wchar\_t\ *}}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\ \ \ \ \#define\ XMLCHAR\ wchar\_t}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\ \ \ \ \#define\ \_CXML(c)\ c}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\ \ \ \ \#define\ XMLCSTR\ const\ char\ *}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\ \ \ \ \#define\ XMLSTR\ \ char\ *}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\ \ \ \ \#define\ XMLCHAR\ char}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\#ifndef\ FALSE}}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\ \ \ \ \#define\ FALSE\ 0}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ FALSE\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\#ifndef\ TRUE}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\ \ \ \ \#define\ TRUE\ 1}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ TRUE\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00201\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ XMLError}
+\DoxyCodeLine{00202\ \{}
+\DoxyCodeLine{00203\ \ \ \ \ eXMLErrorNone\ =\ 0,}
+\DoxyCodeLine{00204\ \ \ \ \ eXMLErrorMissingEndTag,}
+\DoxyCodeLine{00205\ \ \ \ \ eXMLErrorNoXMLTagFound,}
+\DoxyCodeLine{00206\ \ \ \ \ eXMLErrorEmpty,}
+\DoxyCodeLine{00207\ \ \ \ \ eXMLErrorMissingTagName,}
+\DoxyCodeLine{00208\ \ \ \ \ eXMLErrorMissingEndTagName,}
+\DoxyCodeLine{00209\ \ \ \ \ eXMLErrorUnmatchedEndTag,}
+\DoxyCodeLine{00210\ \ \ \ \ eXMLErrorUnmatchedEndClearTag,}
+\DoxyCodeLine{00211\ \ \ \ \ eXMLErrorUnexpectedToken,}
+\DoxyCodeLine{00212\ \ \ \ \ eXMLErrorNoElements,}
+\DoxyCodeLine{00213\ \ \ \ \ eXMLErrorFileNotFound,}
+\DoxyCodeLine{00214\ \ \ \ \ eXMLErrorFirstTagNotFound,}
+\DoxyCodeLine{00215\ \ \ \ \ eXMLErrorUnknownCharacterEntity,}
+\DoxyCodeLine{00216\ \ \ \ \ eXMLErrorCharacterCodeAbove255,}
+\DoxyCodeLine{00217\ \ \ \ \ eXMLErrorCharConversionError,}
+\DoxyCodeLine{00218\ \ \ \ \ eXMLErrorCannotOpenWriteFile,}
+\DoxyCodeLine{00219\ \ \ \ \ eXMLErrorCannotWriteFile,}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \ \ eXMLErrorBase64DataSizeIsNotMultipleOf4,}
+\DoxyCodeLine{00222\ \ \ \ \ eXMLErrorBase64DecodeIllegalCharacter,}
+\DoxyCodeLine{00223\ \ \ \ \ eXMLErrorBase64DecodeTruncatedData,}
+\DoxyCodeLine{00224\ \ \ \ \ eXMLErrorBase64DecodeBufferTooSmall}
+\DoxyCodeLine{00225\ \}\ XMLError;}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00229\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ XMLElementType}
+\DoxyCodeLine{00230\ \{}
+\DoxyCodeLine{00231\ \ \ \ \ eNodeChild=0,}
+\DoxyCodeLine{00232\ \ \ \ \ eNodeAttribute=1,}
+\DoxyCodeLine{00233\ \ \ \ \ eNodeText=2,}
+\DoxyCodeLine{00234\ \ \ \ \ eNodeClear=3,}
+\DoxyCodeLine{00235\ \ \ \ \ eNodeNULL=4}
+\DoxyCodeLine{00236\ \}\ XMLElementType;}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00239\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_x_m_l_results}{XMLResults}}}
+\DoxyCodeLine{00240\ \{}
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keyword}{enum}\ XMLError\ error;}
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keywordtype}{int}\ \ nLine,nColumn;}
+\DoxyCodeLine{00243\ \}\ \doxymbox{\hyperlink{struct_x_m_l_results}{XMLResults}};}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00246\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \{}
+\DoxyCodeLine{00247\ \ \ \ \ XMLCSTR\ lpszValue;\ XMLCSTR\ lpszOpenTag;\ XMLCSTR\ lpszCloseTag;}
+\DoxyCodeLine{00248\ \}\ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}};}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00251\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ \{}
+\DoxyCodeLine{00252\ \ \ \ \ XMLCSTR\ lpszName;\ XMLCSTR\ lpszValue;}
+\DoxyCodeLine{00253\ \}\ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}};}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00256\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{int}\ XMLElementPosition;}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_x_m_l_node_contents}{XMLNodeContents}};}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00272\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }XMLDLLENTRY\ XMLNode}
+\DoxyCodeLine{00273\ \{}
+\DoxyCodeLine{00274\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{keyword}{struct\ }XMLNodeDataTag;}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00279\ \ \ \ \ XMLNode(\textcolor{keyword}{struct}\ XMLNodeDataTag\ *pParent,\ XMLSTR\ lpszName,\ \textcolor{keywordtype}{char}\ isDecl);}
+\DoxyCodeLine{00281\ \ \ \ \ XMLNode(\textcolor{keyword}{struct}\ XMLNodeDataTag\ *p);}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{keyword}{static}\ XMLCSTR\ \doxymbox{\hyperlink{struct_x_m_l_node_a288584f591421a189727d19cdc9fc430}{getVersion}}();}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keyword}{static}\ XMLNode\ \doxymbox{\hyperlink{group__conversions_ga72125a4ccfae9b39bafab768346bbc7e}{parseString}}\ \ \ (XMLCSTR\ \ lpXMLString,\ XMLCSTR\ tag=NULL,\ \doxymbox{\hyperlink{struct_x_m_l_results}{XMLResults}}\ *pResults=NULL);}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00304\ \ \ \ \ \textcolor{keyword}{static}\ XMLNode\ \doxymbox{\hyperlink{group__conversions_gae984d7ebce97fad429b2b786439815fb}{parseFile}}\ \ \ \ \ (XMLCSTR\ \ \ \ \ filename,\ XMLCSTR\ tag=NULL,\ \doxymbox{\hyperlink{struct_x_m_l_results}{XMLResults}}\ *pResults=NULL);}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \textcolor{comment}{//\ DCMTK:\ disable\ the\ ugly\ openFileHelper()\ function}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\#if\ 0}}
+\DoxyCodeLine{00319\ \ \ \ \ \textcolor{keyword}{static}\ XMLNode\ \doxymbox{\hyperlink{group__conversions_ga46f99cf406604471e15d4378f74ecc63}{openFileHelper}}(XMLCSTR\ \ \ \ \ filename,\ XMLCSTR\ tag=NULL);}
+\DoxyCodeLine{00336\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00338\ \ \ \ \ \textcolor{keyword}{static}\ XMLNode\ \doxymbox{\hyperlink{group__conversions_ga46f99cf406604471e15d4378f74ecc63}{openFileHelper}}(XMLCSTR\ \ \ \ \ filename,\ XMLCSTR\ tag=NULL);}
+\DoxyCodeLine{00339\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ \ \ \textcolor{keyword}{static}\ XMLCSTR\ \doxymbox{\hyperlink{group__conversions_ga615a6ca792929132043d1de511023772}{getError}}(XMLError\ error);\ }
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00344\ \ \ \ \ XMLSTR\ \doxymbox{\hyperlink{group__conversions_ga9e19d3587f88f503ff1cfd98fcd13cb1}{createXMLString}}(\textcolor{keywordtype}{int}\ nFormat=1,\ \textcolor{keywordtype}{int}\ *pnSize=NULL)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00351\ \ \ \ \ XMLError\ \doxymbox{\hyperlink{group__conversions_gacef9de855bd31c6cda5482cb296f28ae}{writeToFile}}(XMLCSTR\ filename,}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *encoding=NULL,}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ nFormat=1)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00364\ \ \ \ \ XMLCSTR\ \doxymbox{\hyperlink{group__navigate_ga78f873d053775e62bbe7e9b9ba9a0893}{getName}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00365\ \ \ \ \ XMLCSTR\ \doxymbox{\hyperlink{group__navigate_gacfe86b318bec6ed981ec2ede1b82a01c}{getText}}(\textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00366\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{group__navigate_ga1cab1484d301f5b99a5fc74a0b05b47e}{nText}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00367\ \ \ \ \ XMLNode\ \doxymbox{\hyperlink{group__navigate_ga4c1de07d0e519c6e1d54d855b47d9d6a}{getParentNode}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00368\ \ \ \ \ XMLNode\ \doxymbox{\hyperlink{group__navigate_gac34f1bdbf808d2ee89552415505bb673}{getChildNode}}(\textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00369\ \ \ \ \ XMLNode\ \doxymbox{\hyperlink{group__navigate_gaf082d930c7bc6f879ab282adbe48050f}{getChildNode}}(XMLCSTR\ name,\ \textcolor{keywordtype}{int}\ i)\ \ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00370\ \ \ \ \ XMLNode\ \doxymbox{\hyperlink{group__navigate_gae67a570d76c61d12d26a309f4c5645e2}{getChildNode}}(XMLCSTR\ name,\ \textcolor{keywordtype}{int}\ *i=NULL)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00371\ \ \ \ \ XMLNode\ \doxymbox{\hyperlink{group__navigate_gad2665e479c488e525eba26659fe4034d}{getChildNodeWithAttribute}}(XMLCSTR\ tagName,}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ XMLCSTR\ attributeName,}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ XMLCSTR\ attributeValue=NULL,}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *i=NULL)\ \ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00375\ \ \ \ \ XMLNode\ \doxymbox{\hyperlink{group__navigate_ga18176d2a9e4830dcb1bca62f9c664b15}{getChildNodeByPath}}(XMLCSTR\ path,\ \textcolor{keywordtype}{char}\ createNodeIfMissing=0,\ XMLCHAR\ sep=\textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00377\ \ \ \ \ XMLNode\ \doxymbox{\hyperlink{group__navigate_ga0f3b175875c5d35a0dd88b4ed836079d}{getChildNodeByPathNonConst}}(XMLSTR\ \ path,\ \textcolor{keywordtype}{char}\ createNodeIfMissing=0,\ XMLCHAR\ sep=\textcolor{charliteral}{'/'});}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{group__navigate_ga37dfb85db6b3e8974474c9a6277fff94}{nChildNode}}(XMLCSTR\ name)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00381\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{group__navigate_ga89884092225798f347305956c1ecc62b}{nChildNode}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00382\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ \doxymbox{\hyperlink{group__navigate_ga50cc434e59c5f24f70eec2ae4b0554ab}{getAttribute}}(\textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00383\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \doxymbox{\hyperlink{group__navigate_ga6710fba2ad2ca7c79c3e5d17a2101e08}{getAttributeName}}(\textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00384\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \doxymbox{\hyperlink{group__navigate_ga48375d3bbdff5a0f416f668498edd3cb}{getAttributeValue}}(\textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00385\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \doxymbox{\hyperlink{group__navigate_ga0bf031a1bca5c211810eb3420595589e}{isAttributeSet}}(XMLCSTR\ name)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00386\ \ \ \ \ XMLCSTR\ \doxymbox{\hyperlink{group__navigate_ga5b66e8469c1f6c3398993e38981ead13}{getAttribute}}(XMLCSTR\ name,\ \textcolor{keywordtype}{int}\ i)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00387\ \ \ \ \ XMLCSTR\ \doxymbox{\hyperlink{group__navigate_gaed21862233be12773795cf6f3b9feeed}{getAttribute}}(XMLCSTR\ name,\ \textcolor{keywordtype}{int}\ *i=NULL)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00388\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{group__navigate_ga7980a71afeab26b29c4f1c67659d4214}{nAttribute}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00389\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \doxymbox{\hyperlink{group__navigate_gae1fcdd6a5e7c33b8c3c42ceb695a8a92}{getClear}}(\textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{group__navigate_gac698d5a2e8e8eac2d212d84013c4b0e8}{nClear}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00391\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_node_contents}{XMLNodeContents}}\ \doxymbox{\hyperlink{group__navigate_ga2aaacfe4aa003741e54e3ceab763a0d3}{enumContents}}(XMLElementPosition\ i)\ \textcolor{keyword}{const};\ \ \ \ \ \ }
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{group__navigate_ga1b13a6dc1cb8e7248caedd4960d7ba60}{nElement}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00393\ \ \ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{group__navigate_gab888c4755daee4a2f976713531f1e3c3}{isEmpty}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{group__navigate_gaffcffca699c492a1d26a037e958c14f5}{isDeclaration}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00395\ \ \ \ \ XMLNode\ \doxymbox{\hyperlink{group__navigate_gac2ad4114478b65749aa9b8bc541b9b2b}{deepCopy}}()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keyword}{static}\ XMLNode\ \doxymbox{\hyperlink{group__navigate_ga47c8238226a693d0aaf1111f1fa44ea0}{emptyNode}}();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \ \ \ \ \string~XMLNode();}
+\DoxyCodeLine{00400\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_node_a138099a1355b9d4103c239d9042adad3}{XMLNode}}(\textcolor{keyword}{const}\ XMLNode\ \&A);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00401\ \ \ \ \ XMLNode\&\ \doxymbox{\hyperlink{struct_x_m_l_node_ac7201d06ce47509423dd7cc937e69cf8}{operator=}}(\ \textcolor{keyword}{const}\ XMLNode\&\ A\ );\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \ \ \ \ XMLNode():\ d(NULL)\{\};}
+\DoxyCodeLine{00404\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{struct_x_m_l_node}{XMLNode}}\ emptyXMLNode;}
+\DoxyCodeLine{00405\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ emptyXMLClear;}
+\DoxyCodeLine{00406\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ emptyXMLAttribute;}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00421\ \ \ \ \ \textcolor{keyword}{static}\ XMLNode\ \doxymbox{\hyperlink{group__creation_ga8dffba07c929da0322363d1fef814353}{createXMLTopNode}}(XMLCSTR\ lpszName,\ \textcolor{keywordtype}{char}\ isDecl=FALSE);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00422\ \ \ \ \ XMLNode\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__creation_ga1648b903cdaab8386cba83eed6fa74dd}{addChild}}(XMLCSTR\ lpszName,\ \textcolor{keywordtype}{char}\ isDecl=FALSE,\ XMLElementPosition\ pos=-\/1);\ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00423\ \ \ \ \ XMLNode\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__creation_ga37c862f1d4a86f95417f97ceaa40d0fa}{addChild}}(XMLNode\ nodeToAdd,\ XMLElementPosition\ pos=-\/1);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00424\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ \ *\doxymbox{\hyperlink{group__creation_ga7938c43648ce7ed32efc9f0a5e3b5d2c}{addAttribute}}(XMLCSTR\ lpszName,\ XMLCSTR\ lpszValuev);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00425\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__creation_ga1de718e237befa215381d294fc644f11}{addText}}(XMLCSTR\ lpszValue,\ XMLElementPosition\ pos=-\/1);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00426\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \ \ \ \ \ *\doxymbox{\hyperlink{group__creation_gab933d009523f94a4fd1dee09e1a3c931}{addClear}}(XMLCSTR\ lpszValue,\ XMLCSTR\ lpszOpen=NULL,\ XMLCSTR\ lpszClose=NULL,\ XMLElementPosition\ pos=-\/1);}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00438\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \doxymbox{\hyperlink{group__xml_update_gae08b643a2b87a77bad3c70eb57ea3043}{updateName}}(XMLCSTR\ lpszName);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00439\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ *\doxymbox{\hyperlink{group__xml_update_gadfbd017929a40d6584350e7f3652fcbd}{updateAttribute}}(\doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ *newAttribute,\ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ *oldAttribute);\ \ \ \ \ \ \ }
+\DoxyCodeLine{00440\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ *\doxymbox{\hyperlink{group__xml_update_ga21bdabc3bea95c06b5033a0a0c76afe4}{updateAttribute}}(XMLCSTR\ lpszNewValue,\ XMLCSTR\ lpszNewName=NULL,\textcolor{keywordtype}{int}\ i=0);\ \ \ \ \ \ \ }
+\DoxyCodeLine{00441\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ *\doxymbox{\hyperlink{group__xml_update_gab81bdf55327b63350eaf84835b8cf9b1}{updateAttribute}}(XMLCSTR\ lpszNewValue,\ XMLCSTR\ lpszNewName,XMLCSTR\ lpszOldName);}
+\DoxyCodeLine{00442\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \doxymbox{\hyperlink{group__xml_update_gaad04ffd86ca67253bbc81f941608f8d2}{updateText}}(XMLCSTR\ lpszNewValue,\ \textcolor{keywordtype}{int}\ i=0);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00443\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \doxymbox{\hyperlink{group__xml_update_ga476a872fa595ea8416d2991ce3bea7a6}{updateText}}(XMLCSTR\ lpszNewValue,\ XMLCSTR\ lpszOldValue);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00444\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \ \ \ \ *\doxymbox{\hyperlink{group__xml_update_ga6b48e123943ea53272f6d4be33ca6d04}{updateClear}}(XMLCSTR\ lpszNewContent,\ \textcolor{keywordtype}{int}\ i=0);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00445\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \ \ \ \ *\doxymbox{\hyperlink{group__xml_update_ga02e1a7e3f9c48e05fad77abda2116375}{updateClear}}(\doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ *newP,\doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ *oldP);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00446\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \ \ \ \ *\doxymbox{\hyperlink{group__xml_update_ga690b140b6d86776f3a257a42ce7d4948}{updateClear}}(XMLCSTR\ lpszNewValue,\ XMLCSTR\ lpszOldValue);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00448\ }
+\DoxyCodeLine{00455\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group__xml_delete_gaa4d133999da220e916bdf3a969d493c4}{deleteNodeContent}}();}
+\DoxyCodeLine{00457\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group__xml_delete_ga61b2405305063594b35b309cc2e22c01}{deleteAttribute}}(\textcolor{keywordtype}{int}\ i=0);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group__xml_delete_ga2b21339e5b370f1d7ebde2dc51217eed}{deleteAttribute}}(XMLCSTR\ lpszName);\ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group__xml_delete_ga6f00d7c1b4eaa29cfdd9d4a709495aca}{deleteAttribute}}(\doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ *anAttribute);\ }
+\DoxyCodeLine{00460\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group__xml_delete_ga14a49a23735ea10a44864cb6b4302250}{deleteText}}(\textcolor{keywordtype}{int}\ i=0);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00461\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group__xml_delete_ga21ee499630d71ab6026753a85f02f582}{deleteText}}(XMLCSTR\ lpszValue);\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group__xml_delete_ga44b72c82310eb4319dba46eb9cc9f6e9}{deleteClear}}(\textcolor{keywordtype}{int}\ i=0);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00463\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group__xml_delete_ga8fff4baa9a8000f8662ee302438fff64}{deleteClear}}(XMLCSTR\ lpszValue);\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00464\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group__xml_delete_gae92182823d3d5b40893103ad222ec4a8}{deleteClear}}(\doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ *p);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00496\ \ \ \ \ \textcolor{keyword}{static}\ XMLNode\ \doxymbox{\hyperlink{group__xml_w_o_s_d_ga9c8b3bfa9671cb2a0a977ef30bab364a}{createXMLTopNode\_WOSD}}(XMLSTR\ lpszName,\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{group__navigate_gaffcffca699c492a1d26a037e958c14f5}{isDeclaration}}=FALSE);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00497\ \ \ \ \ XMLNode\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__xml_w_o_s_d_ga24b13602fdff0194b087df4eaf28e703}{addChild\_WOSD}}(XMLSTR\ lpszName,\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{group__navigate_gaffcffca699c492a1d26a037e958c14f5}{isDeclaration}}=FALSE,\ XMLElementPosition\ pos=-\/1);\ \ }
+\DoxyCodeLine{00498\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ \ *\doxymbox{\hyperlink{group__xml_w_o_s_d_ga45d1c57025ef576313d7412920d7a326}{addAttribute\_WOSD}}(XMLSTR\ lpszName,\ XMLSTR\ lpszValue);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00499\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__xml_w_o_s_d_ga90944eacfeb994486e3ca83a68c35b6a}{addText\_WOSD}}(XMLSTR\ lpszValue,\ XMLElementPosition\ pos=-\/1);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00500\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \ \ \ \ \ *\doxymbox{\hyperlink{group__xml_w_o_s_d_gad92450b1a8380678f52ad53a54fd068c}{addClear\_WOSD}}(XMLSTR\ lpszValue,\ XMLCSTR\ lpszOpen=NULL,\ XMLCSTR\ lpszClose=NULL,\ XMLElementPosition\ pos=-\/1);\ }
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__xml_w_o_s_d_ga5f35571651c6b629f5c8e5d02942a1c7}{updateName\_WOSD}}(XMLSTR\ lpszName);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00503\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ \ *\doxymbox{\hyperlink{group__xml_w_o_s_d_ga62a2c0cad7809a03afc485351c9560da}{updateAttribute\_WOSD}}(\doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ *newAttribute,\ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ *oldAttribute);\ \ \ \ \ \ }
+\DoxyCodeLine{00504\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ \ *\doxymbox{\hyperlink{group__xml_w_o_s_d_ga33cd934820a069cb42acd904d88170d2}{updateAttribute\_WOSD}}(XMLSTR\ lpszNewValue,\ XMLSTR\ lpszNewName=NULL,\textcolor{keywordtype}{int}\ i=0);\ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00505\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ \ *\doxymbox{\hyperlink{group__xml_w_o_s_d_ga4e1f2b9413ef0b87a073c861b1400d68}{updateAttribute\_WOSD}}(XMLSTR\ lpszNewValue,\ XMLSTR\ lpszNewName,XMLCSTR\ lpszOldName);\ }
+\DoxyCodeLine{00506\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__xml_w_o_s_d_ga8809eddad474e8bd7ad5f57aea7c77ac}{updateText\_WOSD}}(XMLSTR\ lpszNewValue,\ \textcolor{keywordtype}{int}\ i=0);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00507\ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__xml_w_o_s_d_gae2c448a74bf74bcd502d4ba27c63eabc}{updateText\_WOSD}}(XMLSTR\ lpszNewValue,\ XMLCSTR\ lpszOldValue);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00508\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \ \ \ \ \ *\doxymbox{\hyperlink{group__xml_w_o_s_d_ga78712972d283700f8bd24d1e83ea7c55}{updateClear\_WOSD}}(XMLSTR\ lpszNewContent,\ \textcolor{keywordtype}{int}\ i=0);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00509\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \ \ \ \ \ *\doxymbox{\hyperlink{group__xml_w_o_s_d_ga25a713d21457706eabd8658bbce0b180}{updateClear\_WOSD}}(\doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ *newP,\doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ *oldP);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00510\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \ \ \ \ \ *\doxymbox{\hyperlink{group__xml_w_o_s_d_ga88e5fde717bc53a879805b2f46d55429}{updateClear\_WOSD}}(XMLSTR\ lpszNewValue,\ XMLCSTR\ lpszOldValue);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00512\ }
+\DoxyCodeLine{00519\ \ \ \ \ XMLElementPosition\ positionOfText(\textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00520\ \ \ \ \ XMLElementPosition\ positionOfText(XMLCSTR\ lpszValue)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00521\ \ \ \ \ XMLElementPosition\ positionOfClear(\textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00522\ \ \ \ \ XMLElementPosition\ positionOfClear(XMLCSTR\ lpszValue)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00523\ \ \ \ \ XMLElementPosition\ positionOfClear(\doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ *a)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00524\ \ \ \ \ XMLElementPosition\ positionOfChildNode(\textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00525\ \ \ \ \ XMLElementPosition\ positionOfChildNode(XMLNode\ x)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00526\ \ \ \ \ XMLElementPosition\ \doxymbox{\hyperlink{group__xml_position_gac1842c7698861b744028995009aec64c}{positionOfChildNode}}(XMLCSTR\ name,\ \textcolor{keywordtype}{int}\ i=0)\ \textcolor{keyword}{const};\ }
+\DoxyCodeLine{00528\ }
+\DoxyCodeLine{00530\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{struct_x_m_l_node_a81bcd09f9c752b65633c1ca28ea025f2}{XMLCharEncoding}}}
+\DoxyCodeLine{00531\ \ \ \ \ \{}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ char\_encoding\_error=0,}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ \ \ char\_encoding\_UTF8=1,}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ char\_encoding\_legacy=2,}
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ char\_encoding\_ShiftJIS=3,}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \ \ char\_encoding\_GB2312=4,}
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \ \ char\_encoding\_Big5=5,}
+\DoxyCodeLine{00538\ \ \ \ \ \ \ \ \ char\_encoding\_GBK=6\ \ \ \ \ \textcolor{comment}{//\ this\ is\ actually\ the\ same\ as\ Big5}}
+\DoxyCodeLine{00539\ \ \ \ \ \}\ XMLCharEncoding;}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00543\ }
+\DoxyCodeLine{00545\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{group__conversions_ga2e3943ac932bf3e786810234e7c295b9}{setGlobalOptions}}(\doxymbox{\hyperlink{struct_x_m_l_node_a81bcd09f9c752b65633c1ca28ea025f2}{XMLCharEncoding}}\ characterEncoding=XMLNode::char\_encoding\_UTF8,\ \textcolor{keywordtype}{char}\ guessWideCharChars=1,}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ dropWhiteSpace=1,\ \textcolor{keywordtype}{char}\ removeCommentsInMiddleOfText=1);}
+\DoxyCodeLine{00596\ }
+\DoxyCodeLine{00598\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{struct_x_m_l_node_a81bcd09f9c752b65633c1ca28ea025f2}{XMLCharEncoding}}\ \doxymbox{\hyperlink{group__conversions_ga2fb8e9b250d669776e5e1962a70a4196}{guessCharEncoding}}(\textcolor{keywordtype}{void}\ *buffer,\ \textcolor{keywordtype}{int}\ bufLen,\ \textcolor{keywordtype}{char}\ useXMLEncodingAttribute=1);}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \textcolor{comment}{//\ these\ are\ functions\ and\ structures\ used\ internally\ by\ the\ XMLNode\ class\ (don't\ bother\ about\ them):}}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00614\ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }XMLNodeDataTag\ \textcolor{comment}{//\ to\ allow\ shallow\ copy\ and\ "{}intelligent/smart"{}\ pointers\ (automatic\ delete):}}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lpszName;\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Element\ name\ (=NULL\ if\ root)}}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nChild,\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Number\ of\ child\ nodes}}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__navigate_ga1cab1484d301f5b99a5fc74a0b05b47e}{nText}},\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Number\ of\ text\ fields}}
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__navigate_gac698d5a2e8e8eac2d212d84013c4b0e8}{nClear}},\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Number\ of\ Clear\ fields\ (comments)}}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__navigate_ga7980a71afeab26b29c4f1c67659d4214}{nAttribute}};\ \ \ \ \ \ \textcolor{comment}{//\ Number\ of\ attributes}}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__navigate_gaffcffca699c492a1d26a037e958c14f5}{isDeclaration}};\ \ \ \textcolor{comment}{//\ Whether\ node\ is\ an\ XML\ declaration\ -\/\ '<?xml\ ?>'}}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{struct\ }XMLNodeDataTag\ \ *pParent;\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Pointer\ to\ parent\ element\ (=NULL\ if\ root)}}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \ \ \ \ XMLNode\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *pChild;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Array\ of\ child\ nodes}}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ \ \ XMLCSTR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *pText;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Array\ of\ text\ fields}}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *pClear;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Array\ of\ clear\ fields}}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ \ \ \ \ \ \ \ \ \ \ *pAttribute;\ \ \ \ \ \textcolor{comment}{//\ Array\ of\ attributes}}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *pOrder;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ order\ of\ the\ child\_nodes,text\_fields,clear\_fields}}
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ref\_count;\ \ \ \ \ \ \ \textcolor{comment}{//\ for\ garbage\ collection\ (smart\ pointers)}}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \}\ XMLNodeData;}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ XMLNodeData\ *d;}
+\DoxyCodeLine{00631\ }
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ parseClearTag(\textcolor{keywordtype}{void}\ *px,\ \textcolor{keywordtype}{void}\ *pa);}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ maybeAddTxT(\textcolor{keywordtype}{void}\ *pa,\ XMLCSTR\ tokenPStr);}
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ ParseXMLElement(\textcolor{keywordtype}{void}\ *pXML);}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *addToOrder(\textcolor{keywordtype}{int}\ memInc,\ \textcolor{keywordtype}{int}\ *\_pos,\ \textcolor{keywordtype}{int}\ nc,\ \textcolor{keywordtype}{void}\ *p,\ \textcolor{keywordtype}{int}\ size,\ XMLElementType\ xtype);}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ indexText(XMLCSTR\ lpszValue)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ indexClear(XMLCSTR\ lpszValue)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_node}{XMLNode}}\ addChild\_priv(\textcolor{keywordtype}{int},XMLSTR,\textcolor{keywordtype}{char},\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ *addAttribute\_priv(\textcolor{keywordtype}{int},XMLSTR,XMLSTR);}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ XMLCSTR\ addText\_priv(\textcolor{keywordtype}{int},XMLSTR,\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00641\ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ *addClear\_priv(\textcolor{keywordtype}{int},XMLSTR,XMLCSTR,XMLCSTR,\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ emptyTheNode(\textcolor{keywordtype}{char}\ force);}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ XMLElementPosition\ findPosition(XMLNodeData\ *d,\ \textcolor{keywordtype}{int}\ index,\ XMLElementType\ xtype);}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ CreateXMLStringR(XMLNodeData\ *pEntry,\ XMLSTR\ lpszMarker,\ \textcolor{keywordtype}{int}\ nFormat);}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ removeOrderElement(XMLNodeData\ *d,\ XMLElementType\ t,\ \textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ exactMemory(XMLNodeData\ *d);}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ detachFromParent(XMLNodeData\ *d);}
+\DoxyCodeLine{00648\ \}\ \doxymbox{\hyperlink{struct_x_m_l_node}{XMLNode}};}
+\DoxyCodeLine{00649\ }
+\DoxyCodeLine{00651\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }XMLNodeContents}
+\DoxyCodeLine{00652\ \{}
+\DoxyCodeLine{00653\ \ \ \ \ \textcolor{comment}{//\ DCMTK:\ added\ default\ and\ copy\ constructor\ to\ avoid\ compiler\ warnings}}
+\DoxyCodeLine{00654\ \ \ \ \ XMLNodeContents():\ \doxymbox{\hyperlink{struct_x_m_l_node_contents_a3cc71f0b9fc7b75133de379f1e5d7a2b}{etype}}(),child(),attrib(),text(),clear()\ \{\};}
+\DoxyCodeLine{00655\ \ \ \ \ XMLNodeContents(\textcolor{keyword}{const}\ XMLNodeContents\&\ c):\ \doxymbox{\hyperlink{struct_x_m_l_node_contents_a3cc71f0b9fc7b75133de379f1e5d7a2b}{etype}}(c.\doxymbox{\hyperlink{struct_x_m_l_node_contents_a3cc71f0b9fc7b75133de379f1e5d7a2b}{etype}}),child(c.child),attrib(c.attrib),text(c.text),clear(c.clear)\ \{\};}
+\DoxyCodeLine{00657\ \ \ \ \ \textcolor{keyword}{enum}\ XMLElementType\ \doxymbox{\hyperlink{struct_x_m_l_node_contents_a3cc71f0b9fc7b75133de379f1e5d7a2b}{etype}};}
+\DoxyCodeLine{00659\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_node}{XMLNode}}\ child;}
+\DoxyCodeLine{00660\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_attribute}{XMLAttribute}}\ attrib;}
+\DoxyCodeLine{00661\ \ \ \ \ XMLCSTR\ text;}
+\DoxyCodeLine{00662\ \ \ \ \ \doxymbox{\hyperlink{struct_x_m_l_clear}{XMLClear}}\ clear;}
+\DoxyCodeLine{00663\ }
+\DoxyCodeLine{00664\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00665\ \ \ \ \ \textcolor{comment}{//\ DCMTK:\ added\ private\ undefined\ assignment\ operator\ to\ avoid\ compiler\ warnings}}
+\DoxyCodeLine{00666\ \ \ \ \ XMLNodeContents\&\ operator=(\textcolor{keyword}{const}\ XMLNodeContents\&);}
+\DoxyCodeLine{00667\ \}\ \doxymbox{\hyperlink{struct_x_m_l_node_contents}{XMLNodeContents}};}
+\DoxyCodeLine{00668\ }
+\DoxyCodeLine{00673\ XMLDLLENTRY\ XMLSTR\ \doxymbox{\hyperlink{group___string_alloc_gac35b3be05a320f835b3976179637fe76}{stringDup}}(XMLCSTR\ source,\ \textcolor{keywordtype}{int}\ cbData=-\/1);}
+\DoxyCodeLine{00678\ }
+\DoxyCodeLine{00680\ XMLDLLENTRY\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group___string_alloc_ga6a510c9553d7fa49d0afdda1d7928669}{freeXMLString}}(XMLSTR\ t);\ \textcolor{comment}{//\ \{free(t);\}}}
+\DoxyCodeLine{00682\ }
+\DoxyCodeLine{00692\ XMLDLLENTRY\ \textcolor{keywordtype}{char}\ \ \ \ \ \ xmltob\ (XMLCSTR\ xmlString,\textcolor{keywordtype}{char}\ \ \ \ \ \ defautValue=0);}
+\DoxyCodeLine{00693\ XMLDLLENTRY\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ xmltoi\ (XMLCSTR\ xmlString,\textcolor{keywordtype}{int}\ \ \ \ \ \ \ defautValue=0);}
+\DoxyCodeLine{00694\ XMLDLLENTRY\ \textcolor{keywordtype}{long}\ \ \ \ \ \ xmltol\ (XMLCSTR\ xmlString,\textcolor{keywordtype}{long}\ \ \ \ \ \ defautValue=0);}
+\DoxyCodeLine{00695\ \textcolor{comment}{//\ DCMTK\ adds\ xmltoll()\ in\ addition\ to\ xmltol()}}
+\DoxyCodeLine{00696\ \textcolor{preprocessor}{\#if\ defined(HAVE\_LONG\_LONG)\ \&\&\ (defined(HAVE\_ATOLL)\ ||\ defined\ (\_XMLWINDOWS))}}
+\DoxyCodeLine{00697\ XMLDLLENTRY\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ xmltoll(XMLCSTR\ xmlString,\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ defautValue=0);}
+\DoxyCodeLine{00698\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00699\ XMLDLLENTRY\ \textcolor{keywordtype}{double}\ \ \ \ xmltof\ (XMLCSTR\ xmlString,\textcolor{keywordtype}{double}\ \ \ \ defautValue=.0);}
+\DoxyCodeLine{00700\ XMLDLLENTRY\ XMLCSTR\ \ \ xmltoa\ (XMLCSTR\ xmlString,XMLCSTR\ \ \ defautValue=\_CXML(\textcolor{stringliteral}{"{}"{}}));}
+\DoxyCodeLine{00701\ XMLDLLENTRY\ XMLCHAR\ \ \ xmltoc\ (XMLCSTR\ xmlString,\textcolor{keyword}{const}\ XMLCHAR\ defautValue=\_CXML(\textcolor{charliteral}{'\(\backslash\)0'}));}
+\DoxyCodeLine{00703\ }
+\DoxyCodeLine{00708\ }
+\DoxyCodeLine{00717\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }XMLDLLENTRY\ ToXMLStringTool}
+\DoxyCodeLine{00718\ \{}
+\DoxyCodeLine{00719\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00720\ \ \ \ \ \doxymbox{\hyperlink{group___to_x_m_l_string_tool_gab184de1d7ae0aa6bcc3c4dee7ee0ddb6}{ToXMLStringTool}}():\ buf(NULL),buflen(0)\{\}}
+\DoxyCodeLine{00721\ \ \ \ \ \string~ToXMLStringTool();}
+\DoxyCodeLine{00722\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{struct_to_x_m_l_string_tool_a0572044b9caffb4436b48c7b380fc70f}{freeBuffer}}();}
+\DoxyCodeLine{00723\ }
+\DoxyCodeLine{00724\ \ \ \ \ XMLSTR\ \doxymbox{\hyperlink{struct_to_x_m_l_string_tool_a3e0bb98fc6bf2c8b855fa4ea573177c2}{toXML}}(XMLCSTR\ source);}
+\DoxyCodeLine{00725\ }
+\DoxyCodeLine{00729\ \ \ \ \ \textcolor{keyword}{static}\ XMLSTR\ \doxymbox{\hyperlink{struct_to_x_m_l_string_tool_afcb136a02b27809eecb2edcd1164c2d8}{toXMLUnSafe}}(XMLSTR\ dest,XMLCSTR\ source);\ }
+\DoxyCodeLine{00730\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_to_x_m_l_string_tool_a534ac6cced1b13ecd073d988a73679a3}{lengthXMLString}}(XMLCSTR\ source);\ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00731\ }
+\DoxyCodeLine{00732\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00733\ \ \ \ \ XMLSTR\ buf;}
+\DoxyCodeLine{00734\ \ \ \ \ \textcolor{keywordtype}{int}\ buflen;}
+\DoxyCodeLine{00735\ }
+\DoxyCodeLine{00736\ \ \ \ \ \textcolor{comment}{//\ DCMTK:\ added\ private\ undefined\ copy\ constructor\ and\ assignment\ operator\ to\ avoid\ compiler\ warnings}}
+\DoxyCodeLine{00737\ \ \ \ \ \doxymbox{\hyperlink{group___to_x_m_l_string_tool_gab184de1d7ae0aa6bcc3c4dee7ee0ddb6}{ToXMLStringTool}}(\textcolor{keyword}{const}\ ToXMLStringTool\&);}
+\DoxyCodeLine{00738\ \ \ \ \ ToXMLStringTool\&\ operator=(\textcolor{keyword}{const}\ ToXMLStringTool\&);}
+\DoxyCodeLine{00739\ \}\ \doxymbox{\hyperlink{struct_to_x_m_l_string_tool}{ToXMLStringTool}};}
+\DoxyCodeLine{00741\ }
+\DoxyCodeLine{00746\ }
+\DoxyCodeLine{00754\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }XMLDLLENTRY\ XMLParserBase64Tool}
+\DoxyCodeLine{00755\ \{}
+\DoxyCodeLine{00756\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00757\ \ \ \ \ \doxymbox{\hyperlink{group___x_m_l_parser_base64_tool_ga90d0646ff4a054f9d8ea0d29fb86f3a9}{XMLParserBase64Tool}}():\ buf(NULL),buflen(0)\{\}}
+\DoxyCodeLine{00758\ \ \ \ \ \string~XMLParserBase64Tool();}
+\DoxyCodeLine{00759\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{struct_x_m_l_parser_base64_tool_a3d9e7dcbe313eef25a324b88667f4c65}{freeBuffer}}();}
+\DoxyCodeLine{00760\ }
+\DoxyCodeLine{00763\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_x_m_l_parser_base64_tool_a5fe50fd66dc68efe6f3d39b5eb67fe8d}{encodeLength}}(\textcolor{keywordtype}{int}\ inBufLen,\ \textcolor{keywordtype}{char}\ formatted=0);\ }
+\DoxyCodeLine{00764\ }
+\DoxyCodeLine{00770\ \ \ \ \ XMLSTR\ \doxymbox{\hyperlink{struct_x_m_l_parser_base64_tool_af86c6999b625b7a0a008f9674f11cd4c}{encode}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *inByteBuf,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ inByteLen,\ \textcolor{keywordtype}{char}\ formatted=0);\ }
+\DoxyCodeLine{00771\ }
+\DoxyCodeLine{00773\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_x_m_l_parser_base64_tool_adce9ee3c0bc1cae2ab2b511add3ea91e}{decodeSize}}(XMLCSTR\ inString,\ XMLError\ *xe=NULL);}
+\DoxyCodeLine{00774\ }
+\DoxyCodeLine{00780\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_x_m_l_parser_base64_tool_a12b39ffa3ee05bea4f8b92fedc6e663b}{decode}}(XMLCSTR\ inString,\ \textcolor{keywordtype}{int}\ *outByteLen=NULL,\ XMLError\ *xe=NULL);\ }
+\DoxyCodeLine{00781\ }
+\DoxyCodeLine{00786\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \doxymbox{\hyperlink{struct_x_m_l_parser_base64_tool_af76fe76cb08f0a3fca6d7352c0dcb218}{decode}}(XMLCSTR\ inString,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *outByteBuf,\ \textcolor{keywordtype}{int}\ inMaxByteOutBuflen,\ XMLError\ *xe=NULL);\ }
+\DoxyCodeLine{00787\ }
+\DoxyCodeLine{00788\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00789\ \ \ \ \ \textcolor{keywordtype}{void}\ *buf;}
+\DoxyCodeLine{00790\ \ \ \ \ \textcolor{keywordtype}{int}\ buflen;}
+\DoxyCodeLine{00791\ \ \ \ \ \textcolor{keywordtype}{void}\ alloc(\textcolor{keywordtype}{int}\ newsize);}
+\DoxyCodeLine{00792\ }
+\DoxyCodeLine{00793\ \ \ \ \ \textcolor{comment}{//\ DCMTK:\ added\ private\ undefined\ copy\ constructor\ and\ assignment\ operator\ to\ avoid\ compiler\ warnings}}
+\DoxyCodeLine{00794\ \ \ \ \ \doxymbox{\hyperlink{group___x_m_l_parser_base64_tool_ga90d0646ff4a054f9d8ea0d29fb86f3a9}{XMLParserBase64Tool}}(\textcolor{keyword}{const}\ XMLParserBase64Tool\&);}
+\DoxyCodeLine{00795\ \ \ \ \ XMLParserBase64Tool\&\ operator=(\textcolor{keyword}{const}\ XMLParserBase64Tool\&);}
+\DoxyCodeLine{00796\ \}\doxymbox{\hyperlink{struct_x_m_l_parser_base64_tool}{XMLParserBase64Tool}};}
+\DoxyCodeLine{00798\ }
+\DoxyCodeLine{00799\ \textcolor{preprocessor}{\#undef\ XMLDLLENTRY}}
+\DoxyCodeLine{00800\ }
+\DoxyCodeLine{00801\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ OFXML\_H}}
+
+\end{DoxyCode}

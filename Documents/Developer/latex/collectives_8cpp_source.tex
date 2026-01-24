@@ -1,0 +1,167 @@
+\doxysection{collectives.\+cpp}
+\hypertarget{collectives_8cpp_source}{}\label{collectives_8cpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/mpi/collectives.cpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/mpi/collectives.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifdef\ DIY\_MPI\_AS\_LIB}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}collectives.hpp"{}}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00006\ \{}
+\DoxyCodeLine{00007\ \textcolor{keyword}{namespace\ }mpi}
+\DoxyCodeLine{00008\ \{}
+\DoxyCodeLine{00009\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00010\ \{}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ copy\_buffer(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ src,\ \textcolor{keywordtype}{void}*\ dst,\ \textcolor{keywordtype}{size\_t}\ size,\ \textcolor{keywordtype}{int}\ count)}
+\DoxyCodeLine{00013\ \{}
+\DoxyCodeLine{00014\ \ \ \textcolor{keywordflow}{if}\ (src\ !=\ dst)}
+\DoxyCodeLine{00015\ \ \ \{}
+\DoxyCodeLine{00016\ \ \ \ \ std::copy\_n(\textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }int8\_t*\textcolor{keyword}{>}(src),}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ size\ *\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(count),}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}int8\_t*\textcolor{keyword}{>}(dst));}
+\DoxyCodeLine{00019\ \ \ \}}
+\DoxyCodeLine{00020\ \}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{keywordtype}{void}\ broadcast(\textcolor{keyword}{const}\ communicator\&\ comm,\ \textcolor{keywordtype}{void}*\ data,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{int}\ root)}
+\DoxyCodeLine{00023\ \{}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00025\ \ \ MPI\_Bcast(data,\ count,\ mpi\_cast(type.handle),\ root,\ mpi\_cast(comm.handle()));}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00027\ \ \ (void)\ comm;\ (void)\ data;\ (void)\ count;\ (void)\ type;\ (void)\ root;}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00029\ \}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ request\ ibroadcast(\textcolor{keyword}{const}\ communicator\&\ comm,\ \textcolor{keywordtype}{void}*\ data,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{int}\ root)}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \ \ request\ r;}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00035\ \ \ MPI\_Ibcast(data,\ count,\ mpi\_cast(type.handle),\ root,\ mpi\_cast(comm.handle()),\ \&mpi\_cast(r.handle));}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00037\ \ \ (void)\ comm;\ (void)\ data;\ (void)\ count;\ (void)\ type;\ (void)\ root;}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00039\ \ \ \textcolor{keywordflow}{return}\ r;}
+\DoxyCodeLine{00040\ \}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keywordtype}{void}\ gather(\textcolor{keyword}{const}\ communicator\&\ comm,}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ dataIn,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{void}*\ dataOut,}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ root)}
+\DoxyCodeLine{00045\ \{}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00047\ \ \ MPI\_Gather(dataIn,\ count,\ mpi\_cast(type.handle),}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ dataOut,\ count,\ mpi\_cast(type.handle),}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ root,\ mpi\_cast(comm.handle()));}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00051\ \ \ copy\_buffer(dataIn,\ dataOut,\ mpi\_cast(type.handle),\ count);}
+\DoxyCodeLine{00052\ \ \ (void)comm;\ (void)root;}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00054\ \}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{keywordtype}{void}\ gather\_v(\textcolor{keyword}{const}\ communicator\&\ comm,}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ dataIn,\ \textcolor{keywordtype}{int}\ countIn,\ \textcolor{keyword}{const}\ datatype\&\ type,}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ dataOut,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ counts[],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ offsets[],}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ root)}
+\DoxyCodeLine{00060\ \{}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00062\ \ \ MPI\_Gatherv(dataIn,\ countIn,\ mpi\_cast(type.handle),}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dataOut,\ counts,\ offsets,\ mpi\_cast(type.handle),}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ root,\ mpi\_cast(comm.handle()));}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00066\ \ \ copy\_buffer(dataIn,\ dataOut,\ mpi\_cast(type.handle),\ countIn);}
+\DoxyCodeLine{00067\ \ \ (void)comm;\ (void)counts,\ (\textcolor{keywordtype}{void})offsets,\ (void)root;}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00069\ \}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{keywordtype}{void}\ all\_gather(\textcolor{keyword}{const}\ communicator\&\ comm,}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ dataIn,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{void}*\ dataOut)}
+\DoxyCodeLine{00073\ \{}
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00075\ \ \ MPI\_Allgather(dataIn,\ count,\ mpi\_cast(type.handle),}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dataOut,\ count,\ mpi\_cast(type.handle),}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_cast(comm.handle()));}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00079\ \ \ copy\_buffer(dataIn,\ dataOut,\ mpi\_cast(type.handle),\ count);}
+\DoxyCodeLine{00080\ \ \ (void)comm;}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00082\ \}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{keywordtype}{void}\ all\_gather\_v(\textcolor{keyword}{const}\ communicator\&\ comm,}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ dataIn,\ \textcolor{keywordtype}{int}\ countIn,\ \textcolor{keyword}{const}\ datatype\&\ type,}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ dataOut,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ counts[],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ offsets[])}
+\DoxyCodeLine{00087\ \{}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00089\ \ \ MPI\_Allgatherv(dataIn,\ countIn,\ mpi\_cast(type.handle),}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dataOut,\ counts,\ offsets,\ mpi\_cast(type.handle),}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_cast(comm.handle()));}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00093\ \ \ copy\_buffer(dataIn,\ dataOut,\ mpi\_cast(type.handle),\ countIn);}
+\DoxyCodeLine{00094\ \ \ (void)comm;\ (void)counts;\ (void)offsets;}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00096\ \}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{keywordtype}{void}\ reduce(\textcolor{keyword}{const}\ communicator\&\ comm,}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ dataIn,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{void}*\ dataOut,}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ operation\&\ op,\ \textcolor{keywordtype}{int}\ root)}
+\DoxyCodeLine{00101\ \{}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00103\ \ \ MPI\_Reduce(dataIn,\ dataOut,\ count,\ mpi\_cast(type.handle),\ mpi\_cast(op.handle),\ root,\ mpi\_cast(comm.handle()));}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00105\ \ \ copy\_buffer(dataIn,\ dataOut,\ mpi\_cast(type.handle),\ count);}
+\DoxyCodeLine{00106\ \ \ (void)comm;\ (void)op;\ (void)root;}
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00108\ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{keywordtype}{void}\ all\_reduce(\textcolor{keyword}{const}\ communicator\&\ comm,}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ dataIn,\ \textcolor{keywordtype}{void}*\ dataOut,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ operation\&\ op)}
+\DoxyCodeLine{00113\ \{}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00115\ \ \ MPI\_Allreduce(dataIn,\ dataOut,\ count,\ mpi\_cast(type.handle),\ mpi\_cast(op.handle),\ mpi\_cast(comm.handle()));}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00117\ \ \ copy\_buffer(dataIn,\ dataOut,\ mpi\_cast(type.handle),\ count);}
+\DoxyCodeLine{00118\ \ \ (void)comm;\ (void)op;}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00120\ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ request\ iall\_reduce(\textcolor{keyword}{const}\ communicator\&\ comm,}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ dataIn,\ \textcolor{keywordtype}{void}*\ dataOut,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ operation\&\ op)}
+\DoxyCodeLine{00125\ \{}
+\DoxyCodeLine{00126\ \ \ request\ r;}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00128\ \ \ MPI\_Iallreduce(dataIn,\ dataOut,\ count,\ mpi\_cast(type.handle),\ mpi\_cast(op.handle),\ mpi\_cast(comm.handle()),\ \&mpi\_cast(r.handle));}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00130\ \ \ copy\_buffer(dataIn,\ dataOut,\ mpi\_cast(type.handle),\ count);}
+\DoxyCodeLine{00131\ \ \ (void)comm;\ (void)op;}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00133\ \ \ \textcolor{keywordflow}{return}\ r;}
+\DoxyCodeLine{00134\ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{keywordtype}{void}\ scan(\textcolor{keyword}{const}\ communicator\&\ comm,}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ dataIn,\ \textcolor{keywordtype}{void}*\ dataOut,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ operation\&\ op)}
+\DoxyCodeLine{00139\ \{}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00141\ \ \ MPI\_Scan(dataIn,\ dataOut,\ count,\ mpi\_cast(type.handle),\ mpi\_cast(op.handle),\ mpi\_cast(comm.handle()));}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00143\ \ \ copy\_buffer(dataIn,\ dataOut,\ mpi\_cast(type.handle),\ count);}
+\DoxyCodeLine{00144\ \ \ (void)comm;\ (void)op;}
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00146\ \}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \textcolor{keywordtype}{void}\ all\_to\_all(\textcolor{keyword}{const}\ communicator\&\ comm,}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ dataIn,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{void}*\ dataOut)}
+\DoxyCodeLine{00150\ \{}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00152\ \ \ MPI\_Alltoall(dataIn,\ count,\ mpi\_cast(type.handle),\ dataOut,\ count,\ mpi\_cast(type.handle),\ mpi\_cast(comm.handle()));}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00154\ \ \ copy\_buffer(dataIn,\ dataOut,\ mpi\_cast(type.handle),\ count);}
+\DoxyCodeLine{00155\ \ \ (void)comm;}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00157\ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \}}
+\DoxyCodeLine{00160\ \}}
+\DoxyCodeLine{00161\ \}\ \textcolor{comment}{//\ diy::mpi::detail}}
+
+\end{DoxyCode}

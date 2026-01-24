@@ -1,0 +1,162 @@
+\doxysection{vtk\+SMPTools\+Impl.\+h}
+\hypertarget{vtk_s_m_p_tools_impl_8h_source}{}\label{vtk_s_m_p_tools_impl_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/Common/vtkSMPToolsImpl.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/Common/vtkSMPToolsImpl.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#ifndef\ vtkSMPToolsImpl\_h}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#define\ vtkSMPToolsImpl\_h}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}vtkCommonCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}vtkSMP.h"{}}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#define\ VTK\_SMP\_MAX\_BACKENDS\_NB\ 4}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#define\ VTK\_SMP\_BACKEND\_SEQUENTIAL\ 0}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#define\ VTK\_SMP\_BACKEND\_STDTHREAD\ 1}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#define\ VTK\_SMP\_BACKEND\_TBB\ 2}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#define\ VTK\_SMP\_BACKEND\_OPENMP\ 3}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00021\ \{}
+\DoxyCodeLine{00022\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00023\ \{}
+\DoxyCodeLine{00024\ \textcolor{keyword}{namespace\ }smp}
+\DoxyCodeLine{00025\ \{}
+\DoxyCodeLine{00026\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00027\ \textcolor{keyword}{enum\ class}\ BackendType}
+\DoxyCodeLine{00028\ \{}
+\DoxyCodeLine{00029\ \ \ Sequential\ =\ VTK\_SMP\_BACKEND\_SEQUENTIAL,}
+\DoxyCodeLine{00030\ \ \ STDThread\ =\ VTK\_SMP\_BACKEND\_STDTHREAD,}
+\DoxyCodeLine{00031\ \ \ TBB\ =\ VTK\_SMP\_BACKEND\_TBB,}
+\DoxyCodeLine{00032\ \ \ OpenMP\ =\ VTK\_SMP\_BACKEND\_OPENMP}
+\DoxyCodeLine{00033\ \};}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#if\ VTK\_SMP\_DEFAULT\_IMPLEMENTATION\_SEQUENTIAL}}
+\DoxyCodeLine{00036\ \textcolor{keyword}{const}\ BackendType\ DefaultBackend\ =\ BackendType::Sequential;}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#elif\ VTK\_SMP\_DEFAULT\_IMPLEMENTATION\_STDTHREAD}}
+\DoxyCodeLine{00038\ \textcolor{keyword}{const}\ BackendType\ DefaultBackend\ =\ BackendType::STDThread;}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#elif\ VTK\_SMP\_DEFAULT\_IMPLEMENTATION\_TBB}}
+\DoxyCodeLine{00040\ \textcolor{keyword}{const}\ BackendType\ DefaultBackend\ =\ BackendType::TBB;}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#elif\ VTK\_SMP\_DEFAULT\_IMPLEMENTATION\_OPENMP}}
+\DoxyCodeLine{00042\ \textcolor{keyword}{const}\ BackendType\ DefaultBackend\ =\ BackendType::OpenMP;}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{keyword}{template}\ <BackendType\ Backend>}
+\DoxyCodeLine{00046\ \textcolor{keyword}{class\ }vtkSMPToolsImpl}
+\DoxyCodeLine{00047\ \{}
+\DoxyCodeLine{00048\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00049\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00050\ \ \ \textcolor{keywordtype}{void}\ Initialize(\textcolor{keywordtype}{int}\ numThreads\ =\ 0);}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00053\ \ \ \textcolor{keywordtype}{int}\ GetEstimatedNumberOfThreads();}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00056\ \ \ \textcolor{keywordtype}{int}\ GetEstimatedDefaultNumberOfThreads();}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordtype}{void}\ SetNestedParallelism(\textcolor{keywordtype}{bool}\ isNested);}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00062\ \ \ \textcolor{keywordtype}{bool}\ GetNestedParallelism();}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00065\ \ \ \textcolor{keywordtype}{bool}\ IsParallelScope();}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00068\ \ \ \textcolor{keywordtype}{bool}\ GetSingleThread();}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ FunctorInternal>}
+\DoxyCodeLine{00072\ \ \ \textcolor{keywordtype}{void}\ For(vtkIdType\ first,\ vtkIdType\ last,\ vtkIdType\ grain,\ FunctorInternal\&\ fi);}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ InputIt,\ \textcolor{keyword}{typename}\ OutputIt,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00076\ \ \ \textcolor{keywordtype}{void}\ Transform(InputIt\ inBegin,\ InputIt\ inEnd,\ OutputIt\ outBegin,\ Functor\ transform);}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00079\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ InputIt1,\ \textcolor{keyword}{typename}\ InputIt2,\ \textcolor{keyword}{typename}\ OutputIt,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordtype}{void}\ Transform(}
+\DoxyCodeLine{00081\ \ \ \ \ InputIt1\ inBegin1,\ InputIt1\ inEnd,\ InputIt2\ inBegin2,\ OutputIt\ outBegin,\ Functor\ transform);}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00084\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iterator,\ \textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00085\ \ \ \textcolor{keywordtype}{void}\ Fill(Iterator\ begin,\ Iterator\ end,\ \textcolor{keyword}{const}\ T\&\ value);}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00088\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ RandomAccessIterator>}
+\DoxyCodeLine{00089\ \ \ \textcolor{keywordtype}{void}\ Sort(RandomAccessIterator\ begin,\ RandomAccessIterator\ end);}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00092\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ RandomAccessIterator,\ \textcolor{keyword}{typename}\ Compare>}
+\DoxyCodeLine{00093\ \ \ \textcolor{keywordtype}{void}\ Sort(RandomAccessIterator\ begin,\ RandomAccessIterator\ end,\ Compare\ comp);}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00096\ \ \ vtkSMPToolsImpl();}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00099\ \ \ vtkSMPToolsImpl(\textcolor{keyword}{const}\ vtkSMPToolsImpl\&\ other);}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00102\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkSMPToolsImpl\&\ other);}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00105\ \ \ \textcolor{keywordtype}{bool}\ NestedActivated\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00106\ \ \ std::atomic<bool>\ IsParallel\{\ \textcolor{keyword}{false}\ \};}
+\DoxyCodeLine{00107\ \};}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{keyword}{template}\ <BackendType\ Backend>}
+\DoxyCodeLine{00110\ \textcolor{keywordtype}{void}\ vtkSMPToolsImpl<Backend>::SetNestedParallelism(\textcolor{keywordtype}{bool}\ isNested)}
+\DoxyCodeLine{00111\ \{}
+\DoxyCodeLine{00112\ \ \ this-\/>NestedActivated\ =\ isNested;}
+\DoxyCodeLine{00113\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{keyword}{template}\ <BackendType\ Backend>}
+\DoxyCodeLine{00116\ \textcolor{keywordtype}{bool}\ vtkSMPToolsImpl<Backend>::GetNestedParallelism()}
+\DoxyCodeLine{00117\ \{}
+\DoxyCodeLine{00118\ \ \ \textcolor{keywordflow}{return}\ this-\/>NestedActivated;}
+\DoxyCodeLine{00119\ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{keyword}{template}\ <BackendType\ Backend>}
+\DoxyCodeLine{00122\ \textcolor{keywordtype}{bool}\ vtkSMPToolsImpl<Backend>::IsParallelScope()}
+\DoxyCodeLine{00123\ \{}
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordflow}{return}\ this-\/>IsParallel;}
+\DoxyCodeLine{00125\ \}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{keyword}{template}\ <BackendType\ Backend>}
+\DoxyCodeLine{00128\ vtkSMPToolsImpl<Backend>::vtkSMPToolsImpl()}
+\DoxyCodeLine{00129\ \ \ :\ NestedActivated(true)}
+\DoxyCodeLine{00130\ \ \ ,\ IsParallel(false)}
+\DoxyCodeLine{00131\ \{}
+\DoxyCodeLine{00132\ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \textcolor{keyword}{template}\ <BackendType\ Backend>}
+\DoxyCodeLine{00135\ vtkSMPToolsImpl<Backend>::vtkSMPToolsImpl(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools_impl}{vtkSMPToolsImpl}}\&\ other)}
+\DoxyCodeLine{00136\ \ \ :\ NestedActivated(other.NestedActivated)}
+\DoxyCodeLine{00137\ \ \ ,\ IsParallel(other.IsParallel.load())}
+\DoxyCodeLine{00138\ \{}
+\DoxyCodeLine{00139\ \}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{keyword}{template}\ <BackendType\ Backend>}
+\DoxyCodeLine{00142\ \textcolor{keywordtype}{void}\ vtkSMPToolsImpl<Backend>::operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools_impl}{vtkSMPToolsImpl}}\&\ other)}
+\DoxyCodeLine{00143\ \{}
+\DoxyCodeLine{00144\ \ \ this-\/>NestedActivated\ =\ other.NestedActivated;}
+\DoxyCodeLine{00145\ \ \ this-\/>IsParallel\ =\ other.IsParallel.load();}
+\DoxyCodeLine{00146\ \}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \textcolor{keyword}{using\ }ExecuteFunctorPtrType\ =\ void\ (*)(\textcolor{keywordtype}{void}*,\ vtkIdType,\ vtkIdType,\ vtkIdType);}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00151\ \}\ \textcolor{comment}{//\ namespace\ smp}}
+\DoxyCodeLine{00152\ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00153\ \}\ \textcolor{comment}{//\ namespace\ vtk}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00156\ \textcolor{comment}{/*\ VTK-\/HeaderTest-\/Exclude:\ vtkSMPToolsImpl.h\ */}}
+
+\end{DoxyCode}

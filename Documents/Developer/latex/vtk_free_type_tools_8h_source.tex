@@ -1,0 +1,265 @@
+\doxysection{vtk\+Free\+Type\+Tools.\+h}
+\hypertarget{vtk_free_type_tools_8h_source}{}\label{vtk_free_type_tools_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkFreeTypeTools.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkFreeTypeTools.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#ifndef\ vtkFreeTypeTools\_h}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#define\ vtkFreeTypeTools\_h}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}vtkRenderingFreeTypeModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointer.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ smart\ pointer}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ "{}vtkTextRenderer.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ Metrics\ struct}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <array>}\ \textcolor{comment}{//\ for\ std::array}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00025\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}};}
+\DoxyCodeLine{00026\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_path}{vtkPath}};}
+\DoxyCodeLine{00027\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}};}
+\DoxyCodeLine{00028\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_std_string}{vtkStdString}};}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ FreeType}}
+\DoxyCodeLine{00031\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ "{}vtk\_freetype.h"{}}\ \textcolor{comment}{//since\ ft2build.h\ could\ be\ in\ the\ path}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ FT\_FREETYPE\_H}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ FT\_GLYPH\_H}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ FT\_CACHE\_H}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00038\ \textcolor{keyword}{class\ }FTFont;}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{comment}{//\ PIMPL\ class\ for\ FTC\_FaceID-\/>vtkTextProperty\ lookup}}
+\DoxyCodeLine{00041\ \textcolor{keyword}{class\ }vtkTextPropertyLookup;}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ Singleton\ cleanup}}
+\DoxyCodeLine{00045\ \textcolor{keyword}{class\ }VTKRENDERINGFREETYPE\_EXPORT\ vtkFreeTypeToolsCleanup}
+\DoxyCodeLine{00046\ \{}
+\DoxyCodeLine{00047\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00048\ \ \ vtkFreeTypeToolsCleanup();}
+\DoxyCodeLine{00049\ \ \ \string~vtkFreeTypeToolsCleanup();}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00052\ \ \ vtkFreeTypeToolsCleanup(\textcolor{keyword}{const}\ vtkFreeTypeToolsCleanup\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00053\ \ \ vtkFreeTypeToolsCleanup\&\ operator=(\textcolor{keyword}{const}\ vtkFreeTypeToolsCleanup\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00054\ \};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00057\ \textcolor{comment}{//\ Singleton\ font\ cache}}
+\DoxyCodeLine{00058\ \textcolor{keyword}{class\ }VTKRENDERINGFREETYPE\_EXPORT\ vtkFreeTypeTools\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00059\ \{}
+\DoxyCodeLine{00060\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_free_type_tools_1_1_face_metrics}{FaceMetrics}}}
+\DoxyCodeLine{00062\ \ \ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordtype}{int}\ UnitsPerEM;}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{int}\ Ascender;}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordtype}{int}\ Descender;}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{int}\ HorizAdvance;}
+\DoxyCodeLine{00067\ \ \ \ \ std::array<int,\ 4>\ BoundingBox;\ \textcolor{comment}{//\ xmin,\ xmax,\ ymin,\ ymax}}
+\DoxyCodeLine{00068\ \ \ \ \ std::string\ FamilyName;}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{bool}\ Scalable;}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{bool}\ Bold;}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordtype}{bool}\ Italic;}
+\DoxyCodeLine{00072\ \ \ \};}
+\DoxyCodeLine{00073\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_free_type_tools_1_1_glyph_outline}{GlyphOutline}}}
+\DoxyCodeLine{00074\ \ \ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{int}\ HorizAdvance;}
+\DoxyCodeLine{00076\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkPath>}}\ Path;}
+\DoxyCodeLine{00077\ \ \ \};}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ vtkTypeMacro(vtkFreeTypeTools,\ vtkObject);}
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_free_type_tools_ae93fb0d1b0fe6a583db68b73f46a5b0c}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{keyword}{static}\ vtkFreeTypeTools*\ \doxymbox{\hyperlink{classvtk_free_type_tools_a0e3b7e61fc2e30d34a98f8255c746f6a}{GetInstance}}();}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_free_type_tools_a6013b2beaa6579ea05978c81d294d9a2}{SetInstance}}(vtkFreeTypeTools*\ instance);}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00098\ \ \ \doxymbox{\hyperlink{classvtk_free_type_tools_a3786970043c2c00a358b99052c897149}{vtkSetMacro}}(DebugTextures,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00099\ \ \ vtkGetMacro(DebugTextures,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00100\ \ \ vtkBooleanMacro(DebugTextures,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00106\ \ \ FT\_Library*\ \doxymbox{\hyperlink{classvtk_free_type_tools_a6c71d674017360efbfcd63732faa2934}{GetLibrary}}();}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00113\ \ \ \doxymbox{\hyperlink{structvtk_free_type_tools_1_1_face_metrics}{FaceMetrics}}\ \doxymbox{\hyperlink{classvtk_free_type_tools_a0f495404fbcd4bbfd42d684946632f11}{GetFaceMetrics}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop);}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00120\ \ \ \doxymbox{\hyperlink{structvtk_free_type_tools_1_1_glyph_outline}{GlyphOutline}}\ \doxymbox{\hyperlink{classvtk_free_type_tools_ad88c8a6c94508bdb3e1e0d5d417ced9d}{GetUnscaledGlyphOutline}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ vtkTypeUInt32\ charId);}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00128\ \ \ std::array<int,\ 2>\ \doxymbox{\hyperlink{classvtk_free_type_tools_a8bebecc0f26946052903c11b54790bd5}{GetUnscaledKerning}}(}
+\DoxyCodeLine{00129\ \ \ \ \ \doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ vtkTypeUInt32\ leftChar,\ vtkTypeUInt32\ rightChar);}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00137\ \ \ \doxymbox{\hyperlink{classvtk_free_type_tools_ac12b90ed16d5ed8a386d83492a04ac47}{vtkSetClampMacro}}(MaximumNumberOfFaces,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ 1,\ VTK\_UNSIGNED\_INT\_MAX);}
+\DoxyCodeLine{00138\ \ \ vtkGetMacro(MaximumNumberOfFaces,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00139\ \ \ \doxymbox{\hyperlink{classvtk_free_type_tools_ac12b90ed16d5ed8a386d83492a04ac47}{vtkSetClampMacro}}(MaximumNumberOfSizes,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int},\ 1,\ VTK\_UNSIGNED\_INT\_MAX);}
+\DoxyCodeLine{00140\ \ \ vtkGetMacro(MaximumNumberOfSizes,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00141\ \ \ \doxymbox{\hyperlink{classvtk_free_type_tools_ac12b90ed16d5ed8a386d83492a04ac47}{vtkSetClampMacro}}(MaximumNumberOfBytes,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long},\ 1,\ VTK\_UNSIGNED\_LONG\_MAX);}
+\DoxyCodeLine{00142\ \ \ vtkGetMacro(MaximumNumberOfBytes,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long});}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00154\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_acd8499298922d49db1279646e59abab3}{GetBoundingBox}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_std_string}{vtkStdString}}\&\ str,\ \textcolor{keywordtype}{int}\ dpi,\ \textcolor{keywordtype}{int}\ bbox[4]);}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_a3fd63baf98753993e9d7cb53cb3d4740}{GetMetrics}}(}
+\DoxyCodeLine{00163\ \ \ \ \ \doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_std_string}{vtkStdString}}\&\ str,\ \textcolor{keywordtype}{int}\ dpi,\ \doxymbox{\hyperlink{structvtk_text_renderer_1_1_metrics}{vtkTextRenderer::Metrics}}\&\ metrics);}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00177\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_ab89e7133491639fc1eb555d6700bc298}{RenderString}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_std_string}{vtkStdString}}\&\ str,\ \textcolor{keywordtype}{int}\ dpi,\ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ data,}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordtype}{int}\ textDims[2]\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00188\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_abc3d737b3800b8e00e847d81f89aa212}{StringToPath}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_std_string}{vtkStdString}}\&\ str,\ \textcolor{keywordtype}{int}\ dpi,\ \doxymbox{\hyperlink{classvtk_path}{vtkPath}}*\ path);}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_free_type_tools_ad19df58313a6a69fb1d3b973d7677d83}{GetConstrainedFontSize}}(}
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_std_string}{vtkStdString}}\&\ str,\ \doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \textcolor{keywordtype}{int}\ dpi,\ \textcolor{keywordtype}{int}\ targetWidth,\ \textcolor{keywordtype}{int}\ targetHeight);}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{static}\ vtkTypeUInt16\ \doxymbox{\hyperlink{classvtk_free_type_tools_afb4730a0398b6dd14346d208d1dfe964}{HashString}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str);}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00211\ \ \ \textcolor{keyword}{static}\ vtkTypeUInt32\ \doxymbox{\hyperlink{classvtk_free_type_tools_af96daa000ab70d92e887b2714528f636}{HashBuffer}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ buffer,\ \textcolor{keywordtype}{size\_t}\ n,\ vtkTypeUInt32\ hash\ =\ 0);}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00224\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_free_type_tools_a0646ef3fa3985fed45867aab026f52c7}{MapTextPropertyToId}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \textcolor{keywordtype}{size\_t}*\ tprop\_cache\_id);}
+\DoxyCodeLine{00225\ \ \ \textcolor{keywordtype}{void}\ MapIdToTextProperty(\textcolor{keywordtype}{size\_t}\ tprop\_cache\_id,\ \doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop);}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00235\ \ \ \doxymbox{\hyperlink{classvtk_free_type_tools_a753b53e2de5dcf08c7925f208219c951}{vtkSetMacro}}(\doxymbox{\hyperlink{classvtk_free_type_tools_a74dbd2b6cd23c914b9be1ebf5bf95890}{ScaleToPowerTwo}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00236\ \ \ vtkGetMacro(\doxymbox{\hyperlink{classvtk_free_type_tools_a74dbd2b6cd23c914b9be1ebf5bf95890}{ScaleToPowerTwo}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00237\ \ \ vtkBooleanMacro(\doxymbox{\hyperlink{classvtk_free_type_tools_a74dbd2b6cd23c914b9be1ebf5bf95890}{ScaleToPowerTwo}},\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00246\ \ \ \doxymbox{\hyperlink{classvtk_free_type_tools_aa76d0d53c65ccee2bfd075ab921e0c68}{vtkSetMacro}}(ForceCompiledFonts,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00247\ \ \ vtkGetMacro(ForceCompiledFonts,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00248\ \ \ vtkBooleanMacro(ForceCompiledFonts,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00257\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_ac1cbb60fc07bf492cb5f86a0057a2941}{LookupFace}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ FT\_Library\ lib,\ FT\_Face*\ face);}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00263\ \ \ \textcolor{keyword}{virtual}\ FT\_Error\ \doxymbox{\hyperlink{classvtk_free_type_tools_ad4480c0b9810ced6e7e7326ea69c2e62}{CreateFTCManager}}();}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00269\ \ \ \textcolor{keyword}{class\ }MetaData;}
+\DoxyCodeLine{00270\ \ \ \textcolor{keyword}{class\ }ImageMetaData;}
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordtype}{bool}\ PrepareMetaData(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \textcolor{keywordtype}{int}\ dpi,\ MetaData\&\ metaData);}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordtype}{bool}\ PrepareImageMetaData(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ image,\ ImageMetaData\&\ metaData);}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00279\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_free_type_tools_a7019f1e50d832b57b8b148e2cfce3ddd}{PrepareImageData}}(\doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ data,\ \textcolor{keywordtype}{int}\ bbox[4]);}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00284\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_free_type_tools_aa7f1d77562b0616b15cb8de4681e3324}{RenderBackground}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ image,\ ImageMetaData\&\ metaData);}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00293\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_a6a21584ba22ee2dede68d5b0a7b57370}{GetSize}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ FT\_Size*\ size);}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00301\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_a00db8aaa3732a7bd47c07da98b320349}{GetFace}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ FT\_Face*\ face);}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00308\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_ac9c022620b5eec7339e9f771d178af32}{GetGlyphIndex}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ FT\_UInt32\ c,\ FT\_UInt*\ gindex);}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00323\ \ \ \textcolor{keyword}{enum}}
+\DoxyCodeLine{00324\ \ \ \{}
+\DoxyCodeLine{00325\ \ \ \ \ GLYPH\_REQUEST\_DEFAULT\ =\ 0,}
+\DoxyCodeLine{00326\ \ \ \ \ GLYPH\_REQUEST\_BITMAP\ =\ 1,}
+\DoxyCodeLine{00327\ \ \ \ \ GLYPH\_REQUEST\_OUTLINE\ =\ 2}
+\DoxyCodeLine{00328\ \ \ \};}
+\DoxyCodeLine{00329\ \ \ \textcolor{keywordtype}{bool}\ GetGlyph(}
+\DoxyCodeLine{00330\ \ \ \ \ \doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ FT\_UInt32\ c,\ FT\_Glyph*\ glyph,\ \textcolor{keywordtype}{int}\ request\ =\ GLYPH\_REQUEST\_DEFAULT);}
+\DoxyCodeLine{00331\ \ \ \textcolor{keywordtype}{bool}\ GetSize(\textcolor{keywordtype}{size\_t}\ tprop\_cache\_id,\ \textcolor{keywordtype}{int}\ font\_size,\ FT\_Size*\ size);}
+\DoxyCodeLine{00332\ \ \ \textcolor{keywordtype}{bool}\ GetSize(FTC\_Scaler\ scaler,\ FT\_Size*\ size);}
+\DoxyCodeLine{00333\ \ \ \textcolor{keywordtype}{bool}\ GetFace(\textcolor{keywordtype}{size\_t}\ tprop\_cache\_id,\ FT\_Face*\ face);}
+\DoxyCodeLine{00334\ \ \ \textcolor{keywordtype}{bool}\ GetGlyphIndex(\textcolor{keywordtype}{size\_t}\ tprop\_cache\_id,\ FT\_UInt32\ c,\ FT\_UInt*\ gindex);}
+\DoxyCodeLine{00335\ \ \ \textcolor{keywordtype}{bool}\ GetGlyph(\textcolor{keywordtype}{size\_t}\ tprop\_cache\_id,\ \textcolor{keywordtype}{int}\ font\_size,\ FT\_UInt\ gindex,\ FT\_Glyph*\ glyph,}
+\DoxyCodeLine{00336\ \ \ \ \ \textcolor{keywordtype}{int}\ request\ =\ GLYPH\_REQUEST\_DEFAULT);}
+\DoxyCodeLine{00337\ \ \ \textcolor{keywordtype}{bool}\ GetGlyph(}
+\DoxyCodeLine{00338\ \ \ \ \ FTC\_Scaler\ scaler,\ FT\_UInt\ gindex,\ FT\_Glyph*\ glyph,\ \textcolor{keywordtype}{int}\ request\ =\ GLYPH\_REQUEST\_DEFAULT);}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00344\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_a74dbd2b6cd23c914b9be1ebf5bf95890}{ScaleToPowerTwo}};}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \ \ vtkFreeTypeTools();}
+\DoxyCodeLine{00347\ \ \ \string~vtkFreeTypeTools()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00352\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_free_type_tools_a641b3026cc68814ceb8ddd392a93b164}{GetFace}}(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ prop,\ \textcolor{keywordtype}{size\_t}\&\ prop\_cache\_id,\ FT\_Face\&\ face,\ \textcolor{keywordtype}{bool}\&\ face\_has\_kerning);}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00358\ \ \ FT\_Bitmap*\ \doxymbox{\hyperlink{classvtk_free_type_tools_a7c85fd7667a3ab8f5f3ef9ad65884e88}{GetBitmap}}(FT\_UInt32\ c,\ \textcolor{keywordtype}{size\_t}\ prop\_cache\_id,\ \textcolor{keywordtype}{int}\ prop\_font\_size,\ FT\_UInt\&\ gindex,}
+\DoxyCodeLine{00359\ \ \ \ \ FT\_BitmapGlyph\&\ bitmap\_glyph);}
+\DoxyCodeLine{00360\ \ \ FT\_Bitmap*\ \doxymbox{\hyperlink{classvtk_free_type_tools_a7c85fd7667a3ab8f5f3ef9ad65884e88}{GetBitmap}}(}
+\DoxyCodeLine{00361\ \ \ \ \ FT\_UInt32\ c,\ FTC\_Scaler\ scaler,\ FT\_UInt\&\ gindex,\ FT\_BitmapGlyph\&\ bitmap\_glyph);}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00368\ \ \ FT\_Outline*\ \doxymbox{\hyperlink{classvtk_free_type_tools_a141d25e90892c5f9bb3b7fd754dc3737}{GetOutline}}(FT\_UInt32\ c,\ \textcolor{keywordtype}{size\_t}\ prop\_cache\_id,\ \textcolor{keywordtype}{int}\ prop\_font\_size,\ FT\_UInt\&\ gindex,}
+\DoxyCodeLine{00369\ \ \ \ \ FT\_OutlineGlyph\&\ outline\_glyph);}
+\DoxyCodeLine{00370\ \ \ FT\_Outline*\ \doxymbox{\hyperlink{classvtk_free_type_tools_a141d25e90892c5f9bb3b7fd754dc3737}{GetOutline}}(}
+\DoxyCodeLine{00371\ \ \ \ \ FT\_UInt32\ c,\ FTC\_Scaler\ scaler,\ FT\_UInt\&\ gindex,\ FT\_OutlineGlyph\&\ outline\_glyph);}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00377\ \ \ \textcolor{keyword}{static}\ vtkFreeTypeTools*\ \doxymbox{\hyperlink{classvtk_free_type_tools_a6473e4f4f879e8254a5d8ed559d72549}{Instance}};}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00382\ \ \ vtkTextPropertyLookup*\ \doxymbox{\hyperlink{classvtk_free_type_tools_a4ca37b8e30cbc7219919ddab96b8d6fc}{TextPropertyLookup}};}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00387\ \ \ FT\_Library*\ \doxymbox{\hyperlink{classvtk_free_type_tools_ad3ed596dc14552324c7ae6d6c8a177f6}{Library}};}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00393\ \ \ FTC\_Manager*\ \doxymbox{\hyperlink{classvtk_free_type_tools_abe87fa315eb24c6ffa27cf1e899d2c94}{CacheManager}};}
+\DoxyCodeLine{00394\ \ \ FTC\_ImageCache*\ ImageCache;}
+\DoxyCodeLine{00395\ \ \ FTC\_CMapCache*\ CMapCache;}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00402\ \ \ FTC\_Manager*\ \doxymbox{\hyperlink{classvtk_free_type_tools_a5fc177c13ca12ba528f37331bffb9909}{GetCacheManager}}();}
+\DoxyCodeLine{00403\ \ \ FTC\_ImageCache*\ GetImageCache();}
+\DoxyCodeLine{00404\ \ \ FTC\_CMapCache*\ GetCMapCache();}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ MaximumNumberOfFaces;}
+\DoxyCodeLine{00408\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ MaximumNumberOfSizes;}
+\DoxyCodeLine{00409\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ MaximumNumberOfBytes;}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \ \ \textcolor{keywordtype}{bool}\ ForceCompiledFonts;}
+\DoxyCodeLine{00412\ \ \ \textcolor{keywordtype}{bool}\ DebugTextures;}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \ \ \textcolor{keywordtype}{void}\ InitializeCacheManager();}
+\DoxyCodeLine{00415\ \ \ \textcolor{keywordtype}{void}\ ReleaseCacheManager();}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00418\ \ \ vtkFreeTypeTools(\textcolor{keyword}{const}\ vtkFreeTypeTools\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00419\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkFreeTypeTools\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00424\ \ \ \textcolor{keywordtype}{bool}\ RenderStringInternal(}
+\DoxyCodeLine{00425\ \ \ \ \ \doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \textcolor{keyword}{const}\ std::string\&\ str,\ \textcolor{keywordtype}{int}\ dpi,\ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ data,\ \textcolor{keywordtype}{int}\ textDims[2]);}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00430\ \ \ \textcolor{keywordtype}{bool}\ StringToPathInternal(\doxymbox{\hyperlink{classvtk_text_property}{vtkTextProperty}}*\ tprop,\ \textcolor{keyword}{const}\ std::string\&\ str,\ \textcolor{keywordtype}{int}\ dpi,\ \doxymbox{\hyperlink{classvtk_path}{vtkPath}}*\ path);}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00437\ \ \ \textcolor{keywordtype}{bool}\ CalculateBoundingBox(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_std_string}{vtkStdString}}\&\ str,\ MetaData\&\ metaData);}
+\DoxyCodeLine{00438\ \ \ \textcolor{keywordtype}{bool}\ CalculateBoundingBox(}
+\DoxyCodeLine{00439\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ str,\ MetaData\&\ metaData,\ \textcolor{keyword}{const}\ std::string\&\ defaultHeightString);}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00447\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ DataType>}
+\DoxyCodeLine{00448\ \ \ \textcolor{keywordtype}{bool}\ PopulateData(\textcolor{keyword}{const}\ std::string\&\ str,\ DataType\ data,\ MetaData\&\ metaData);}
+\DoxyCodeLine{00449\ }
+\DoxyCodeLine{00453\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ DataType>}
+\DoxyCodeLine{00454\ \ \ \textcolor{keywordtype}{bool}\ RenderLine(std::string::const\_iterator\ begin,\ std::string::const\_iterator\ end,\ \textcolor{keywordtype}{int}\ lineIndex,}
+\DoxyCodeLine{00455\ \ \ \ \ DataType\ data,\ MetaData\&\ metaData);}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00461\ \ \ \textcolor{keywordtype}{bool}\ RenderCharacter(FT\_UInt32\ codepoint,\ \textcolor{keywordtype}{int}\&\ x,\ \textcolor{keywordtype}{int}\&\ y,\ FT\_UInt\&\ previousGlyphIndex,}
+\DoxyCodeLine{00462\ \ \ \ \ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ image,\ MetaData\&\ metaData);}
+\DoxyCodeLine{00463\ \ \ \textcolor{keywordtype}{bool}\ RenderCharacter(FT\_UInt32\ codepoint,\ \textcolor{keywordtype}{int}\&\ x,\ \textcolor{keywordtype}{int}\&\ y,\ FT\_UInt\&\ previousGlyphIndex,}
+\DoxyCodeLine{00464\ \ \ \ \ \doxymbox{\hyperlink{classvtk_path}{vtkPath}}*\ path,\ MetaData\&\ metaData);}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \ \ \textcolor{keywordtype}{void}\ OutlineToPath(\textcolor{keywordtype}{int}\ x,\ \textcolor{keywordtype}{int}\ y,\ FT\_Outline*\ outline,\ \doxymbox{\hyperlink{classvtk_path}{vtkPath}}*\ path);}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00474\ \ \ \textcolor{keywordtype}{int}\ FitStringToBBox(}
+\DoxyCodeLine{00475\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ str,\ MetaData\&\ metaData,\ \textcolor{keywordtype}{int}\ targetWidth,\ \textcolor{keywordtype}{int}\ targetHeight);}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00485\ \ \ \textcolor{keywordtype}{void}\ GetLineMetrics(std::string::const\_iterator\ begin,\ std::string::const\_iterator\ end,}
+\DoxyCodeLine{00486\ \ \ \ \ MetaData\&\ metaData,\ \textcolor{keywordtype}{int}\&\ width,\ \textcolor{keywordtype}{int}\ bbox[4]);}
+\DoxyCodeLine{00488\ \};}
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \textcolor{comment}{//\ This\ is\ here\ to\ implement\ the\ Schwarz\ counter\ idiom.}}
+\DoxyCodeLine{00491\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_free_type_tools_cleanup}{vtkFreeTypeToolsCleanup}}\ vtkFreeTypeToolsCleanupInstance;}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00494\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,213 @@
+\doxysection{vtk\+Permute\+Options.\+h}
+\hypertarget{vtk_permute_options_8h_source}{}\label{vtk_permute_options_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkPermuteOptions.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkPermuteOptions.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#ifndef\ vtkPermuteOptions\_h}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#define\ vtkPermuteOptions\_h}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <vtkTimeStamp.h>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00110\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00111\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ObjType>}
+\DoxyCodeLine{00112\ \textcolor{keyword}{class\ }vtkPermuteOptions}
+\DoxyCodeLine{00113\ \{}
+\DoxyCodeLine{00114\ \ \ \textcolor{keyword}{using\ }Permutation\ =\ std::vector<size\_t>;}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \textcolor{keyword}{struct\ }Value}
+\DoxyCodeLine{00117\ \ \ \{}
+\DoxyCodeLine{00118\ \ \ \ \ Value(\textcolor{keyword}{const}\ std::string\&\ name,\ std::function<\textcolor{keywordtype}{void}(ObjType*)>\ setter)}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ :\ Name(name)}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ ,\ Setter(setter)}
+\DoxyCodeLine{00121\ \ \ \ \ \{}
+\DoxyCodeLine{00122\ \ \ \ \ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordtype}{void}\ Apply(ObjType*\ obj)\textcolor{keyword}{\ const\ }\{\ this-\/>Setter(obj);\ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ std::string\ Name;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ user-\/readable\ option\ name}}
+\DoxyCodeLine{00127\ \ \ \ \ std::function<void(ObjType*)>\ Setter;\ \textcolor{comment}{//\ Sets\ the\ option\ to\ a\ single\ values}}
+\DoxyCodeLine{00128\ \ \ \};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{struct\ }Option}
+\DoxyCodeLine{00131\ \ \ \{}
+\DoxyCodeLine{00132\ \ \ \ \ Option(\textcolor{keyword}{const}\ std::string\&\ name)}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ :\ Name(name)}
+\DoxyCodeLine{00134\ \ \ \ \ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \}}
+\DoxyCodeLine{00136\ \ \ \ \ std::string\ Name;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ user-\/readable\ option\ name}}
+\DoxyCodeLine{00137\ \ \ \ \ std::vector<Value>\ Values;\ \textcolor{comment}{//\ list\ of\ values\ to\ test\ for\ this\ option}}
+\DoxyCodeLine{00138\ \ \ \};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ std::vector<Option>\ Options;}
+\DoxyCodeLine{00141\ \ \ std::vector<Permutation>\ Permutations;}
+\DoxyCodeLine{00142\ \ \ \textcolor{keywordtype}{size\_t}\ CurrentPermutation;}
+\DoxyCodeLine{00143\ \ \ \doxymbox{\hyperlink{classvtk_time_stamp}{vtkTimeStamp}}\ OptionTime;}
+\DoxyCodeLine{00144\ \ \ \doxymbox{\hyperlink{classvtk_time_stamp}{vtkTimeStamp}}\ PermutationTime;}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ Option\&\ FindOrCreateOption(\textcolor{keyword}{const}\ std::string\&\ name)}
+\DoxyCodeLine{00147\ \ \ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordflow}{for}\ (Option\&\ opt\ :\ this-\/>Options)}
+\DoxyCodeLine{00149\ \ \ \ \ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (opt.Name\ ==\ name)}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ opt;}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00154\ \ \ \ \ \}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \ \ this-\/>Options.emplace\_back(name);}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Options.back();}
+\DoxyCodeLine{00158\ \ \ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{void}\ RecursePermutations(Permutation\&\ perm,\ \textcolor{keywordtype}{size\_t}\ level)}
+\DoxyCodeLine{00161\ \ \ \{}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ maxIdx\ =\ this-\/>Options[level].Values.size();}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{keywordflow}{if}\ (level\ ==\ 0)\ \textcolor{comment}{//\ base\ case}}
+\DoxyCodeLine{00165\ \ \ \ \ \{}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ maxIdx;\ ++i)}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ perm[0]\ =\ i;}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ this-\/>Permutations.push\_back(perm);}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00171\ \ \ \ \ \}}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{//\ recursive\ case}}
+\DoxyCodeLine{00173\ \ \ \ \ \{}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ maxIdx;\ ++i)}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ perm[level]\ =\ i;}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ this-\/>RecursePermutations(perm,\ level\ -\/\ 1);}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00179\ \ \ \ \ \}}
+\DoxyCodeLine{00180\ \ \ \}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \ \ \textcolor{keywordtype}{void}\ RebuildPermutations()}
+\DoxyCodeLine{00183\ \ \ \{}
+\DoxyCodeLine{00184\ \ \ \ \ this-\/>Permutations.clear();}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ numOptions\ =\ this-\/>Options.size();}
+\DoxyCodeLine{00187\ \ \ \ \ Permutation\ perm(numOptions,\ 0);}
+\DoxyCodeLine{00188\ \ \ \ \ this-\/>RecursePermutations(perm,\ numOptions\ -\/\ 1);}
+\DoxyCodeLine{00189\ \ \ \ \ this-\/>PermutationTime.\doxymbox{\hyperlink{classvtk_time_stamp_a64a3db0969544b0ff03adc4521cf5068}{Modified}}();}
+\DoxyCodeLine{00190\ \ \ \}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \textcolor{keywordtype}{void}\ Apply(ObjType*\ obj,\ \textcolor{keyword}{const}\ Permutation\&\ perm)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00193\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ numOpts\ =\ this-\/>Options.size();}
+\DoxyCodeLine{00195\ \ \ \ \ assert(\textcolor{stringliteral}{"{}Sane\ permutation"{}}\ \&\&\ perm.size()\ ==\ numOpts);}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ numOpts;\ ++i)}
+\DoxyCodeLine{00198\ \ \ \ \ \{}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ valIdx\ =\ perm[i];}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ assert(\textcolor{stringliteral}{"{}ValueIdx\ in\ range"{}}\ \&\&\ valIdx\ <\ this-\/>Options[i].Values.size());}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ this-\/>Options[i].Values[valIdx].Apply(obj);}
+\DoxyCodeLine{00202\ \ \ \ \ \}}
+\DoxyCodeLine{00203\ \ \ \}}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ std::string\ NamePermutation(\textcolor{keyword}{const}\ Permutation\&\ perm)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00206\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ numOpts\ =\ this-\/>Options.size();}
+\DoxyCodeLine{00208\ \ \ \ \ assert(\textcolor{stringliteral}{"{}Sane\ permutation"{}}\ \&\&\ perm.size()\ ==\ numOpts);}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ std::ostringstream\ out;}
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ numOpts;\ ++i)}
+\DoxyCodeLine{00212\ \ \ \ \ \{}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ valIdx\ =\ perm[i];}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ assert(\textcolor{stringliteral}{"{}ValueIdx\ in\ range"{}}\ \&\&\ valIdx\ <\ this-\/>Options[i].Values.size());}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \ \ \ \ \ \ out\ <<\ (i\ !=\ 0\ ?\ \textcolor{stringliteral}{"{}-\/"{}}\ :\ \textcolor{stringliteral}{"{}"{}})\ <<\ this-\/>Options[i].Name\ <<\ \textcolor{stringliteral}{"{}."{}}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ <<\ this-\/>Options[i].Values[valIdx].Name;}
+\DoxyCodeLine{00218\ \ \ \ \ \}}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{keywordflow}{return}\ out.str();}
+\DoxyCodeLine{00221\ \ \ \}}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00224\ \ \ vtkPermuteOptions()}
+\DoxyCodeLine{00225\ \ \ \ \ :\ CurrentPermutation(0)}
+\DoxyCodeLine{00226\ \ \ \{}
+\DoxyCodeLine{00227\ \ \ \}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ SetterType,\ \textcolor{keyword}{typename}\ ValueType>}
+\DoxyCodeLine{00230\ \ \ \textcolor{keywordtype}{void}\ AddOptionValue(}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ optionName,\ SetterType\ setter,\ \textcolor{keyword}{const}\ std::string\&\ valueName,\ ValueType\ value)}
+\DoxyCodeLine{00232\ \ \ \{}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keyword}{using\ }std::placeholders::\_1;}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \ \ std::function<void(ObjType*)>\ func\ =\ [setter,\ value](ObjType*\ obj)\ \{\ (obj-\/>*setter)(value);\ \};}
+\DoxyCodeLine{00236\ \ \ \ \ Option\&\ opt\ =\ this-\/>FindOrCreateOption(optionName);}
+\DoxyCodeLine{00237\ \ \ \ \ opt.Values.emplace\_back(valueName,\ func);}
+\DoxyCodeLine{00238\ \ \ \ \ this-\/>OptionTime.\doxymbox{\hyperlink{classvtk_time_stamp_a64a3db0969544b0ff03adc4521cf5068}{Modified}}();}
+\DoxyCodeLine{00239\ \ \ \}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ SetterType,\ \textcolor{keyword}{typename}\ ValueType>}
+\DoxyCodeLine{00242\ \ \ \textcolor{keywordtype}{void}\ AddOptionValues(}
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ optionName,\ SetterType\ setter,\ \textcolor{keyword}{const}\ std::string\&\ valueName,\ ValueType\ value)}
+\DoxyCodeLine{00244\ \ \ \{}
+\DoxyCodeLine{00245\ \ \ \ \ this-\/>AddOptionValue(optionName,\ setter,\ valueName,\ value);}
+\DoxyCodeLine{00246\ \ \ \}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ SetterType,\ \textcolor{keyword}{typename}\ ValueType,\ \textcolor{keyword}{typename}...\ Tail>}
+\DoxyCodeLine{00249\ \ \ \textcolor{keywordtype}{void}\ AddOptionValues(\textcolor{keyword}{const}\ std::string\&\ optionName,\ SetterType\ setter,}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ valueName,\ ValueType\ value,\ Tail...\ tail)}
+\DoxyCodeLine{00251\ \ \ \{}
+\DoxyCodeLine{00252\ \ \ \ \ this-\/>AddOptionValue(optionName,\ setter,\ valueName,\ value);}
+\DoxyCodeLine{00253\ \ \ \ \ this-\/>AddOptionValues(optionName,\ setter,\ tail...);}
+\DoxyCodeLine{00254\ \ \ \}}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordtype}{void}\ InitPermutations()}
+\DoxyCodeLine{00257\ \ \ \{}
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>OptionTime\ >\ this-\/>PermutationTime)}
+\DoxyCodeLine{00259\ \ \ \ \ \{}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ this-\/>RebuildPermutations();}
+\DoxyCodeLine{00261\ \ \ \ \ \}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \ \ this-\/>CurrentPermutation\ =\ 0;}
+\DoxyCodeLine{00264\ \ \ \}}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \ \ \textcolor{keywordtype}{bool}\ IsDoneWithPermutations()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00267\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00268\ \ \ \ \ assert(\textcolor{stringliteral}{"{}Modified\ options\ without\ resetting\ permutations."{}}\ \&\&}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ this-\/>PermutationTime\ >\ this-\/>OptionTime);}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>CurrentPermutation\ >=\ this-\/>Permutations.size();}
+\DoxyCodeLine{00272\ \ \ \}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \textcolor{keywordtype}{void}\ GoToNextPermutation()}
+\DoxyCodeLine{00275\ \ \ \{}
+\DoxyCodeLine{00276\ \ \ \ \ assert(\textcolor{stringliteral}{"{}Modified\ options\ without\ resetting\ permutations."{}}\ \&\&}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ this-\/>PermutationTime\ >\ this-\/>OptionTime);}
+\DoxyCodeLine{00278\ \ \ \ \ assert(\textcolor{stringliteral}{"{}Invalid\ permutation."{}}\ \&\&\ !this-\/>IsDoneWithPermutations());}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \ \ ++this-\/>CurrentPermutation;}
+\DoxyCodeLine{00281\ \ \ \}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \textcolor{keywordtype}{void}\ ApplyCurrentPermutation(ObjType*\ obj)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00284\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00285\ \ \ \ \ assert(\textcolor{stringliteral}{"{}Modified\ options\ without\ resetting\ permutations."{}}\ \&\&}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ this-\/>PermutationTime\ >\ this-\/>OptionTime);}
+\DoxyCodeLine{00287\ \ \ \ \ assert(\textcolor{stringliteral}{"{}Invalid\ permutation."{}}\ \&\&\ !this-\/>IsDoneWithPermutations());}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \ \ this-\/>Apply(obj,\ this-\/>Permutations[this-\/>CurrentPermutation]);}
+\DoxyCodeLine{00290\ \ \ \}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ std::string\ GetCurrentPermutationName()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00293\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00294\ \ \ \ \ assert(\textcolor{stringliteral}{"{}Modified\ options\ without\ resetting\ permutations."{}}\ \&\&}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ this-\/>PermutationTime\ >\ this-\/>OptionTime);}
+\DoxyCodeLine{00296\ \ \ \ \ assert(\textcolor{stringliteral}{"{}Invalid\ permutation."{}}\ \&\&\ !this-\/>IsDoneWithPermutations());}
+\DoxyCodeLine{00297\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>NamePermutation(this-\/>Permutations[this-\/>CurrentPermutation]);}
+\DoxyCodeLine{00298\ \ \ \}}
+\DoxyCodeLine{00299\ \};}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00303\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkPermuteOptions.h}}
+
+\end{DoxyCode}

@@ -1,0 +1,165 @@
+\doxysection{Bi\+CGSTAB.\+h}
+\hypertarget{_bi_c_g_s_t_a_b_8h_source}{}\label{_bi_c_g_s_t_a_b_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkeigen/eigen/src/IterativeLinearSolvers/BiCGSTAB.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkeigen/eigen/src/IterativeLinearSolvers/BiCGSTAB.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ This\ file\ is\ part\ of\ Eigen,\ a\ lightweight\ C++\ template\ library}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ for\ linear\ algebra.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ Copyright\ (C)\ 2011-\/2014\ Gael\ Guennebaud\ <gael.guennebaud@inria.fr>}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ Copyright\ (C)\ 2012\ Désiré\ Nuentsa-\/Wakam\ <desire.nuentsa\_wakam@inria.fr>}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ This\ Source\ Code\ Form\ is\ subject\ to\ the\ terms\ of\ the\ Mozilla}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ Public\ License\ v.\ 2.0.\ If\ a\ copy\ of\ the\ MPL\ was\ not\ distributed}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ with\ this\ file,\ You\ can\ obtain\ one\ at\ http://mozilla.org/MPL/2.0/.}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#ifndef\ EIGEN\_BICGSTAB\_H}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#define\ EIGEN\_BICGSTAB\_H}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_eigen}{Eigen}}\ \{\ }
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }internal\ \{}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00028\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ MatrixType,\ \textcolor{keyword}{typename}\ Rhs,\ \textcolor{keyword}{typename}\ Dest,\ \textcolor{keyword}{typename}\ Preconditioner>}
+\DoxyCodeLine{00029\ \textcolor{keywordtype}{bool}\ bicgstab(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{MatrixType}}\&\ mat,\ \textcolor{keyword}{const}\ Rhs\&\ rhs,\ Dest\&\ x,}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{Preconditioner}}\&\ precond,\ \doxymbox{\hyperlink{namespace_eigen_a62e77e0933482dafde8fe197d9a2cfde}{Index}}\&\ iters,}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ Dest::RealScalar\&\ tol\_error)}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \ \ \textcolor{keyword}{using\ }std::sqrt;}
+\DoxyCodeLine{00034\ \ \ \textcolor{keyword}{using\ }std::abs;}
+\DoxyCodeLine{00035\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Dest::RealScalar\ RealScalar;}
+\DoxyCodeLine{00036\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ Dest::Scalar\ \doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{Scalar}};}
+\DoxyCodeLine{00037\ \ \ \textcolor{keyword}{typedef}\ Matrix<Scalar,Dynamic,1>\ VectorType;}
+\DoxyCodeLine{00038\ \ \ RealScalar\ tol\ =\ tol\_error;}
+\DoxyCodeLine{00039\ \ \ \doxymbox{\hyperlink{namespace_eigen_a62e77e0933482dafde8fe197d9a2cfde}{Index}}\ maxIters\ =\ iters;}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \doxymbox{\hyperlink{namespace_eigen_a62e77e0933482dafde8fe197d9a2cfde}{Index}}\ n\ =\ mat.cols();}
+\DoxyCodeLine{00042\ \ \ VectorType\ r\ \ =\ rhs\ -\/\ mat\ *\ x;}
+\DoxyCodeLine{00043\ \ \ VectorType\ r0\ =\ r;}
+\DoxyCodeLine{00044\ \ \ }
+\DoxyCodeLine{00045\ \ \ RealScalar\ r0\_sqnorm\ =\ r0.squaredNorm();}
+\DoxyCodeLine{00046\ \ \ RealScalar\ rhs\_sqnorm\ =\ rhs.squaredNorm();}
+\DoxyCodeLine{00047\ \ \ \textcolor{keywordflow}{if}(rhs\_sqnorm\ ==\ 0)}
+\DoxyCodeLine{00048\ \ \ \{}
+\DoxyCodeLine{00049\ \ \ \ \ x.setZero();}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00051\ \ \ \}}
+\DoxyCodeLine{00052\ \ \ \doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{Scalar}}\ rho\ \ \ \ =\ 1;}
+\DoxyCodeLine{00053\ \ \ \doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{Scalar}}\ alpha\ \ =\ 1;}
+\DoxyCodeLine{00054\ \ \ \doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{Scalar}}\ w\ \ \ \ \ \ =\ 1;}
+\DoxyCodeLine{00055\ \ \ }
+\DoxyCodeLine{00056\ \ \ VectorType\ v\ =\ VectorType::Zero(n),\ p\ =\ VectorType::Zero(n);}
+\DoxyCodeLine{00057\ \ \ VectorType\ y(n),\ \ z(n);}
+\DoxyCodeLine{00058\ \ \ VectorType\ kt(n),\ ks(n);}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ VectorType\ s(n),\ t(n);}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ RealScalar\ tol2\ =\ tol*tol*rhs\_sqnorm;}
+\DoxyCodeLine{00063\ \ \ RealScalar\ eps2\ =\ NumTraits<Scalar>::epsilon()*NumTraits<Scalar>::epsilon();}
+\DoxyCodeLine{00064\ \ \ \doxymbox{\hyperlink{namespace_eigen_a62e77e0933482dafde8fe197d9a2cfde}{Index}}\ i\ =\ 0;}
+\DoxyCodeLine{00065\ \ \ \doxymbox{\hyperlink{namespace_eigen_a62e77e0933482dafde8fe197d9a2cfde}{Index}}\ restarts\ =\ 0;}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \textcolor{keywordflow}{while}\ (\ r.squaredNorm()\ >\ tol2\ \&\&\ i<maxIters\ )}
+\DoxyCodeLine{00068\ \ \ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{Scalar}}\ rho\_old\ =\ rho;}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ rho\ =\ r0.dot(r);}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{if}\ (abs(rho)\ <\ eps2*r0\_sqnorm)}
+\DoxyCodeLine{00073\ \ \ \ \ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \textcolor{comment}{//\ The\ new\ residual\ vector\ became\ too\ orthogonal\ to\ the\ arbitrarily\ chosen\ direction\ r0}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \textcolor{comment}{//\ Let's\ restart\ with\ a\ new\ r0:}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ r\ \ =\ rhs\ -\/\ mat\ *\ x;}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ r0\ =\ r;}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ rho\ =\ r0\_sqnorm\ =\ r.squaredNorm();}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \textcolor{keywordflow}{if}(restarts++\ ==\ 0)}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ i\ =\ 0;}
+\DoxyCodeLine{00081\ \ \ \ \ \}}
+\DoxyCodeLine{00082\ \ \ \ \ \doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{Scalar}}\ beta\ =\ (rho/rho\_old)\ *\ (alpha\ /\ w);}
+\DoxyCodeLine{00083\ \ \ \ \ p\ =\ r\ +\ beta\ *\ (p\ -\/\ w\ *\ v);}
+\DoxyCodeLine{00084\ \ \ \ \ }
+\DoxyCodeLine{00085\ \ \ \ \ y\ =\ precond.solve(p);}
+\DoxyCodeLine{00086\ \ \ \ \ }
+\DoxyCodeLine{00087\ \ \ \ \ v.noalias()\ =\ mat\ *\ y;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ alpha\ =\ rho\ /\ r0.dot(v);}
+\DoxyCodeLine{00090\ \ \ \ \ s\ =\ r\ -\/\ alpha\ *\ v;}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ z\ =\ precond.solve(s);}
+\DoxyCodeLine{00093\ \ \ \ \ t.noalias()\ =\ mat\ *\ z;}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \ \ RealScalar\ tmp\ =\ t.squaredNorm();}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordflow}{if}(tmp>RealScalar(0))}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ w\ =\ t.dot(s)\ /\ tmp;}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ w\ =\ \doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{Scalar}}(0);}
+\DoxyCodeLine{00100\ \ \ \ \ x\ +=\ alpha\ *\ y\ +\ w\ *\ z;}
+\DoxyCodeLine{00101\ \ \ \ \ r\ =\ s\ -\/\ w\ *\ t;}
+\DoxyCodeLine{00102\ \ \ \ \ ++i;}
+\DoxyCodeLine{00103\ \ \ \}}
+\DoxyCodeLine{00104\ \ \ tol\_error\ =\ sqrt(r.squaredNorm()/rhs\_sqnorm);}
+\DoxyCodeLine{00105\ \ \ iters\ =\ i;}
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};\ }
+\DoxyCodeLine{00107\ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{keyword}{template}<\ \textcolor{keyword}{typename}\ \_MatrixType,}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ \_Preconditioner\ =\ \doxymbox{\hyperlink{class_eigen_1_1_diagonal_preconditioner}{DiagonalPreconditioner<typename\ \_MatrixType::Scalar>}}\ >}
+\DoxyCodeLine{00113\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_eigen_1_1_bi_c_g_s_t_a_b}{BiCGSTAB}};}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{keyword}{namespace\ }internal\ \{}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \textcolor{keyword}{template}<\ \textcolor{keyword}{typename}\ \_MatrixType,\ \textcolor{keyword}{typename}\ \_Preconditioner>}
+\DoxyCodeLine{00118\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_eigen_1_1internal_1_1traits}{traits}}<\doxymbox{\hyperlink{class_eigen_1_1_bi_c_g_s_t_a_b}{BiCGSTAB}}<\_MatrixType,\_Preconditioner>\ >}
+\DoxyCodeLine{00119\ \{}
+\DoxyCodeLine{00120\ \ \ \textcolor{keyword}{typedef}\ \_MatrixType\ MatrixType;}
+\DoxyCodeLine{00121\ \ \ \textcolor{keyword}{typedef}\ \_Preconditioner\ Preconditioner;}
+\DoxyCodeLine{00122\ \};}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00157\ \textcolor{keyword}{template}<\ \textcolor{keyword}{typename}\ \_MatrixType,\ \textcolor{keyword}{typename}\ \_Preconditioner>}
+\DoxyCodeLine{00158\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_eigen_1_1_bi_c_g_s_t_a_b_ae1a0df6ef6e947256c3cb83ce7df7eda}{BiCGSTAB}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_eigen_1_1_iterative_solver_base_a0922f2be45082690d7734aa6732fc493}{IterativeSolverBase}}<BiCGSTAB<\_MatrixType,\_Preconditioner>\ >}
+\DoxyCodeLine{00159\ \{}
+\DoxyCodeLine{00160\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{class_eigen_1_1_iterative_solver_base_a0922f2be45082690d7734aa6732fc493}{IterativeSolverBase<BiCGSTAB>}}\ Base;}
+\DoxyCodeLine{00161\ \ \ \textcolor{keyword}{using\ }Base::matrix;}
+\DoxyCodeLine{00162\ \ \ \textcolor{keyword}{using\ }Base::m\_error;}
+\DoxyCodeLine{00163\ \ \ \textcolor{keyword}{using\ }Base::m\_iterations;}
+\DoxyCodeLine{00164\ \ \ \textcolor{keyword}{using\ }Base::m\_info;}
+\DoxyCodeLine{00165\ \ \ \textcolor{keyword}{using\ }Base::m\_isInitialized;}
+\DoxyCodeLine{00166\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00167\ \ \ \textcolor{keyword}{typedef}\ \_MatrixType\ MatrixType;}
+\DoxyCodeLine{00168\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ MatrixType::Scalar\ Scalar;}
+\DoxyCodeLine{00169\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ MatrixType::RealScalar\ RealScalar;}
+\DoxyCodeLine{00170\ \ \ \textcolor{keyword}{typedef}\ \_Preconditioner\ Preconditioner;}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00175\ \ \ \doxymbox{\hyperlink{class_eigen_1_1_bi_c_g_s_t_a_b_ae1a0df6ef6e947256c3cb83ce7df7eda}{BiCGSTAB}}()\ :\ Base()\ \{\}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00187\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ MatrixDerived>}
+\DoxyCodeLine{00188\ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{class_eigen_1_1_bi_c_g_s_t_a_b_a5842afd9566e254bc727de1fd7f46362}{BiCGSTAB}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_eigen_1_1_eigen_base}{EigenBase<MatrixDerived>}}\&\ A)\ :\ Base(A.derived())\ \{\}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \doxymbox{\hyperlink{class_eigen_1_1_bi_c_g_s_t_a_b}{\string~BiCGSTAB}}()\ \{\}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Rhs,\textcolor{keyword}{typename}\ Dest>}
+\DoxyCodeLine{00194\ \ \ \textcolor{keywordtype}{void}\ \_solve\_vector\_with\_guess\_impl(\textcolor{keyword}{const}\ Rhs\&\ b,\ Dest\&\ x)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00195\ \textcolor{keyword}{\ \ }\{\ \ \ \ }
+\DoxyCodeLine{00196\ \ \ \ \ m\_iterations\ =\ \doxymbox{\hyperlink{class_eigen_1_1_iterative_solver_base_a168a74c8dceb6233b220031fdd756ba0}{Base::maxIterations}}();}
+\DoxyCodeLine{00197\ \ \ \ \ m\_error\ =\ Base::m\_tolerance;}
+\DoxyCodeLine{00198\ \ \ \ \ }
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordtype}{bool}\ ret\ =\ internal::bicgstab(matrix(),\ b,\ x,\ Base::m\_preconditioner,\ m\_iterations,\ m\_error);}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ m\_info\ =\ (!ret)\ ?\ \doxymbox{\hyperlink{group__enums_gga85fad7b87587764e5cf6b513a9e0ee5ea1c6e20706575a629b27a105f07f1883b}{NumericalIssue}}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ :\ m\_error\ <=\ Base::m\_tolerance\ ?\ \doxymbox{\hyperlink{group__enums_gga85fad7b87587764e5cf6b513a9e0ee5ea671a2aeb0f527802806a441d58a80fcf}{Success}}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ :\ \doxymbox{\hyperlink{group__enums_gga85fad7b87587764e5cf6b513a9e0ee5ea6a68dfb88a8336108a30588bdf356c57}{NoConvergence}};}
+\DoxyCodeLine{00204\ \ \ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \};}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \}\ \textcolor{comment}{//\ end\ namespace\ Eigen}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ EIGEN\_BICGSTAB\_H}}
+
+\end{DoxyCode}

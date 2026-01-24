@@ -1,3 +1,24 @@
+/**
+ * @file IExaminationModeStrategy.h
+ * @brief Interface for examination mode-specific behavior strategies.
+ *
+ * @details Defines the Strategy pattern interface for handling different
+ *          examination modes (Clinical, Demo, Calibration, Test). Each mode
+ *          implements this interface to provide mode-specific behavior for
+ *          image persistence, DICOM creation, and workflow management.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see ExaminationMode
+ * @see ClinicalExaminationStrategy
+ * @see DemoExaminationStrategy
+ * @see CalibrationExaminationStrategy
+ * @see TestExaminationStrategy
+ */
+
 #ifndef ETREK_EXAMINATION_IEXAMINATIONMODESTRATEGY_H
 #define ETREK_EXAMINATION_IEXAMINATIONMODESTRATEGY_H
 

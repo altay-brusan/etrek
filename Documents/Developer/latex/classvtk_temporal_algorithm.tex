@@ -1,0 +1,48 @@
+\doxysection{vtk\+Temporal\+Algorithm Class Reference}
+\hypertarget{classvtk_temporal_algorithm}{}\label{classvtk_temporal_algorithm}\index{vtkTemporalAlgorithm@{vtkTemporalAlgorithm}}
+
+
+Base class for temporal algorithms.  
+
+
+
+
+{\ttfamily \+\#include $<$vtk\+Temporal\+Algorithm.\+h$>$}
+
+
+
+\doxysubsection{Detailed Description}
+Base class for temporal algorithms. 
+
+{\ttfamily \doxylink{classvtk_temporal_algorithm}{vtk\+Temporal\+Algorithm}} is a class to template over a subclass of {\ttfamily \doxylink{classvtk_algorithm}{vtk\+Algorithm}}. It effectively implements {\ttfamily Request\+Data}, which, depending on the request, will call {\ttfamily Initialize}, {\ttfamily Execute\textquotesingle{} and /\+ or }Finalize{\ttfamily . Algorithms subclassing }\doxylink{classvtk_temporal_algorithm}{vtk\+Temporal\+Algorithm}{\ttfamily  should provide a temporal cache that on which to accumulate data in order to provide a complete output upon calling }Finalize{\ttfamily . This algorithm class assumes temporal integration over input port 0, connection 0. Time steps are gathered from its input information, and }UPDATE\+\_\+\+TIME\+\_\+\+STEP()\`{} requests are propagated to this input connection only. Filters taking multiple time series as inputs should probably not inherit from this class.
+
+This class of algorithm handles 2 types of temporal integration, controlled by the member {\ttfamily Integrate\+Full\+Time\+Series}:\+
+\begin{DoxyItemize}
+\item When turned ON, integration is performed over the entire input time series for any requested, time step. effectively removing the temporalness of the outputs.
+\item When turned OFF, the output remains temporal. It is the result of integrating all time steps up to the time step requested downstream by {\ttfamily UPDATE\+\_\+\+TIME\+\_\+\+STEP()}.
+\end{DoxyItemize}
+
+In any case, this algorithm will request all necessary time steps upstream in order to generate the output, in chronological order, setting the information key {\ttfamily CONTINUE\+\_\+\+EXECUTING()}. \doxylink{requirements_The}{The} executive of this filter will iterate over all time requests until the output is generating. {\ttfamily Initialize} will be called if the requested time step is more ancient than the last generated time step. Then, at each iteration, {\ttfamily Execute} is called. Finally, when the last needed iteration has completed, {\ttfamily Finalize} is called.
+
+There are cases where the user does not have access to the entire time series at once. This compromises filters that have {\ttfamily Integrate\+Full\+Time\+Series} ON, and which rely on knowledge provided by the information key {\ttfamily TIME\+\_\+\+STEPS()}. \doxylink{requirements_The}{The} implementation of this algorithm provides a special mode for such circumstances. All the user needs to do is set the information key {\ttfamily NO\+\_\+\+PRIOR\+\_\+\+TEMPORAL\+\_\+\+ACCESS()} in the sources. If the information key {\ttfamily NO\+\_\+\+PRIOR\+\_\+\+TEMPORAL\+\_\+\+ACCESS()} is set on the first input on port 0, then this class will assume that the user is requesting time steps in chronological order using {\ttfamily Update\+Time\+Step(double)} and will provide a complete output at each temporal iteration. Effectively, at each iteration, {\ttfamily Execute} and {\ttfamily Finalize} are called. {\ttfamily Initialize} is called at the first iteration, or when {\ttfamily NO\+\_\+\+PRIOR\+\_\+\+TEMPORAL\+\_\+\+ACCESS()} is set to {\ttfamily \doxylink{classvtk_streaming_demand_driven_pipeline_a9725528092c6e1714d15fe0b48adf0abafb00cc1140d397e7911584714c79fccb}{vtk\+Streaming\+Demand\+Driven\+Pipeline::\+\+NO\+\_\+\+PRIOR\+\_\+\+TEMPORAL\+\_\+\+ACCESS\+\_\+\+RESET}}. Processed time steps are gathered in an array added to the field data of the outputs. \doxylink{requirements_The}{The} name of this array is {\ttfamily time\+\_\+steps} and can be retrieved through the method {\ttfamily Time\+Steps\+Array\+Name()}.
+
+\begin{DoxyWarning}{Warning}
+Python wrapping of subclasses require special handling. Here is an example ensuring wrapping works as expected, implementing a temporal algorithm as a {\ttfamily \doxylink{classvtk_pass_input_type_algorithm}{vtk\+Pass\+Input\+Type\+Algorithm}}:\+
+\end{DoxyWarning}
+
+\begin{DoxyCode}{0}
+
+\end{DoxyCode}
+ \texorpdfstring{$\ast$}{*}/\+
+
+For export macro For Time\+Steps
+
+VTK\+\_\+\+ABI\+\_\+\+NAMESPACE\+\_\+\+BEGIN
+
+class \doxylink{classvtk_double_array}{vtk\+Double\+Array}; class \doxylink{classvtk_information}{vtk\+Information}; class \doxylink{classvtk_information_vector}{vtk\+Information\+Vector};
+
+template $<$class Algorithm\+T$>$ class \doxylink{classvtk_temporal_algorithm}{vtk\+Temporal\+Algorithm} :\+ public AlgorithmT \{ public:\+ /\+ /\+\texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*} Standard methods for instantiation, type information, and printing. 
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+C:\+/\+\+Users/\+altay/\+\+One\+Drive/\+\+Projects/\+etrek/\+\+Third\+Party\+Libraries/\+vtk/\+include/\+vtk-\/9.\+5/\+vtk\+Temporal\+Algorithm.\+h\end{DoxyCompactItemize}

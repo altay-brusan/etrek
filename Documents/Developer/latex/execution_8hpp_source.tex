@@ -1,0 +1,167 @@
+\doxysection{execution.\+hpp}
+\hypertarget{execution_8hpp_source}{}\label{execution_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/master/execution.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/master/execution.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{keyword}{struct\ }diy::Master::ProcessBlock}
+\DoxyCodeLine{00004\ \{}
+\DoxyCodeLine{00005\ \ \ \ \ \ \ \ \ \ \ ProcessBlock(\doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master\_,}
+\DoxyCodeLine{00006\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::deque<int>\&\ \ \ \ \ blocks\_\_,}
+\DoxyCodeLine{00007\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ local\_limit\_,}
+\DoxyCodeLine{00008\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1critical__resource}{critical\_resource<int>}}\&\ \ \ \ idx\_):}
+\DoxyCodeLine{00009\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master(master\_),}
+\DoxyCodeLine{00010\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blocks(blocks\_\_),}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ local\_limit(local\_limit\_),}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ idx(idx\_)}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \ \ ProcessBlock(\textcolor{keyword}{const}\ ProcessBlock\&)\ \ \ \ \ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \ \ ProcessBlock(ProcessBlock\&\&)\ \ \ \ \ \ \ \ \ \ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \ \ \textcolor{keywordtype}{void}\ \ \ \ operator()()}
+\DoxyCodeLine{00019\ \ \ \{}
+\DoxyCodeLine{00020\ \ \ \ \ master.log-\/>debug(\textcolor{stringliteral}{"{}Processing\ with\ thread:\ \{\}"{}},\ \ this\_thread::get\_id());}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \ \ \ \ std::vector<int>\ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a0af7860c2d3b5975e276410a5bff4672}{local}};}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00024\ \ \ \ \ \{}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ cur\ =\ (*idx.access())++;}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((\textcolor{keywordtype}{size\_t})cur\ >=\ blocks.size())}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ i\ \ \ =\ blocks[cur];}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}\ =\ master.gid(i);}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_annotation_1_1_guard}{stats::Annotation::Guard}}\ g(\ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_annotation}{stats::Annotation}}(\textcolor{stringliteral}{"{}diy.block"{}}).set(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}})\ );}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (master.block(i))}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classdiy_1_1_master_a0af7860c2d3b5975e276410a5bff4672}{local}}.size()\ ==\ (\textcolor{keywordtype}{size\_t})local\_limit)}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master.unload(\doxymbox{\hyperlink{classdiy_1_1_master_a0af7860c2d3b5975e276410a5bff4672}{local}});}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a0af7860c2d3b5975e276410a5bff4672}{local}}.push\_back(i);}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \ \ master.log-\/>debug(\textcolor{stringliteral}{"{}Processing\ block:\ \{\}"{}},\ \doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}});}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ skip\ =\ all\_skip(i);}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \ \ IncomingQueuesMap\ \&current\_incoming\ =\ master.incoming\_[master.exchange\_round\_].map;}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (master.block(i)\ ==\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ block\ unloaded}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (skip)}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master.load\_queues(i);\ \ \ \ \ \ \ \ \textcolor{comment}{//\ even\ though\ we\ are\ skipping\ the\ block,\ the\ queues\ might\ be\ necessary}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{classdiy_1_1_master_a0af7860c2d3b5975e276410a5bff4672}{local}}.size()\ ==\ (\textcolor{keywordtype}{size\_t})local\_limit)\ \ \ \ \ \ \textcolor{comment}{//\ reached\ the\ local\ limit}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master.unload(\doxymbox{\hyperlink{classdiy_1_1_master_a0af7860c2d3b5975e276410a5bff4672}{local}});}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master.load(i);}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a0af7860c2d3b5975e276410a5bff4672}{local}}.push\_back(i);}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ cmd\ :\ master.commands\_)}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ cmd-\/>execute(skip\ ?\ 0\ :\ master.block(i),\ master.proxy(i));}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ no\ longer\ need\ them,\ so\ get\ rid\ of\ them}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ current\_incoming[\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}].clear();}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (skip\ \&\&\ master.block(i)\ ==\ 0)}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ master.unload\_queues(i);\ \ \ \ \textcolor{comment}{//\ even\ though\ we\ are\ skipping\ the\ block,\ the\ queues\ might\ be\ necessary}}
+\DoxyCodeLine{00071\ \ \ \ \ \}\ \textcolor{keywordflow}{while}(\textcolor{keyword}{true});}
+\DoxyCodeLine{00072\ \ \ \}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{keywordtype}{bool}\ \ all\_skip(\textcolor{keywordtype}{int}\ i)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00075\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ skip\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ cmd\ :\ master.commands\_)}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!cmd-\/>skip(i,\ master))}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ skip\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ skip;}
+\DoxyCodeLine{00086\ \ \ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master;}
+\DoxyCodeLine{00089\ \ \ \textcolor{keyword}{const}\ std::deque<int>\&\ \ blocks;}
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ local\_limit;}
+\DoxyCodeLine{00091\ \ \ \doxymbox{\hyperlink{classdiy_1_1critical__resource}{critical\_resource<int>}}\&\ idx;}
+\DoxyCodeLine{00092\ \};}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00095\ diy::Master::}
+\DoxyCodeLine{00096\ execute()}
+\DoxyCodeLine{00097\ \{}
+\DoxyCodeLine{00098\ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Entered\ execute()"{}});}
+\DoxyCodeLine{00099\ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}execute"{}});}
+\DoxyCodeLine{00100\ \ \ DIY\_UNUSED(scoped);}
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{//show\_incoming\_records();}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \textcolor{comment}{//\ touch\ the\ outgoing\ and\ incoming\ queues\ as\ well\ as\ collectives\ to\ make\ sure\ they\ exist}}
+\DoxyCodeLine{00104\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ \doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}();\ ++i)}
+\DoxyCodeLine{00105\ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ outgoing(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i));}
+\DoxyCodeLine{00107\ \ \ \ \ incoming(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i));\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ implicitly\ touches\ queue\ records}}
+\DoxyCodeLine{00108\ \ \ \ \ collectives(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i));}
+\DoxyCodeLine{00109\ \ \ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordflow}{if}\ (commands\_.empty())}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \textcolor{comment}{//\ Order\ the\ blocks,\ so\ the\ loaded\ ones\ come\ first}}
+\DoxyCodeLine{00115\ \ \ std::deque<int>\ \ \ blocks;}
+\DoxyCodeLine{00116\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ size();\ ++i)}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keywordflow}{if}\ (block(i)\ ==\ 0)}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ blocks.push\_back(i);}
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ blocks.push\_front(i);}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{comment}{//\ don't\ use\ more\ threads\ than\ we\ can\ have\ blocks\ in\ memory}}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{int}\ num\_threads;}
+\DoxyCodeLine{00124\ \ \ \textcolor{keywordtype}{int}\ blocks\_per\_thread;}
+\DoxyCodeLine{00125\ \ \ \textcolor{keywordflow}{if}\ (limit\_\ ==\ -\/1)}
+\DoxyCodeLine{00126\ \ \ \{}
+\DoxyCodeLine{00127\ \ \ \ \ num\_threads\ =\ threads\_;}
+\DoxyCodeLine{00128\ \ \ \ \ blocks\_per\_thread\ =\ size();}
+\DoxyCodeLine{00129\ \ \ \}}
+\DoxyCodeLine{00130\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00131\ \ \ \{}
+\DoxyCodeLine{00132\ \ \ \ \ num\_threads\ =\ (std::min)(threads\_,\ limit\_);}
+\DoxyCodeLine{00133\ \ \ \ \ blocks\_per\_thread\ =\ limit\_/num\_threads;}
+\DoxyCodeLine{00134\ \ \ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \textcolor{comment}{//\ idx\ is\ shared}}
+\DoxyCodeLine{00137\ \ \ critical\_resource<int>\ idx(0);}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \textcolor{keywordflow}{if}\ (num\_threads\ >\ 1)}
+\DoxyCodeLine{00140\ \ \ \{}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{comment}{//\ launch\ the\ threads}}
+\DoxyCodeLine{00142\ \ \ \ \ std::list<thread>\ \ \ threads;}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ (unsigned)num\_threads;\ ++i)}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ threads.emplace\_back(ProcessBlock(*\textcolor{keyword}{this},\ blocks,\ blocks\_per\_thread,\ idx));}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ t\ :\ threads)}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ t.join();}
+\DoxyCodeLine{00148\ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00149\ \ \ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ ProcessBlock(*\textcolor{keyword}{this},\ blocks,\ blocks\_per\_thread,\ idx)();}
+\DoxyCodeLine{00151\ \ \ \}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \textcolor{comment}{//\ clear\ incoming\ queues}}
+\DoxyCodeLine{00154\ \ \ incoming\_[exchange\_round\_].map.clear();}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \textcolor{keywordflow}{if}\ (limit()\ !=\ -\/1\ \&\&\ in\_memory()\ >\ limit())}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(fmt::format(\textcolor{stringliteral}{"{}Fatal:\ \{\}\ blocks\ in\ memory,\ with\ limit\ \{\}"{}},\ in\_memory(),\ limit()));}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \textcolor{comment}{//\ clear\ commands}}
+\DoxyCodeLine{00160\ \ \ commands\_.clear();}
+\DoxyCodeLine{00161\ \}}
+
+\end{DoxyCode}

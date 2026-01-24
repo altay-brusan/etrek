@@ -1,0 +1,124 @@
+\doxysection{diy-\/fp.h}
+\hypertarget{diy-fp_8h_source}{}\label{diy-fp_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdoubleconversion/double-\/conversion/diy-\/fp.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdoubleconversion/double-\/conversion/diy-\/fp.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2010\ the\ V8\ project\ authors.\ All\ rights\ reserved.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ Redistribution\ and\ use\ in\ source\ and\ binary\ forms,\ with\ or\ without}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ modification,\ are\ permitted\ provided\ that\ the\ following\ conditions\ are}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ met:}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ \ \ \ \ *\ Redistributions\ of\ source\ code\ must\ retain\ the\ above\ copyright}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ \ \ \ \ \ \ notice,\ this\ list\ of\ conditions\ and\ the\ following\ disclaimer.}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ \ \ \ \ *\ Redistributions\ in\ binary\ form\ must\ reproduce\ the\ above}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ \ \ \ \ \ \ copyright\ notice,\ this\ list\ of\ conditions\ and\ the\ following}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ \ \ \ \ \ \ disclaimer\ in\ the\ documentation\ and/or\ other\ materials\ provided}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ \ \ \ \ \ \ with\ the\ distribution.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ \ \ \ \ *\ Neither\ the\ name\ of\ Google\ Inc.\ nor\ the\ names\ of\ its}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ \ \ \ \ \ \ contributors\ may\ be\ used\ to\ endorse\ or\ promote\ products\ derived}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ \ \ \ \ \ \ from\ this\ software\ without\ specific\ prior\ written\ permission.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ THIS\ SOFTWARE\ IS\ PROVIDED\ BY\ THE\ COPYRIGHT\ HOLDERS\ AND\ CONTRIBUTORS}}
+\DoxyCodeLine{00017\ \textcolor{comment}{//\ "{}AS\ IS"{}\ AND\ ANY\ EXPRESS\ OR\ IMPLIED\ WARRANTIES,\ INCLUDING,\ BUT\ NOT}}
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ LIMITED\ TO,\ THE\ IMPLIED\ WARRANTIES\ OF\ MERCHANTABILITY\ AND\ FITNESS\ FOR}}
+\DoxyCodeLine{00019\ \textcolor{comment}{//\ A\ PARTICULAR\ PURPOSE\ ARE\ DISCLAIMED.\ IN\ NO\ EVENT\ SHALL\ THE\ COPYRIGHT}}
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ OWNER\ OR\ CONTRIBUTORS\ BE\ LIABLE\ FOR\ ANY\ DIRECT,\ INDIRECT,\ INCIDENTAL,}}
+\DoxyCodeLine{00021\ \textcolor{comment}{//\ SPECIAL,\ EXEMPLARY,\ OR\ CONSEQUENTIAL\ DAMAGES\ (INCLUDING,\ BUT\ NOT}}
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ LIMITED\ TO,\ PROCUREMENT\ OF\ SUBSTITUTE\ GOODS\ OR\ SERVICES;\ LOSS\ OF\ USE,}}
+\DoxyCodeLine{00023\ \textcolor{comment}{//\ DATA,\ OR\ PROFITS;\ OR\ BUSINESS\ INTERRUPTION)\ HOWEVER\ CAUSED\ AND\ ON\ ANY}}
+\DoxyCodeLine{00024\ \textcolor{comment}{//\ THEORY\ OF\ LIABILITY,\ WHETHER\ IN\ CONTRACT,\ STRICT\ LIABILITY,\ OR\ TORT}}
+\DoxyCodeLine{00025\ \textcolor{comment}{//\ (INCLUDING\ NEGLIGENCE\ OR\ OTHERWISE)\ ARISING\ IN\ ANY\ WAY\ OUT\ OF\ THE\ USE}}
+\DoxyCodeLine{00026\ \textcolor{comment}{//\ OF\ THIS\ SOFTWARE,\ EVEN\ IF\ ADVISED\ OF\ THE\ POSSIBILITY\ OF\ SUCH\ DAMAGE.}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#ifndef\ DOUBLE\_CONVERSION\_DIY\_FP\_H\_}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#define\ DOUBLE\_CONVERSION\_DIY\_FP\_H\_}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}utils.h"{}}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{keyword}{namespace\ }double\_conversion\ \{}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ This\ "{}Do\ It\ Yourself\ Floating\ Point"{}\ class\ implements\ a\ floating-\/point\ number}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//\ with\ a\ uint64\ significand\ and\ an\ int\ exponent.\ Normalized\ DiyFp\ numbers\ will}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ have\ the\ most\ significant\ bit\ of\ the\ significand\ set.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ Multiplication\ and\ Subtraction\ do\ not\ normalize\ their\ results.}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ DiyFp\ are\ not\ designed\ to\ contain\ special\ doubles\ (NaN\ and\ Infinity).}}
+\DoxyCodeLine{00040\ \textcolor{keyword}{class\ }DiyFp\ \{}
+\DoxyCodeLine{00041\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00042\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ kSignificandSize\ =\ 64;}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ DiyFp()\ :\ f\_(0),\ e\_(0)\ \{\}}
+\DoxyCodeLine{00045\ \ \ DiyFp(uint64\_t\ significand,\ \textcolor{keywordtype}{int}\ exponent)\ :\ f\_(significand),\ e\_(exponent)\ \{\}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \textcolor{comment}{//\ this\ =\ this\ -\/\ other.}}
+\DoxyCodeLine{00048\ \ \ \textcolor{comment}{//\ The\ exponents\ of\ both\ numbers\ must\ be\ the\ same\ and\ the\ significand\ of\ this}}
+\DoxyCodeLine{00049\ \ \ \textcolor{comment}{//\ must\ be\ bigger\ than\ the\ significand\ of\ other.}}
+\DoxyCodeLine{00050\ \ \ \textcolor{comment}{//\ The\ result\ will\ not\ be\ normalized.}}
+\DoxyCodeLine{00051\ \ \ \textcolor{keywordtype}{void}\ Subtract(\textcolor{keyword}{const}\ DiyFp\&\ other)\ \{}
+\DoxyCodeLine{00052\ \ \ \ \ ASSERT(e\_\ ==\ other.e\_);}
+\DoxyCodeLine{00053\ \ \ \ \ ASSERT(f\_\ >=\ other.f\_);}
+\DoxyCodeLine{00054\ \ \ \ \ f\_\ -\/=\ other.f\_;}
+\DoxyCodeLine{00055\ \ \ \}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{//\ Returns\ a\ -\/\ b.}}
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{//\ The\ exponents\ of\ both\ numbers\ must\ be\ the\ same\ and\ this\ must\ be\ bigger}}
+\DoxyCodeLine{00059\ \ \ \textcolor{comment}{//\ than\ other.\ The\ result\ will\ not\ be\ normalized.}}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{static}\ DiyFp\ Minus(\textcolor{keyword}{const}\ DiyFp\&\ a,\ \textcolor{keyword}{const}\ DiyFp\&\ b)\ \{}
+\DoxyCodeLine{00061\ \ \ \ \ DiyFp\ result\ =\ a;}
+\DoxyCodeLine{00062\ \ \ \ \ result.Subtract(b);}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00064\ \ \ \}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \textcolor{comment}{//\ this\ =\ this\ *\ other.}}
+\DoxyCodeLine{00068\ \ \ \textcolor{keywordtype}{void}\ Multiply(\textcolor{keyword}{const}\ DiyFp\&\ other);}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{comment}{//\ returns\ a\ *\ b;}}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{static}\ DiyFp\ Times(\textcolor{keyword}{const}\ DiyFp\&\ a,\ \textcolor{keyword}{const}\ DiyFp\&\ b)\ \{}
+\DoxyCodeLine{00072\ \ \ \ \ DiyFp\ result\ =\ a;}
+\DoxyCodeLine{00073\ \ \ \ \ result.Multiply(b);}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00075\ \ \ \}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordtype}{void}\ Normalize()\ \{}
+\DoxyCodeLine{00078\ \ \ \ \ ASSERT(f\_\ !=\ 0);}
+\DoxyCodeLine{00079\ \ \ \ \ uint64\_t\ significand\ =\ f\_;}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordtype}{int}\ exponent\ =\ e\_;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{comment}{//\ This\ method\ is\ mainly\ called\ for\ normalizing\ boundaries.\ In\ general}}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{//\ boundaries\ need\ to\ be\ shifted\ by\ 10\ bits.\ We\ thus\ optimize\ for\ this\ case.}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keyword}{const}\ uint64\_t\ k10MSBits\ =\ UINT64\_2PART\_C(0xFFC00000,\ 00000000);}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordflow}{while}\ ((significand\ \&\ k10MSBits)\ ==\ 0)\ \{}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ significand\ <<=\ 10;}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ exponent\ -\/=\ 10;}
+\DoxyCodeLine{00088\ \ \ \ \ \}}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordflow}{while}\ ((significand\ \&\ kUint64MSB)\ ==\ 0)\ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ significand\ <<=\ 1;}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ exponent-\/-\/;}
+\DoxyCodeLine{00092\ \ \ \ \ \}}
+\DoxyCodeLine{00093\ \ \ \ \ f\_\ =\ significand;}
+\DoxyCodeLine{00094\ \ \ \ \ e\_\ =\ exponent;}
+\DoxyCodeLine{00095\ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \textcolor{keyword}{static}\ DiyFp\ Normalize(\textcolor{keyword}{const}\ DiyFp\&\ a)\ \{}
+\DoxyCodeLine{00098\ \ \ \ \ DiyFp\ result\ =\ a;}
+\DoxyCodeLine{00099\ \ \ \ \ result.Normalize();}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00101\ \ \ \}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ uint64\_t\ f()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ f\_;\ \}}
+\DoxyCodeLine{00104\ \ \ \textcolor{keywordtype}{int}\ e()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ e\_;\ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordtype}{void}\ set\_f(uint64\_t\ new\_value)\ \{\ f\_\ =\ new\_value;\ \}}
+\DoxyCodeLine{00107\ \ \ \textcolor{keywordtype}{void}\ set\_e(\textcolor{keywordtype}{int}\ new\_value)\ \{\ e\_\ =\ new\_value;\ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00110\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ uint64\_t\ kUint64MSB\ =\ UINT64\_2PART\_C(0x80000000,\ 00000000);}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ uint64\_t\ f\_;}
+\DoxyCodeLine{00113\ \ \ \textcolor{keywordtype}{int}\ e\_;}
+\DoxyCodeLine{00114\ \};}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \}\ \ \textcolor{comment}{//\ namespace\ double\_conversion}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{//\ DOUBLE\_CONVERSION\_DIY\_FP\_H\_}}
+
+\end{DoxyCode}

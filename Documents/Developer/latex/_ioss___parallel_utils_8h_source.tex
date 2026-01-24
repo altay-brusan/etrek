@@ -1,0 +1,319 @@
+\doxysection{Ioss\+\_\+\+Parallel\+Utils.\+h}
+\hypertarget{_ioss___parallel_utils_8h_source}{}\label{_ioss___parallel_utils_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_ParallelUtils.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_ParallelUtils.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright(C)\ 1999-\/2024\ National\ Technology\ \&\ Engineering\ Solutions}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ of\ Sandia,\ LLC\ (NTESS).\ \ Under\ the\ terms\ of\ Contract\ DE-\/NA0003525\ with}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ NTESS,\ the\ U.S.\ Government\ retains\ certain\ rights\ in\ this\ software.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ See\ packages/seacas/LICENSE\ for\ details}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}Ioss\_CodeTypes.h"{}}\ \textcolor{comment}{//\ for\ Int64Vector,\ IntVector}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}Ioss\_Utils.h"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <cstddef>}\ \textcolor{comment}{//\ for\ size\_t}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <stdint.h>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <string>}\ \textcolor{comment}{//\ for\ string}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <vector>}\ \textcolor{comment}{//\ for\ vector}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}ioss\_export.h"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}vtk\_ioss\_mangle.h"{}}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#if\ IOSS\_DEBUG\_OUTPUT}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ "{}vtk\_fmt.h"{}}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ VTK\_FMT(fmt/format.h)}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ VTK\_FMT(fmt/ostream.h)}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ VTK\_FMT(fmt/ranges.h)}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#ifdef\ SEACAS\_HAVE\_MPI}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}Ioss\_SerializeIO.h"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_ioss}{Ioss}}\ \{}
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{class\ }PropertyManager;}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \textcolor{keyword}{class\ }IOSS\_EXPORT\ ParallelUtils}
+\DoxyCodeLine{00034\ \ \ \{}
+\DoxyCodeLine{00035\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00036\ \ \ \ \ ParallelUtils()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keyword}{explicit}\ ParallelUtils(Ioss\_MPI\_Comm\ the\_communicator);}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keyword}{enum}\ MinMax\ \{\ DO\_MAX,\ DO\_MIN,\ DO\_SUM\ \};}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#if\ defined(SEACAS\_HAVE\_MPI)}}
+\DoxyCodeLine{00042\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ Ioss\_MPI\_Comm\ comm\_world()}
+\DoxyCodeLine{00043\ \ \ \ \ \{}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (Ioss\_MPI\_Comm)MPI\_COMM\_WORLD;\ \textcolor{comment}{//\ CHECK:\ ALLOW\ MPI\_COMM\_WORLD}}
+\DoxyCodeLine{00045\ \ \ \ \ \}}
+\DoxyCodeLine{00046\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ Ioss\_MPI\_Comm\ comm\_self()\ \{\ \textcolor{keywordflow}{return}\ (Ioss\_MPI\_Comm)MPI\_COMM\_SELF;\ \}}
+\DoxyCodeLine{00047\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ Ioss\_MPI\_Comm\ comm\_null()\ \{\ \textcolor{keywordflow}{return}\ (Ioss\_MPI\_Comm)MPI\_COMM\_NULL;\ \}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{//\ NOTE:\ These\ values\ match\ those\ used\ in\ siMPI\ package.}}
+\DoxyCodeLine{00050\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ Ioss\_MPI\_Comm\ comm\_world()\ \{\ \textcolor{keywordflow}{return}\ -\/100;\ \}}
+\DoxyCodeLine{00051\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ Ioss\_MPI\_Comm\ comm\_self()\ \{\ \textcolor{keywordflow}{return}\ -\/100;\ \}}
+\DoxyCodeLine{00052\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ Ioss\_MPI\_Comm\ comm\_null()\ \{\ \textcolor{keywordflow}{return}\ 0;\ \}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_a66ac8857acdf08f232dee3b9442b7b21}{add\_environment\_properties}}(Ioss::PropertyManager\ \&properties);}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_a91eab094314f5db20925323dfabfe41a}{get\_environment}}(\textcolor{keyword}{const}\ std::string\ \&name,\ std::string\ \&value,}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IOSS\_MAYBE\_UNUSED\ \textcolor{keywordtype}{bool}\ sync\_parallel)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_a877674284b316b7e4d866478dd59e172}{get\_environment}}(\textcolor{keyword}{const}\ std::string\ \&name,\ \textcolor{keywordtype}{int}\ \&value,}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IOSS\_MAYBE\_UNUSED\ \textcolor{keywordtype}{bool}\ sync\_parallel)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00088\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_ad88fc03bb1036497223da0f946f5e420}{get\_environment}}(\textcolor{keyword}{const}\ std::string\ \ \ \ \ \&name,}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IOSS\_MAYBE\_UNUSED\ \textcolor{keywordtype}{bool}\ sync\_parallel)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ IOSS\_NODISCARD\ std::string\ decode\_filename(\textcolor{keyword}{const}\ std::string\ \&filename,\ \textcolor{keywordtype}{bool}\ is\_parallel)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ IOSS\_NODISCARD\ Ioss\_MPI\_Comm\ communicator()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ communicator\_;\ \}}
+\DoxyCodeLine{00094\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ parallel\_size()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00095\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ parallel\_rank()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordtype}{void}\ barrier()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_a757f862ae7030d6a1393a6aed11e4721}{attribute\_reduction}}(IOSS\_MAYBE\_UNUSED\ \textcolor{keywordtype}{int}\ length,\ IOSS\_MAYBE\_UNUSED\ \textcolor{keywordtype}{char}\ buffer[])\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00112\ \ \ \ \ IOSS\_NODISCARD\ int64\_t\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_a72777f4007d9edacdcd21d5ffd52930b}{generate\_guid}}(IOSS\_MAYBE\_UNUSED\ \textcolor{keywordtype}{size\_t}\ \textcolor{keywordtype}{id},\ \textcolor{keywordtype}{int}\ rank\ =\ -\/1)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_a147cd6844f6459221bb5bb84109af46c}{memory\_stats}}(int64\_t\ \&min,\ int64\_t\ \&max,\ int64\_t\ \&avg)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{comment}{/*\ May\ be\ inaccurate\ unless\ system\ maintains\ this\ information\ */}}
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_a9a8a9b80f8e2d0838c18925d19f87839}{hwm\_memory\_stats}}(int64\_t\ \&min,\ int64\_t\ \&max,\ int64\_t\ \&avg)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_aa792310a4ef6220816784e4063b9e18a}{global\_count}}(\textcolor{keyword}{const}\ IntVector\ \&local\_counts,\ IntVector\ \&global\_counts)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_parallel_utils_aa792310a4ef6220816784e4063b9e18a}{global\_count}}(\textcolor{keyword}{const}\ Int64Vector\ \&local\_counts,\ Int64Vector\ \&global\_counts)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00130\ \ \ \ \ IOSS\_NODISCARD\ T\ global\_minmax(IOSS\_MAYBE\_UNUSED\ T\ \ \ \ \ \ local\_minmax,}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IOSS\_MAYBE\_UNUSED\ MinMax\ which)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keywordtype}{void}\ global\_array\_minmax(IOSS\_MAYBE\_UNUSED\ std::vector<T>\ \&local\_minmax,}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IOSS\_MAYBE\_UNUSED\ MinMax\ \ \ \ \ \ \ \ \ \ which)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keywordtype}{void}\ gather(T\ my\_value,\ std::vector<T>\ \&result)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keywordtype}{void}\ all\_gather(T\ my\_value,\ std::vector<T>\ \&result)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keywordtype}{void}\ gather(std::vector<T>\ \&my\_values,\ std::vector<T>\ \&result)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keywordtype}{void}\ all\_gather(std::vector<T>\ \&my\_values,\ std::vector<T>\ \&result)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordtype}{int}\ gather(\textcolor{keywordtype}{int}\ vals\_count,\ \textcolor{keywordtype}{int}\ size\_per\_val,\ std::vector<T>\ \&my\_values,}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<T>\ \&result)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keywordtype}{void}\ broadcast(T\ \&my\_value,\ \textcolor{keywordtype}{int}\ root\ =\ 0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keywordtype}{void}\ broadcast(std::vector<T>\ \&my\_value,\ \textcolor{keywordtype}{int}\ root\ =\ 0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordtype}{void}\ progress(std::string\_view\ output)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00151\ \ \ \ \ Ioss\_MPI\_Comm\ communicator\_\{comm\_world()\};}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{int}\ \ \ parallelSize\_\{-\/1\};}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{int}\ \ \ parallelRank\_\{-\/1\};}
+\DoxyCodeLine{00154\ \ \ \};}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\#ifdef\ SEACAS\_HAVE\_MPI}}
+\DoxyCodeLine{00157\ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{inline}\ MPI\_Datatype\ mpi\_type(\textcolor{keywordtype}{double}\ \textcolor{comment}{/*dummy*/})\ \{\ \textcolor{keywordflow}{return}\ MPI\_DOUBLE;\ \}}
+\DoxyCodeLine{00158\ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{inline}\ MPI\_Datatype\ mpi\_type(\textcolor{keywordtype}{float}\ \textcolor{comment}{/*dummy*/})\ \{\ \textcolor{keywordflow}{return}\ MPI\_FLOAT;\ \}}
+\DoxyCodeLine{00159\ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{inline}\ MPI\_Datatype\ mpi\_type(\textcolor{keywordtype}{int}\ \textcolor{comment}{/*dummy*/})\ \{\ \textcolor{keywordflow}{return}\ MPI\_INT;\ \}}
+\DoxyCodeLine{00160\ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{inline}\ MPI\_Datatype\ mpi\_type(\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ \textcolor{comment}{/*dummy*/})\ \{\ \textcolor{keywordflow}{return}\ MPI\_LONG\_LONG\_INT;\ \}}
+\DoxyCodeLine{00161\ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{inline}\ MPI\_Datatype\ mpi\_type(\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ \textcolor{comment}{/*dummy*/})\ \{\ \textcolor{keywordflow}{return}\ MPI\_LONG\_LONG\_INT;\ \}}
+\DoxyCodeLine{00162\ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{inline}\ MPI\_Datatype\ mpi\_type(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \textcolor{comment}{/*dummy*/})\ \{\ \textcolor{keywordflow}{return}\ MPI\_UNSIGNED;\ \}}
+\DoxyCodeLine{00163\ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{inline}\ MPI\_Datatype\ mpi\_type(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ \textcolor{comment}{/*dummy*/})}
+\DoxyCodeLine{00164\ \ \ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keywordflow}{return}\ MPI\_UNSIGNED\_LONG;}
+\DoxyCodeLine{00166\ \ \ \}}
+\DoxyCodeLine{00167\ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{inline}\ MPI\_Datatype\ mpi\_type(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ \textcolor{comment}{/*dummy*/})}
+\DoxyCodeLine{00168\ \ \ \{}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{keywordflow}{return}\ MPI\_UNSIGNED\_LONG\_LONG;}
+\DoxyCodeLine{00170\ \ \ \}}
+\DoxyCodeLine{00171\ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{inline}\ MPI\_Datatype\ mpi\_type(\textcolor{keywordtype}{char}\ \textcolor{comment}{/*dummy*/})\ \{\ \textcolor{keywordflow}{return}\ MPI\_CHAR;\ \}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00174\ \ \ \textcolor{keywordtype}{int}\ MY\_Alltoallv64(\textcolor{keyword}{const}\ std::vector<T>\ \&sendbuf,\ \textcolor{keyword}{const}\ std::vector<int64\_t>\ \&sendcounts,}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<int64\_t>\ \&senddisp,\ std::vector<T>\ \&recvbuf,}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<int64\_t>\ \&recvcounts,\ \textcolor{keyword}{const}\ std::vector<int64\_t>\ \&recvdisp,}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss\_MPI\_Comm\ comm)}
+\DoxyCodeLine{00178\ \ \ \{}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keywordtype}{int}\ processor\_count\ =\ 0;}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keywordtype}{int}\ my\_processor\ \ \ \ =\ 0;}
+\DoxyCodeLine{00181\ \ \ \ \ MPI\_Comm\_size(comm,\ \&processor\_count);}
+\DoxyCodeLine{00182\ \ \ \ \ MPI\_Comm\_rank(comm,\ \&my\_processor);}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{comment}{//\ Verify\ that\ all\ 'counts'\ can\ fit\ in\ an\ integer.\ Symmetric}}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{comment}{//\ communication,\ so\ recvcounts\ are\ sendcounts\ on\ another\ processor.}}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ processor\_count;\ i++)\ \{}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ snd\_cnt\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(sendcounts[i]);}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{static\_cast<}int64\_t\textcolor{keyword}{>}(snd\_cnt)\ !=\ sendcounts[i])\ \{}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ std::ostringstream\ errmsg;}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ errmsg\ <<\ \textcolor{stringliteral}{"{}ERROR:\ The\ number\ of\ items\ that\ must\ be\ communicated\ via\ MPI\ calls\ from\(\backslash\)n"{}}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\ \ \ \ \ \ \ processor\ "{}}\ <<\ my\_processor\ <<\ \textcolor{stringliteral}{"{}\ to\ processor\ "{}}\ <<\ i\ <<\ \textcolor{stringliteral}{"{}\ is\ "{}}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ sendcounts[i]}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n\ \ \ \ \ \ \ which\ exceeds\ the\ storage\ capacity\ of\ the\ integers\ "{}}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}used\ by\ MPI\ functions.\(\backslash\)n"{}};}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ IOSS\_ERROR(errmsg);}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00197\ \ \ \ \ \}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ pow\_2\ =\ Ioss::Utils::power\_2(processor\_count);}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 1;\ i\ <\ pow\_2;\ i++)\ \{}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ MPI\_Status\ status\{\};}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ exchange\_proc\ =\ i\ \string^\ my\_processor;}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (exchange\_proc\ <\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(processor\_count))\ \{}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ snd\_cnt\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ sendcounts[exchange\_proc]);\ \textcolor{comment}{//\ Converts\ from\ int64\_t\ to\ int\ as\ needed\ by\ mpi}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ rcv\_cnt\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(recvcounts[exchange\_proc]);}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ tag\ \ \ \ \ =\ 24713;}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(my\_processor)\ <\ exchange\_proc)\ \{}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ MPI\_Send((\textcolor{keywordtype}{void}\ *)\&sendbuf[senddisp[exchange\_proc]],\ snd\_cnt,\ mpi\_type(T(0)),}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ exchange\_proc,\ tag,\ comm);}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ MPI\_Recv(\&recvbuf[recvdisp[exchange\_proc]],\ rcv\_cnt,\ mpi\_type(T(0)),\ exchange\_proc,\ tag,}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ comm,\ \&status);}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ MPI\_Recv(\&recvbuf[recvdisp[exchange\_proc]],\ rcv\_cnt,\ mpi\_type(T(0)),\ exchange\_proc,\ tag,}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ comm,\ \&status);}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ MPI\_Send((\textcolor{keywordtype}{void}\ *)\&sendbuf[senddisp[exchange\_proc]],\ snd\_cnt,\ mpi\_type(T(0)),}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ exchange\_proc,\ tag,\ comm);}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00223\ \ \ \ \ \}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \ \ \ \ \textcolor{comment}{//\ Take\ care\ of\ this\ processor's\ data\ movement...}}
+\DoxyCodeLine{00226\ \ \ \ \ std::copy(\&sendbuf[senddisp[my\_processor]],}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&sendbuf[senddisp[my\_processor]\ +\ sendcounts[my\_processor]],}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&recvbuf[recvdisp[my\_processor]]);}
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00230\ \ \ \}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00233\ \ \ \textcolor{keywordtype}{int}\ MY\_Alltoallv(\textcolor{keyword}{const}\ std::vector<T>\ \&sendbuf,\ \textcolor{keyword}{const}\ std::vector<int64\_t>\ \&sendcnts,}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<int64\_t>\ \&senddisp,\ std::vector<T>\ \&recvbuf,}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<int64\_t>\ \&recvcnts,\ \textcolor{keyword}{const}\ std::vector<int64\_t>\ \&recvdisp,}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss\_MPI\_Comm\ comm)}
+\DoxyCodeLine{00237\ \ \ \{}
+\DoxyCodeLine{00238\ \textcolor{comment}{//\ Wrapper\ to\ handle\ case\ where\ send/recv\ counts\ and\ displacements\ are\ 64-\/bit\ integers.}}
+\DoxyCodeLine{00239\ \textcolor{comment}{//\ Two\ cases:}}
+\DoxyCodeLine{00240\ \textcolor{comment}{//\ 1)\ They\ are\ of\ type\ 64-\/bit\ integers,\ but\ only\ storing\ data\ in\ the\ 32-\/bit\ integer\ range.}}
+\DoxyCodeLine{00241\ \textcolor{comment}{//\ \ \ \ -\/-\/\ if\ (sendcnts[\#proc-\/1]\ +\ senddisp[\#proc-\/1]\ <\ 2\string^31,\ then\ we\ are\ ok}}
+\DoxyCodeLine{00242\ \textcolor{comment}{//\ 2)\ They\ are\ of\ type\ 64-\/bit\ integers,\ and\ storing\ data\ in\ the\ 64-\/bit\ integer\ range.}}
+\DoxyCodeLine{00243\ \textcolor{comment}{//\ \ \ \ -\/-\/\ call\ special\ alltoallv\ which\ does\ point-\/to-\/point\ sends}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\#if\ IOSS\_DEBUG\_OUTPUT}}
+\DoxyCodeLine{00245\ \ \ \ \ \{}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ Ioss::ParallelUtils\ utils(comm);}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ processor\_count\ =\ utils.parallel\_size();}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ max\_comm\ =\ sendcnts[processor\_count\ -\/\ 1]\ +\ senddisp[processor\_count\ -\/\ 1];}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ std::vector<int>\ comm\_size;}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \ \ \ \ utils.gather(max\_comm,\ comm\_size);}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ my\_rank\ =\ utils.parallel\_rank();}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (my\_rank\ ==\ 0)\ \{}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ fmt::print(\textcolor{stringliteral}{"{}Send\ Communication\ Size:\ \{\}\(\backslash\)n"{}},\ fmt::join(comm\_size,\ \textcolor{stringliteral}{"{},\ "{}}));}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00257\ \ \ \ \ \}}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00259\ \textcolor{preprocessor}{\#if\ 1}}
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{keywordtype}{int}\ processor\_count\ =\ 0;}
+\DoxyCodeLine{00261\ \ \ \ \ MPI\_Comm\_size(comm,\ \&processor\_count);}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ max\_comm\ =\ sendcnts[processor\_count\ -\/\ 1]\ +\ senddisp[processor\_count\ -\/\ 1];}
+\DoxyCodeLine{00263\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ one\ \ \ \ \ \ =\ 1;}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{keywordflow}{if}\ (max\_comm\ <\ one\ <<\ 31)\ \{}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \textcolor{comment}{//\ count\ and\ displacement\ data\ in\ range,\ need\ to\ copy\ to\ integer\ vector.}}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ std::vector<int>\ send\_cnt(sendcnts.begin(),\ sendcnts.end());}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ std::vector<int>\ send\_dis(senddisp.begin(),\ senddisp.end());}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ std::vector<int>\ recv\_cnt(recvcnts.begin(),\ recvcnts.end());}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ std::vector<int>\ recv\_dis(recvdisp.begin(),\ recvdisp.end());}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ MPI\_Alltoallv((\textcolor{keywordtype}{void}\ *)Data(sendbuf),\ Data(send\_cnt),\ Data(send\_dis),\ mpi\_type(T(0)),}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *)Data(recvbuf),\ Data(recv\_cnt),\ Data(recv\_dis),\ mpi\_type(T(0)),}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ comm);}
+\DoxyCodeLine{00273\ \ \ \ \ \}}
+\DoxyCodeLine{00274\ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \textcolor{comment}{//\ Same\ as\ if\ each\ processor\ sent\ a\ message\ to\ every\ other\ process\ with:}}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ MPI\_Send(sendbuf+senddisp[i]*sizeof(sendtype),sendcnts[i],\ sendtype,\ i,\ tag,\ comm);}}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \textcolor{comment}{//\ And\ received\ a\ message\ from\ each\ processor\ with\ a\ call\ to:}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ MPI\_Recv(recvbuf+recvdisp[i]*sizeof(recvtype),recvcnts[i],\ recvtype,\ i,\ tag,\ comm);}}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ MY\_Alltoallv64(sendbuf,\ sendcnts,\ senddisp,\ recvbuf,\ recvcnts,\ recvdisp,\ comm);}
+\DoxyCodeLine{00281\ \textcolor{preprocessor}{\#if\ 1}}
+\DoxyCodeLine{00282\ \ \ \ \ \}}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00284\ \ \ \}}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00287\ \ \ \textcolor{keywordtype}{int}\ MY\_Alltoallv(\textcolor{keyword}{const}\ std::vector<T>\ \&sendbuf,\ \textcolor{keyword}{const}\ std::vector<int>\ \&sendcnts,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<int>\ \&senddisp,\ std::vector<T>\ \&recvbuf,}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<int>\ \&recvcnts,\ \textcolor{keyword}{const}\ std::vector<int>\ \&recvdisp,}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss\_MPI\_Comm\ comm)}
+\DoxyCodeLine{00291\ \ \ \{}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{\#if\ IOSS\_DEBUG\_OUTPUT}}
+\DoxyCodeLine{00293\ \ \ \ \ \{}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ Ioss::ParallelUtils\ utils(comm);}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ processor\_count\ =\ utils.parallel\_size();}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ max\_comm\ =\ sendcnts[processor\_count\ -\/\ 1]\ +\ senddisp[processor\_count\ -\/\ 1];}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ std::vector<int>\ comm\_size;}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \ \ \ \ utils.gather(max\_comm,\ comm\_size);}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ my\_rank\ =\ utils.parallel\_rank();}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (my\_rank\ ==\ 0)\ \{}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ fmt::print(\textcolor{stringliteral}{"{}Send\ Communication\ Size:\ \{\}\(\backslash\)n"{}},\ fmt::join(comm\_size,\ \textcolor{stringliteral}{"{},\ "{}}));}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00305\ \ \ \ \ \}}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{keywordflow}{return}\ MPI\_Alltoallv((\textcolor{keywordtype}{void}\ *)Data(sendbuf),\ \textcolor{keyword}{const\_cast<}\textcolor{keywordtype}{int}\ *\textcolor{keyword}{>}(Data(sendcnts)),}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\_cast<}\textcolor{keywordtype}{int}\ *\textcolor{keyword}{>}(Data(senddisp)),\ mpi\_type(T(0)),\ Data(recvbuf),}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\_cast<}\textcolor{keywordtype}{int}\ *\textcolor{keyword}{>}(Data(recvcnts)),\ \textcolor{keyword}{const\_cast<}\textcolor{keywordtype}{int}\ *\textcolor{keyword}{>}(Data(recvdisp)),}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ mpi\_type(T(0)),\ comm);}
+\DoxyCodeLine{00311\ \ \ \}}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00315\ \ \ \textcolor{keywordtype}{void}\ ParallelUtils::global\_array\_minmax(IOSS\_MAYBE\_UNUSED\ std::vector<T>\ \&local\_minmax,}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IOSS\_MAYBE\_UNUSED\ MinMax\ \ \ \ \ \ \ \ \ \ which)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00317\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00318\ \ \ \ \ IOSS\_PAR\_UNUSED(local\_minmax);}
+\DoxyCodeLine{00319\ \ \ \ \ IOSS\_PAR\_UNUSED(which);}
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\#ifdef\ SEACAS\_HAVE\_MPI}}
+\DoxyCodeLine{00321\ \ \ \ \ \textcolor{keywordflow}{if}\ (parallel\_size()\ >\ 1\ \&\&\ !local\_minmax.empty())\ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (Ioss::SerializeIO::isEnabled()\ \&\&\ Ioss::SerializeIO::inBarrier())\ \{}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ std::ostringstream\ errmsg;}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ errmsg\ <<\ \textcolor{stringliteral}{"{}Attempting\ mpi\ while\ in\ barrier\ owned\ by\ "{}}\ <<\ Ioss::SerializeIO::getOwner();}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ IOSS\_ERROR(errmsg);}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ \ \ \ \ std::vector<T>\ maxout(local\_minmax.size());}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ MPI\_Op\ \ \ \ \ \ \ \ \ oper\ =\ MPI\_MAX;}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (which\ ==\ Ioss::ParallelUtils::DO\_MAX)\ \{}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ oper\ =\ MPI\_MAX;}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (which\ ==\ Ioss::ParallelUtils::DO\_MIN)\ \{}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ oper\ =\ MPI\_MIN;}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (which\ ==\ Ioss::ParallelUtils::DO\_SUM)\ \{}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ oper\ =\ MPI\_SUM;}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ success\ =}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ MPI\_Allreduce((\textcolor{keywordtype}{void}\ *)(Data(local\_minmax)),\ Data(maxout),}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(local\_minmax.size()),\ mpi\_type(T()),\ oper,\ communicator\_);}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (success\ !=\ MPI\_SUCCESS)\ \{}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ std::ostringstream\ errmsg;}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ errmsg\ <<\ \textcolor{stringliteral}{"{}Ioss::ParallelUtils::global\_array\_minmax\ -\/\ MPI\_Allreduce\ failed"{}};}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ IOSS\_ERROR(errmsg);}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \textcolor{comment}{//\ Now\ copy\ back\ into\ passed\ in\ array...}}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ local\_minmax.size();\ i++)\ \{}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ local\_minmax[i]\ =\ maxout[i];}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00352\ \ \ \ \ \}}
+\DoxyCodeLine{00353\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00354\ \ \ \}}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \}\ \textcolor{comment}{//\ namespace\ Ioss}}
+
+\end{DoxyCode}

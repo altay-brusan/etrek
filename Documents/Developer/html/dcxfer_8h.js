@@ -1,0 +1,97 @@
+var dcxfer_8h =
+[
+    [ "DcmXfer", "class_dcm_xfer.html", "class_dcm_xfer" ],
+    [ "E_ByteOrder", "dcxfer_8h.html#a0e6a153a0e640de978a69215d4121087", [
+      [ "EBO_unknown", "dcxfer_8h.html#a0e6a153a0e640de978a69215d4121087a4bc029edb38a5a48725973e949c84947", null ],
+      [ "EBO_LittleEndian", "dcxfer_8h.html#a0e6a153a0e640de978a69215d4121087ad0b4e66c6873f00fc4974213f32ce45c", null ],
+      [ "EBO_BigEndian", "dcxfer_8h.html#a0e6a153a0e640de978a69215d4121087a4d23142da959498f7fb945a072475177", null ]
+    ] ],
+    [ "E_PixelDataCompression", "dcxfer_8h.html#ae01a7e21a1b4d25c3d0447b37c20d55b", [
+      [ "EPC_unknown", "dcxfer_8h.html#ae01a7e21a1b4d25c3d0447b37c20d55ba5dd6df2f68be2053bde8c9fd1a6c267c", null ],
+      [ "EPC_Uncompressed", "dcxfer_8h.html#ae01a7e21a1b4d25c3d0447b37c20d55ba3bd4c6b691a9caa0e37ecce58671ae1c", null ],
+      [ "EPC_LosslessCompressed", "dcxfer_8h.html#ae01a7e21a1b4d25c3d0447b37c20d55ba478419d121b255edc438ebd764d861e1", null ],
+      [ "EPC_LossyCompressed", "dcxfer_8h.html#ae01a7e21a1b4d25c3d0447b37c20d55baf946308bf719533d1158ac8cbb9b9486", null ]
+    ] ],
+    [ "E_PixelDataEncoding", "dcxfer_8h.html#ae6f6db2254d5554d0ef4e7fa8ee9445b", [
+      [ "EPE_unknown", "dcxfer_8h.html#ae6f6db2254d5554d0ef4e7fa8ee9445ba5e1d1de608ca2832c78699130b868007", null ],
+      [ "EPE_Native", "dcxfer_8h.html#ae6f6db2254d5554d0ef4e7fa8ee9445ba900b903a1ddc9f549b841596b3de34eb", null ],
+      [ "EPE_Encapsulated", "dcxfer_8h.html#ae6f6db2254d5554d0ef4e7fa8ee9445ba35844aa23b609576a29f9408714dd5db", null ],
+      [ "EPE_Referenced", "dcxfer_8h.html#ae6f6db2254d5554d0ef4e7fa8ee9445bae80d9757bb4ff4367dc42d06f78d8747", null ]
+    ] ],
+    [ "E_StreamCompression", "dcxfer_8h.html#ab47fda6343173b0dba559da026da5d14", [
+      [ "ESC_none", "dcxfer_8h.html#ab47fda6343173b0dba559da026da5d14aef365a6930094a36bc5a87c7376fc20e", null ]
+    ] ],
+    [ "E_TransferSyntax", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95d", [
+      [ "EXS_Unknown", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daf49a41494554a77af6ac65fec7944194", null ],
+      [ "EXS_LittleEndianImplicit", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dab7906ffa027abc7a73465a80e7012096", null ],
+      [ "EXS_BigEndianImplicit", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daa692e867abc1c7b14b3d52edfd3042fe", null ],
+      [ "EXS_LittleEndianExplicit", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da31aa96852c3bcd97294525a6a0c2635f", null ],
+      [ "EXS_BigEndianExplicit", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dadb5cca1e6b473547641d374324f4dc0d", null ],
+      [ "EXS_EncapsulatedUncompressedLittleEndianExplicit", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da00aedbb73bba129328ab70c501da5135", null ],
+      [ "EXS_JPEGProcess1", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da31ab04d0f8dbc639be5dd709f24631f3", null ],
+      [ "EXS_JPEGProcess2_4", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da72dfb6d0c9302b5d85669135fac1227f", null ],
+      [ "EXS_JPEGProcess3_5", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daffcfd75f8b8bbb5c695f89d1d2e05c3b", null ],
+      [ "EXS_JPEGProcess6_8", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da5260945924847cc1d19b6d401963853a", null ],
+      [ "EXS_JPEGProcess7_9", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da2d26a133a1e758c799e21ec9fd2ace3a", null ],
+      [ "EXS_JPEGProcess10_12", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da2998ddacd1a6ab6b9ba2b5fb85c99cc4", null ],
+      [ "EXS_JPEGProcess11_13", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daf0e42877f78c044542dafcf2d39d0d8b", null ],
+      [ "EXS_JPEGProcess14", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da053b7c07d7a64451707ab09b5d24744d", null ],
+      [ "EXS_JPEGProcess15", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daf58932cf20b512bd8bbb27a0db4537d2", null ],
+      [ "EXS_JPEGProcess16_18", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da37707d1e25c7a445a5b85532d469ff70", null ],
+      [ "EXS_JPEGProcess17_19", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dacb0116edabe84393f690a56516a26ccd", null ],
+      [ "EXS_JPEGProcess20_22", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da7f694b822d9e73fef16b3225554a2387", null ],
+      [ "EXS_JPEGProcess21_23", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dacb43afb7d2ad4e7ae3c479223e1b9707", null ],
+      [ "EXS_JPEGProcess24_26", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da2f77eb3c35c704bfcce298a24b360f27", null ],
+      [ "EXS_JPEGProcess25_27", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da70870ac0a00c1f8ccb81297bb6ec29f1", null ],
+      [ "EXS_JPEGProcess28", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daf0467fd3c292bf5cba7f0e224e31de3f", null ],
+      [ "EXS_JPEGProcess29", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da4cbbcb7c0848174eea48c1343dd75770", null ],
+      [ "EXS_JPEGProcess14SV1", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dab47fb8e116733764a55a5e425e672726", null ],
+      [ "EXS_RLELossless", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dad8be4e0a68faaf017bed9aa3a2928926", null ],
+      [ "EXS_DeflatedLittleEndianExplicit", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da83b2a9e99ccc7375eed10987fca0dc91", null ],
+      [ "EXS_JPEGLSLossless", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daf68419928b247fb678601a829d81c0b8", null ],
+      [ "EXS_JPEGLSLossy", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daf69fa7a1b0921299b4f152be5e4b56ac", null ],
+      [ "EXS_JPEG2000LosslessOnly", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daa8c307f86635a6b7ced35ba1e62f2bf3", null ],
+      [ "EXS_JPEG2000", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daded8b3bdb95c8f93c318e72bad2a4fe7", null ],
+      [ "EXS_JPEG2000MulticomponentLosslessOnly", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dad5c021906ceb8321611b1e543805e594", null ],
+      [ "EXS_JPEG2000Multicomponent", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da73be7f920866dfdd72aec722d6dfec7f", null ],
+      [ "EXS_JPIPReferenced", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da924c157fbb1241a63ebd20d211912032", null ],
+      [ "EXS_JPIPReferencedDeflate", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da3080253bbb36f7584338464eccb52517", null ],
+      [ "EXS_MPEG2MainProfileAtMainLevel", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dafa37f367c9ca2db308b5fe3e6233e076", null ],
+      [ "EXS_FragmentableMPEG2MainProfileMainLevel", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da81bdf06deb34141fefb817f255c0f809", null ],
+      [ "EXS_MPEG2MainProfileAtHighLevel", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da2eb9c539624d2fe5b70236517047cb84", null ],
+      [ "EXS_FragmentableMPEG2MainProfileHighLevel", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da4f91ac25cf18e326a1517e7a49eec234", null ],
+      [ "EXS_MPEG4HighProfileLevel4_1", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dad0c1a1d4a2904e537dcd6f9e4a1145ac", null ],
+      [ "EXS_FragmentableMPEG4HighProfileLevel4_1", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da05bb723a4109f08cf638f6c3733733e3", null ],
+      [ "EXS_MPEG4BDcompatibleHighProfileLevel4_1", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da9f1f1ca6b60bfe76d4109d2243f8fa6a", null ],
+      [ "EXS_FragmentableMPEG4BDcompatibleHighProfileLevel4_1", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da728f6e7f11ce5001a6f7f1ca1a2cd64b", null ],
+      [ "EXS_MPEG4HighProfileLevel4_2_For2DVideo", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da05b3033eb28813108a4be74cf2af8227", null ],
+      [ "EXS_FragmentableMPEG4HighProfileLevel4_2_For2DVideo", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da08d05ef50806bebf4056232fcfcf1f04", null ],
+      [ "EXS_MPEG4HighProfileLevel4_2_For3DVideo", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da4391de9ac9c6e463de6d68b889103dff", null ],
+      [ "EXS_FragmentableMPEG4HighProfileLevel4_2_For3DVideo", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da8bd0d0a145eebf2ebbfc4b92d9d8cfb3", null ],
+      [ "EXS_MPEG4StereoHighProfileLevel4_2", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daf7c63fe69a6c3a4bbf790a496d4bea95", null ],
+      [ "EXS_FragmentableMPEG4StereoHighProfileLevel4_2", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dace1f4a8fb17692b243a558d647b8adb3", null ],
+      [ "EXS_HEVCMainProfileLevel5_1", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da4329786cbf4a990fba06a41813025a85", null ],
+      [ "EXS_HEVCMain10ProfileLevel5_1", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da691d8b38c157efad27d1c91f577ea060", null ],
+      [ "EXS_JPEGXLLossless", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dacf2a67bbe8d807f6563d72dd3058b4d0", null ],
+      [ "EXS_JPEGXLJPEGRecompression", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dac053d46555433a0639bb60e2717a512e", null ],
+      [ "EXS_JPEGXL", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95daf05b38136498e8bfe15523af661b5a6d", null ],
+      [ "EXS_HighThroughputJPEG2000LosslessOnly", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da61f0dc1a0fd9d60ac3473f2031d07042", null ],
+      [ "EXS_HighThroughputJPEG2000withRPCLOptionsLosslessOnly", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da7eaa635c6bc94db4da97900a359ea0ec", null ],
+      [ "EXS_HighThroughputJPEG2000", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da1840ac322051e978ffc190e6f749fe22", null ],
+      [ "EXS_JPIPHTJ2KReferenced", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dac467e8aa36ad8b10d04118182edf8915", null ],
+      [ "EXS_JPIPHTJ2KReferencedDeflate", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95dacf8672aa62f71db3b1e4b4c69b35ff4c", null ],
+      [ "EXS_PrivateGE_LEI_WithBigEndianPixelData", "dcxfer_8h.html#a57c81ec7abc7d9ea1a391ce50c24c95da53191fdd329b0f940b860261bef9fd8c", null ]
+    ] ],
+    [ "E_VRType", "dcxfer_8h.html#a6d7fe8c4afb8535be7b59703bc1506fa", [
+      [ "EVT_Implicit", "dcxfer_8h.html#a6d7fe8c4afb8535be7b59703bc1506faab20cb49172bf30cc33d37b2b1da06a01", null ],
+      [ "EVT_Explicit", "dcxfer_8h.html#a6d7fe8c4afb8535be7b59703bc1506faa3ab44a18cb8d89db50b06d0d6df8f4db", null ]
+    ] ],
+    [ "E_XferValidity", "dcxfer_8h.html#a6483589a0538b469b24a225b356954b6", [
+      [ "EXV_unknown", "dcxfer_8h.html#a6483589a0538b469b24a225b356954b6aafe82a823ad6ae154ac502e760edc002", null ],
+      [ "EXV_Internal", "dcxfer_8h.html#a6483589a0538b469b24a225b356954b6a2c1cfc1a6c75112e4164431212a61bd7", null ],
+      [ "EXV_Standard", "dcxfer_8h.html#a6483589a0538b469b24a225b356954b6afdbb6cba094cf1a2ca8bbbbbcc2a46f4", null ],
+      [ "EXV_Retired", "dcxfer_8h.html#a6483589a0538b469b24a225b356954b6ad00126d64f8c130ff1b15db257f4fd32", null ],
+      [ "EXV_Private", "dcxfer_8h.html#a6483589a0538b469b24a225b356954b6a641eb8d4849a75d77f779cefccea22cf", null ]
+    ] ],
+    [ "gLocalByteOrder", "dcxfer_8h.html#aa41999cb09e9ad3c79ebf33e82db5226", null ]
+];

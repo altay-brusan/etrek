@@ -1,0 +1,568 @@
+\doxysection{H5\+FDs3comms.\+h}
+\hypertarget{_h5_f_ds3comms_8h_source}{}\label{_h5_f_ds3comms_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkhdf5/src/H5FDs3comms.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkhdf5/src/H5FDs3comms.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Copyright\ by\ The\ HDF\ Group.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ All\ rights\ reserved.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ This\ file\ is\ part\ of\ HDF5.\ \ The\ full\ HDF5\ copyright\ notice,\ including\ \ \ \ \ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ terms\ governing\ use,\ modification,\ and\ redistribution,\ is\ contained\ in\ \ \ \ *}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ the\ COPYING\ file,\ which\ can\ be\ found\ at\ the\ root\ of\ the\ source\ code\ \ \ \ \ \ \ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ distribution\ tree,\ or\ in\ https://www.hdfgroup.org/licenses.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ If\ you\ do\ not\ have\ access\ to\ either\ file,\ you\ may\ request\ a\ copy\ from\ \ \ \ \ *}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ help@hdfgroup.org.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ *\ */}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{comment}{/*****************************************************************************}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ Read-\/Only\ S3\ Virtual\ File\ Driver\ (VFD)}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ This\ is\ the\ header\ for\ the\ S3\ Communications\ module}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ ***NOT\ A\ FILE\ DRIVER***}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ Purpose:}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ \ \ \ \ -\/\ Provide\ structures\ and\ functions\ related\ to\ communicating\ with}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *\ \ \ \ \ \ \ Amazon\ S3\ (Simple\ Storage\ Service).}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ \ \ \ \ -\/\ Abstract\ away\ the\ REST\ API\ (HTTP,}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ \ \ \ \ \ \ networked\ communications)\ behind\ a\ series\ of\ uniform\ function\ calls.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ *\ \ \ \ \ -\/\ Handle\ AWS4\ authentication,\ if\ appropriate.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ *\ \ \ \ \ -\/\ Fail\ predictably\ in\ event\ of\ errors.}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ *\ \ \ \ \ -\/\ Eventually,\ support\ more\ S3\ operations,\ such\ as\ creating,\ writing\ to,}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ *\ \ \ \ \ \ \ and\ removing\ Objects\ remotely.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ *\ \ \ \ \ translates:}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ \ \ \ \ \`{}read(some\_file,\ bytes\_offset,\ bytes\_length,\ \&dest\_buffer);`}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *\ \ \ \ \ to:}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ \ \ \ \ \`{}\`{}\`{}}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ \ \ \ \ GET\ myfile\ HTTP/1.1}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ \ \ \ \ Host:\ somewhere.me}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *\ \ \ \ \ Range:\ bytes=4096-\/5115}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *\ \ \ \ \ \`{}\`{}\`{}}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ \ \ \ \ and\ places\ received\ bytes\ from\ HTTP\ response...}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ \ \ \ \ \`{}\`{}\`{}}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *\ \ \ \ \ HTTP/1.1\ 206\ Partial-\/Content}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ \ \ \ \ Content-\/Range:\ 4096-\/5115/63239}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ \ \ \ \ <bytes>}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ \ \ \ \ \`{}\`{}\`{}}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ \ \ \ \ ...in\ destination\ buffer.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ TODO:\ put\ documentation\ in\ a\ consistent\ place\ and\ point\ to\ it\ from\ here.}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ Programmer:\ Jacob\ Smith}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ 2017-\/11-\/30}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *****************************************************************************/}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#include\ "{}H5private.h"{}}\ \textcolor{comment}{/*\ Generic\ Functions\ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#ifdef\ H5\_HAVE\_ROS3\_VFD}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{comment}{/*\ Necessary\ S3\ headers\ */}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#include\ <curl/curl.h>}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#include\ <openssl/evp.h>}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#include\ <openssl/hmac.h>}}
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#include\ <openssl/sha.h>}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{comment}{/*****************}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *\ PUBLIC\ MACROS\ *}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *****************/}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{comment}{/*\ hexadecimal\ string\ of\ pre-\/computed\ sha256\ checksum\ of\ the\ empty\ string}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ *\ hex(sha256sum("{}"{}))}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#define\ EMPTY\_SHA256\ "{}e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"{}}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{comment}{/*\ string\ length\ (plus\ null\ terminator)}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ *\ example\ ISO8601-\/format\ string:\ "{}20170713T145903Z"{}\ (YYYYmmdd'T'HHMMSS'\_')}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#define\ ISO8601\_SIZE\ 17}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{comment}{/*\ string\ length\ (plus\ null\ terminator)}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ *\ example\ RFC7231-\/format\ string:\ "{}Fri,\ 30\ Jun\ 2017\ 20:41:55\ GMT"{}}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#define\ RFC7231\_SIZE\ 30}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ *\ Macro:\ ISO8601NOW()}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ *\ Purpose:}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ *\ \ \ \ \ write\ "{}YYYYmmdd'T'HHMMSS'Z'"{}\ (less\ single-\/quotes)\ to\ dest}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ *\ \ \ \ \ e.g.,\ "{}20170630T204155Z"{}}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ *\ \ \ \ \ wrapper\ for\ strftime()}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ *\ \ \ \ \ It\ is\ left\ to\ the\ programmer\ to\ check\ return\ value\ of}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ *\ \ \ \ \ ISO8601NOW\ (should\ equal\ ISO8601\_SIZE\ -\/\ 1).}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ *-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#define\ ISO8601NOW(dest,\ now\_gm)\ strftime((dest),\ ISO8601\_SIZE,\ "{}\%Y\%m\%dT\%H\%M\%SZ"{},\ (now\_gm))}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ *\ Macro:\ RFC7231NOW()}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ *\ Purpose:}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ *\ \ \ \ \ write\ "{}Day,\ dd\ Mmm\ YYYY\ HH:MM:SS\ GMT"{}\ to\ dest}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ *\ \ \ \ \ e.g.,\ "{}Fri,\ 30\ Jun\ 2017\ 20:41:55\ GMT"{}}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ *\ \ \ \ \ wrapper\ for\ strftime()}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ *\ \ \ \ \ It\ is\ left\ to\ the\ programmer\ to\ check\ return\ value\ of}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ *\ \ \ \ \ RFC7231NOW\ (should\ equal\ RFC7231\_SIZE\ -\/\ 1).}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ *-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#define\ RFC7231NOW(dest,\ now\_gm)\ strftime((dest),\ RFC7231\_SIZE,\ "{}\%a,\ \%d\ \%b\ \%Y\ \%H:\%M:\%S\ GMT"{},\ (now\_gm))}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{comment}{/*\ Reasonable\ maximum\ length\ of\ a\ credential\ string.}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ *\ Provided\ for\ error-\/checking\ S3COMMS\_FORMAT\_CREDENTIAL\ (below).}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ *\ \ 17\ <-\/\ "{}////aws4\_request\(\backslash\)0"{}}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ *\ \ \ 2\ <\ "{}s3"{}\ (service)}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ *\ \ \ 8\ <-\/\ "{}YYYYmmdd"{}\ (date)}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ *\ 128\ <-\/\ (access\_id)}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ *\ 155\ ::\ sum}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#define\ S3COMMS\_MAX\_CREDENTIAL\_SIZE\ 155}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00132\ \textcolor{comment}{\ *\ Macro:\ H5FD\_S3COMMS\_FORMAT\_CREDENTIAL()}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ *\ Purpose:}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ *\ \ \ \ \ Format\ "{}S3\ Credential"{}\ string\ from\ inputs,\ for\ AWS4.}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ *\ \ \ \ \ Wrapper\ for\ HDsnprintf().}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00140\ \textcolor{comment}{\ *\ \ \ \ \ \_HAS\ NO\ ERROR-\/CHECKING\ FACILITIES\_}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ *\ \ \ \ \ It\ is\ left\ to\ programmer\ to\ ensure\ that\ return\ value\ confers\ success.}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ *\ \ \ \ \ e.g.,}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ *\ \ \ \ \ \`{}\`{}\`{}}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ *\ \ \ \ \ assert(\ S3COMMS\_MAX\_CREDENTIAL\_SIZE\ >=}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ S3COMMS\_FORMAT\_CREDENTIAL(...)\ );}}
+\DoxyCodeLine{00146\ \textcolor{comment}{\ *\ \ \ \ \ \`{}\`{}\`{}}}
+\DoxyCodeLine{00147\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ *\ \ \ \ \ "{}<access-\/id>/<date>/<aws-\/region>/<aws-\/service>/aws4\_request"{}}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ *\ \ \ \ \ assuming\ that\ \`{}dest`\ has\ adequate\ space.}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00151\ \textcolor{comment}{\ *\ \ \ \ \ ALL\ inputs\ must\ be\ null-\/terminated\ strings.}}
+\DoxyCodeLine{00152\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ *\ \ \ \ \ \`{}access`\ should\ be\ the\ user's\ access\ key\ ID.}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ *\ \ \ \ \ \`{}date`\ must\ be\ of\ format\ "{}YYYYmmdd"{}.}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ *\ \ \ \ \ \`{}region`\ should\ be\ relevant\ AWS\ region,\ i.e.\ "{}us-\/east-\/1"{}.}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ *\ \ \ \ \ \`{}service`\ should\ be\ "{}s3"{}.}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ *-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#define\ S3COMMS\_FORMAT\_CREDENTIAL(dest,\ access,\ iso8601\_date,\ region,\ service)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\ \ \ \ HDsnprintf((dest),\ S3COMMS\_MAX\_CREDENTIAL\_SIZE,\ "{}\%s/\%s/\%s/\%s/aws4\_request"{},\ (access),\ (iso8601\_date),\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (region),\ (service))}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{comment}{/*********************}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ *\ PUBLIC\ STRUCTURES\ *}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ *********************/}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ *\ Structure:\ hrb\_node\_t}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ *\ HTTP\ Header\ Field\ Node}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ *\ Maintain\ a\ ordered\ (linked)\ list\ of\ HTTP\ Header\ fields.}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ *\ Provides\ efficient\ access\ and\ manipulation\ of\ a\ logical\ sequence\ of}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ *\ HTTP\ header\ fields,\ of\ particular\ use\ when\ composing\ an}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ *\ "{}S3\ Canonical\ Request"{}\ for\ authentication.}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ *\ -\/\ The\ creation\ of\ a\ Canonical\ Request\ involves:}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ *\ \ \ \ \ -\/\ convert\ field\ names\ to\ lower\ case}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ *\ \ \ \ \ -\/\ sort\ by\ this\ lower-\/case\ name}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ *\ \ \ \ \ -\/\ convert\ "{}:\ "{}\ name-\/value\ separator\ in\ HTTP\ string\ to\ "{}:"{}}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ *\ \ \ \ \ -\/\ get\ sorted\ lowercase\ names\ without\ field\ or\ separator}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ *\ As\ HTTP\ headers\ allow\ headers\ in\ any\ order\ (excepting\ the\ case\ of\ multiple}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ *\ headers\ with\ the\ same\ name),\ the\ list\ ordering\ can\ be\ optimized\ for\ Canonical}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ *\ Request\ creation,\ suggesting\ alphabtical\ order.\ For\ more\ expedient\ insertion}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ *\ and\ removal\ of\ elements\ in\ the\ list,\ linked\ list\ seems\ preferable\ to\ a}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ *\ dynamically-\/expanding\ array.\ The\ usually-\/smaller\ number\ of\ entries\ (5\ or}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ *\ fewer)\ makes\ performance\ overhead\ of\ traversing\ the\ list\ trivial.}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ *\ The\ above\ requirements\ of\ creating\ at\ Canonical\ Request\ suggests\ a\ reasonable}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ *\ trade-\/off\ of\ speed\ for\ space\ with\ the\ option\ to\ compute\ elements\ as\ needed}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ *\ or\ to\ have\ the\ various\ elements\ prepared\ and\ stored\ in\ the\ structure}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ *\ (e.g.\ name,\ value,\ lowername,\ concatenated\ name:value)}}
+\DoxyCodeLine{00199\ \textcolor{comment}{\ *\ The\ structure\ currently\ is\ implemented\ to\ pre-\/compute.}}
+\DoxyCodeLine{00200\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00201\ \textcolor{comment}{\ *\ At\ all\ times,\ the\ "{}first"{}\ node\ of\ the\ list\ should\ be\ the\ least,}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ *\ alphabetically.\ For\ all\ nodes,\ the\ \`{}next`\ node\ should\ be\ either\ NULL\ or}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ *\ of\ greater\ alphabetical\ value.}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ *\ Each\ node\ contains\ its\ own\ header\ field\ information,\ plus\ a\ pointer\ to\ the}}
+\DoxyCodeLine{00206\ \textcolor{comment}{\ *\ next\ node.}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00208\ \textcolor{comment}{\ *\ It\ is\ not\ allowed\ to\ have\ multiple\ nodes\ with\ the\ same\ \_lowercase\_\ \`{}name`s}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ *\ in\ the\ same\ list}}
+\DoxyCodeLine{00210\ \textcolor{comment}{\ *\ (i.e.,\ name\ is\ case-\/insensitive\ for\ access\ and\ modification.)}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00212\ \textcolor{comment}{\ *\ All\ data\ (`name`,\ \`{}value`,\ \`{}lowername`,\ and\ \`{}cat`)\ are\ null-\/terminated}}
+\DoxyCodeLine{00213\ \textcolor{comment}{\ *\ strings\ allocated\ specifically\ for\ their\ node.}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00216\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00217\ \textcolor{comment}{\ *\ \`{}magic`\ (unsigned\ long)}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ *\ \ \ \ \ "{}unique"{}\ idenfier\ number\ for\ the\ structure\ type}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00221\ \textcolor{comment}{\ *\ \`{}name`\ (char\ *)}}
+\DoxyCodeLine{00222\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ *\ \ \ \ \ Case-\/meaningful\ name\ of\ the\ HTTP\ field.}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ *\ \ \ \ \ Given\ case\ is\ how\ it\ is\ supplied\ to\ networking\ code.}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ *\ \ \ \ \ e.g.,\ "{}Range"{}}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ *\ \`{}lowername`\ (char\ *)}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ *\ \ \ \ \ Lowercase\ copy\ of\ name.}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ *\ \ \ \ \ e.g.,\ "{}range"{}}}
+\DoxyCodeLine{00231\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ *\ \`{}value`\ (char\ *)}}
+\DoxyCodeLine{00233\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00234\ \textcolor{comment}{\ *\ \ \ \ \ Case-\/meaningful\ value\ of\ HTTP\ field.}}
+\DoxyCodeLine{00235\ \textcolor{comment}{\ *\ \ \ \ \ e.g.,\ "{}bytes=0-\/9"{}}}
+\DoxyCodeLine{00236\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00237\ \textcolor{comment}{\ *\ \`{}cat`\ (char\ *)}}
+\DoxyCodeLine{00238\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ *\ \ \ \ \ Concatenated,\ null-\/terminated\ string\ of\ HTTP\ header\ line,}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ *\ \ \ \ \ as\ the\ field\ would\ appear\ in\ an\ HTTP\ request.}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ *\ \ \ \ \ e.g.,\ "{}Range:\ bytes=0-\/9"{}}}
+\DoxyCodeLine{00242\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00243\ \textcolor{comment}{\ *\ \`{}next`\ (hrb\_node\_t\ *)}}
+\DoxyCodeLine{00244\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ *\ \ \ \ \ Pointers\ to\ next\ node\ in\ the\ list,\ or\ NULL\ sentinel\ as\ end\ of\ list.}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ *\ \ \ \ \ Next\ node\ must\ have\ a\ greater\ \`{}lowername`\ as\ determined\ by\ strcmp().}}
+\DoxyCodeLine{00247\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00248\ \textcolor{comment}{\ *-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00250\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }hrb\_node\_t\ \{}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \ \ \ \ \ magic;}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ \ \ \ \ \ name;}
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ \ \ \ \ \ value;}
+\DoxyCodeLine{00254\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ \ \ \ \ \ cat;}
+\DoxyCodeLine{00255\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ \ \ \ \ \ lowername;}
+\DoxyCodeLine{00256\ \ \ \ \ \textcolor{keyword}{struct\ }hrb\_node\_t\ *next;}
+\DoxyCodeLine{00257\ \}\ hrb\_node\_t;}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\#define\ S3COMMS\_HRB\_NODE\_MAGIC\ 0x7F5757UL}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ *\ Structure:\ hrb\_t}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00264\ \textcolor{comment}{\ *\ HTTP\ Request\ Buffer\ structure}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00266\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00267\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00268\ \textcolor{comment}{\ *\ Logically\ represent\ an\ HTTP\ request}}
+\DoxyCodeLine{00269\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00270\ \textcolor{comment}{\ *\ \ \ \ \ GET\ /myplace/myfile.h5\ HTTP/1.1}}
+\DoxyCodeLine{00271\ \textcolor{comment}{\ *\ \ \ \ \ Host:\ over.rainbow.oz}}
+\DoxyCodeLine{00272\ \textcolor{comment}{\ *\ \ \ \ \ Date:\ Fri,\ 01\ Dec\ 2017\ 12:35:04\ CST}}
+\DoxyCodeLine{00273\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00274\ \textcolor{comment}{\ *\ \ \ \ \ <body>}}
+\DoxyCodeLine{00275\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00276\ \textcolor{comment}{\ *\ ...with\ fast,\ efficient\ access\ to\ and\ modification\ of\ primary\ and\ field}}
+\DoxyCodeLine{00277\ \textcolor{comment}{\ *\ elements.}}
+\DoxyCodeLine{00278\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00279\ \textcolor{comment}{\ *\ Structure\ for\ building\ HTTP\ requests\ while\ hiding\ much\ of\ the\ string}}
+\DoxyCodeLine{00280\ \textcolor{comment}{\ *\ processing\ required\ "{}under\ the\ hood."{}}}
+\DoxyCodeLine{00281\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00282\ \textcolor{comment}{\ *\ Information\ about\ the\ request\ target\ -\/-\/\ the\ first\ line\ -\/-\/\ and\ the\ body\ text,}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ *\ if\ any,\ are\ managed\ directly\ with\ this\ structure.\ All\ header\ fields,\ e.g.,}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ *\ "{}Host"{}\ and\ "{}Date"{}\ above,\ are\ created\ with\ a\ linked\ list\ of\ \`{}hrb\_node\_t`\ and}}
+\DoxyCodeLine{00285\ \textcolor{comment}{\ *\ included\ in\ the\ request\ by\ a\ pointer\ to\ the\ head\ of\ the\ list.}}
+\DoxyCodeLine{00286\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ *\ \`{}magic`\ (unsigned\ long)}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ *\ \ \ \ \ "{}Magic"{}\ number\ confirming\ that\ this\ is\ an\ hrb\_t\ structure\ and}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ *\ \ \ \ \ what\ operations\ are\ valid\ for\ it.}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00294\ \textcolor{comment}{\ *\ \ \ \ \ Must\ be\ S3COMMS\_HRB\_MAGIC\ to\ be\ valid.}}
+\DoxyCodeLine{00295\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00296\ \textcolor{comment}{\ *\ \`{}body`\ (char\ *)\ :}}
+\DoxyCodeLine{00297\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00298\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ start\ of\ HTTP\ body.}}
+\DoxyCodeLine{00299\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00300\ \textcolor{comment}{\ *\ \ \ \ \ Can\ be\ NULL,\ in\ which\ case\ it\ is\ treated\ as\ the\ empty\ string,\ "{}"{}.}}
+\DoxyCodeLine{00301\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00302\ \textcolor{comment}{\ *\ \`{}body\_len`\ (size\_t)\ :}}
+\DoxyCodeLine{00303\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00304\ \textcolor{comment}{\ *\ \ \ \ \ Number\ of\ bytes\ (characters)\ in\ \`{}body`.\ 0\ if\ empty\ or\ NULL\ \`{}body`.}}
+\DoxyCodeLine{00305\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ *\ \`{}first\_header`\ (hrb\_node\_t\ *)\ :}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ first\ SORTED\ header\ node,\ if\ any.}}
+\DoxyCodeLine{00309\ \textcolor{comment}{\ *\ \ \ \ \ It\ is\ left\ to\ the\ programmer\ to\ ensure\ that\ this\ node\ and\ associated}}
+\DoxyCodeLine{00310\ \textcolor{comment}{\ *\ \ \ \ \ list\ is\ destroyed\ when\ done.}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00312\ \textcolor{comment}{\ *\ \`{}resource`\ (char\ *)\ :}}
+\DoxyCodeLine{00313\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00314\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ resource\ URL\ string,\ e.g.,\ "{}/folder/page.xhtml"{}.}}
+\DoxyCodeLine{00315\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00316\ \textcolor{comment}{\ *\ \`{}verb`\ (char\ *)\ :}}
+\DoxyCodeLine{00317\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00318\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ HTTP\ verb\ string,\ e.g.,\ "{}GET"{}.}}
+\DoxyCodeLine{00319\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ *\ \`{}version`\ (char\ *)\ :}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ HTTP\ version\ string,\ e.g.,\ "{}HTTP/1.1"{}.}}
+\DoxyCodeLine{00323\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00324\ \textcolor{comment}{\ *-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00325\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00326\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{}
+\DoxyCodeLine{00327\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ magic;}
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ body;}
+\DoxyCodeLine{00329\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ body\_len;}
+\DoxyCodeLine{00330\ \ \ \ \ hrb\_node\_t\ *\ \ first\_header;}
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ resource;}
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ verb;}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ version;}
+\DoxyCodeLine{00334\ \}\ hrb\_t;}
+\DoxyCodeLine{00335\ \textcolor{preprocessor}{\#define\ S3COMMS\_HRB\_MAGIC\ 0x6DCC84UL}}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00338\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00339\ \textcolor{comment}{\ *\ Structure:\ parsed\_url\_t}}
+\DoxyCodeLine{00340\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00341\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00342\ \textcolor{comment}{\ *\ Represent\ a\ URL\ with\ easily-\/accessed\ pointers\ to\ logical\ elements\ within.}}
+\DoxyCodeLine{00343\ \textcolor{comment}{\ *\ These\ elements\ (components)\ are\ stored\ as\ null-\/terminated\ strings\ (or\ just}}
+\DoxyCodeLine{00344\ \textcolor{comment}{\ *\ NULLs).\ These\ components\ should\ be\ allocated\ for\ the\ structure,\ making\ the}}
+\DoxyCodeLine{00345\ \textcolor{comment}{\ *\ data\ as\ safe\ as\ possible\ from\ modification.\ If\ a\ component\ is\ NULL,\ it\ is}}
+\DoxyCodeLine{00346\ \textcolor{comment}{\ *\ either\ implicit\ in\ or\ absent\ from\ the\ URL.}}
+\DoxyCodeLine{00347\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00348\ \textcolor{comment}{\ *\ "{}http://mybucket.s3.amazonaws.com:8080/somefile.h5?param=value\&arg=value"{}}}
+\DoxyCodeLine{00349\ \textcolor{comment}{\ *\ \ \string^-\/-\/\string^\ \ \ \string^-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\string^\ \string^-\/-\/\string^\ \string^-\/-\/-\/-\/-\/-\/-\/-\/-\/\string^\ \string^-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\string^}}
+\DoxyCodeLine{00350\ \textcolor{comment}{\ *\ Scheme\ \ \ \ \ \ \ \ \ \ \ \ \ Host\ \ \ \ \ \ \ \ \ \ \ Port\ \ Resource\ \ \ \ \ \ \ \ Query/-\/ies}}
+\DoxyCodeLine{00351\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00352\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00353\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00354\ \textcolor{comment}{\ *\ \`{}magic`\ (unsigned\ long)}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ *\ \ \ \ \ Structure\ identification\ and\ validation\ identifier.}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ *\ \ \ \ \ Identifies\ as\ \`{}parsed\_url\_t`\ type.}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00359\ \textcolor{comment}{\ *\ \`{}scheme`\ (char\ *)}}
+\DoxyCodeLine{00360\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00361\ \textcolor{comment}{\ *\ \ \ \ \ String\ representing\ which\ protocol\ is\ to\ be\ expected.}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ *\ \ \ \ \ \_Must\_\ be\ present.}}
+\DoxyCodeLine{00363\ \textcolor{comment}{\ *\ \ \ \ \ "{}http"{},\ "{}https"{},\ "{}ftp"{},\ e.g.}}
+\DoxyCodeLine{00364\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00365\ \textcolor{comment}{\ *\ \`{}host`\ (char\ *)}}
+\DoxyCodeLine{00366\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00367\ \textcolor{comment}{\ *\ \ \ \ \ String\ of\ host,\ either\ domain\ name,\ IPv4,\ or\ IPv6\ format.}}
+\DoxyCodeLine{00368\ \textcolor{comment}{\ *\ \ \ \ \ \_Must\_\ be\ present.}}
+\DoxyCodeLine{00369\ \textcolor{comment}{\ *\ \ \ \ \ "{}over.rainbow.oz"{},\ "{}192.168.0.1"{},\ "{}[0000:0000:0000:0001]"{}}}
+\DoxyCodeLine{00370\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00371\ \textcolor{comment}{\ *\ \`{}port`\ (char\ *)}}
+\DoxyCodeLine{00372\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00373\ \textcolor{comment}{\ *\ \ \ \ \ String\ representation\ of\ specified\ port.\ Must\ resolve\ to\ a\ valid\ unsigned}}
+\DoxyCodeLine{00374\ \textcolor{comment}{\ *\ \ \ \ \ integer.}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ *\ \ \ \ \ "{}9000"{},\ "{}80"{}}}
+\DoxyCodeLine{00376\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00377\ \textcolor{comment}{\ *\ \`{}path`\ (char\ *)}}
+\DoxyCodeLine{00378\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00379\ \textcolor{comment}{\ *\ \ \ \ \ Path\ to\ resource\ on\ host.\ If\ not\ specified,\ assumes\ root\ "{}/"{}.}}
+\DoxyCodeLine{00380\ \textcolor{comment}{\ *\ \ \ \ \ "{}lollipop\_guild.wav"{},\ "{}characters/witches/white.dat"{}}}
+\DoxyCodeLine{00381\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00382\ \textcolor{comment}{\ *\ \`{}query`\ (char\ *)}}
+\DoxyCodeLine{00383\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00384\ \textcolor{comment}{\ *\ \ \ \ \ Single\ string\ of\ all\ query\ parameters\ in\ url\ (if\ any).}}
+\DoxyCodeLine{00385\ \textcolor{comment}{\ *\ \ \ \ \ "{}arg1=value1\&arg2=value2"{}}}
+\DoxyCodeLine{00386\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00387\ \textcolor{comment}{\ *-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00388\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00389\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ magic;}
+\DoxyCodeLine{00391\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ scheme;\ \textcolor{comment}{/*\ required\ */}}
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ host;\ \ \ \textcolor{comment}{/*\ required\ */}}
+\DoxyCodeLine{00393\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ port;}
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ path;}
+\DoxyCodeLine{00395\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ query;}
+\DoxyCodeLine{00396\ \}\ parsed\_url\_t;}
+\DoxyCodeLine{00397\ \textcolor{preprocessor}{\#define\ S3COMMS\_PARSED\_URL\_MAGIC\ 0x21D0DFUL}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00400\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00401\ \textcolor{comment}{\ *\ Structure:\ s3r\_t}}
+\DoxyCodeLine{00402\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00403\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00404\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00405\ \textcolor{comment}{\ *\ S3\ request\ structure\ "{}handle"{}.}}
+\DoxyCodeLine{00406\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00407\ \textcolor{comment}{\ *\ Holds\ persistent\ information\ for\ Amazon\ S3\ requests.}}
+\DoxyCodeLine{00408\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00409\ \textcolor{comment}{\ *\ Instantiated\ through\ \`{}H5FD\_s3comms\_s3r\_open()`,\ copies\ data\ into\ self.}}
+\DoxyCodeLine{00410\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00411\ \textcolor{comment}{\ *\ Intended\ to\ be\ re-\/used\ for\ operations\ on\ a\ remote\ object.}}
+\DoxyCodeLine{00412\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00413\ \textcolor{comment}{\ *\ Cleaned\ up\ through\ \`{}H5FD\_s3comms\_s3r\_close()`.}}
+\DoxyCodeLine{00414\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00415\ \textcolor{comment}{\ *\ \_DO\ NOT\_\ share\ handle\ between\ threads:\ curl\ easy\ handle\ \`{}curlhandle`\ has}}
+\DoxyCodeLine{00416\ \textcolor{comment}{\ *\ undefined\ behavior\ if\ called\ to\ perform\ in\ multiple\ threads.}}
+\DoxyCodeLine{00417\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00418\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00419\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00420\ \textcolor{comment}{\ *\ \`{}magic`\ (unsigned\ long)}}
+\DoxyCodeLine{00421\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00422\ \textcolor{comment}{\ *\ \ \ \ \ "{}magic"{}\ number\ identifying\ this\ structure\ as\ unique\ type.}}
+\DoxyCodeLine{00423\ \textcolor{comment}{\ *\ \ \ \ \ MUST\ equal\ \`{}S3R\_MAGIC`\ to\ be\ valid.}}
+\DoxyCodeLine{00424\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00425\ \textcolor{comment}{\ *\ \`{}curlhandle`\ (CURL)}}
+\DoxyCodeLine{00426\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ the\ curl\_easy\ handle\ generated\ for\ the\ request.}}
+\DoxyCodeLine{00428\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00429\ \textcolor{comment}{\ *\ \`{}httpverb`\ (char\ *)}}
+\DoxyCodeLine{00430\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00431\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ NULL-\/terminated\ string.\ HTTP\ verb,}}
+\DoxyCodeLine{00432\ \textcolor{comment}{\ *\ \ \ \ \ e.g.\ "{}GET"{},\ "{}HEAD"{},\ "{}PUT"{},\ etc.}}
+\DoxyCodeLine{00433\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00434\ \textcolor{comment}{\ *\ \ \ \ \ Default\ is\ NULL,\ resulting\ in\ a\ "{}GET"{}\ request.}}
+\DoxyCodeLine{00435\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00436\ \textcolor{comment}{\ *\ \`{}purl`\ (parsed\_url\_t\ *)}}
+\DoxyCodeLine{00437\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00438\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ structure\ holding\ the\ elements\ of\ URL\ for\ file\ open.}}
+\DoxyCodeLine{00439\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00440\ \textcolor{comment}{\ *\ \ \ \ \ e.g.,\ "{}http://bucket.aws.com:8080/myfile.dat?q1=v1\&q2=v2"{}}}
+\DoxyCodeLine{00441\ \textcolor{comment}{\ *\ \ \ \ \ parsed\ into...}}
+\DoxyCodeLine{00442\ \textcolor{comment}{\ *\ \ \ \ \ \{\ \ \ scheme:\ "{}http"{}}}
+\DoxyCodeLine{00443\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ host:\ \ \ "{}bucket.aws.com"{}}}
+\DoxyCodeLine{00444\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ port:\ \ \ "{}8080"{}}}
+\DoxyCodeLine{00445\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ path:\ \ \ "{}myfile.dat"{}}}
+\DoxyCodeLine{00446\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ query:\ \ "{}q1=v1\&q2=v2"{}}}
+\DoxyCodeLine{00447\ \textcolor{comment}{\ *\ \ \ \ \ \}}}
+\DoxyCodeLine{00448\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00449\ \textcolor{comment}{\ *\ \ \ \ \ Cannot\ be\ NULL.}}
+\DoxyCodeLine{00450\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00451\ \textcolor{comment}{\ *\ \`{}region`\ (char\ *)}}
+\DoxyCodeLine{00452\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00453\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ NULL-\/terminated\ string,\ specifying\ S3\ "{}region"{},}}
+\DoxyCodeLine{00454\ \textcolor{comment}{\ *\ \ \ \ \ e.g.,\ "{}us-\/east-\/1"{}.}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00456\ \textcolor{comment}{\ *\ \ \ \ \ Required\ to\ authenticate.}}
+\DoxyCodeLine{00457\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00458\ \textcolor{comment}{\ *\ \`{}secret\_id`\ (char\ *)}}
+\DoxyCodeLine{00459\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00460\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ NULL-\/terminated\ string\ for\ "{}secret"{}\ access\ id\ to\ S3\ resource.}}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00462\ \textcolor{comment}{\ *\ \ \ \ \ Required\ to\ authenticate.}}
+\DoxyCodeLine{00463\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00464\ \textcolor{comment}{\ *\ \`{}signing\_key`\ (unsigned\ char\ *)}}
+\DoxyCodeLine{00465\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00466\ \textcolor{comment}{\ *\ \ \ \ \ Pointer\ to\ \`{}SHA256\_DIGEST\_LENGTH`-\/long\ string\ for\ "{}re-\/usable"{}\ signing}}
+\DoxyCodeLine{00467\ \textcolor{comment}{\ *\ \ \ \ \ key,\ generated\ via}}
+\DoxyCodeLine{00468\ \textcolor{comment}{\ *\ \ \ \ \ \`{}HMAC-\/SHA256(HMAC-\/SHA256(HMAC-\/SHA256(HMAC-\/SHA256("{}AWS4<secret\_key>"{},}}
+\DoxyCodeLine{00469\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ "{}<yyyyMMDD"{}),\ "{}<aws-\/region>"{}),\ "{}<aws-\/service>"{}),\ "{}aws4\_request"{})`}}
+\DoxyCodeLine{00470\ \textcolor{comment}{\ *\ \ \ \ \ which\ may\ be\ re-\/used\ for\ several\ (up\ to\ seven\ (7))\ days\ from\ creation?}}
+\DoxyCodeLine{00471\ \textcolor{comment}{\ *\ \ \ \ \ Computed\ once\ upon\ file\ open.}}
+\DoxyCodeLine{00472\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00473\ \textcolor{comment}{\ *\ \ \ \ \ Required\ to\ authenticate.}}
+\DoxyCodeLine{00474\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00475\ \textcolor{comment}{\ *-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00477\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{}
+\DoxyCodeLine{00478\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \ magic;}
+\DoxyCodeLine{00479\ \ \ \ \ CURL\ *\ \ \ \ \ \ \ \ \ curlhandle;}
+\DoxyCodeLine{00480\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ filesize;}
+\DoxyCodeLine{00481\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ \ httpverb;}
+\DoxyCodeLine{00482\ \ \ \ \ parsed\_url\_t\ *\ purl;}
+\DoxyCodeLine{00483\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ \ region;}
+\DoxyCodeLine{00484\ \ \ \ \ \textcolor{keywordtype}{char}\ *\ \ \ \ \ \ \ \ \ secret\_id;}
+\DoxyCodeLine{00485\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *signing\_key;}
+\DoxyCodeLine{00486\ \}\ s3r\_t;}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \textcolor{preprocessor}{\#define\ S3COMMS\_S3R\_MAGIC\ 0x44d8d79}}
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00491\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00492\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \textcolor{comment}{/*******************************************}}
+\DoxyCodeLine{00495\ \textcolor{comment}{\ *\ DECLARATION\ OF\ HTTP\ FIELD\ LIST\ ROUTINES\ *}}
+\DoxyCodeLine{00496\ \textcolor{comment}{\ *******************************************/}}
+\DoxyCodeLine{00497\ }
+\DoxyCodeLine{00498\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_hrb\_node\_set(hrb\_node\_t\ **L,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *value);}
+\DoxyCodeLine{00499\ }
+\DoxyCodeLine{00500\ \textcolor{comment}{/***********************************************}}
+\DoxyCodeLine{00501\ \textcolor{comment}{\ *\ DECLARATION\ OF\ HTTP\ REQUEST\ BUFFER\ ROUTINES\ *}}
+\DoxyCodeLine{00502\ \textcolor{comment}{\ ***********************************************/}}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_hrb\_destroy(hrb\_t\ **buf);}
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00506\ H5\_DLL\ hrb\_t\ *H5FD\_s3comms\_hrb\_init\_request(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *verb,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *resource,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *host);}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \textcolor{comment}{/*************************************}}
+\DoxyCodeLine{00509\ \textcolor{comment}{\ *\ DECLARATION\ OF\ S3REQUEST\ ROUTINES\ *}}
+\DoxyCodeLine{00510\ \textcolor{comment}{\ *************************************/}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_s3r\_close(s3r\_t\ *handle);}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ H5\_DLL\ \textcolor{keywordtype}{size\_t}\ H5FD\_s3comms\_s3r\_get\_filesize(s3r\_t\ *handle);}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ H5\_DLL\ s3r\_t\ *H5FD\_s3comms\_s3r\_open(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ url[],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ region[],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \textcolor{keywordtype}{id}[],}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ signing\_key[]);}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_s3r\_read(s3r\_t\ *handle,\ haddr\_t\ offset,\ \textcolor{keywordtype}{size\_t}\ len,\ \textcolor{keywordtype}{void}\ *dest);}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ \textcolor{comment}{/*********************************}}
+\DoxyCodeLine{00522\ \textcolor{comment}{\ *\ DECLARATION\ OF\ OTHER\ ROUTINES\ *}}
+\DoxyCodeLine{00523\ \textcolor{comment}{\ *********************************/}}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ H5\_DLL\ \textcolor{keyword}{struct\ }tm\ *gmnow(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_aws\_canonical\_request(\textcolor{keywordtype}{char}\ *canonical\_request\_dest,\ \textcolor{keywordtype}{int}\ cr\_size,}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *signed\_headers\_dest,\ \textcolor{keywordtype}{int}\ sh\_size,\ hrb\_t\ *http\_request);}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00530\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_bytes\_to\_hex(\textcolor{keywordtype}{char}\ *dest,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *msg,\ \textcolor{keywordtype}{size\_t}\ msg\_len,}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ hbool\_t\ lowercase);}
+\DoxyCodeLine{00532\ }
+\DoxyCodeLine{00533\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_free\_purl(parsed\_url\_t\ *purl);}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_HMAC\_SHA256(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *key,\ \textcolor{keywordtype}{size\_t}\ key\_len,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *msg,}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ msg\_len,\ \textcolor{keywordtype}{char}\ *dest);}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00538\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_load\_aws\_profile(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name,\ \textcolor{keywordtype}{char}\ *key\_id\_out,\ \textcolor{keywordtype}{char}\ *secret\_access\_key\_out,}
+\DoxyCodeLine{00539\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *aws\_region\_out);}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00541\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_nlowercase(\textcolor{keywordtype}{char}\ *dest,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *s,\ \textcolor{keywordtype}{size\_t}\ len);}
+\DoxyCodeLine{00542\ }
+\DoxyCodeLine{00543\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_parse\_url(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *str,\ parsed\_url\_t\ **purl);}
+\DoxyCodeLine{00544\ }
+\DoxyCodeLine{00545\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_percent\_encode\_char(\textcolor{keywordtype}{char}\ *repr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ c,\ \textcolor{keywordtype}{size\_t}\ *repr\_len);}
+\DoxyCodeLine{00546\ }
+\DoxyCodeLine{00547\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_signing\_key(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *md,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *secret,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *region,}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *iso8601now);}
+\DoxyCodeLine{00549\ }
+\DoxyCodeLine{00550\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_tostringtosign(\textcolor{keywordtype}{char}\ *dest,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *req\_str,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *now,}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *region);}
+\DoxyCodeLine{00552\ }
+\DoxyCodeLine{00553\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_trim(\textcolor{keywordtype}{char}\ *dest,\ \textcolor{keywordtype}{char}\ *s,\ \textcolor{keywordtype}{size\_t}\ s\_len,\ \textcolor{keywordtype}{size\_t}\ *n\_written);}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ H5\_DLL\ herr\_t\ H5FD\_s3comms\_uriencode(\textcolor{keywordtype}{char}\ *dest,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *s,\ \textcolor{keywordtype}{size\_t}\ s\_len,\ hbool\_t\ encode\_slash,}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *n\_written);}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00559\ \}}
+\DoxyCodeLine{00560\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ H5\_HAVE\_ROS3\_VFD\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

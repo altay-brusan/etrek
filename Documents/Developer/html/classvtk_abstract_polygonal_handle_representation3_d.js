@@ -1,0 +1,27 @@
+var classvtk_abstract_polygonal_handle_representation3_d =
+[
+    [ "BuildRepresentation", "classvtk_abstract_polygonal_handle_representation3_d.html#abfeb6bbc41ce1f33c6b5818189416c7c", null ],
+    [ "GetActors", "classvtk_abstract_polygonal_handle_representation3_d.html#a5b3caec361c0ac79bb408118cf63c830", null ],
+    [ "GetBounds", "classvtk_abstract_polygonal_handle_representation3_d.html#a5b47f02645bf22b63804be76787e5c20", null ],
+    [ "GetTransform", "classvtk_abstract_polygonal_handle_representation3_d.html#a26969e41f20d6d0dbf98573de69f6cf5", null ],
+    [ "HasTranslucentPolygonalGeometry", "classvtk_abstract_polygonal_handle_representation3_d.html#ad878ef084b72eaad7331b15796797583", null ],
+    [ "PrintSelf", "classvtk_abstract_polygonal_handle_representation3_d.html#ad1a541648698ec81c4c66b52f339cb0a", null ],
+    [ "RegisterPickers", "classvtk_abstract_polygonal_handle_representation3_d.html#a2d8d96fc146ed92397db288a08b45a0f", null ],
+    [ "ReleaseGraphicsResources", "classvtk_abstract_polygonal_handle_representation3_d.html#a7a49559467dcab798c9465c6df407283", null ],
+    [ "RenderOpaqueGeometry", "classvtk_abstract_polygonal_handle_representation3_d.html#ac999f0fb12ee1d2adda70e836352ae4f", null ],
+    [ "SetHandle", "classvtk_abstract_polygonal_handle_representation3_d.html#af73c2c70ce7535ccf0836c5f330263d8", null ],
+    [ "SetLabelTextScale", "classvtk_abstract_polygonal_handle_representation3_d.html#a252457832acb9f0fe3493c6e4c71b6ff", null ],
+    [ "SetProperty", "classvtk_abstract_polygonal_handle_representation3_d.html#afe49dfc739c6551a9aea0ac65248006f", null ],
+    [ "SetUniformScale", "classvtk_abstract_polygonal_handle_representation3_d.html#ae9d84c03b74e8c622a2d809da50c052c", null ],
+    [ "SetWorldPosition", "classvtk_abstract_polygonal_handle_representation3_d.html#a743fd4e0f8eb8883b0b7f78e411cf329", null ],
+    [ "ShallowCopy", "classvtk_abstract_polygonal_handle_representation3_d.html#a9be652d031c992a88e3cc0a512eedb5b", null ],
+    [ "Translate", "classvtk_abstract_polygonal_handle_representation3_d.html#a86d6ec65089ed65a50d7e8ded9232b1a", null ],
+    [ "Translate", "classvtk_abstract_polygonal_handle_representation3_d.html#ab5c69c7ef798bdcfb9727b879d972e78", null ],
+    [ "UpdateHandle", "classvtk_abstract_polygonal_handle_representation3_d.html#adc8a8ffdbdcb36aef7705b7c6dfc27fa", null ],
+    [ "UpdateLabel", "classvtk_abstract_polygonal_handle_representation3_d.html#add0223a20edb580a4d38b56c0e233e91", null ],
+    [ "vtkGetObjectMacro", "classvtk_abstract_polygonal_handle_representation3_d.html#a87a26407c098c72faf18429031807cef", null ],
+    [ "vtkSetMacro", "classvtk_abstract_polygonal_handle_representation3_d.html#a3d2973eda7d9bf8a1b30cb7e8f109852", null ],
+    [ "vtkSetMacro", "classvtk_abstract_polygonal_handle_representation3_d.html#a1bb90a82c9f6cd653680d2e7d56abbc9", null ],
+    [ "vtkSetMacro", "classvtk_abstract_polygonal_handle_representation3_d.html#a497d0ab24ac53565083198effd7cb45b", null ],
+    [ "vtkTypeMacro", "classvtk_abstract_polygonal_handle_representation3_d.html#a43a0d2def9be5ba60d27e8f7e7ddefdb", null ]
+];

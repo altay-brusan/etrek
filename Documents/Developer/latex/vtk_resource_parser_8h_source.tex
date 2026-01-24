@@ -1,0 +1,261 @@
+\doxysection{vtk\+Resource\+Parser.\+h}
+\hypertarget{vtk_resource_parser_8h_source}{}\label{vtk_resource_parser_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkResourceParser.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkResourceParser.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#ifndef\ vtkResourceParser\_h}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#define\ vtkResourceParser\_h}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}vtkIOCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}vtkResourceStream.h"{}}\ \textcolor{comment}{//\ For\ SeekDirection\ and\ vtkResourceStream}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointer.h"{}}\ \ \ \textcolor{comment}{//\ For\ vtkSmartPointer}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <array>}\ \ \ \ \ \ \ \textcolor{comment}{//\ for\ std::array}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <cstdint>}\ \ \ \ \ \textcolor{comment}{//\ for\ std::int32\_t}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <cstdlib>}\ \ \ \ \ \textcolor{comment}{//\ for\ std::size\_t}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <functional>}\ \ \textcolor{comment}{//\ for\ std::function}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <limits>}\ \ \ \ \ \ \textcolor{comment}{//\ for\ std::numeric\_limits}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <memory>}\ \ \ \ \ \ \textcolor{comment}{//\ for\ std::unique\_ptr}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <string>}\ \ \ \ \ \ \textcolor{comment}{//\ for\ std::string}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <type\_traits>}\ \textcolor{comment}{//\ for\ SFINAE\ helpers}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ \_\_VTK\_WRAP\_\_\ }\textcolor{comment}{//\ do\ not\ wrap}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00032\ \textcolor{keyword}{enum\ class}\ vtkParseResult\ :\ std::int32\_t}
+\DoxyCodeLine{00033\ \{}
+\DoxyCodeLine{00034\ \ \ Error\ =\ -\/1,\ \ \ \ \ \ \textcolor{comment}{//\ Value\ not\ parsed\ because\ of\ type\ or\ formatting\ error}}
+\DoxyCodeLine{00035\ \ \ Ok\ =\ 0,\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Value\ parsed\ successfully,\ no\ special\ status}}
+\DoxyCodeLine{00036\ \ \ EndOfStream\ =\ 1,\ \textcolor{comment}{//\ No\ value\ parsed,\ stream\ reached\ its\ end}}
+\DoxyCodeLine{00037\ \ \ EndOfLine\ =\ 2,\ \ \ \textcolor{comment}{//\ No\ value\ parsed,\ this\ is\ an\ end\ of\ line}}
+\DoxyCodeLine{00038\ \ \ Limit\ =\ 3,\ \ \ \ \ \ \ \textcolor{comment}{//\ Value\ parsed\ successfully,\ limit\ has\ been\ reached}}
+\DoxyCodeLine{00039\ \};}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00057\ \textcolor{keyword}{class\ }VTKIOCORE\_EXPORT\ \doxymbox{\hyperlink{classvtk_resource_parser_ad7f4b56f5162b48a89c57f435a89ed88}{vtkResourceParser}}\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00058\ \{}
+\DoxyCodeLine{00059\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00063\ \ \ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\ =\ std::function<bool(\textcolor{keywordtype}{char}\ c)>;}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\ \doxymbox{\hyperlink{classvtk_resource_parser_a44ec00d3489ebc17da9a1808515e8d86}{DiscardNone}};}
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\ DiscardWhitespace;}
+\DoxyCodeLine{00076\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\ DiscardNonAlphaNumeric;}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{classvtk_resource_parser_a385588894a3b1e4c03e5efb7c7dcac6a}{DataReceiverType}}\ =\ std::function<void(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ data,\ std::size\_t\ size)>;}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ std::size\_t\ NoLimit\ =\ (std::numeric\_limits<std::size\_t>::max)();}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00090\ \ \ \textcolor{keyword}{class\ }vtkInternals;}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00095\ \ \ \textcolor{keyword}{class\ }VTKIOCORE\_EXPORT\ vtkParserContext}
+\DoxyCodeLine{00096\ \ \ \{}
+\DoxyCodeLine{00097\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00098\ \ \ \ \ vtkParserContext();}
+\DoxyCodeLine{00099\ \ \ \ \ \string~vtkParserContext();}
+\DoxyCodeLine{00100\ \ \ \ \ vtkParserContext(\textcolor{keyword}{const}\ vtkParserContext\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00101\ \ \ \ \ vtkParserContext\&\ operator=(\textcolor{keyword}{const}\ vtkParserContext\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_resource_parser_a488c7bf5a18d0599cb60695521047647}{SetStream}}(\doxymbox{\hyperlink{classvtk_resource_stream}{vtkResourceStream}}*\ stream);}
+\DoxyCodeLine{00106\ \ \ \ \ \doxymbox{\hyperlink{classvtk_resource_stream}{vtkResourceStream}}*\ \doxymbox{\hyperlink{classvtk_resource_parser_aa8bd841ea06f355e5b6be4e54e7dc5a6}{GetStream}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_resource_parser_afe967987ef0a5ed981701134fee1a6d4}{GetStopOnNewLine}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordtype}{void}\ SetStopOnNewLine(\textcolor{keywordtype}{bool}\ on);}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00114\ \ \ \ \ vtkTypeInt64\ \doxymbox{\hyperlink{classvtk_resource_parser_acba6766d49db5aada030ad0f3b0ffd7a}{Seek}}(vtkTypeInt64\ pos,\ vtkResourceStream::SeekDirection\ dir);}
+\DoxyCodeLine{00116\ \ \ \ \ vtkTypeInt64\ \doxymbox{\hyperlink{classvtk_resource_parser_aebedcaf2e496d4ece9a09c0cd6f91b9e}{Tell}}();}
+\DoxyCodeLine{00118\ \ \ \ \ std::size\_t\ \doxymbox{\hyperlink{classvtk_resource_parser_a090d2964be5aeefd6f780c1531204136}{Read}}(\textcolor{keywordtype}{char}*\ output,\ std::size\_t\ size);}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_resource_parser_a3f316ccbeabbbf718d87055fd1455933}{Reset}}();}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00124\ \ \ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_a18efec643bdf279418c14b1bded7c71a}{Parse}}(T\&\ output,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\&\ discardPred);}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00127\ \ \ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_a97ad6a7a04acefcc6b985ae8642fa490}{ReadUntil}}(}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\&\ discardPred,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_a385588894a3b1e4c03e5efb7c7dcac6a}{DataReceiverType}}\&\ receiver,\ std::size\_t\ limit);}
+\DoxyCodeLine{00130\ \ \ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_addd598447f023b7caf13332ef068bbf6}{DiscardUntil}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\&\ discardPred);}
+\DoxyCodeLine{00132\ \ \ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_a4a4ae19476c2d6617b0d534b4d30f274}{ReadLine}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_a385588894a3b1e4c03e5efb7c7dcac6a}{DataReceiverType}}\&\ receiver,\ std::size\_t\ limit);}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_object_a0eca4f6ee59157c189d09e94ee9bbd55}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent);}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00138\ \ \ \ \ std::unique\_ptr<vtkInternals>\ Impl;}
+\DoxyCodeLine{00139\ \ \ \};}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00150\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00151\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{bool}\ IsSupported()}
+\DoxyCodeLine{00152\ \ \ \{}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{comment}{//\ Only\ remove\ references\ to\ check\ const\ and\ volatile}}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keyword}{using\ }Type\ =\ \textcolor{keyword}{typename}\ std::remove\_reference<T>::type;}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordflow}{return}\ std::is\_same<Type,\ char>::value\ ||\ std::is\_same<Type,\ signed\ char>::value\ ||}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ std::is\_same<Type,\ unsigned\ char>::value\ ||\ std::is\_same<Type,\ short>::value\ ||}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ std::is\_same<Type,\ unsigned\ short>::value\ ||\ std::is\_same<Type,\ int>::value\ ||}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ std::is\_same<Type,\ unsigned\ int>::value\ ||\ std::is\_same<Type,\ long>::value\ ||}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ std::is\_same<Type,\ unsigned\ long>::value\ ||\ std::is\_same<Type,\ long\ long>::value\ ||}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ std::is\_same<Type,\ unsigned\ long\ long>::value\ ||\ std::is\_same<Type,\ float>::value\ ||}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ std::is\_same<Type,\ double>::value\ ||\ std::is\_same<Type,\ bool>::value\ ||}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ std::is\_same<Type,\ std::string>::value;}
+\DoxyCodeLine{00164\ \ \ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00167\ \ \ vtkTypeMacro(vtkResourceParser,\ vtkObject);}
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_resource_parser_ac8c722865d0211184ec5d51421a01419}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00169\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_resource_parser_ad7f4b56f5162b48a89c57f435a89ed88}{vtkResourceParser}}*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_resource_parser_a488c7bf5a18d0599cb60695521047647}{SetStream}}(\doxymbox{\hyperlink{classvtk_resource_stream}{vtkResourceStream}}*\ stream)\ \{\ this-\/>Context.SetStream(stream);\ \}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{classvtk_resource_stream}{vtkResourceStream}}*\ \doxymbox{\hyperlink{classvtk_resource_parser_aa8bd841ea06f355e5b6be4e54e7dc5a6}{GetStream}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>Context.GetStream();\ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_resource_parser_afe967987ef0a5ed981701134fee1a6d4}{GetStopOnNewLine}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>Context.GetStopOnNewLine();\ \}}
+\DoxyCodeLine{00198\ \ \ \textcolor{keywordtype}{void}\ SetStopOnNewLine(\textcolor{keywordtype}{bool}\ on)\ \{\ this-\/>Context.SetStopOnNewLine(on);\ \}}
+\DoxyCodeLine{00199\ \ \ vtkBooleanMacro(StopOnNewLine,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00218\ \ \ vtkTypeInt64\ \doxymbox{\hyperlink{classvtk_resource_parser_acba6766d49db5aada030ad0f3b0ffd7a}{Seek}}(vtkTypeInt64\ pos,\ vtkResourceStream::SeekDirection\ dir)}
+\DoxyCodeLine{00219\ \ \ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Context.Seek(pos,\ dir);}
+\DoxyCodeLine{00221\ \ \ \}}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00235\ \ \ vtkTypeInt64\ \doxymbox{\hyperlink{classvtk_resource_parser_aebedcaf2e496d4ece9a09c0cd6f91b9e}{Tell}}()\ \{\ \textcolor{keywordflow}{return}\ this-\/>Context.Tell();\ \}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00247\ \ \ std::size\_t\ \doxymbox{\hyperlink{classvtk_resource_parser_a090d2964be5aeefd6f780c1531204136}{Read}}(\textcolor{keywordtype}{char}*\ output,\ std::size\_t\ size)\ \{\ \textcolor{keywordflow}{return}\ this-\/>Context.Read(output,\ size);\ \}}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_resource_parser_a3f316ccbeabbbf718d87055fd1455933}{Reset}}()\ \{\ this-\/>Context.Reset();\ \}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00303\ \ \ template\ <typename\ T,\ typename\ std::enable\_if<IsSupported<T>(),\ \textcolor{keywordtype}{bool}>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ =\ \textcolor{keyword}{true}>}
+\DoxyCodeLine{00304\ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_a18efec643bdf279418c14b1bded7c71a}{Parse}}(T\&\ output,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\&\ discardPred\ =\ DiscardWhitespace)}
+\DoxyCodeLine{00305\ \ \ \{}
+\DoxyCodeLine{00306\ \ \ \ \ \textcolor{comment}{//\ Static\ check\ to\ prevent\ cryptic\ linker\ error}}
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{keyword}{static\_assert}(IsSupported<T>(),\ \textcolor{stringliteral}{"{}Unsupported\ type\ given\ to\ Parse\ function"{}});}
+\DoxyCodeLine{00308\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Context.Parse(output,\ discardPred);}
+\DoxyCodeLine{00309\ \ \ \}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00325\ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_a97ad6a7a04acefcc6b985ae8642fa490}{ReadUntil}}(}
+\DoxyCodeLine{00326\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\&\ discardPred,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_a385588894a3b1e4c03e5efb7c7dcac6a}{DataReceiverType}}\&\ receiver,\ std::size\_t\ limit\ =\ NoLimit)}
+\DoxyCodeLine{00327\ \ \ \{}
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Context.ReadUntil(discardPred,\ receiver,\ limit);}
+\DoxyCodeLine{00329\ \ \ \}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00334\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ It>}
+\DoxyCodeLine{00335\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_resource_parser_1_1_read_to_result}{ReadToResult}}}
+\DoxyCodeLine{00336\ \ \ \{}
+\DoxyCodeLine{00342\ \ \ \ \ vtkParseResult\ \doxymbox{\hyperlink{structvtk_resource_parser_1_1_read_to_result_a02fbe8dc8cdc9d29f7f730c8b3081d5a}{Result}};}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00347\ \ \ \ \ It\ \doxymbox{\hyperlink{structvtk_resource_parser_1_1_read_to_result_a82ce4ebe28281d240910d2f79eec408a}{Output}};}
+\DoxyCodeLine{00348\ \ \ \};}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00360\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OutputIt>}
+\DoxyCodeLine{00361\ \ \ \doxymbox{\hyperlink{structvtk_resource_parser_1_1_read_to_result}{ReadToResult<OutputIt>}}\ \doxymbox{\hyperlink{classvtk_resource_parser_a16d227aa58fa415d83d807a06d24d40f}{ReadUntilTo}}(}
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\&\ discardPred,\ OutputIt\ output,\ std::size\_t\ limit\ =\ NoLimit)}
+\DoxyCodeLine{00363\ \ \ \{}
+\DoxyCodeLine{00364\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ result\ =\ this-\/>\doxymbox{\hyperlink{classvtk_resource_parser_a97ad6a7a04acefcc6b985ae8642fa490}{ReadUntil}}(}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ discardPred,}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ [\&output](\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ data,\ std::size\_t\ size)\ \textcolor{keyword}{mutable}}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (std::size\_t\ i\{\};\ i\ <\ size;\ ++i)}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ *output++\ =\ data[i];}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \},}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ limit);}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structvtk_resource_parser_1_1_read_to_result}{ReadToResult<OutputIt>}}\{\ result,\ output\ \};}
+\DoxyCodeLine{00376\ \ \ \}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00387\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ForwardIt>}
+\DoxyCodeLine{00388\ \ \ \doxymbox{\hyperlink{structvtk_resource_parser_1_1_read_to_result}{ReadToResult<ForwardIt>}}\ \doxymbox{\hyperlink{classvtk_resource_parser_a861e1fcc67acded7953fe71bd95406ec}{ReadUntilTo}}(}
+\DoxyCodeLine{00389\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\&\ discardPred,\ ForwardIt\ begin,\ ForwardIt\ end)}
+\DoxyCodeLine{00390\ \ \ \{}
+\DoxyCodeLine{00391\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_resource_parser_a16d227aa58fa415d83d807a06d24d40f}{ReadUntilTo}}(discardPred,\ begin,\ std::distance(begin,\ end));}
+\DoxyCodeLine{00392\ \ \ \}}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00402\ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_addd598447f023b7caf13332ef068bbf6}{DiscardUntil}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_abf33d92f9e64e390da52bf5638cd3cca}{PredicateType}}\&\ pred)}
+\DoxyCodeLine{00403\ \ \ \{}
+\DoxyCodeLine{00404\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Context.DiscardUntil(pred);}
+\DoxyCodeLine{00405\ \ \ \}}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00433\ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_a4a4ae19476c2d6617b0d534b4d30f274}{ReadLine}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_a385588894a3b1e4c03e5efb7c7dcac6a}{DataReceiverType}}\&\ receiver,\ std::size\_t\ limit\ =\ NoLimit)}
+\DoxyCodeLine{00434\ \ \ \{}
+\DoxyCodeLine{00435\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Context.ReadLine(receiver,\ limit);}
+\DoxyCodeLine{00436\ \ \ \}}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00453\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Allocator>}
+\DoxyCodeLine{00454\ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_ab19c7afdef0d9ae2c94566c94fc6f971}{ReadLine}}(}
+\DoxyCodeLine{00455\ \ \ \ \ std::basic\_string<\textcolor{keywordtype}{char},\ std::char\_traits<char>,\ Allocator>\&\ output,\ std::size\_t\ limit\ =\ NoLimit)}
+\DoxyCodeLine{00456\ \ \ \{}
+\DoxyCodeLine{00457\ \ \ \ \ output.clear();}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_resource_parser_a4a4ae19476c2d6617b0d534b4d30f274}{ReadLine}}(}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ [\&output](\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ data,\ std::size\_t\ size)\ \{\ output.append(data,\ size);\ \},\ limit);}
+\DoxyCodeLine{00461\ \ \ \}}
+\DoxyCodeLine{00462\ }
+\DoxyCodeLine{00475\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OutputIt>}
+\DoxyCodeLine{00476\ \ \ \doxymbox{\hyperlink{structvtk_resource_parser_1_1_read_to_result}{ReadToResult<OutputIt>}}\ \doxymbox{\hyperlink{classvtk_resource_parser_a03d45f1fa5fa820cb2ea17d65eaf392d}{ReadLineTo}}(OutputIt\ output,\ std::size\_t\ limit\ =\ NoLimit)}
+\DoxyCodeLine{00477\ \ \ \{}
+\DoxyCodeLine{00478\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ result\ =\ this-\/>\doxymbox{\hyperlink{classvtk_resource_parser_a4a4ae19476c2d6617b0d534b4d30f274}{ReadLine}}(}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ [\&output](\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ data,\ std::size\_t\ size)}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (std::size\_t\ i\{\};\ i\ <\ size;\ ++i)}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ *output++\ =\ data[i];}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \},}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ limit);}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structvtk_resource_parser_1_1_read_to_result}{ReadToResult<OutputIt>}}\{\ result,\ output\ \};}
+\DoxyCodeLine{00489\ \ \ \}}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00503\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ForwardIt>}
+\DoxyCodeLine{00504\ \ \ \doxymbox{\hyperlink{structvtk_resource_parser_1_1_read_to_result}{ReadToResult<ForwardIt>}}\ \doxymbox{\hyperlink{classvtk_resource_parser_a0a9afda5706284f4b023569fb9c1805f}{ReadLineTo}}(ForwardIt\ begin,\ ForwardIt\ end)}
+\DoxyCodeLine{00505\ \ \ \{}
+\DoxyCodeLine{00506\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_resource_parser_a03d45f1fa5fa820cb2ea17d65eaf392d}{ReadLineTo}}(begin,\ std::distance(begin,\ end));}
+\DoxyCodeLine{00507\ \ \ \}}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00519\ \ \ vtkParseResult\ \doxymbox{\hyperlink{classvtk_resource_parser_a36426d81aad7b3a10f9fdaa1f89df7ec}{DiscardLine}}(std::size\_t\ limit\ =\ NoLimit)}
+\DoxyCodeLine{00520\ \ \ \{}
+\DoxyCodeLine{00521\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_resource_parser_a4a4ae19476c2d6617b0d534b4d30f274}{ReadLine}}([](\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*,\ std::size\_t)\ \{\},\ limit);}
+\DoxyCodeLine{00522\ \ \ \}}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00524\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00528\ \ \ \doxymbox{\hyperlink{classvtk_resource_parser_ad7f4b56f5162b48a89c57f435a89ed88}{vtkResourceParser}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00529\ \ \ \doxymbox{\hyperlink{classvtk_resource_parser_ad7f4b56f5162b48a89c57f435a89ed88}{\string~vtkResourceParser}}()\ \textcolor{keyword}{override}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00530\ \ \ \doxymbox{\hyperlink{classvtk_resource_parser_ad7f4b56f5162b48a89c57f435a89ed88}{vtkResourceParser}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_ad7f4b56f5162b48a89c57f435a89ed88}{vtkResourceParser}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00531\ \ \ \doxymbox{\hyperlink{classvtk_resource_parser_ad7f4b56f5162b48a89c57f435a89ed88}{vtkResourceParser}}\&\ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_resource_parser_ad7f4b56f5162b48a89c57f435a89ed88}{vtkResourceParser}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00532\ }
+\DoxyCodeLine{00533\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00534\ \ \ vtkParserContext\ Context;}
+\DoxyCodeLine{00535\ \};}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \textcolor{preprocessor}{\#define\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00538\ \textcolor{preprocessor}{\ \ extern\ template\ VTKIOCORE\_EXPORT\ vtkParseResult\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00539\ \textcolor{preprocessor}{\ \ vtkResourceParser::vtkParserContext::Parse<type>(type\&,\ const\ PredicateType\&\ discardPred)}}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00541\ \textcolor{comment}{//\ Declare\ explicit\ instantiation\ for\ all\ supported\ types}}
+\DoxyCodeLine{00542\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{char});}
+\DoxyCodeLine{00543\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char});}
+\DoxyCodeLine{00544\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char});}
+\DoxyCodeLine{00545\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{short});}
+\DoxyCodeLine{00546\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short});}
+\DoxyCodeLine{00547\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00548\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00549\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{long});}
+\DoxyCodeLine{00550\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long});}
+\DoxyCodeLine{00551\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long});}
+\DoxyCodeLine{00552\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long});}
+\DoxyCodeLine{00553\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{float});}
+\DoxyCodeLine{00554\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{double});}
+\DoxyCodeLine{00555\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(\textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00556\ DECLARE\_PARSE\_EXTERN\_TEMPLATE(std::string);}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \textcolor{preprocessor}{\#undef\ DECLARE\_PARSE\_EXTERN\_TEMPLATE}}
+\DoxyCodeLine{00559\ }
+\DoxyCodeLine{00560\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00563\ }
+\DoxyCodeLine{00564\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,265 @@
+\doxysection{vtk\+Poly\+Data\+Internals.\+h}
+\hypertarget{vtk_poly_data_internals_8h_source}{}\label{vtk_poly_data_internals_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkPolyDataInternals.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkPolyDataInternals.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#ifndef\ vtkPolyDataInternals\_h}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#define\ vtkPolyDataInternals\_h}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#include\ "{}vtkCommonDataModelModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#include\ "{}vtkCellType.h"{}}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#include\ "{}vtkType.h"{}}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#include\ <cstdlib>}\ \textcolor{comment}{//\ for\ std::size\_t}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#include\ <vector>}\ \ \textcolor{comment}{//\ for\ CellMap\ implementation.}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \textcolor{keyword}{namespace\ }vtkPolyData\_detail}
+\DoxyCodeLine{00058\ \{}
+\DoxyCodeLine{00059\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ vtkTypeUInt64\ CELLID\_MASK\ =\ 0x0fffffffffffffffull;}
+\DoxyCodeLine{00062\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ vtkTypeUInt64\ SHIFTED\_TYPE\_INDEX\_MASK\ =\ 0xf000000000000000ull;}
+\DoxyCodeLine{00063\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ vtkTypeUInt64\ TARGET\_MASK\ =\ 0x3ull\ <<\ 62;}
+\DoxyCodeLine{00064\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ vtkTypeUInt64\ TYPE\_VARIANT\_MASK\ =\ 0x3ull\ <<\ 60;}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{//\ Enumeration\ of\ internal\ cell\ array\ targets.}}
+\DoxyCodeLine{00067\ \textcolor{keyword}{enum\ class}\ Target\ :\ vtkTypeUInt64}
+\DoxyCodeLine{00068\ \{}
+\DoxyCodeLine{00069\ \ \ Verts\ =\ 0x0ull\ <<\ 62,}
+\DoxyCodeLine{00070\ \ \ Lines\ =\ 0x1ull\ <<\ 62,}
+\DoxyCodeLine{00071\ \ \ Polys\ =\ 0x2ull\ <<\ 62,}
+\DoxyCodeLine{00072\ \ \ Strips\ =\ 0x3ull\ <<\ 62,}
+\DoxyCodeLine{00073\ \};}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{comment}{//\ Enumeration\ of\ type\ variants.}}
+\DoxyCodeLine{00076\ \textcolor{keyword}{enum\ class}\ TypeVariant\ :\ vtkTypeUInt64}
+\DoxyCodeLine{00077\ \{}
+\DoxyCodeLine{00078\ \ \ Dead\ =\ 0x0ull\ <<\ 60,}
+\DoxyCodeLine{00079\ \ \ Var1\ =\ 0x1ull\ <<\ 60,}
+\DoxyCodeLine{00080\ \ \ Var2\ =\ 0x2ull\ <<\ 60,}
+\DoxyCodeLine{00081\ \ \ Var3\ =\ 0x3ull\ <<\ 60,}
+\DoxyCodeLine{00082\ \};}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{comment}{//\ Lookup\ table\ to\ convert\ a\ type\ index\ (TaggedCellId.GetTypeIndex())\ into}}
+\DoxyCodeLine{00085\ \textcolor{comment}{//\ a\ VTK\ cell\ type.}}
+\DoxyCodeLine{00086\ \textcolor{comment}{//\ The\ type\ index\ is\ the\ highest\ four\ bits\ of\ the\ encoded\ value,\ eg.\ the}}
+\DoxyCodeLine{00087\ \textcolor{comment}{//\ target\ and\ type\ variant\ information.}}
+\DoxyCodeLine{00088\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ TypeTable[16]\ =\ \{}
+\DoxyCodeLine{00089\ \ \ VTK\_EMPTY\_CELL,\ \ \ \ \ \textcolor{comment}{//\ 0000b\ |\ Verts\ \ |\ Dead}}
+\DoxyCodeLine{00090\ \ \ VTK\_VERTEX,\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 0001b\ |\ Verts\ \ |\ Var1}}
+\DoxyCodeLine{00091\ \ \ VTK\_POLY\_VERTEX,\ \ \ \ \textcolor{comment}{//\ 0010b\ |\ Verts\ \ |\ Var2}}
+\DoxyCodeLine{00092\ \ \ VTK\_EMPTY\_CELL,\ \ \ \ \ \textcolor{comment}{//\ 0011b\ |\ Verts\ \ |\ Var3}}
+\DoxyCodeLine{00093\ \ \ VTK\_EMPTY\_CELL,\ \ \ \ \ \textcolor{comment}{//\ 0100b\ |\ Lines\ \ |\ Dead}}
+\DoxyCodeLine{00094\ \ \ VTK\_LINE,\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 0101b\ |\ Lines\ \ |\ Var1}}
+\DoxyCodeLine{00095\ \ \ VTK\_POLY\_LINE,\ \ \ \ \ \ \textcolor{comment}{//\ 0110b\ |\ Lines\ \ |\ Var2}}
+\DoxyCodeLine{00096\ \ \ VTK\_EMPTY\_CELL,\ \ \ \ \ \textcolor{comment}{//\ 0111b\ |\ Lines\ \ |\ Var3}}
+\DoxyCodeLine{00097\ \ \ VTK\_EMPTY\_CELL,\ \ \ \ \ \textcolor{comment}{//\ 1000b\ |\ Polys\ \ |\ Dead}}
+\DoxyCodeLine{00098\ \ \ VTK\_TRIANGLE,\ \ \ \ \ \ \ \textcolor{comment}{//\ 1001b\ |\ Polys\ \ |\ Var1}}
+\DoxyCodeLine{00099\ \ \ VTK\_QUAD,\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 1010b\ |\ Polys\ \ |\ Var2}}
+\DoxyCodeLine{00100\ \ \ VTK\_POLYGON,\ \ \ \ \ \ \ \ \textcolor{comment}{//\ 1011b\ |\ Polys\ \ |\ Var3}}
+\DoxyCodeLine{00101\ \ \ VTK\_EMPTY\_CELL,\ \ \ \ \ \textcolor{comment}{//\ 1100b\ |\ Strips\ |\ Dead}}
+\DoxyCodeLine{00102\ \ \ VTK\_TRIANGLE\_STRIP,\ \textcolor{comment}{//\ 1101b\ |\ Strips\ |\ Var1}}
+\DoxyCodeLine{00103\ \ \ VTK\_EMPTY\_CELL,\ \ \ \ \ \textcolor{comment}{//\ 1110b\ |\ Strips\ |\ Var2}}
+\DoxyCodeLine{00104\ \ \ VTK\_EMPTY\_CELL,\ \ \ \ \ \textcolor{comment}{//\ 1111b\ |\ Strips\ |\ Var3}}
+\DoxyCodeLine{00105\ \};}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{comment}{//\ Convenience\ method\ to\ concatenate\ a\ target\ and\ type\ variant\ into\ the\ low}}
+\DoxyCodeLine{00108\ \textcolor{comment}{//\ four\ bits\ of\ a\ single\ byte.\ Used\ to\ build\ the\ TargetVarTable.}}
+\DoxyCodeLine{00109\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ GenTargetVar(Target\ target,\ TypeVariant\ var)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00110\ \{}
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00112\ \ \ \ \ (\textcolor{keyword}{static\_cast<}vtkTypeUInt64\textcolor{keyword}{>}(target)\ |\ \textcolor{keyword}{static\_cast<}vtkTypeUInt64\textcolor{keyword}{>}(var))\ >>\ 60);}
+\DoxyCodeLine{00113\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{comment}{//\ Lookup\ table\ that\ maps\ a\ VTK\ cell\ type\ (eg.\ VTK\_TRIANGLE)\ into\ a\ target\ +}}
+\DoxyCodeLine{00116\ \textcolor{comment}{//\ type\ variant\ byte.}}
+\DoxyCodeLine{00117\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ TargetVarTable[10]\ =\ \{}
+\DoxyCodeLine{00118\ \ \ GenTargetVar(Target::Verts,\ TypeVariant::Dead),\ \ \textcolor{comment}{//\ 0\ |\ VTK\_EMPTY\_CELL}}
+\DoxyCodeLine{00119\ \ \ GenTargetVar(Target::Verts,\ TypeVariant::Var1),\ \ \textcolor{comment}{//\ 1\ |\ VTK\_VERTEX}}
+\DoxyCodeLine{00120\ \ \ GenTargetVar(Target::Verts,\ TypeVariant::Var2),\ \ \textcolor{comment}{//\ 2\ |\ VTK\_POLY\_VERTEX}}
+\DoxyCodeLine{00121\ \ \ GenTargetVar(Target::Lines,\ TypeVariant::Var1),\ \ \textcolor{comment}{//\ 3\ |\ VTK\_LINE}}
+\DoxyCodeLine{00122\ \ \ GenTargetVar(Target::Lines,\ TypeVariant::Var2),\ \ \textcolor{comment}{//\ 4\ |\ VTK\_POLY\_LINE}}
+\DoxyCodeLine{00123\ \ \ GenTargetVar(Target::Polys,\ TypeVariant::Var1),\ \ \textcolor{comment}{//\ 5\ |\ VTK\_TRIANGLE}}
+\DoxyCodeLine{00124\ \ \ GenTargetVar(Target::Strips,\ TypeVariant::Var1),\ \textcolor{comment}{//\ 6\ |\ VTK\_TRIANGLE\_STRIP}}
+\DoxyCodeLine{00125\ \ \ GenTargetVar(Target::Polys,\ TypeVariant::Var3),\ \ \textcolor{comment}{//\ 7\ |\ VTK\_POLYGON}}
+\DoxyCodeLine{00126\ \ \ GenTargetVar(Target::Polys,\ TypeVariant::Var2),\ \ \textcolor{comment}{//\ 8\ |\ VTK\_PIXEL\ (treat\ as\ quad)}}
+\DoxyCodeLine{00127\ \ \ GenTargetVar(Target::Polys,\ TypeVariant::Var2),\ \ \textcolor{comment}{//\ 9\ |\ VTK\_QUAD}}
+\DoxyCodeLine{00128\ \};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{comment}{//\ Thin\ wrapper\ around\ a\ vtkTypeUInt64\ that\ encodes\ a\ target\ cell\ array,}}
+\DoxyCodeLine{00131\ \textcolor{comment}{//\ cell\ type,\ deleted\ status,\ and\ 60-\/bit\ cell\ id.}}
+\DoxyCodeLine{00132\ \textcolor{keyword}{struct\ }VTKCOMMONDATAMODEL\_EXPORT\ TaggedCellId}
+\DoxyCodeLine{00133\ \{}
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{//\ Encode\ a\ cell\ id\ and\ a\ VTK\ cell\ type\ (eg.\ VTK\_TRIANGLE)\ into\ a}}
+\DoxyCodeLine{00135\ \ \ \textcolor{comment}{//\ vtkTypeUInt64.}}
+\DoxyCodeLine{00136\ \ \ \textcolor{keyword}{static}\ vtkTypeUInt64\ Encode(vtkIdType\ cellId,\ VTKCellType\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}})\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00137\ \ \ \{}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ typeIndex\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{return}\ ((\textcolor{keyword}{static\_cast<}vtkTypeUInt64\textcolor{keyword}{>}(cellId)\ \&\ CELLID\_MASK)\ |}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ (\textcolor{keyword}{static\_cast<}vtkTypeUInt64\textcolor{keyword}{>}(TargetVarTable[typeIndex])\ <<\ 60));}
+\DoxyCodeLine{00141\ \ \ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ TaggedCellId()\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \textcolor{comment}{//\ Create\ a\ TaggedCellId\ from\ a\ cellId\ and\ cell\ type\ (e.g.\ VTK\_TRIANGLE).}}
+\DoxyCodeLine{00146\ \ \ TaggedCellId(vtkIdType\ cellId,\ VTKCellType\ cellType)\ noexcept}
+\DoxyCodeLine{00147\ \ \ \ \ :\ Value(Encode(cellId,\ cellType))}
+\DoxyCodeLine{00148\ \ \ \{}
+\DoxyCodeLine{00149\ \ \ \}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ TaggedCellId(\textcolor{keyword}{const}\ TaggedCellId\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00152\ \ \ TaggedCellId(TaggedCellId\&\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00153\ \ \ TaggedCellId\&\ operator=(\textcolor{keyword}{const}\ TaggedCellId\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00154\ \ \ TaggedCellId\&\ operator=(TaggedCellId\&\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \textcolor{comment}{//\ Get\ an\ enum\ value\ describing\ the\ internal\ vtkCellArray\ target\ used\ to}}
+\DoxyCodeLine{00157\ \ \ \textcolor{comment}{//\ store\ this\ cell.}}
+\DoxyCodeLine{00158\ \ \ Target\ GetTarget()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}Target\textcolor{keyword}{>}(this-\/>Value\ \&\ TARGET\_MASK);\ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{comment}{//\ Get\ the\ VTK\ cell\ type\ value\ (eg.\ VTK\_TRIANGLE)\ as\ a\ single\ byte.}}
+\DoxyCodeLine{00161\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ GetCellType()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ TypeTable[this-\/>GetTypeIndex()];\ \}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \textcolor{comment}{//\ Get\ the\ cell\ id\ used\ by\ the\ target\ vtkCellArray\ to\ store\ this\ cell.}}
+\DoxyCodeLine{00164\ \ \ vtkIdType\ GetCellId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(this-\/>Value\ \&\ CELLID\_MASK);\ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{comment}{//\ Update\ the\ cell\ id.\ Most\ useful\ with\ the\ CellMap::InsertNextCell(type)}}
+\DoxyCodeLine{00167\ \ \ \textcolor{comment}{//\ signature.}}
+\DoxyCodeLine{00168\ \ \ \textcolor{keywordtype}{void}\ SetCellId(vtkIdType\ cellId)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00169\ \ \ \{}
+\DoxyCodeLine{00170\ \ \ \ \ this-\/>Value\ \&=\ SHIFTED\_TYPE\_INDEX\_MASK;}
+\DoxyCodeLine{00171\ \ \ \ \ this-\/>Value\ |=\ (\textcolor{keyword}{static\_cast<}vtkTypeUInt64\textcolor{keyword}{>}(cellId)\ \&\ CELLID\_MASK);}
+\DoxyCodeLine{00172\ \ \ \}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \textcolor{comment}{//\ Mark\ this\ cell\ as\ deleted.}}
+\DoxyCodeLine{00175\ \ \ \textcolor{keywordtype}{void}\ MarkDeleted()\ \textcolor{keyword}{noexcept}\ \{\ this-\/>Value\ \&=\ \string~TYPE\_VARIANT\_MASK;\ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \textcolor{comment}{//\ Returns\ true\ if\ the\ cell\ has\ been\ deleted.}}
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordtype}{bool}\ IsDeleted()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ (this-\/>Value\ \&\ TYPE\_VARIANT\_MASK)\ ==\ 0;\ \}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00181\ \ \ vtkTypeUInt64\ Value;}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{comment}{//\ These\ shouldn't\ be\ needed\ outside\ of\ this\ struct.\ You're\ probably\ looking}}
+\DoxyCodeLine{00184\ \ \ \textcolor{comment}{//\ for\ GetCellType()\ instead.}}
+\DoxyCodeLine{00185\ \ \ TypeVariant\ GetTypeVariant()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00186\ \ \ \{}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}TypeVariant\textcolor{keyword}{>}(this-\/>Value\ \&\ TYPE\_VARIANT\_MASK);}
+\DoxyCodeLine{00188\ \ \ \}}
+\DoxyCodeLine{00189\ \ \ std::size\_t\ GetTypeIndex()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}std::size\_t\textcolor{keyword}{>}(this-\/>Value\ >>\ 60);\ \}}
+\DoxyCodeLine{00190\ \};}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{comment}{//\ Thin\ wrapper\ around\ a\ std::vector<TaggedCellId>\ to\ allow\ shallow\ copying,\ etc}}
+\DoxyCodeLine{00193\ \textcolor{keyword}{class\ }VTKCOMMONDATAMODEL\_EXPORT\ CellMap\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00194\ \{}
+\DoxyCodeLine{00195\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00196\ \ \ \textcolor{keyword}{static}\ CellMap*\ New();}
+\DoxyCodeLine{00197\ \ \ vtkTypeMacro(CellMap,\ vtkObject);}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ ValidateCellType(VTKCellType\ cellType)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00200\ \ \ \{}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{comment}{//\ 1-\/9\ excluding\ 8\ (VTK\_PIXEL):}}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordflow}{return}\ cellType\ >\ 0\ \&\&\ cellType\ <=\ 10\ \&\&\ cellType\ !=\ VTK\_PIXEL;}
+\DoxyCodeLine{00203\ \ \ \}}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ ValidateCellId(vtkIdType\ cellId)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00206\ \ \ \{}
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{comment}{//\ is\ positive,\ won't\ truncate:}}
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ (\textcolor{keyword}{static\_cast<}vtkTypeUInt64\textcolor{keyword}{>}(cellId)\ \&\ CELLID\_MASK)\ ==\ \textcolor{keyword}{static\_cast<}vtkTypeUInt64\textcolor{keyword}{>}(cellId));}
+\DoxyCodeLine{00210\ \ \ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordtype}{void}\ DeepCopy(CellMap*\ other)}
+\DoxyCodeLine{00213\ \ \ \{}
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{keywordflow}{if}\ (other)}
+\DoxyCodeLine{00215\ \ \ \ \ \{}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ this-\/>Map\ =\ other-\/>Map;}
+\DoxyCodeLine{00217\ \ \ \ \ \}}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00219\ \ \ \ \ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ this-\/>Map.clear();}
+\DoxyCodeLine{00221\ \ \ \ \ \}}
+\DoxyCodeLine{00222\ \ \ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \textcolor{keywordtype}{void}\ SetCapacity(vtkIdType\ numCells)\ \{\ this-\/>Map.reserve(\textcolor{keyword}{static\_cast<}std::size\_t\textcolor{keyword}{>}(numCells));\ \}}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \ \ \textcolor{keywordtype}{void}\ SetNumberOfCells(vtkIdType\ numCells)}
+\DoxyCodeLine{00227\ \ \ \{}
+\DoxyCodeLine{00228\ \ \ \ \ this-\/>Map.resize(\textcolor{keyword}{static\_cast<}std::size\_t\textcolor{keyword}{>}(numCells));}
+\DoxyCodeLine{00229\ \ \ \}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \doxymbox{\hyperlink{structvtk_poly_data__detail_1_1_tagged_cell_id}{TaggedCellId}}\&\ GetTag(vtkIdType\ cellId)\ \{\ \textcolor{keywordflow}{return}\ this-\/>Map[\textcolor{keyword}{static\_cast<}std::size\_t\textcolor{keyword}{>}(cellId)];\ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_poly_data__detail_1_1_tagged_cell_id}{TaggedCellId}}\&\ GetTag(vtkIdType\ cellId)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00234\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Map[\textcolor{keyword}{static\_cast<}std::size\_t\textcolor{keyword}{>}(cellId)];}
+\DoxyCodeLine{00236\ \ \ \}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \ \ \textcolor{comment}{//\ Caller\ must\ ValidateCellType\ first.}}
+\DoxyCodeLine{00239\ \ \ \textcolor{keywordtype}{void}\ InsertCell(vtkIdType\ globalCellId,\ vtkIdType\ cellId,\ VTKCellType\ cellType)}
+\DoxyCodeLine{00240\ \ \ \{}
+\DoxyCodeLine{00241\ \ \ \ \ this-\/>Map[globalCellId]\ =\ \doxymbox{\hyperlink{structvtk_poly_data__detail_1_1_tagged_cell_id}{TaggedCellId}}(cellId,\ cellType);}
+\DoxyCodeLine{00242\ \ \ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \textcolor{comment}{//\ Caller\ must\ ValidateCellType\ and\ ValidateCellId\ first.}}
+\DoxyCodeLine{00245\ \ \ \textcolor{comment}{//\ useful\ for\ reusing\ the\ target\ lookup\ from\ cellType\ and\ then\ calling}}
+\DoxyCodeLine{00246\ \ \ \textcolor{comment}{//\ TaggedCellId::SetCellId\ later.}}
+\DoxyCodeLine{00247\ \ \ \doxymbox{\hyperlink{structvtk_poly_data__detail_1_1_tagged_cell_id}{TaggedCellId}}\&\ InsertCell(vtkIdType\ globalCellId,\ VTKCellType\ cellType)}
+\DoxyCodeLine{00248\ \ \ \{}
+\DoxyCodeLine{00249\ \ \ \ \ this-\/>Map[globalCellId]\ =\ \doxymbox{\hyperlink{structvtk_poly_data__detail_1_1_tagged_cell_id}{TaggedCellId}}(vtkIdType(0),\ cellType);}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Map[globalCellId];}
+\DoxyCodeLine{00251\ \ \ \}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \textcolor{comment}{//\ Caller\ must\ ValidateCellType\ first.}}
+\DoxyCodeLine{00254\ \ \ \textcolor{keywordtype}{void}\ InsertNextCell(vtkIdType\ cellId,\ VTKCellType\ cellType)}
+\DoxyCodeLine{00255\ \ \ \{}
+\DoxyCodeLine{00256\ \ \ \ \ this-\/>Map.emplace\_back(cellId,\ cellType);}
+\DoxyCodeLine{00257\ \ \ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \textcolor{comment}{//\ Caller\ must\ ValidateCellType\ and\ ValidateCellId\ first.}}
+\DoxyCodeLine{00260\ \ \ \textcolor{comment}{//\ useful\ for\ reusing\ the\ target\ lookup\ from\ cellType\ and\ then\ calling}}
+\DoxyCodeLine{00261\ \ \ \textcolor{comment}{//\ TaggedCellId::SetCellId\ later.}}
+\DoxyCodeLine{00262\ \ \ \doxymbox{\hyperlink{structvtk_poly_data__detail_1_1_tagged_cell_id}{TaggedCellId}}\&\ InsertNextCell(VTKCellType\ cellType)}
+\DoxyCodeLine{00263\ \ \ \{}
+\DoxyCodeLine{00264\ \ \ \ \ this-\/>Map.emplace\_back(vtkIdType(0),\ cellType);}
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Map.back();}
+\DoxyCodeLine{00266\ \ \ \}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ vtkIdType\ GetNumberOfCells()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(this-\/>Map.size());\ \}}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \textcolor{keywordtype}{void}\ Reset()\ \{\ this-\/>Map.clear();\ \}}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordtype}{void}\ Squeeze()}
+\DoxyCodeLine{00273\ \ \ \{}
+\DoxyCodeLine{00274\ \ \ \ \ this-\/>Map.shrink\_to\_fit();\ \textcolor{comment}{//\ yaaaaay\ c++11}}
+\DoxyCodeLine{00275\ \ \ \}}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \textcolor{comment}{//\ In\ rounded-\/up\ kibibytes,\ as\ is\ VTK's\ custom:}}
+\DoxyCodeLine{00278\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ GetActualMemorySize()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00279\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\textcolor{keyword}{>}(\textcolor{keyword}{sizeof}(\doxymbox{\hyperlink{structvtk_poly_data__detail_1_1_tagged_cell_id}{TaggedCellId}})\ *\ this-\/>Map.capacity()\ +\ 1023)\ /\ 1024;}
+\DoxyCodeLine{00281\ \ \ \}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00284\ \ \ CellMap();}
+\DoxyCodeLine{00285\ \ \ \string~CellMap()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ std::vector<TaggedCellId>\ Map;}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00290\ \ \ CellMap(\textcolor{keyword}{const}\ CellMap\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00291\ \ \ CellMap\&\ operator=(\textcolor{keyword}{const}\ CellMap\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00292\ \};}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00295\ \}\ \textcolor{comment}{//\ end\ namespace\ vtkPolyData\_detail}}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkPolyDataInternals.h}}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkPolyDataInternals.h}}
+
+\end{DoxyCode}

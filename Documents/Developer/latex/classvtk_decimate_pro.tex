@@ -1,0 +1,47 @@
+\doxysection{vtk\+Decimate\+Pro Class Reference}
+\hypertarget{classvtk_decimate_pro}{}\label{classvtk_decimate_pro}\index{vtkDecimatePro@{vtkDecimatePro}}
+
+
+reduce the number of triangles in a mesh  
+
+
+
+
+{\ttfamily \+\#include $<$vtk\+Decimate\+Pro.\+h$>$}
+
+
+
+\doxysubsection{Detailed Description}
+reduce the number of triangles in a mesh 
+
+\doxylink{classvtk_decimate_pro}{vtk\+Decimate\+Pro} is a filter to reduce the number of triangles in a triangle mesh, forming a good approximation to the original geometry. \doxylink{requirements_The}{The} input to \doxylink{classvtk_decimate_pro}{vtk\+Decimate\+Pro} is a \doxylink{classvtk_poly_data}{vtk\+Poly\+Data} object, and only triangles are treated. If you desire to decimate polygonal meshes, first triangulate the polygons with \doxylink{classvtk_triangle_filter}{vtk\+Triangle\+Filter} object.
+
+\doxylink{requirements_The}{The} implementation of \doxylink{classvtk_decimate_pro}{vtk\+Decimate\+Pro} is similar to the algorithm originally described in "{}\+Decimation of Triangle Meshes"{}, Proc Siggraph \`{}92, with three major differences. First, this algorithm does not necessarily preserve the topology of the mesh. Second, it is guaranteed to give the a mesh reduction factor specified by the user (as long as certain constraints are not set -\/ see Caveats). Third, it is set up generate progressive meshes, that is a stream of operations that can be easily transmitted and incrementally updated (see Hugues Hoppe\textquotesingle{}s Siggraph \textquotesingle{}96 paper on progressive meshes).
+
+\doxylink{requirements_The}{The} algorithm proceeds as follows. Each vertex in the mesh is classified and inserted into a priority queue. \doxylink{requirements_The}{The} priority is based on the error to delete the vertex and retriangulate the hole. Vertices that cannot be deleted or triangulated (at this point in the algorithm) are skipped. Then, each vertex in the priority queue is processed (i.\+e., deleted followed by hole triangulation using edge collapse). This continues until the priority queue is empty. Next, all remaining vertices are processed, and the mesh is split into separate pieces along sharp edges or at non-\/manifold attachment points and reinserted into the priority queue. Again, the priority queue is processed until empty. If the desired reduction is still not achieved, the remaining vertices are split as necessary (in a recursive fashion) so that it is possible to eliminate every triangle as necessary.
+
+To use this object, at a minimum you need to specify the ivar Target\+Reduction. \doxylink{requirements_The}{The} algorithm is guaranteed to generate a reduced mesh at this level as long as the following four conditions are met:\+ 1) topology modification is allowed (i.\+e., the ivar Preserve\+Topology is off); 2) mesh splitting is enabled (i.\+e., the ivar Splitting is on); 3) the algorithm is allowed to modify the boundary of the mesh (i.\+e., the ivar Boundary\+Vertex\+Deletion is on); and 4) the maximum allowable error (i.\+e., the ivar Maximum\+Error) is set to VTK\+\_\+\+DOUBLE\+\_\+\+MAX. Other important parameters to adjust include the Feature\+Angle and Split\+Angle ivars, since these can impact the quality of the final mesh. Also, you can set the ivar Accumulate\+Error to force incremental error update and distribution to surrounding vertices as each vertex is deleted. \doxylink{requirements_The}{The} accumulated error is a conservative global error bounds and decimation error, but requires additional memory and time to compute.
+
+\begin{DoxyWarning}{Warning}
+To guarantee a given level of reduction, the ivar Preserve\+Topology must be off; the ivar Splitting is on; the ivar Boundary\+Vertex\+Deletion is on; and the ivar Maximum\+Error is set to VTK\+\_\+\+DOUBLE\+\_\+\+MAX.
+
+If Preserve\+Topology is off, and Split\+Edges is off; the mesh topology may be modified by closing holes.
+
+Once mesh splitting begins, the feature angle is set to the split angle.
+\end{DoxyWarning}
+\begin{DoxySeeAlso}{See also}
+vtk\+Decimate \doxylink{classvtk_quadric_clustering}{vtk\+Quadric\+Clustering} \doxylink{classvtk_quadric_decimation}{vtk\+Quadric\+Decimation} \texorpdfstring{$\ast$}{*}/\+
+\end{DoxySeeAlso}
+For export macro
+
+Needed for VTK\+\_\+\+CELL\+\_\+\+SIZE
+
+VTK\+\_\+\+ABI\+\_\+\+NAMESPACE\+\_\+\+BEGIN class \doxylink{classvtk_double_array}{vtk\+Double\+Array}; class \doxylink{classvtk_priority_queue}{vtk\+Priority\+Queue};
+
+class VTKFILTERSCORE\+\_\+\+EXPORT \doxylink{classvtk_decimate_pro}{vtk\+Decimate\+Pro} :\+ public \doxylink{classvtk_poly_data_algorithm}{vtk\+Poly\+Data\+Algorithm} \{ public:\+ vtk\+Type\+Macro(vtk\+Decimate\+Pro, vtk\+Poly\+Data\+Algorithm); void Print\+Self(ostream\& os, vtk\+Indent indent) override;
+
+/\+\texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*} Create object with specified reduction of 90\% and feature angle of 15 degrees. Edge splitting is on, defer splitting is on, and the split angle is 75 degrees. Topology preservation is off, delete boundary vertices is on, and the maximum error is set to VTK\+\_\+\+DOUBLE\+\_\+\+MAX. \doxylink{requirements_The}{The} inflection point ratio is 10 and the vertex degree is 25. Error accumulation is turned off. 
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+C:\+/\+\+Users/\+altay/\+\+One\+Drive/\+\+Projects/\+etrek/\+\+Third\+Party\+Libraries/\+vtk/\+include/\+vtk-\/9.\+5/\+vtk\+Decimate\+Pro.\+h\end{DoxyCompactItemize}

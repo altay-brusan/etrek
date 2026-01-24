@@ -1,0 +1,26 @@
+var class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item =
+[
+    [ "Item", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a03383770c37226740769d0d7ff2ea13f", null ],
+    [ "Item", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a77aa11aed3c20e56fcbb9a33a1353020", null ],
+    [ "~Item", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a02b7c9b04a945f7d2575fd4264397c8c", null ],
+    [ "clear", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a7551b153a908b09b295c2401516f7057", null ],
+    [ "getAccessoryCode", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a36de2b830d0ae6e344751c0c1dfc2cb5", null ],
+    [ "getGeneralAccessoryDescription", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a1e0effbcfd1bf89021ca3f06b7a74505", null ],
+    [ "getGeneralAccessoryID", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#ae8b16cd78ac92a4eafc571a2bd96d499", null ],
+    [ "getGeneralAccessoryNumber", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#ab603b04bc22c3f07877b77fe6f282532", null ],
+    [ "getGeneralAccessoryNumber", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a2635efcaf541dc3de9bd96b9598e9521", null ],
+    [ "getGeneralAccessoryType", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a874ffd5fd38f3122d68943f09baa53cf", null ],
+    [ "getIsocenterToGeneralAccessoryDistance", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a8605f00d1f70feaf6c9a906e47962b2e", null ],
+    [ "getIsocenterToGeneralAccessoryDistance", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a00421e84fe351b299740ffa9511c43bc", null ],
+    [ "isEmpty", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#af006c0b13e8e9c1064e56c1eeaf34607", null ],
+    [ "isValid", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#aa55d3e223c578a980125f530473a2065", null ],
+    [ "operator=", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#aa355b0dbd076793273be022cb0047ae9", null ],
+    [ "read", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#aa51dacebce46eefb49827b0c3937fc51", null ],
+    [ "setAccessoryCode", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#aa48ef204385ae1652a1240710ace181d", null ],
+    [ "setGeneralAccessoryDescription", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a439f4e1bc3b88f62b0857357b22c7c9e", null ],
+    [ "setGeneralAccessoryID", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a21677fa0c88544d6ac143024d168fd5c", null ],
+    [ "setGeneralAccessoryNumber", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a6e22cca26edbf7f6493d2692d1550041", null ],
+    [ "setGeneralAccessoryType", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#aeb67227cb949ff6c2e720b4743f48ec8", null ],
+    [ "setIsocenterToGeneralAccessoryDistance", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#a78a4cb717d065baad83b39967457b1a5", null ],
+    [ "write", "class_d_r_t_general_accessory_sequence_in_r_t_ion_beams_module_1_1_item.html#aa927dd49208a7ea5a494f8438df8f84a", null ]
+];

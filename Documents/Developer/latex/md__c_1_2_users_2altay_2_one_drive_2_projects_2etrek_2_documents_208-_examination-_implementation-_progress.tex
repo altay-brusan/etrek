@@ -1,0 +1,638 @@
+\chapter{Examination Workflow Implementation Progress }
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress}{}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress}\index{Examination Workflow Implementation Progress@{Examination Workflow Implementation Progress}}
+\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md544}%
+\Hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md544}%
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md545}{}\doxysection{\texorpdfstring{Summary}{Summary}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md545}
+We\textquotesingle{}ve begun implementing the complete examination workflow from worklist selection to image acquisition. This document tracks our progress and outlines next steps.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md546}{}\doxysection{\texorpdfstring{Completed Tasks}{Completed Tasks}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md546}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md547}{}\doxysubsection{\texorpdfstring{1. ✅ Comprehensive Workflow Design}{1. ✅ Comprehensive Workflow Design}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md547}
+{\bfseries{File}}:\+ {\ttfamily Documents/\+07-\/\+Examination-\/\+Workflow-\/\+Design.\+md}
+
+Created a complete design document covering:\+
+\begin{DoxyItemize}
+\item LOCAL vs RIS source routing logic
+\item Database operations (study/\+series/\+image creation)
+\item Component architecture (\doxylink{class_exam_page}{Exam\+Page}, Exam\+Page\+Delegate)
+\item VTK image viewer integration plan
+\item Step-\/by-\/step implementation phases
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md548}{}\doxysubsection{\texorpdfstring{2. ✅ Work\+List\+Page\+Delegate Source Routing}{2. ✅ Work\+List\+Page\+Delegate Source Routing}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md548}
+{\bfseries{Modified}}:\+ {\ttfamily Application/\+\+Delegate/\+\+Work\+List\+Page\+Delegate.\+cpp}
+
+{\bfseries{Changes}}:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPageDelegate::onWorklistItemDoubleClicked(\textcolor{keywordtype}{int}\ entryId)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ ExaminationContext}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ examContext\ =\ std::make\_shared<ExaminationContext>(selectedEntry);}
+\DoxyCodeLine{\ \ \ \ ctxMgr-\/>setWorkflowContext(\textcolor{stringliteral}{"{}Examination"{}},\ examContext);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Route\ based\ on\ source}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (selectedEntry.Source\ ==\ Source::LOCAL)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ LOCAL:\ Show\ ViewSelectionDialog}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ User\ selects\ procedure\ and\ views}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ViewSelectionDialogBuilder\ builder;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ [dialog,\ delegate]\ =\ builder.build(params,\ ui,\ \textcolor{keyword}{this});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Update\ context\ with\ selected\ items}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ examContext-\/>setProcedureId(procedureId);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ examContext-\/>setViewIds(viewIds);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ emit\ startExamination(entryId);}
+\DoxyCodeLine{\ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ RIS:\ Skip\ dialog,\ go\ directly\ to\ examination}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Views\ already\ defined\ in\ worklist\ attributes}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ emit\ startExamination(entryId);}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Behavior}}:\+
+\begin{DoxyItemize}
+\item {\bfseries{LOCAL}} worklist entries:\+ Opens \doxylink{class_view_selection_dialog}{View\+Selection\+Dialog} for user to select procedure and views
+\item {\bfseries{RIS}} worklist entries:\+ Skips dialog, proceeds directly to examination (views already defined)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md549}{}\doxysubsection{\texorpdfstring{3. ✅ Examination\+Context Enhancement}{3. ✅ Examination\+Context Enhancement}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md549}
+{\bfseries{Modified}}:\+
+\begin{DoxyItemize}
+\item {\ttfamily \doxylink{_examination_context_8h_source}{Core/\+\+Context/\+\+Examination\+Context.\+h}}
+\item {\ttfamily Core/\+\+Context/\+\+Examination\+Context.\+cpp}
+\end{DoxyItemize}
+
+{\bfseries{Added Methods}}:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Set/get\ selected\ procedure\ ID\ (for\ LOCAL\ worklist\ entries)}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setProcedureId(\textcolor{keywordtype}{int}\ procedureId);}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ procedureId()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Set/get\ selected\ view\ IDs\ (one\ per\ series)}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setViewIds(\textcolor{keyword}{const}\ QVector<int>\&\ viewIds);}
+\DoxyCodeLine{QVector<int>\ viewIds()\ \textcolor{keyword}{const};}
+
+\end{DoxyCode}
+
+
+{\bfseries{New Fields}}:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ m\_procedureId\ =\ -\/1;}
+\DoxyCodeLine{QVector<int>\ m\_viewIds;}
+
+\end{DoxyCode}
+
+
+{\bfseries{Purpose}}:\+
+\begin{DoxyItemize}
+\item Stores user\textquotesingle{}s selection from \doxylink{class_view_selection_dialog}{View\+Selection\+Dialog} (LOCAL source)
+\item Carries procedure and view information through the examination workflow
+\item Available to Exam\+Page\+Delegate when page loads
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md550}{}\doxysubsection{\texorpdfstring{4. ✅ Exam\+Page\+Delegate Implementation}{4. ✅ Exam\+Page\+Delegate Implementation}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md550}
+{\bfseries{Created Files}}:\+
+\begin{DoxyItemize}
+\item {\ttfamily \doxylink{_exam_page_delegate_8h_source}{Application/\+\+Delegate/\+\+Exam\+Page\+Delegate.\+h}}
+\item {\ttfamily Application/\+\+Delegate/\+\+Exam\+Page\+Delegate.\+cpp}
+\end{DoxyItemize}
+
+{\bfseries{Key Features}}:\+
+\begin{DoxyItemize}
+\item Full MVD pattern implementation
+\item Repository injection (Worklist\+Repository, Dicom\+Repository, Scan\+Protocol\+Repository, Device\+Repository)
+\item \doxylink{class_i_delegate}{IDelegate} and \doxylink{class_i_page_action}{IPage\+Action} interface implementation
+\item Comprehensive slot implementations for:\+
+\begin{DoxyItemize}
+\item Initialization (on\+Page\+Loaded, load\+Examination\+Context, load\+Views, load\+Technique\+Parameters)
+\item View management (on\+View\+Selected, on\+Next\+View, on\+Previous\+View)
+\item Image acquisition (on\+Ready\+Button\+Clicked, on\+Expose\+Button\+Clicked, on\+Image\+Received)
+\item Technical parameters (on\+Kvp\+Changed, on\+Ma\+Changed, etc.)
+\item Study operations (on\+New\+Study\+Clicked, on\+Edit\+Study\+Clicked, on\+New\+View\+Clicked)
+\end{DoxyItemize}
+\item Database operation methods (create\+Study, create\+Series\+For\+Views, update\+Worklist\+Status)
+\item VTK viewer integration (initialize\+Vtk\+Viewer, display\+Image, clear\+Vtk\+Viewer)
+\item Equipment control placeholders (configure\+Generator, configure\+Detector)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md551}{}\doxysubsection{\texorpdfstring{5. ✅ Exam\+Page\+Builder Implementation}{5. ✅ Exam\+Page\+Builder Implementation}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md551}
+{\bfseries{Created Files}}:\+
+\begin{DoxyItemize}
+\item {\ttfamily \doxylink{_exam_page_builder_8h_source}{Application/\+\+Builder/\+\+Exam\+Page\+Builder.\+h}}
+\item {\ttfamily Application/\+\+Builder/\+\+Exam\+Page\+Builder.\+cpp}
+\end{DoxyItemize}
+
+{\bfseries{Implementation Details}}:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::pair<ExamPage*,\ ExamPageDelegate*>}
+\DoxyCodeLine{ExamPageBuilder::build(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QWidget*\ parentWidget,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QObject*\ parentDelegate)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ page\ widget}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}*\ page\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_exam_page}{ExamPage}}(parentWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ all\ repositories}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ worklistRepo\ =\ std::make\_shared<WorklistRepository>(params.dbConnection);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ dicomRepo\ =\ std::make\_shared<DicomRepository>(params.dbConnection);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ scanProtocolRepo\ =\ std::make\_shared<ScanProtocolRepository>(params.dbConnection,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ deviceRepo\ =\ std::make\_shared<DeviceRepository>(params.dbConnection,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ delegate\ with\ all\ dependencies}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}*\ delegate\ =\ \textcolor{keyword}{new}\ ExamPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ page,\ worklistRepo,\ dicomRepo,\ scanProtocolRepo,\ deviceRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ params.dbConnection,\ params.contextManager,\ parentDelegate}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ \{\ page,\ delegate\ \};}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md552}{}\doxysubsection{\texorpdfstring{6. ✅ Main\+Window\+Delegate Integration}{6. ✅ Main\+Window\+Delegate Integration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md552}
+{\bfseries{Modified Files}}:\+
+\begin{DoxyItemize}
+\item {\ttfamily \doxylink{_main_window_delegate_8h_source}{Application/\+\+Delegate/\+\+Main\+Window\+Delegate.\+h}} -\/ Added Exam\+Page\+Delegate member and on\+Start\+Examination slot
+\item {\ttfamily Application/\+\+Delegate/\+\+Main\+Window\+Delegate.\+cpp} -\/ Implemented examination page wiring
+\end{DoxyItemize}
+
+{\bfseries{Key Changes}}:\+
+\begin{DoxyEnumerate}
+\item Added {\ttfamily \#include "{}\doxylink{_exam_page_delegate_8h_source}{Exam\+Page\+Delegate.\+h}"{}} and {\ttfamily \#include "{}\doxylink{_exam_page_builder_8h_source}{Exam\+Page\+Builder.\+h}"{}}
+\item Added member variable:\+ {\ttfamily Exam\+Page\+Delegate \texorpdfstring{$\ast$}{*}m\+\_\+exam\+Page\+Delegate\{nullptr\};}
+\item Added slot:\+ {\ttfamily void on\+Start\+Examination(int worklist\+Entry\+Id);}
+\item Connected {\ttfamily Work\+List\+Page\+Delegate::\+start\+Examination} signal to {\ttfamily on\+Start\+Examination} slot
+\item Implemented examination page loading with proper signal connections:\+
+\begin{DoxyItemize}
+\item {\ttfamily close\+Examination} → closes page
+\item {\ttfamily examination\+Completed} → logs study ID and closes page
+\item {\ttfamily error\+Occurred} → logs error message
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+{\bfseries{Signal Flow}}:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{WorkListPageDelegate::onWorklistItemDoubleClicked()}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{emit\ startExamination(entryId)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{MainWindowDelegate::onStartExamination(entryId)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{ExamPageBuilder::build()\ creates\ ExamPage\ +\ ExamPageDelegate}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{MainWindow::loadPage(page)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{ExamPageDelegate\ initialization\ begins}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md553}{}\doxysection{\texorpdfstring{Current Architecture}{Current Architecture}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md553}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md554}{}\doxysubsection{\texorpdfstring{Workflow Context Flow}{Workflow Context Flow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md554}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{User\ Double-\/Clicks\ Worklist\ Entry}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{WorkListPageDelegate::onWorklistItemDoubleClicked()}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{Create\ ExaminationContext(worklistEntry)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{ContextManager::setWorkflowContext("{}Examination"{},\ examContext)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌────────────────────┴────────────────────┐}
+\DoxyCodeLine{│\ LOCAL\ Source\ \ \ \ \ \ \ │\ RIS\ Source\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{├────────────────────┼────────────────────┤}
+\DoxyCodeLine{│\ ViewSelectionDialog│\ Skip\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ User\ selects:\ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ -\/\ Procedure\ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ -\/\ Views\ (multiple)\ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ Update\ context:\ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ examContext→\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ setProcedureId()\ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ setViewIds()\ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└────────────────────┴────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{emit\ startExamination(entryId)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{[Next:\ Open\ ExaminationPage]}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md555}{}\doxysubsection{\texorpdfstring{Examination\+Context Data}{Examination\+Context Data}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md555}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ExaminationContext\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ From\ worklist\ entry}}
+\DoxyCodeLine{\ \ \ \ WorklistEntry\ m\_entry;}
+\DoxyCodeLine{\ \ \ \ QMap<QString,\ QString>\ m\_attributes;\ \ \textcolor{comment}{//\ DICOM\ tags}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Patient\ demographics\ (extracted\ from\ DICOM\ tags)}}
+\DoxyCodeLine{\ \ \ \ QString\ patientName();}
+\DoxyCodeLine{\ \ \ \ QString\ patientId();}
+\DoxyCodeLine{\ \ \ \ QDate\ patientBirthDate();}
+\DoxyCodeLine{\ \ \ \ QString\ patientGender();}
+\DoxyCodeLine{\ \ \ \ QString\ accessionNumber();}
+\DoxyCodeLine{\ \ \ \ QString\ bodyPartExamined();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ For\ LOCAL\ source:\ user\ selections}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ m\_procedureId;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Selected\ procedure}}
+\DoxyCodeLine{\ \ \ \ QVector<int>\ m\_viewIds;\ \ \ \ \ \ \textcolor{comment}{//\ Selected\ views\ (will\ become\ series)}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Workflow\ state}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ m\_isComplete;}
+\DoxyCodeLine{\ \ \ \ QDateTime\ m\_timestamp;}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md556}{}\doxysection{\texorpdfstring{Next Steps}{Next Steps}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md556}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md557}{}\doxysubsection{\texorpdfstring{Phase 1:\+ Exam\+Page Integration (Next Priority)}{Phase 1:\+ Exam\+Page Integration (Next Priority)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md557}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md558}{}\doxysubsubsection{\texorpdfstring{Step 1:\+ Create Exam\+Page\+Delegate Skeleton}{Step 1:\+ Create Exam\+Page\+Delegate Skeleton}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md558}
+{\bfseries{New File}}:\+ {\ttfamily \doxylink{_exam_page_delegate_8h_source}{Application/\+\+Delegate/\+\+Exam\+Page\+Delegate.\+h}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ExamPageDelegate\ :\ \textcolor{keyword}{public}\ QObject,\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_delegate}{IDelegate}},\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_page_action}{IPageAction}}\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{\ \ \ \ Q\_INTERFACES(IDelegate\ IPageAction)}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ ExamPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ExamPage*\ ui,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<WorklistRepository>\ worklistRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DicomRepository>\ dicomRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<ScanProtocolRepository>\ scanProtocolRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DeviceRepository>\ deviceRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::weak\_ptr<IContextManager>\ contextManager,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QObject*\ parent\ =\ \textcolor{keyword}{nullptr}}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ IDelegate}}
+\DoxyCodeLine{\ \ \ \ QString\ \doxymbox{\hyperlink{class_i_delegate_a3311f37c49184175fb981daba0b821d1}{name}}()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_delegate_a5267844d782bc5a29bdb7a2f5c629dbd}{attachDelegates}}(\textcolor{keyword}{const}\ QVector<QObject*>\&\ delegates)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ IPageAction}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a503b226f082d06649b2a6d50f640bfd6}{apply}}()\ \textcolor{keyword}{override};\ \ \ \textcolor{comment}{//\ Save\ intermediate\ state}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a3bba6aded34b5f77cdc4543ad1a0054b}{accept}}()\ \textcolor{keyword}{override};\ \ \textcolor{comment}{//\ Complete\ examination}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a1952f133192230834c11116c7d6ac7c9}{reject}}()\ \textcolor{keyword}{override};\ \ \textcolor{comment}{//\ Cancel\ examination}}
+\DoxyCodeLine{}
+\DoxyCodeLine{signals:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ examinationCompleted(\textcolor{keywordtype}{int}\ studyId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ closeExamination();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}\ slots:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onPageLoaded();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ loadExaminationContext();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ loadPatientDemographics();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ loadViews();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Initialization}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ createStudy();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ createSeries(\textcolor{keywordtype}{int}\ viewId);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ VTK\ viewer}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ initializeVtkViewer();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ displayImage(\textcolor{keyword}{const}\ QByteArray\&\ imageData);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ ExamPage*\ ui;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<WorklistRepository>\ m\_worklistRepo;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DicomRepository>\ m\_dicomRepo;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<ScanProtocolRepository>\ m\_scanProtocolRepo;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DeviceRepository>\ m\_deviceRepo;}
+\DoxyCodeLine{\ \ \ \ std::weak\_ptr<IContextManager>\ m\_contextManager;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Current\ state}}
+\DoxyCodeLine{\ \ \ \ WorklistEntry\ m\_worklistEntry;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ m\_studyId\ =\ -\/1;}
+\DoxyCodeLine{\ \ \ \ QVector<int>\ m\_seriesIds;}
+\DoxyCodeLine{\ \ \ \ QVector<View>\ m\_views;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md559}{}\doxysubsubsection{\texorpdfstring{Step 2:\+ Create Exam\+Page\+Builder}{Step 2:\+ Create Exam\+Page\+Builder}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md559}
+{\bfseries{New File}}:\+ {\ttfamily \doxylink{_exam_page_builder_8h_source}{Application/\+\+Builder/\+\+Exam\+Page\+Builder.\+h}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ExamPageBuilder\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_widget_delegate_builder}{IWidgetDelegateBuilder}}<ExamPage,\ ExamPageDelegate>\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ std::pair<ExamPage*,\ ExamPageDelegate*>}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_i_widget_delegate_builder_a024312e1df508463df4d0a2efc1da6c2}{build}}(\textcolor{keyword}{const}\ DelegateParameter\&\ params,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ QWidget*\ parentWidget\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ QObject*\ parentDelegate\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Implementation}}:\+ {\ttfamily Application/\+\+Builder/\+\+Exam\+Page\+Builder.\+cpp}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::pair<ExamPage*,\ ExamPageDelegate*>}
+\DoxyCodeLine{ExamPageBuilder::build(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QWidget*\ parentWidget,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QObject*\ parentDelegate)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ repositories}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ worklistRepo\ =\ std::make\_shared<WorklistRepository>(params.dbConnection);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ dicomRepo\ =\ std::make\_shared<DicomRepository>(params.dbConnection);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ scanProtocolRepo\ =\ std::make\_shared<ScanProtocolRepository>(params.dbConnection,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ deviceRepo\ =\ std::make\_shared<DeviceRepository>(params.dbConnection,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ widget}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_exam_page}{ExamPage}}(parentWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ delegate}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ ExamPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ widget,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ worklistRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ dicomRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ scanProtocolRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ deviceRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ params.contextManager,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ parentDelegate}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ \{\ widget,\ delegate\ \};}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md560}{}\doxysubsubsection{\texorpdfstring{Step 3:\+ Wire Examination\+Page in Main\+Window\+Delegate}{Step 3:\+ Wire Examination\+Page in Main\+Window\+Delegate}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md560}
+{\bfseries{Modify}}:\+ {\ttfamily Application/\+\+Delegate/\+\+Main\+Window\+Delegate.\+cpp}
+
+Add method to load examination page:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ MainWindowDelegate::onStartExamination(\textcolor{keywordtype}{int}\ worklistEntryId)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Build\ examination\ page}}
+\DoxyCodeLine{\ \ \ \ ExamPageBuilder\ builder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [page,\ delegate]\ =\ builder.build(m\_params,\ \textcolor{keyword}{nullptr},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Wire\ signals}}
+\DoxyCodeLine{\ \ \ \ connect(delegate,\ \&ExamPageDelegate::closeExamination,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ [\textcolor{keyword}{this},\ page]()\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_mainWindow-\/>closePage();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ connect(delegate,\ \&ExamPageDelegate::examinationCompleted,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ [\textcolor{keyword}{this}](\textcolor{keywordtype}{int}\ studyId)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ qDebug()\ <<\ \textcolor{stringliteral}{"{}Examination\ completed,\ study\ ID:"{}}\ <<\ studyId;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Optionally\ refresh\ worklist}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Display\ page}}
+\DoxyCodeLine{\ \ \ \ m\_mainWindow-\/>loadPage(page);}
+\DoxyCodeLine{\ \ \ \ m\_mainWindow-\/>finishLoadingPage();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+Connect Work\+List\+Page\+Delegate signal:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ In\ MainWindowDelegate\ when\ building\ WorkListPage}}
+\DoxyCodeLine{connect(worklistDelegate,\ \&WorkListPageDelegate::startExamination,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&MainWindowDelegate::onStartExamination);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md561}{}\doxysubsection{\texorpdfstring{Phase 2:\+ VTK Image Viewer Integration}{Phase 2:\+ VTK Image Viewer Integration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md561}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md562}{}\doxysubsubsection{\texorpdfstring{Step 1:\+ Add VTK Widget to Exam\+Page.\+ui}{Step 1:\+ Add VTK Widget to Exam\+Page.\+ui}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md562}
+Update the UI file to include a \doxylink{class_q_v_t_k_open_g_l_native_widget}{QVTKOpen\+GLNative\+Widget} for the main image display area.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md563}{}\doxysubsubsection{\texorpdfstring{Step 2:\+ Initialize VTK in Exam\+Page\+Delegate}{Step 2:\+ Initialize VTK in Exam\+Page\+Delegate}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md563}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ExamPageDelegate::initializeVtkViewer()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Get\ VTK\ widget\ from\ UI}}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_q_v_t_k_open_g_l_native_widget}{QVTKOpenGLNativeWidget}}*\ vtkWidget\ =\ ui-\/>getVtkWidget();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ render\ window}}
+\DoxyCodeLine{\ \ \ \ m\_renderWindow\ =\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{vtkGenericOpenGLRenderWindow::New}}();}
+\DoxyCodeLine{\ \ \ \ vtkWidget-\/>\doxymbox{\hyperlink{class_q_v_t_k_open_g_l_native_widget_a6a2b2ff0dfd16c695664f98b3c268f44}{setRenderWindow}}(m\_renderWindow);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ renderer}}
+\DoxyCodeLine{\ \ \ \ m\_renderer\ =\ \doxymbox{\hyperlink{classvtk_renderer_a901902afea4a4b528dd9af15cfa9ee6f}{vtkRenderer::New}}();}
+\DoxyCodeLine{\ \ \ \ m\_renderWindow-\/>AddRenderer(m\_renderer);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ image\ actor\ for\ DICOM\ images}}
+\DoxyCodeLine{\ \ \ \ m\_imageActor\ =\ \doxymbox{\hyperlink{classvtk_image_actor_aad053109e1291504283fe49b916d9804}{vtkImageActor::New}}();}
+\DoxyCodeLine{\ \ \ \ m\_renderer-\/>AddActor(m\_imageActor);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Setup\ camera\ and\ interactor}}
+\DoxyCodeLine{\ \ \ \ m\_renderer-\/>ResetCamera();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Set\ interactor\ style\ for\ medical\ imaging\ (window/level,\ zoom,\ pan)}}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkInteractorStyleImage>}}\ style\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_af3837bf67dd1f35b0de2ba649dc9ffe4}{vtkSmartPointer<vtkInteractorStyleImage>::New}}();}
+\DoxyCodeLine{\ \ \ \ vtkWidget-\/>\doxymbox{\hyperlink{class_q_v_t_k_open_g_l_native_widget_a5c9b40c0d13f6da6446710fe8bfe15ce}{interactor}}()-\/>\doxymbox{\hyperlink{classvtk_render_window_interactor_a8b9b87c9be394af15e7cd8664ceb6053}{SetInteractorStyle}}(style);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md564}{}\doxysubsubsection{\texorpdfstring{Step 3:\+ Display DICOM Images}{Step 3:\+ Display DICOM Images}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md564}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ExamPageDelegate::displayImage(\textcolor{keyword}{const}\ QByteArray\&\ imageData)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Convert\ raw\ image\ data\ to\ vtkImageData}}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Apply\ window/level}}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Update\ vtkImageActor}}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Render}}
+\DoxyCodeLine{\ \ \ \ m\_renderWindow-\/>Render();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md565}{}\doxysubsection{\texorpdfstring{Phase 3:\+ Database Operations}{Phase 3:\+ Database Operations}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md565}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md566}{}\doxysubsubsection{\texorpdfstring{Step 1:\+ Study Creation}{Step 1:\+ Study Creation}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md566}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ExamPageDelegate::createStudy()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Generate\ DICOM\ UID}}
+\DoxyCodeLine{\ \ \ \ QString\ studyInstanceUid\ =\ DicomUidGenerator::generateStudyInstanceUid();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Extract\ patient\ info\ from\ ExaminationContext}}
+\DoxyCodeLine{\ \ \ \ QString\ patientName\ =\ examContext-\/>patientName();}
+\DoxyCodeLine{\ \ \ \ QString\ patientId\ =\ examContext-\/>patientId();}
+\DoxyCodeLine{\ \ \ \ QString\ accessionNumber\ =\ examContext-\/>accessionNumber();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ study\ record}}
+\DoxyCodeLine{\ \ \ \ Study\ study;}
+\DoxyCodeLine{\ \ \ \ study.studyInstanceUid\ =\ studyInstanceUid;}
+\DoxyCodeLine{\ \ \ \ study.patientId\ =\ getOrCreatePatientId(patientId,\ patientName);}
+\DoxyCodeLine{\ \ \ \ study.accessionNumber\ =\ accessionNumber;}
+\DoxyCodeLine{\ \ \ \ study.studyDate\ =\ QDate::currentDate();}
+\DoxyCodeLine{\ \ \ \ study.studyTime\ =\ QTime::currentTime();}
+\DoxyCodeLine{\ \ \ \ study.studyDescription\ =\ examContext-\/>studyDescription();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ result\ =\ m\_dicomRepo-\/>createStudy(study);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (result.isSuccess)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_studyId\ =\ result.value.id;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Update\ worklist\ status\ to\ IN\_PROGRESS}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ updateWorklistStatus(ProcedureStepStatus::IN\_PROGRESS,\ studyInstanceUid);}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md567}{}\doxysubsubsection{\texorpdfstring{Step 2:\+ Series Creation (One Per View)}{Step 2:\+ Series Creation (One Per View)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md567}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ExamPageDelegate::createSeriesForViews()\ \{}
+\DoxyCodeLine{\ \ \ \ QVector<int>\ viewIds\ =\ examContext-\/>viewIds();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ viewIds.size();\ ++i)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ viewId\ =\ viewIds[i];}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ view\ details}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ viewResult\ =\ m\_scanProtocolRepo-\/>getViewById(viewId);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!viewResult.isSuccess)\ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ View\ view\ =\ viewResult.value;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Generate\ series\ UID}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QString\ seriesInstanceUid\ =\ DicomUidGenerator::generateSeriesInstanceUid();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ series\ record}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ Series\ series;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ series.studyId\ =\ m\_studyId;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ series.seriesInstanceUid\ =\ seriesInstanceUid;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ series.seriesNumber\ =\ i\ +\ 1;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ series.modality\ =\ \textcolor{stringliteral}{"{}DX"{}};}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ series.seriesDescription\ =\ view.name;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ series.bodyPartExamined\ =\ view.bodyPart;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ series.patientPosition\ =\ view.patientPosition;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ series.viewPosition\ =\ view.viewPosition;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ series.imageLaterality\ =\ view.imageLaterality;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ result\ =\ m\_dicomRepo-\/>createSeries(series);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (result.isSuccess)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ m\_seriesIds.append(result.value.id);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md568}{}\doxysubsubsection{\texorpdfstring{Step 3:\+ Worklist Status Update}{Step 3:\+ Worklist Status Update}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md568}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ExamPageDelegate::updateWorklistStatus(}
+\DoxyCodeLine{\ \ \ \ ProcedureStepStatus\ status,}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ QString\&\ studyInstanceUid\ =\ QString())\ \{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ worklistEntryId\ =\ examContext-\/>worklistEntryId();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ entry\ =\ m\_worklistRepo-\/>getWorklistEntryById(worklistEntryId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (entry.isSuccess)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ entry.value.status\ =\ status;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!studyInstanceUid.isEmpty())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ entry.value.studyInstanceUid\ =\ studyInstanceUid;}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_worklistRepo-\/>updateWorklistEntry(entry.value);}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md569}{}\doxysection{\texorpdfstring{Files Created/\+\+Modified So Far}{Files Created/\+\+Modified So Far}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md569}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md570}{}\doxysubsection{\texorpdfstring{Documentation Files}{Documentation Files}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md570}
+
+\begin{DoxyEnumerate}
+\item {\ttfamily Documents/\+07-\/\+Examination-\/\+Workflow-\/\+Design.\+md} -\/ Complete workflow design
+\item {\ttfamily Documents/\+08-\/\+Examination-\/\+Implementation-\/\+Progress.\+md} -\/ This file (tracking progress)
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md571}{}\doxysubsection{\texorpdfstring{Phase 1 Completed Files}{Phase 1 Completed Files}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md571}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md572}{}\doxysubsubsection{\texorpdfstring{Created Files}{Created Files}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md572}
+
+\begin{DoxyEnumerate}
+\item ✅ {\ttfamily \doxylink{_exam_page_delegate_8h_source}{Application/\+\+Delegate/\+\+Exam\+Page\+Delegate.\+h}} -\/ Delegate header with all interfaces
+\item ✅ {\ttfamily Application/\+\+Delegate/\+\+Exam\+Page\+Delegate.\+cpp} -\/ Complete delegate implementation
+\item ✅ {\ttfamily \doxylink{_exam_page_builder_8h_source}{Application/\+\+Builder/\+\+Exam\+Page\+Builder.\+h}} -\/ Builder header
+\item ✅ {\ttfamily Application/\+\+Builder/\+\+Exam\+Page\+Builder.\+cpp} -\/ Builder implementation
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md573}{}\doxysubsubsection{\texorpdfstring{Modified Files}{Modified Files}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md573}
+
+\begin{DoxyEnumerate}
+\item ✅ {\ttfamily Application/\+\+Delegate/\+\+Work\+List\+Page\+Delegate.\+cpp} -\/ Added LOCAL vs RIS routing
+\item ✅ {\ttfamily \doxylink{_examination_context_8h_source}{Core/\+\+Context/\+\+Examination\+Context.\+h}} -\/ Added procedure/\+view ID support
+\item ✅ {\ttfamily Core/\+\+Context/\+\+Examination\+Context.\+cpp} -\/ Implemented new methods
+\item ✅ {\ttfamily \doxylink{_main_window_delegate_8h_source}{Application/\+\+Delegate/\+\+Main\+Window\+Delegate.\+h}} -\/ Added Exam\+Page\+Delegate member and slot
+\item ✅ {\ttfamily Application/\+\+Delegate/\+\+Main\+Window\+Delegate.\+cpp} -\/ Wired examination page loading
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md574}{}\doxysubsection{\texorpdfstring{Phase 2 -\/ Next Files to Modify}{Phase 2 -\/ Next Files to Modify}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md574}
+
+\begin{DoxyEnumerate}
+\item {\ttfamily View/\+\+Page/\+\+Exam\+Page.\+ui} -\/ Add VTK widget placeholder
+\item {\ttfamily \doxylink{_exam_page_8h_source}{View/\+\+Page/\+\+Exam\+Page.\+h}} -\/ Add VTK widget accessors
+\item {\ttfamily View/\+\+Page/\+\+Exam\+Page.\+cpp} -\/ Initialize VTK widget
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md575}{}\doxysection{\texorpdfstring{Testing Plan}{Testing Plan}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md575}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md576}{}\doxysubsection{\texorpdfstring{Unit Tests Needed}{Unit Tests Needed}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md576}
+
+\begin{DoxyEnumerate}
+\item Examination\+Context procedure/\+view ID storage
+\item Work\+List\+Page\+Delegate source routing logic
+\item Study/\+\+Series creation with correct DICOM UIDs
+\item Worklist status transitions
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md577}{}\doxysubsection{\texorpdfstring{Integration Tests Needed}{Integration Tests Needed}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md577}
+
+\begin{DoxyEnumerate}
+\item LOCAL worklist entry → \doxylink{class_view_selection_dialog}{View\+Selection\+Dialog} → Examination\+Page
+\item RIS worklist entry → Examination\+Page (skip dialog)
+\item Examination\+Context flow through entire workflow
+\item Database operations (study, series, images)
+\item VTK image display
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md578}{}\doxysubsection{\texorpdfstring{Manual Testing Scenarios}{Manual Testing Scenarios}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md578}
+
+\begin{DoxyEnumerate}
+\item Create LOCAL worklist entry, select views, start examination
+\item Receive RIS worklist entry, start examination directly
+\item Acquire images for multiple views/\+series
+\item Verify DICOM hierarchy in database
+\item Verify worklist status updates correctly
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md579}{}\doxysection{\texorpdfstring{Next Actions}{Next Actions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md579}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md580}{}\doxysubsection{\texorpdfstring{✅ Phase 1 Completed:\+ MVD Infrastructure}{✅ Phase 1 Completed:\+ MVD Infrastructure}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md580}
+
+\begin{DoxyEnumerate}
+\item ✅ {\bfseries{Completed}}:\+ Created Exam\+Page\+Delegate with full MVD pattern
+\item ✅ {\bfseries{Completed}}:\+ Created Exam\+Page\+Builder following builder pattern
+\item ✅ {\bfseries{Completed}}:\+ Wired Examination\+Page in Main\+Window\+Delegate
+\item ✅ {\bfseries{Completed}}:\+ Connected all signals between \doxylink{class_main_window}{Main\+Window} → \doxylink{class_exam_page}{Exam\+Page} workflow
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md581}{}\doxysubsection{\texorpdfstring{Phase 2:\+ VTK Image Viewer Integration}{Phase 2:\+ VTK Image Viewer Integration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md581}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Next}}:\+ Add VTK widget to Exam\+Page.\+ui (\doxylink{class_q_v_t_k_open_g_l_native_widget}{QVTKOpen\+GLNative\+Widget})
+\item {\bfseries{Then}}:\+ Add VTK widget accessors to \doxylink{_exam_page_8h_source}{Exam\+Page.\+h}/\+cpp
+\item {\bfseries{After}}:\+ Implement VTK initialization in Exam\+Page\+Delegate
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md582}{}\doxysubsection{\texorpdfstring{Phase 3:\+ Database Operations}{Phase 3:\+ Database Operations}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md582}
+
+\begin{DoxyEnumerate}
+\item Implement actual study creation logic
+\item Implement series creation for each view
+\item Implement image storage with DICOM metadata
+\item Implement worklist status updates
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md583}{}\doxysubsection{\texorpdfstring{Phase 4:\+ Equipment Integration}{Phase 4:\+ Equipment Integration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md583}
+
+\begin{DoxyEnumerate}
+\item Implement generator configuration
+\item Implement detector configuration
+\item Wire image acquisition hardware callbacks
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md584}{}\doxysection{\texorpdfstring{Questions/\+\+Decisions Needed}{Questions/\+\+Decisions Needed}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress_autotoc_md584}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Image Acquisition}}:\+ How is raw image data received from detector?
+\begin{DoxyItemize}
+\item Via hardware SDK callback?
+\item Via file watcher?
+\item Via network socket?
+\end{DoxyItemize}
+\item {\bfseries{DICOM UID Generation}}:\+ Use existing {\ttfamily Dicom\+Uid\+Generator} or implement new one?
+\item {\bfseries{Patient Record}}:\+
+\begin{DoxyItemize}
+\item Create new patient if not exists?
+\item Match on Patient\+ID + Issuer\+Of\+Patient\+ID?
+\end{DoxyItemize}
+\item {\bfseries{Thumbnail Display}}:\+
+\begin{DoxyItemize}
+\item Use VTK for thumbnails?
+\item Use Qt pixmaps?
+\item Lazy load or pre-\/render?
+\end{DoxyItemize}
+\item {\bfseries{Equipment Control}}:\+
+\begin{DoxyItemize}
+\item Integrate with existing Device module?
+\item Mock for now and implement later?
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+
+
+{\bfseries{Related Documentation}}:\+
+\begin{DoxyItemize}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design}{Examination Workflow Design}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern}{Model-\/\+View-\/\+Delegate Pattern}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern}{Builder Pattern}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows}{Application Workflows}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema}{Database Schema}{0} 
+\end{DoxyItemize}

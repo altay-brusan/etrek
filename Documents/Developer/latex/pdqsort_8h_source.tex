@@ -1,0 +1,622 @@
+\doxysection{pdqsort.\+h}
+\hypertarget{pdqsort_8h_source}{}\label{pdqsort_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/pdqsort.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/pdqsort.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ \ pdqsort.h\ -\/\ Pattern-\/defeating\ quicksort.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ \ \ \ Copyright\ (c)\ 2021,\ 2022,\ 2023\ Orson\ Peters}}
+\DoxyCodeLine{00005\ \textcolor{comment}{}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ \ \ \ This\ software\ is\ provided\ 'as-\/is',\ without\ any\ express\ or\ implied\ warranty.\ In\ no\ event\ will\ the}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ \ \ \ authors\ be\ held\ liable\ for\ any\ damages\ arising\ from\ the\ use\ of\ this\ software.}}
+\DoxyCodeLine{00008\ \textcolor{comment}{}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ \ \ \ Permission\ is\ granted\ to\ anyone\ to\ use\ this\ software\ for\ any\ purpose,\ including\ commercial}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ \ \ \ applications,\ and\ to\ alter\ it\ and\ redistribute\ it\ freely,\ subject\ to\ the\ following\ restrictions:}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ \ \ \ 1.\ The\ origin\ of\ this\ software\ must\ not\ be\ misrepresented;\ you\ must\ not\ claim\ that\ you\ wrote\ the}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ \ \ \ \ \ \ original\ software.\ If\ you\ use\ this\ software\ in\ a\ product,\ an\ acknowledgment\ in\ the\ product}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ \ \ \ \ \ \ documentation\ would\ be\ appreciated\ but\ is\ not\ required.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ \ \ \ 2.\ Altered\ source\ versions\ must\ be\ plainly\ marked\ as\ such,\ and\ must\ not\ be\ misrepresented\ as}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ \ \ \ \ \ \ being\ the\ original\ software.}}
+\DoxyCodeLine{00018\ \textcolor{comment}{}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ \ \ \ 3.\ This\ notice\ may\ not\ be\ removed\ or\ altered\ from\ any\ source\ distribution.}}
+\DoxyCodeLine{00020\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ PDQSORT\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ PDQSORT\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ <cstddef>}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#if\ \_\_cplusplus\ >=\ 201103L}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#define\ PDQSORT\_PREFER\_MOVE(x)\ std::move(x)}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#define\ PDQSORT\_PREFER\_MOVE(x)\ (x)}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ NOLINTBEGIN}}
+\DoxyCodeLine{00040\ \textcolor{keyword}{namespace\ }pdqsort\_detail\ \{}
+\DoxyCodeLine{00041\ \ \ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{//\ Partitions\ below\ this\ size\ are\ sorted\ using\ insertion\ sort.}}
+\DoxyCodeLine{00043\ \ \ \ \ insertion\_sort\_threshold\ =\ 24,}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ Partitions\ above\ this\ size\ use\ Tukey's\ ninther\ to\ select\ the\ pivot.}}
+\DoxyCodeLine{00046\ \ \ \ \ ninther\_threshold\ =\ 128,}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{comment}{//\ When\ we\ detect\ an\ already\ sorted\ partition,\ attempt\ an\ insertion\ sort\ that\ allows\ this}}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{//\ amount\ of\ element\ moves\ before\ giving\ up.}}
+\DoxyCodeLine{00050\ \ \ \ \ partial\_insertion\_sort\_limit\ =\ 8,}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ Must\ be\ multiple\ of\ 8\ due\ to\ loop\ unrolling,\ and\ <\ 256\ to\ fit\ in\ unsigned\ char.}}
+\DoxyCodeLine{00053\ \ \ \ \ block\_size\ =\ 64,}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{//\ Cacheline\ size,\ assumes\ power\ of\ two.}}
+\DoxyCodeLine{00056\ \ \ \ \ cacheline\_size\ =\ 64}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#if\ \_\_cplusplus\ >=\ 201103L}}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>\ \textcolor{keyword}{struct\ }is\_default\_compare\ :\ std::false\_type}
+\DoxyCodeLine{00062\ \ \ \{}
+\DoxyCodeLine{00063\ \ \ \};}
+\DoxyCodeLine{00064\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>\ \textcolor{keyword}{struct\ }is\_default\_compare<std::less<T>>\ :\ std::true\_type}
+\DoxyCodeLine{00065\ \ \ \{}
+\DoxyCodeLine{00066\ \ \ \};}
+\DoxyCodeLine{00067\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>\ \textcolor{keyword}{struct\ }is\_default\_compare<std::greater<T>>\ :\ std::true\_type}
+\DoxyCodeLine{00068\ \ \ \{}
+\DoxyCodeLine{00069\ \ \ \};}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \textcolor{comment}{//\ Returns\ floor(log2(n)),\ assumes\ n\ >\ 0.}}
+\DoxyCodeLine{00073\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ pdq\_log2(T\ n)}
+\DoxyCodeLine{00074\ \ \ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{int}\ log\ =\ 0;}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{while}\ (n\ >>=\ 1)}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ ++log;}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{return}\ log;}
+\DoxyCodeLine{00079\ \ \ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \textcolor{comment}{//\ Sorts\ [begin,\ end)\ using\ insertion\ sort\ with\ the\ given\ comparison\ function.}}
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>}
+\DoxyCodeLine{00083\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ insertion\_sort(Iter\ begin,\ Iter\ end,\ Compare\ comp)}
+\DoxyCodeLine{00084\ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::value\_type\ T;}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordflow}{if}\ (begin\ ==\ end)}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordflow}{for}\ (Iter\ cur\ =\ begin\ +\ 1;\ cur\ !=\ end;\ ++cur)\ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ Iter\ sift\ \ \ =\ cur;}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ Iter\ sift\_1\ =\ cur\ -\/\ 1;}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \textcolor{comment}{//\ Compare\ first\ so\ we\ can\ avoid\ 2\ moves\ for\ an\ element\ already\ positioned\ correctly.}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (comp(*sift,\ *sift\_1))\ \{}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ T\ tmp\ =\ PDQSORT\_PREFER\_MOVE(*sift);}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ *sift-\/-\/\ =\ PDQSORT\_PREFER\_MOVE(*sift\_1);}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{while}\ (sift\ !=\ begin\ \&\&\ comp(tmp,\ *-\/-\/sift\_1));}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ *sift\ =\ PDQSORT\_PREFER\_MOVE(tmp);}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00103\ \ \ \ \ \}}
+\DoxyCodeLine{00104\ \ \ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \ \ \textcolor{comment}{//\ Sorts\ [begin,\ end)\ using\ insertion\ sort\ with\ the\ given\ comparison\ function.\ Assumes}}
+\DoxyCodeLine{00107\ \ \ \textcolor{comment}{//\ *(begin\ -\/\ 1)\ is\ an\ element\ smaller\ than\ or\ equal\ to\ any\ element\ in\ [begin,\ end).}}
+\DoxyCodeLine{00108\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>}
+\DoxyCodeLine{00109\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ unguarded\_insertion\_sort(Iter\ begin,\ Iter\ end,\ Compare\ comp)}
+\DoxyCodeLine{00110\ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::value\_type\ T;}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordflow}{if}\ (begin\ ==\ end)}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{for}\ (Iter\ cur\ =\ begin\ +\ 1;\ cur\ !=\ end;\ ++cur)\ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ Iter\ sift\ \ \ =\ cur;}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ Iter\ sift\_1\ =\ cur\ -\/\ 1;}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \textcolor{comment}{//\ Compare\ first\ so\ we\ can\ avoid\ 2\ moves\ for\ an\ element\ already\ positioned\ correctly.}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (comp(*sift,\ *sift\_1))\ \{}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ T\ tmp\ =\ PDQSORT\_PREFER\_MOVE(*sift);}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ *sift-\/-\/\ =\ PDQSORT\_PREFER\_MOVE(*sift\_1);}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{while}\ (comp(tmp,\ *-\/-\/sift\_1));}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ *sift\ =\ PDQSORT\_PREFER\_MOVE(tmp);}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00129\ \ \ \ \ \}}
+\DoxyCodeLine{00130\ \ \ \}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{//\ Attempts\ to\ use\ insertion\ sort\ on\ [begin,\ end).\ Will\ return\ false\ if\ more\ than}}
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{//\ partial\_insertion\_sort\_limit\ elements\ were\ moved,\ and\ abort\ sorting.\ Otherwise\ it\ will}}
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{//\ successfully\ sort\ and\ return\ true.}}
+\DoxyCodeLine{00135\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>}
+\DoxyCodeLine{00136\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ partial\_insertion\_sort(Iter\ begin,\ Iter\ end,\ Compare\ comp)}
+\DoxyCodeLine{00137\ \ \ \{}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::value\_type\ T;}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{if}\ (begin\ ==\ end)}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ std::size\_t\ limit\ =\ 0;}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{for}\ (Iter\ cur\ =\ begin\ +\ 1;\ cur\ !=\ end;\ ++cur)\ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ Iter\ sift\ \ \ =\ cur;}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ Iter\ sift\_1\ =\ cur\ -\/\ 1;}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \textcolor{comment}{//\ Compare\ first\ so\ we\ can\ avoid\ 2\ moves\ for\ an\ element\ already\ positioned\ correctly.}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (comp(*sift,\ *sift\_1))\ \{}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ T\ tmp\ =\ PDQSORT\_PREFER\_MOVE(*sift);}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \{}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ *sift-\/-\/\ =\ PDQSORT\_PREFER\_MOVE(*sift\_1);}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{while}\ (sift\ !=\ begin\ \&\&\ comp(tmp,\ *-\/-\/sift\_1));}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ *sift\ =\ PDQSORT\_PREFER\_MOVE(tmp);}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ limit\ +=\ cur\ -\/\ sift;}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (limit\ >\ partial\_insertion\_sort\_limit)}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00161\ \ \ \ \ \}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00164\ \ \ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ sort2(Iter\ a,\ Iter\ b,\ Compare\ comp)}
+\DoxyCodeLine{00167\ \ \ \{}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keywordflow}{if}\ (comp(*b,\ *a))}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ std::iter\_swap(a,\ b);}
+\DoxyCodeLine{00170\ \ \ \}}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \textcolor{comment}{//\ Sorts\ the\ elements\ *a,\ *b\ and\ *c\ using\ comparison\ function\ comp.}}
+\DoxyCodeLine{00173\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ sort3(Iter\ a,\ Iter\ b,\ Iter\ c,\ Compare\ comp)}
+\DoxyCodeLine{00174\ \ \ \{}
+\DoxyCodeLine{00175\ \ \ \ \ sort2(a,\ b,\ comp);}
+\DoxyCodeLine{00176\ \ \ \ \ sort2(b,\ c,\ comp);}
+\DoxyCodeLine{00177\ \ \ \ \ sort2(a,\ b,\ comp);}
+\DoxyCodeLine{00178\ \ \ \}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>\ \textcolor{keyword}{inline}\ T\ *align\_cacheline(T\ *p)}
+\DoxyCodeLine{00181\ \ \ \{}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\#if\ defined(UINTPTR\_MAX)\ \&\&\ \_\_cplusplus\ >=\ 201103L}}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keyword}{auto}\ ip\ =\ \textcolor{keyword}{reinterpret\_cast<}std::uintptr\_t\textcolor{keyword}{>}(p);}
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keyword}{auto}\ ip\ =\ \textcolor{keyword}{reinterpret\_cast<}std::size\_t\textcolor{keyword}{>}(p);}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordtype}{int}\ icacheline\_size\ =\ int(cacheline\_size);}
+\DoxyCodeLine{00188\ \ \ \ \ ip\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ (ip\ +\ icacheline\_size\ -\/\ 1)\ \&\ -\/icacheline\_size;}
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}T\ *\textcolor{keyword}{>}(ip);}
+\DoxyCodeLine{00190\ \ \ \}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter>}
+\DoxyCodeLine{00193\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ swap\_offsets(Iter\ first,\ Iter\ last,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *offsets\_l,}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *offsets\_r,\ \textcolor{keywordtype}{size\_t}\ num,\ \textcolor{keywordtype}{bool}\ use\_swaps)}
+\DoxyCodeLine{00195\ \ \ \{}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::value\_type\ T;}
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{keywordflow}{if}\ (use\_swaps)\ \{}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \textcolor{comment}{//\ This\ case\ is\ needed\ for\ the\ descending\ distribution,\ where\ we\ need}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \textcolor{comment}{//\ to\ have\ proper\ swapping\ for\ pdqsort\ to\ remain\ O(n).}}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ num;\ ++i)\ \{}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ std::iter\_swap(first\ +\ offsets\_l[i],\ last\ -\/\ offsets\_r[i]);}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00203\ \ \ \ \ \}}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (num\ >\ 0)\ \{}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ Iter\ l\ =\ first\ +\ offsets\_l[0];}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ Iter\ r\ =\ last\ -\/\ offsets\_r[0];}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ T\ \ \ \ tmp(PDQSORT\_PREFER\_MOVE(*l));}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ *l\ =\ PDQSORT\_PREFER\_MOVE(*r);}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 1;\ i\ <\ num;\ ++i)\ \{}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ l\ \ =\ first\ +\ offsets\_l[i];}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ *r\ =\ PDQSORT\_PREFER\_MOVE(*l);}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ r\ \ =\ last\ -\/\ offsets\_r[i];}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ *l\ =\ PDQSORT\_PREFER\_MOVE(*r);}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ *r\ =\ PDQSORT\_PREFER\_MOVE(tmp);}
+\DoxyCodeLine{00216\ \ \ \ \ \}}
+\DoxyCodeLine{00217\ \ \ \}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \textcolor{comment}{//\ Partitions\ [begin,\ end)\ around\ pivot\ *begin\ using\ comparison\ function\ comp.\ Elements\ equal}}
+\DoxyCodeLine{00220\ \ \ \textcolor{comment}{//\ to\ the\ pivot\ are\ put\ in\ the\ right-\/hand\ partition.\ Returns\ the\ position\ of\ the\ pivot\ after}}
+\DoxyCodeLine{00221\ \ \ \textcolor{comment}{//\ partitioning\ and\ whether\ the\ passed\ sequence\ already\ was\ correctly\ partitioned.\ Assumes\ the}}
+\DoxyCodeLine{00222\ \ \ \textcolor{comment}{//\ pivot\ is\ a\ median\ of\ at\ least\ 3\ elements\ and\ that\ [begin,\ end)\ is\ at\ least}}
+\DoxyCodeLine{00223\ \ \ \textcolor{comment}{//\ insertion\_sort\_threshold\ long.\ Uses\ branchless\ partitioning.}}
+\DoxyCodeLine{00224\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>}
+\DoxyCodeLine{00225\ \ \ \textcolor{keyword}{inline}\ std::pair<Iter,\ bool>\ partition\_right\_branchless(Iter\ begin,\ Iter\ end,\ Compare\ comp)}
+\DoxyCodeLine{00226\ \ \ \{}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::value\_type\ T;}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{comment}{//\ Move\ pivot\ into\ local\ for\ speed.}}
+\DoxyCodeLine{00230\ \ \ \ \ T\ \ \ \ pivot(PDQSORT\_PREFER\_MOVE(*begin));}
+\DoxyCodeLine{00231\ \ \ \ \ Iter\ first\ =\ begin;}
+\DoxyCodeLine{00232\ \ \ \ \ Iter\ last\ \ =\ end;}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{comment}{//\ Find\ the\ first\ element\ greater\ than\ or\ equal\ than\ the\ pivot\ (the\ median\ of\ 3\ guarantees}}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{comment}{//\ this\ exists).}}
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{keywordflow}{while}\ (comp(*++first,\ pivot))}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{comment}{//\ Find\ the\ first\ element\ strictly\ smaller\ than\ the\ pivot.\ We\ have\ to\ guard\ this\ search\ if}}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{comment}{//\ there\ was\ no\ element\ before\ *first.}}
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keywordflow}{if}\ (first\ -\/\ 1\ ==\ begin)}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (first\ <\ last\ \&\&\ !comp(*-\/-\/last,\ pivot))}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!comp(*-\/-\/last,\ pivot))}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \ \ \textcolor{comment}{//\ If\ the\ first\ pair\ of\ elements\ that\ should\ be\ swapped\ to\ partition\ are\ the\ same\ element,}}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{comment}{//\ the\ passed\ in\ sequence\ already\ was\ correctly\ partitioned.}}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordtype}{bool}\ already\_partitioned\ =\ first\ >=\ last;}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordflow}{if}\ (!already\_partitioned)\ \{}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ std::iter\_swap(first,\ last);}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \textcolor{comment}{//\ The\ following\ branchless\ partitioning\ is\ derived\ from\ "{}BlockQuicksort:\ How\ Branch}}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \textcolor{comment}{//\ Mispredictions\ don’t\ affect\ Quicksort"{}\ by\ Stefan\ Edelkamp\ and\ Armin\ Weiss,\ but}}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \textcolor{comment}{//\ heavily\ micro-\/optimized.}}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \ offsets\_l\_storage[block\_size\ +\ cacheline\_size];}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \ offsets\_r\_storage[block\_size\ +\ cacheline\_size];}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *offsets\_l\ =\ align\_cacheline(offsets\_l\_storage);}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *offsets\_r\ =\ align\_cacheline(offsets\_r\_storage);}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \ \ \ \ Iter\ \ \ offsets\_l\_base\ =\ first;}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ Iter\ \ \ offsets\_r\_base\ =\ last;}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ num\_l,\ num\_r,\ start\_l,\ start\_r;}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ num\_l\ =\ num\_r\ =\ start\_l\ =\ start\_r\ =\ 0;}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (first\ <\ last)\ \{}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Fill\ up\ offset\ blocks\ with\ elements\ that\ are\ on\ the\ wrong\ side.}}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ First\ we\ determine\ how\ much\ elements\ are\ considered\ for\ each\ offset\ block.}}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ num\_unknown\ =\ last\ -\/\ first;}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ left\_split\ \ =\ num\_l\ ==\ 0\ ?\ (num\_r\ ==\ 0\ ?\ num\_unknown\ /\ 2\ :\ num\_unknown)\ :\ 0;}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ right\_split\ =\ num\_r\ ==\ 0\ ?\ (num\_unknown\ -\/\ left\_split)\ :\ 0;}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Fill\ the\ offset\ blocks.}}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (left\_split\ >=\ block\_size)\ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ block\_size;)\ \{}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_l[num\_l]\ =\ (\textcolor{keywordtype}{unsigned}\ char)i++;}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ +=\ !comp(*first,\ pivot);}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_l[num\_l]\ =\ (\textcolor{keywordtype}{unsigned}\ char)i++;}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ +=\ !comp(*first,\ pivot);}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_l[num\_l]\ =\ (\textcolor{keywordtype}{unsigned}\ char)i++;}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ +=\ !comp(*first,\ pivot);}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_l[num\_l]\ =\ (\textcolor{keywordtype}{unsigned}\ char)i++;}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ +=\ !comp(*first,\ pivot);}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_l[num\_l]\ =\ (\textcolor{keywordtype}{unsigned}\ char)i++;}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ +=\ !comp(*first,\ pivot);}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_l[num\_l]\ =\ (\textcolor{keywordtype}{unsigned}\ char)i++;}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ +=\ !comp(*first,\ pivot);}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_l[num\_l]\ =\ (\textcolor{keywordtype}{unsigned}\ char)i++;}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ +=\ !comp(*first,\ pivot);}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_l[num\_l]\ =\ (\textcolor{keywordtype}{unsigned}\ char)i++;}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ +=\ !comp(*first,\ pivot);}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ left\_split;)\ \{}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_l[num\_l]\ =\ (\textcolor{keywordtype}{unsigned}\ char)i++;}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ +=\ !comp(*first,\ pivot);}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (right\_split\ >=\ block\_size)\ \{}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ block\_size;)\ \{}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_r[num\_r]\ =\ (\textcolor{keywordtype}{unsigned}\ char)++i;}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ num\_r\ +=\ comp(*-\/-\/last,\ pivot);}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_r[num\_r]\ =\ (\textcolor{keywordtype}{unsigned}\ char)++i;}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ num\_r\ +=\ comp(*-\/-\/last,\ pivot);}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_r[num\_r]\ =\ (\textcolor{keywordtype}{unsigned}\ char)++i;}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ num\_r\ +=\ comp(*-\/-\/last,\ pivot);}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_r[num\_r]\ =\ (\textcolor{keywordtype}{unsigned}\ char)++i;}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ num\_r\ +=\ comp(*-\/-\/last,\ pivot);}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_r[num\_r]\ =\ (\textcolor{keywordtype}{unsigned}\ char)++i;}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ num\_r\ +=\ comp(*-\/-\/last,\ pivot);}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_r[num\_r]\ =\ (\textcolor{keywordtype}{unsigned}\ char)++i;}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ num\_r\ +=\ comp(*-\/-\/last,\ pivot);}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_r[num\_r]\ =\ (\textcolor{keywordtype}{unsigned}\ char)++i;}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ num\_r\ +=\ comp(*-\/-\/last,\ pivot);}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_r[num\_r]\ =\ (\textcolor{keywordtype}{unsigned}\ char)++i;}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ num\_r\ +=\ comp(*-\/-\/last,\ pivot);}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ right\_split;)\ \{}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ offsets\_r[num\_r]\ =\ (\textcolor{keywordtype}{unsigned}\ char)++i;}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ num\_r\ +=\ comp(*-\/-\/last,\ pivot);}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Swap\ elements\ and\ update\ block\ sizes\ and\ first/last\ boundaries.}}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ num\ =\ std::min(num\_l,\ num\_r);}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ swap\_offsets(offsets\_l\_base,\ offsets\_r\_base,\ offsets\_l\ +\ start\_l,\ offsets\_r\ +\ start\_r,\ num,}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ num\_l\ ==\ num\_r);}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ num\_l\ -\/=\ num;}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ num\_r\ -\/=\ num;}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ start\_l\ +=\ num;}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ start\_r\ +=\ num;}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num\_l\ ==\ 0)\ \{}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ start\_l\ \ \ \ \ \ \ \ =\ 0;}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ offsets\_l\_base\ =\ first;}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num\_r\ ==\ 0)\ \{}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ start\_r\ \ \ \ \ \ \ \ =\ 0;}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ offsets\_r\_base\ =\ last;}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \textcolor{comment}{//\ We\ have\ now\ fully\ identified\ [first,\ last)'s\ proper\ position.\ Swap\ the\ last\ elements.}}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num\_l)\ \{}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ offsets\_l\ +=\ start\_l;}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (num\_l-\/-\/)}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(offsets\_l\_base\ +\ offsets\_l[num\_l],\ -\/-\/last);}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ first\ =\ last;}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num\_r)\ \{}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ offsets\_r\ +=\ start\_r;}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (num\_r-\/-\/)}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(offsets\_r\_base\ -\/\ offsets\_r[num\_r],\ first),\ ++first;}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ last\ =\ first;}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00372\ \ \ \ \ \}}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \ \ \ \ \textcolor{comment}{//\ Put\ the\ pivot\ in\ the\ right\ place.}}
+\DoxyCodeLine{00375\ \ \ \ \ Iter\ pivot\_pos\ =\ first\ -\/\ 1;}
+\DoxyCodeLine{00376\ \ \ \ \ *begin\ \ \ \ \ \ \ \ \ =\ PDQSORT\_PREFER\_MOVE(*pivot\_pos);}
+\DoxyCodeLine{00377\ \ \ \ \ *pivot\_pos\ \ \ \ \ =\ PDQSORT\_PREFER\_MOVE(pivot);}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_pair(pivot\_pos,\ already\_partitioned);}
+\DoxyCodeLine{00380\ \ \ \}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \ \ \textcolor{comment}{//\ Partitions\ [begin,\ end)\ around\ pivot\ *begin\ using\ comparison\ function\ comp.\ Elements\ equal}}
+\DoxyCodeLine{00383\ \ \ \textcolor{comment}{//\ to\ the\ pivot\ are\ put\ in\ the\ right-\/hand\ partition.\ Returns\ the\ position\ of\ the\ pivot\ after}}
+\DoxyCodeLine{00384\ \ \ \textcolor{comment}{//\ partitioning\ and\ whether\ the\ passed\ sequence\ already\ was\ correctly\ partitioned.\ Assumes\ the}}
+\DoxyCodeLine{00385\ \ \ \textcolor{comment}{//\ pivot\ is\ a\ median\ of\ at\ least\ 3\ elements\ and\ that\ [begin,\ end)\ is\ at\ least}}
+\DoxyCodeLine{00386\ \ \ \textcolor{comment}{//\ insertion\_sort\_threshold\ long.}}
+\DoxyCodeLine{00387\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>}
+\DoxyCodeLine{00388\ \ \ \textcolor{keyword}{inline}\ std::pair<Iter,\ bool>\ partition\_right(Iter\ begin,\ Iter\ end,\ Compare\ comp)}
+\DoxyCodeLine{00389\ \ \ \{}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::value\_type\ T;}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{comment}{//\ Move\ pivot\ into\ local\ for\ speed.}}
+\DoxyCodeLine{00393\ \ \ \ \ T\ pivot(PDQSORT\_PREFER\_MOVE(*begin));}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \ \ \ \ Iter\ first\ =\ begin;}
+\DoxyCodeLine{00396\ \ \ \ \ Iter\ last\ \ =\ end;}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{comment}{//\ Find\ the\ first\ element\ greater\ than\ or\ equal\ than\ the\ pivot\ (the\ median\ of\ 3\ guarantees}}
+\DoxyCodeLine{00399\ \ \ \ \ \textcolor{comment}{//\ this\ exists).}}
+\DoxyCodeLine{00400\ \ \ \ \ \textcolor{keywordflow}{while}\ (comp(*++first,\ pivot))}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \ \ \ \ \textcolor{comment}{//\ Find\ the\ first\ element\ strictly\ smaller\ than\ the\ pivot.\ We\ have\ to\ guard\ this\ search\ if}}
+\DoxyCodeLine{00404\ \ \ \ \ \textcolor{comment}{//\ there\ was\ no\ element\ before\ *first.}}
+\DoxyCodeLine{00405\ \ \ \ \ \textcolor{keywordflow}{if}\ (first\ -\/\ 1\ ==\ begin)}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (first\ <\ last\ \&\&\ !comp(*-\/-\/last,\ pivot))}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00408\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!comp(*-\/-\/last,\ pivot))}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \ \ \ \ \textcolor{comment}{//\ If\ the\ first\ pair\ of\ elements\ that\ should\ be\ swapped\ to\ partition\ are\ the\ same\ element,}}
+\DoxyCodeLine{00413\ \ \ \ \ \textcolor{comment}{//\ the\ passed\ in\ sequence\ already\ was\ correctly\ partitioned.}}
+\DoxyCodeLine{00414\ \ \ \ \ \textcolor{keywordtype}{bool}\ already\_partitioned\ =\ first\ >=\ last;}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \ \ \ \ \textcolor{comment}{//\ Keep\ swapping\ pairs\ of\ elements\ that\ are\ on\ the\ wrong\ side\ of\ the\ pivot.\ Previously}}
+\DoxyCodeLine{00417\ \ \ \ \ \textcolor{comment}{//\ swapped\ pairs\ guard\ the\ searches,\ which\ is\ why\ the\ first\ iteration\ is\ special-\/cased}}
+\DoxyCodeLine{00418\ \ \ \ \ \textcolor{comment}{//\ above.}}
+\DoxyCodeLine{00419\ \ \ \ \ \textcolor{keywordflow}{while}\ (first\ <\ last)\ \{}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ std::iter\_swap(first,\ last);}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (comp(*++first,\ pivot))}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!comp(*-\/-\/last,\ pivot))}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00425\ \ \ \ \ \}}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \ \ \ \ \textcolor{comment}{//\ Put\ the\ pivot\ in\ the\ right\ place.}}
+\DoxyCodeLine{00428\ \ \ \ \ Iter\ pivot\_pos\ =\ first\ -\/\ 1;}
+\DoxyCodeLine{00429\ \ \ \ \ *begin\ \ \ \ \ \ \ \ \ =\ PDQSORT\_PREFER\_MOVE(*pivot\_pos);}
+\DoxyCodeLine{00430\ \ \ \ \ *pivot\_pos\ \ \ \ \ =\ PDQSORT\_PREFER\_MOVE(pivot);}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_pair(pivot\_pos,\ already\_partitioned);}
+\DoxyCodeLine{00433\ \ \ \}}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \ \ \textcolor{comment}{//\ Similar\ function\ to\ the\ one\ above,\ except\ elements\ equal\ to\ the\ pivot\ are\ put\ to\ the\ left\ of}}
+\DoxyCodeLine{00436\ \ \ \textcolor{comment}{//\ the\ pivot\ and\ it\ doesn't\ check\ or\ return\ if\ the\ passed\ sequence\ already\ was\ partitioned.}}
+\DoxyCodeLine{00437\ \ \ \textcolor{comment}{//\ Since\ this\ is\ rarely\ used\ (the\ many\ equal\ case),\ and\ in\ that\ case\ pdqsort\ already\ has\ O(n)}}
+\DoxyCodeLine{00438\ \ \ \textcolor{comment}{//\ performance,\ no\ block\ quicksort\ is\ applied\ here\ for\ simplicity.}}
+\DoxyCodeLine{00439\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>}
+\DoxyCodeLine{00440\ \ \ \textcolor{keyword}{inline}\ Iter\ partition\_left(Iter\ begin,\ Iter\ end,\ Compare\ comp)}
+\DoxyCodeLine{00441\ \ \ \{}
+\DoxyCodeLine{00442\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::value\_type\ T;}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00444\ \ \ \ \ T\ \ \ \ pivot(PDQSORT\_PREFER\_MOVE(*begin));}
+\DoxyCodeLine{00445\ \ \ \ \ Iter\ first\ =\ begin;}
+\DoxyCodeLine{00446\ \ \ \ \ Iter\ last\ \ =\ end;}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \ \ \textcolor{keywordflow}{while}\ (comp(pivot,\ *-\/-\/last))}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keywordflow}{if}\ (last\ +\ 1\ ==\ end)}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (first\ <\ last\ \&\&\ !comp(pivot,\ *++first))}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00454\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!comp(pivot,\ *++first))}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{keywordflow}{while}\ (first\ <\ last)\ \{}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ std::iter\_swap(first,\ last);}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (comp(pivot,\ *-\/-\/last))}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!comp(pivot,\ *++first))}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00464\ \ \ \ \ \}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \ \ \ \ Iter\ pivot\_pos\ =\ last;}
+\DoxyCodeLine{00467\ \ \ \ \ *begin\ \ \ \ \ \ \ \ \ =\ PDQSORT\_PREFER\_MOVE(*pivot\_pos);}
+\DoxyCodeLine{00468\ \ \ \ \ *pivot\_pos\ \ \ \ \ =\ PDQSORT\_PREFER\_MOVE(pivot);}
+\DoxyCodeLine{00469\ }
+\DoxyCodeLine{00470\ \ \ \ \ \textcolor{keywordflow}{return}\ pivot\_pos;}
+\DoxyCodeLine{00471\ \ \ \}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare,\ \textcolor{keywordtype}{bool}\ Branchless>}
+\DoxyCodeLine{00474\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ pdqsort\_loop(Iter\ begin,\ Iter\ end,\ Compare\ comp,\ \textcolor{keywordtype}{int}\ bad\_allowed,}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ leftmost\ =\ \textcolor{keyword}{true})}
+\DoxyCodeLine{00476\ \ \ \{}
+\DoxyCodeLine{00477\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::difference\_type\ diff\_t;}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \ \ \ \ \textcolor{comment}{//\ Use\ a\ while\ loop\ for\ tail\ recursion\ elimination.}}
+\DoxyCodeLine{00480\ \ \ \ \ \textcolor{keywordflow}{while}\ (\textcolor{keyword}{true})\ \{}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ diff\_t\ size\ =\ end\ -\/\ begin;}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \textcolor{comment}{//\ Insertion\ sort\ is\ faster\ for\ small\ arrays.}}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (size\ <\ insertion\_sort\_threshold)\ \{}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (leftmost)}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ insertion\_sort(begin,\ end,\ comp);}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ unguarded\_insertion\_sort(begin,\ end,\ comp);}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \textcolor{comment}{//\ Choose\ pivot\ as\ median\ of\ 3\ or\ pseudomedian\ of\ 9.}}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ diff\_t\ s2\ =\ size\ /\ 2;}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (size\ >\ ninther\_threshold)\ \{}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ sort3(begin,\ begin\ +\ s2,\ end\ -\/\ 1,\ comp);}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ sort3(begin\ +\ 1,\ begin\ +\ (s2\ -\/\ 1),\ end\ -\/\ 2,\ comp);}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ sort3(begin\ +\ 2,\ begin\ +\ (s2\ +\ 1),\ end\ -\/\ 3,\ comp);}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ sort3(begin\ +\ (s2\ -\/\ 1),\ begin\ +\ s2,\ begin\ +\ (s2\ +\ 1),\ comp);}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ std::iter\_swap(begin,\ begin\ +\ s2);}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ sort3(begin\ +\ s2,\ begin,\ end\ -\/\ 1,\ comp);}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \textcolor{comment}{//\ If\ *(begin\ -\/\ 1)\ is\ the\ end\ of\ the\ right\ partition\ of\ a\ previous\ partition\ operation}}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \textcolor{comment}{//\ there\ is\ no\ element\ in\ [begin,\ end)\ that\ is\ smaller\ than\ *(begin\ -\/\ 1).\ Then\ if\ our}}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \textcolor{comment}{//\ pivot\ compares\ equal\ to\ *(begin\ -\/\ 1)\ we\ change\ strategy,\ putting\ equal\ elements\ in}}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \textcolor{comment}{//\ the\ left\ partition,\ greater\ elements\ in\ the\ right\ partition.\ We\ do\ not\ have\ to}}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \textcolor{comment}{//\ recurse\ on\ the\ left\ partition,\ since\ it's\ sorted\ (all\ equal).}}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!leftmost\ \&\&\ !comp(*(begin\ -\/\ 1),\ *begin))\ \{}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ begin\ =\ partition\_left(begin,\ end,\ comp)\ +\ 1;}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \textcolor{comment}{//\ Partition\ and\ get\ results.}}
+\DoxyCodeLine{00515\ \ \ \ \ \ \ std::pair<Iter,\ bool>\ part\_result\ =\ Branchless\ ?\ partition\_right\_branchless(begin,\ end,\ comp)}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ partition\_right(begin,\ end,\ comp);}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ Iter\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pivot\_pos\ \ \ =\ part\_result.first;}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ already\_partitioned\ =\ part\_result.second;}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ for\ a\ highly\ unbalanced\ partition.}}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ diff\_t\ l\_size\ \ \ \ \ \ \ \ \ \ \ \ =\ pivot\_pos\ -\/\ begin;}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ diff\_t\ r\_size\ \ \ \ \ \ \ \ \ \ \ \ =\ end\ -\/\ (pivot\_pos\ +\ 1);}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ highly\_unbalanced\ =\ l\_size\ <\ size\ /\ 8\ ||\ r\_size\ <\ size\ /\ 8;}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \textcolor{comment}{//\ If\ we\ got\ a\ highly\ unbalanced\ partition\ we\ shuffle\ elements\ to\ break\ many\ patterns.}}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (highly\_unbalanced)\ \{}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ If\ we\ had\ too\ many\ bad\ partitions,\ switch\ to\ heapsort\ to\ guarantee\ O(n\ log\ n).}}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (-\/-\/bad\_allowed\ ==\ 0)\ \{}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ std::make\_heap(begin,\ end,\ comp);}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ std::sort\_heap(begin,\ end,\ comp);}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00533\ }
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (l\_size\ >=\ insertion\_sort\_threshold)\ \{}
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(begin,\ begin\ +\ l\_size\ /\ 4);}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(pivot\_pos\ -\/\ 1,\ pivot\_pos\ -\/\ l\_size\ /\ 4);}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00538\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (l\_size\ >\ ninther\_threshold)\ \{}
+\DoxyCodeLine{00539\ \ \ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(begin\ +\ 1,\ begin\ +\ (l\_size\ /\ 4\ +\ 1));}
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(begin\ +\ 2,\ begin\ +\ (l\_size\ /\ 4\ +\ 2));}
+\DoxyCodeLine{00541\ \ \ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(pivot\_pos\ -\/\ 2,\ pivot\_pos\ -\/\ (l\_size\ /\ 4\ +\ 1));}
+\DoxyCodeLine{00542\ \ \ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(pivot\_pos\ -\/\ 3,\ pivot\_pos\ -\/\ (l\_size\ /\ 4\ +\ 2));}
+\DoxyCodeLine{00543\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00545\ }
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (r\_size\ >=\ insertion\_sort\_threshold)\ \{}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(pivot\_pos\ +\ 1,\ pivot\_pos\ +\ (1\ +\ r\_size\ /\ 4));}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(end\ -\/\ 1,\ end\ -\/\ r\_size\ /\ 4);}
+\DoxyCodeLine{00549\ }
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (r\_size\ >\ ninther\_threshold)\ \{}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(pivot\_pos\ +\ 2,\ pivot\_pos\ +\ (2\ +\ r\_size\ /\ 4));}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(pivot\_pos\ +\ 3,\ pivot\_pos\ +\ (3\ +\ r\_size\ /\ 4));}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(end\ -\/\ 2,\ end\ -\/\ (1\ +\ r\_size\ /\ 4));}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \ \ \ \ \ std::iter\_swap(end\ -\/\ 3,\ end\ -\/\ (2\ +\ r\_size\ /\ 4));}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ If\ we\ were\ decently\ balanced\ and\ we\ tried\ to\ sort\ an\ already\ partitioned}}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ sequence\ try\ to\ use\ insertion\ sort.}}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (already\_partitioned\ \&\&\ partial\_insertion\_sort(begin,\ pivot\_pos,\ comp)\ \&\&}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ partial\_insertion\_sort(pivot\_pos\ +\ 1,\ end,\ comp))}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \textcolor{comment}{//\ Sort\ the\ left\ partition\ first\ using\ recursion\ and\ do\ tail\ recursion\ elimination\ for}}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \textcolor{comment}{//\ the\ right-\/hand\ partition.}}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ pdqsort\_loop<Iter,\ Compare,\ Branchless>(begin,\ pivot\_pos,\ comp,\ bad\_allowed,\ leftmost);}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ begin\ \ \ \ =\ pivot\_pos\ +\ 1;}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ leftmost\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00571\ \ \ \ \ \}}
+\DoxyCodeLine{00572\ \ \ \}}
+\DoxyCodeLine{00573\ \}\ \textcolor{comment}{//\ namespace\ pdqsort\_detail}}
+\DoxyCodeLine{00574\ }
+\DoxyCodeLine{00575\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ pdqsort(Iter\ begin,\ Iter\ end,\ Compare\ comp)}
+\DoxyCodeLine{00576\ \{}
+\DoxyCodeLine{00577\ \ \ \textcolor{keywordflow}{if}\ (begin\ ==\ end)}
+\DoxyCodeLine{00578\ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ \textcolor{preprocessor}{\#if\ \_\_cplusplus\ >=\ 201103L}}
+\DoxyCodeLine{00581\ \ \ pdqsort\_detail::pdqsort\_loop<}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ Iter,\ Compare,}
+\DoxyCodeLine{00583\ \ \ \ \ \ \ pdqsort\_detail::is\_default\_compare<typename\ std::decay<Compare>::type>::value\ \&\&}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ \ \ \ \ std::is\_arithmetic<typename\ std::iterator\_traits<Iter>::value\_type>::value>(}
+\DoxyCodeLine{00585\ \ \ \ \ \ \ begin,\ end,\ comp,\ pdqsort\_detail::pdq\_log2(end\ -\/\ begin));}
+\DoxyCodeLine{00586\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00587\ \ \ pdqsort\_detail::pdqsort\_loop<Iter,\ Compare,\ false>(begin,\ end,\ comp,}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pdqsort\_detail::pdq\_log2(end\ -\/\ begin));}
+\DoxyCodeLine{00589\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00590\ \}}
+\DoxyCodeLine{00591\ }
+\DoxyCodeLine{00592\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter>\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ pdqsort(Iter\ begin,\ Iter\ end)}
+\DoxyCodeLine{00593\ \{}
+\DoxyCodeLine{00594\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::value\_type\ T;}
+\DoxyCodeLine{00595\ \ \ pdqsort(begin,\ end,\ std::less<T>());}
+\DoxyCodeLine{00596\ \}}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter,\ \textcolor{keyword}{class}\ Compare>}
+\DoxyCodeLine{00599\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ pdqsort\_branchless(Iter\ begin,\ Iter\ end,\ Compare\ comp)}
+\DoxyCodeLine{00600\ \{}
+\DoxyCodeLine{00601\ \ \ \textcolor{keywordflow}{if}\ (begin\ ==\ end)}
+\DoxyCodeLine{00602\ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00603\ \ \ pdqsort\_detail::pdqsort\_loop<Iter,\ Compare,\ true>(begin,\ end,\ comp,}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pdqsort\_detail::pdq\_log2(end\ -\/\ begin));}
+\DoxyCodeLine{00605\ \}}
+\DoxyCodeLine{00606\ }
+\DoxyCodeLine{00607\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter>\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ pdqsort\_branchless(Iter\ begin,\ Iter\ end)}
+\DoxyCodeLine{00608\ \{}
+\DoxyCodeLine{00609\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ std::iterator\_traits<Iter>::value\_type\ T;}
+\DoxyCodeLine{00610\ \ \ pdqsort\_branchless(begin,\ end,\ std::less<T>());}
+\DoxyCodeLine{00611\ \}}
+\DoxyCodeLine{00612\ }
+\DoxyCodeLine{00613\ \textcolor{preprocessor}{\#undef\ PDQSORT\_PREFER\_MOVE}}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00616\ \textcolor{comment}{//\ NOLINTEND}}
+
+\end{DoxyCode}

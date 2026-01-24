@@ -1,0 +1,12 @@
+var searchData=
+[
+  ['kep_0',['Kep',['../class_c_i_d218___quantitative_image_feature.html#a947a24c74fbe0c5573e5130474d83bb2a87ed6ea01487b635ed5727b0324f1daa',1,'CID218_QuantitativeImageFeature::Kep'],['../class_c_i_d7469___generic_intensity_and_size_measurement.html#ad6fa23fbb5e6a9108981959c9fd03d39a4e78e72baba51a0eb2be112bf0de34d9',1,'CID7469_GenericIntensityAndSizeMeasurement::Kep']]],
+  ['keratometry_1',['Keratometry',['../class_c_i_d29___acquisition_modality.html#a923e8bade806fc79e69fbb9ed91e5dc4a8ccaf2e132583c99b38023cb061c25aa',1,'CID29_AcquisitionModality']]],
+  ['key_2',['key',['../namespacedetail.html#a47b1bb0bbd3596589ed9187059c312efa3c6e0b8a9c15224a8228b9a98ca1531d',1,'detail']]],
+  ['knee_3',['Knee',['../class_c_i_d4031___common_anatomic_region.html#ad209b02f1f43434075b427a599dcb7c0af631e84f8f17e866b122338ad6531691',1,'CID4031_CommonAnatomicRegion']]],
+  ['known_5favailable_4',['KNOWN_AVAILABLE',['../classoperation_1_1_coordinate_operation_context.html#a3d6a23fdf20a506cbadb48c84c5b3dbfa659b801fd2fec26d0d10ebc8ff1bb8a7',1,'operation::CoordinateOperationContext']]],
+  ['kpa_5',['KPa',['../class_c_i_d7181___abstract_multi_dimensional_image_model_component_unit.html#afcdeda6ac16f19cc69ee6d035b29a6f6ac02f02a4bba9f0c1c8f594af69d2ed56',1,'CID7181_AbstractMultiDimensionalImageModelComponentUnit']]],
+  ['ktrans_6',['Ktrans',['../class_c_i_d218___quantitative_image_feature.html#a947a24c74fbe0c5573e5130474d83bb2a220fe4836720724f3e696eddc6a248d4',1,'CID218_QuantitativeImageFeature::Ktrans'],['../class_c_i_d7469___generic_intensity_and_size_measurement.html#ad6fa23fbb5e6a9108981959c9fd03d39a76ebedadb051329c4f261a93c80ea91f',1,'CID7469_GenericIntensityAndSizeMeasurement::Ktrans']]],
+  ['kurtosis_7',['Kurtosis',['../class_c_i_d7464___general_region_of_interest_measurement_modifier.html#a13e5e8035b98a4623b0b1ccb3958ce4ca7d70a4920f79f2db6de21c2431fdaeae',1,'CID7464_GeneralRegionOfInterestMeasurementModifier']]],
+  ['kurtosisdiffusioncoefficient_8',['KurtosisDiffusionCoefficient',['../class_c_i_d218___quantitative_image_feature.html#a947a24c74fbe0c5573e5130474d83bb2a096301310e7213d96f6f6639474fe226',1,'CID218_QuantitativeImageFeature::KurtosisDiffusionCoefficient'],['../class_c_i_d7469___generic_intensity_and_size_measurement.html#ad6fa23fbb5e6a9108981959c9fd03d39aa44e2f19bc2d6dfcf3f33686bc79d981',1,'CID7469_GenericIntensityAndSizeMeasurement::KurtosisDiffusionCoefficient']]]
+];

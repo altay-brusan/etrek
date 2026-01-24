@@ -1,3 +1,19 @@
+/**
+ * @file RisProcedureMappingService.h
+ * @brief Service for RIS procedure code to view mapping operations.
+ *
+ * @details Provides business logic for mapping external RIS procedure codes
+ *          to internal Etrek views, including lookup, suggestions, and CRUD operations.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see RisProcedureMappingRepository
+ * @see RisProcedureMapping
+ */
+
 #ifndef ETREK_WORKLIST_SERVICE_RISPROCEDUREMAPPINGSERVICE_H
 #define ETREK_WORKLIST_SERVICE_RISPROCEDUREMAPPINGSERVICE_H
 
@@ -12,6 +28,10 @@ namespace Etrek::ScanProtocol::Repository {
     class ScanProtocolRepository;
 }
 
+/**
+ * @namespace Etrek::Worklist::Service
+ * @brief Contains service classes for worklist business logic.
+ */
 namespace Etrek::Worklist::Service {
 
     namespace ent = Etrek::Worklist::Data::Entity;

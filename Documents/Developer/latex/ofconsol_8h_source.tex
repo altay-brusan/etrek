@@ -1,0 +1,184 @@
+\doxysection{ofconsol.\+h}
+\hypertarget{ofconsol_8h_source}{}\label{ofconsol_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofconsol.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofconsol.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 1999-\/2021,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ ofstd}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Marco\ Eichelberg}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ Define\ general\ purpose\ facility\ for\ console\ output}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ \ class\ OFConsole\ and\ its\ global\ instance,\ ofConsole,}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *\ \ provide\ access\ to\ the\ standard\ console\ output\ and\ error\ streams}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ \ in\ a\ way\ that\ allows\ multiple\ threads\ to\ concurrently\ create\ output}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *\ \ even\ if\ that\ output\ is\ redirected,\ e.\ g.\ to\ file\ or\ memory.}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ \ Protection\ is\ implemented\ if\ the\ module\ is\ compiled\ with\ -\/DWITH\_THREADS}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ \ and\ is\ based\ on\ Mutexes.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ *\ \ In\ cases\ where\ DCMTK\ is\ used\ for\ GUI\ development,\ the\ fact\ that\ the}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ *\ \ libraries\ send\ many\ error\ messages\ to\ the\ standard\ or\ error\ streams}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ *\ \ are\ annoying\ since\ these\ streams\ are\ not\ present\ in\ a\ GUI\ environment.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *\ \ Either\ the\ messages\ just\ go\ lost\ or\ they\ even\ cause\ the\ GUI}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ *\ \ application\ to\ fail.\ \ This\ file\ introduces\ aliases\ for\ the\ standard}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ \ stream\ handles\ called\ COUT\ and\ CERR,\ which\ are\ normally\ only}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *\ \ preprocessor\ macros\ for\ cout\ and\ cerr,\ respectively.\ If\ the}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ \ toolkit\ is\ compiled\ with\ the\ flag\ DCMTK\_GUI\ defined,\ however,\ these}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ \ streams\ are\ created\ as\ OFOStringStream.\ This\ will\ allow\ a\ GUI\ based}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ \ application\ to\ extract\ the\ messages\ and\ either\ present\ them\ to\ the}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *\ \ user\ or\ store\ them\ in\ a\ log\ file.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ \ GUI\ based\ applications\ making\ use\ of\ this\ feature\ should\ periodically}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ \ check\ and\ clear\ these\ streams\ in\ order\ to\ avoid\ increasing\ consumption}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *\ \ of\ heap\ memory.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ \ Caveat\ 1:\ The\ DCMTK\ command\ line\ tools\ do\ not\ yet\ support\ the\ DCMTK\_GUI}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ \ flag,\ and\ will\ most\ likely\ exhibit\ all\ kinds\ of\ undesired\ behaviour}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ \ if\ this\ flag\ is\ used.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ \ Caveat\ 2:\ The\ direct\ use\ of\ the\ COUT\ and\ CERR\ macros\ is\ unsafe}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ \ in\ multithread\ applications.\ Use\ ofConsole\ instead.}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#ifndef\ OFCONSOL\_H}}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#define\ OFCONSOL\_H}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofstream.h"{}}}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofthread.h"{}}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00068\ \textcolor{keyword}{class\ }DCMTK\_OFSTD\_EXPORT\ OFConsole}
+\DoxyCodeLine{00069\ \{}
+\DoxyCodeLine{00070\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_console_a3b7af3e3b93ce87a2d01409a3f73106e}{\string~OFConsole}}()\{\ \}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00080\ \ \ STD\_NAMESPACE\ ostream\&\ \doxymbox{\hyperlink{class_o_f_console_af222f730fce72ff8484195b83f6883c9}{lockCout}}()}
+\DoxyCodeLine{00081\ \ \ \{}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#ifdef\ WITH\_THREADS}}
+\DoxyCodeLine{00083\ \ \ \ \ coutMutex.lock();}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordflow}{return}\ *currentCout;}
+\DoxyCodeLine{00086\ \ \ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_console_a1030b58e737dd6eb4709be1cb574b247}{unlockCout}}()}
+\DoxyCodeLine{00091\ \ \ \{}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#ifdef\ WITH\_THREADS}}
+\DoxyCodeLine{00093\ \ \ \ \ coutMutex.unlock();}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00095\ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00102\ \ \ STD\_NAMESPACE\ ostream\&\ \doxymbox{\hyperlink{class_o_f_console_afe792b29fe224d7549ca7a20a4823eeb}{getCout}}()}
+\DoxyCodeLine{00103\ \ \ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{return}\ *currentCout;}
+\DoxyCodeLine{00105\ \ \ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00118\ \ \ STD\_NAMESPACE\ ostream\ *\doxymbox{\hyperlink{class_o_f_console_af1d8555b1ba0024b9bc3f41f8eb99a8f}{setCout}}(STD\_NAMESPACE\ ostream\ *newCout=NULL);}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00124\ \ \ STD\_NAMESPACE\ ostream\&\ \doxymbox{\hyperlink{class_o_f_console_ac2018a48d607598dd76cc55a02e4282b}{lockCerr}}()}
+\DoxyCodeLine{00125\ \ \ \{}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#ifdef\ WITH\_THREADS}}
+\DoxyCodeLine{00127\ \ \ \ \ cerrMutex.lock();}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{if}\ (joined)}
+\DoxyCodeLine{00130\ \ \ \ \ \{}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#ifdef\ WITH\_THREADS}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ coutMutex.lock();}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *currentCout;}
+\DoxyCodeLine{00135\ \ \ \ \ \}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{return}\ *currentCerr;}
+\DoxyCodeLine{00137\ \ \ \}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00144\ \ \ STD\_NAMESPACE\ ostream\&\ \doxymbox{\hyperlink{class_o_f_console_a5bda9ed21d8ee9cc8fdaa1ec2d4c7854}{getCerr}}()}
+\DoxyCodeLine{00145\ \ \ \{}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{if}\ (joined)\ \textcolor{keywordflow}{return}\ *currentCout;}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{return}\ *currentCerr;}
+\DoxyCodeLine{00148\ \ \ \}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00152\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_console_a583c96fa1c6a988e1197c419cd181da4}{unlockCerr}}()}
+\DoxyCodeLine{00153\ \ \ \{}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\#ifdef\ WITH\_THREADS}}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordflow}{if}\ (joined)\ coutMutex.unlock();}
+\DoxyCodeLine{00156\ \ \ \ \ cerrMutex.unlock();}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00158\ \ \ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00171\ \ \ STD\_NAMESPACE\ ostream\ *\doxymbox{\hyperlink{class_o_f_console_a08b698bf0a8f446783c41a390c792754}{setCerr}}(STD\_NAMESPACE\ ostream\ *newCerr=NULL);}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_console_ac538fdcbdee695e0dd00de08a04edb38}{join}}();}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00187\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_console_ac494217f8576e9f82b78569f988c1c60}{split}}();}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00194\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_console_a8e523e1e7832e2d3b86536fa4a1f9805}{isJoined}}();}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00199\ \ \ \textcolor{keyword}{static}\ OFConsole\&\ \doxymbox{\hyperlink{class_o_f_console_af62c447295bffc615b0fc8cd4741188c}{instance}}();}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00203\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_console_a44661e7601447e78fd7ef41c9485d71a}{mergeStderrStdout}}();}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00207\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_console_ac165abb11f7333d8503ebca3be256bc7}{unmergeStderrStdout}}();}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00216\ \ \ OFConsole();}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00219\ \ \ OFConsole(\textcolor{keyword}{const}\ OFConsole\ \&arg);}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00222\ \ \ OFConsole\&\ operator=(\textcolor{keyword}{const}\ OFConsole\ \&arg);}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00225\ \ \ STD\_NAMESPACE\ ostream\ *currentCout;}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00228\ \ \ STD\_NAMESPACE\ ostream\ *currentCerr;}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00231\ \ \ \textcolor{keywordtype}{int}\ joined;}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00234\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ old\_stderr;}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#ifdef\ WITH\_THREADS}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00241\ \ \ \doxymbox{\hyperlink{class_o_f_mutex}{OFMutex}}\ coutMutex;}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00244\ \ \ \doxymbox{\hyperlink{class_o_f_mutex}{OFMutex}}\ cerrMutex;}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{comment}{//\ dummy\ declaration\ to\ keep\ gcc\ quiet}}
+\DoxyCodeLine{00248\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }OFConsoleDummyFriend;}
+\DoxyCodeLine{00249\ \};}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\#define\ ofConsole\ (OFConsole::instance())}}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ *\ definitions\ for\ COUT,\ CERR,\ CLOG.}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ *\ NOTE:\ DIRECT\ USE\ OF\ THESE\ MACROS\ IS\ UNSAFE\ IN\ MULTITHREAD\ APPLICATIONS.}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \textcolor{preprocessor}{\#ifdef\ DCMTK\_GUI}}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \textcolor{keyword}{extern}\ DCMTK\_OFSTD\_EXPORT\ OFOStringStream\ COUT;}
+\DoxyCodeLine{00266\ \textcolor{keyword}{extern}\ DCMTK\_OFSTD\_EXPORT\ OFOStringStream\ CERR;}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{/*\ DCMTK\_GUI\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \textcolor{preprocessor}{\#define\ COUT\ (ofConsole.getCout())}}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#define\ CERR\ (ofConsole.getCerr())}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ DCMTK\_GUI\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ OFCONSOL\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

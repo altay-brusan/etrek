@@ -1,0 +1,27 @@
+var class_i_o_d_synchronization_module =
+[
+    [ "IODSynchronizationModule", "class_i_o_d_synchronization_module.html#a4f84d46110d59901a4deeda85cdf41ec", null ],
+    [ "IODSynchronizationModule", "class_i_o_d_synchronization_module.html#a5414423bbe66f8ac263cfee59703ea59", null ],
+    [ "~IODSynchronizationModule", "class_i_o_d_synchronization_module.html#a8dca23c62406269de2543d2c511a7790", null ],
+    [ "getAcquisitionTimeSynchronized", "class_i_o_d_synchronization_module.html#add59740352df13d58d239c420c8ee52a", null ],
+    [ "getName", "class_i_o_d_synchronization_module.html#a342c6d4645628e91d37cd9e69804eae0", null ],
+    [ "getNTPSourceAddress", "class_i_o_d_synchronization_module.html#ac64d1146bbf1ec1dcdce0dbb5bff282e", null ],
+    [ "getSynchronizationChannel", "class_i_o_d_synchronization_module.html#a9057e9e47e8f1ee41031d3d151c64eec", null ],
+    [ "getSynchronizationFrameOfReferenceUID", "class_i_o_d_synchronization_module.html#ab790475f54e9efba3dfaa36f6b9804f1", null ],
+    [ "getSynchronizationTrigger", "class_i_o_d_synchronization_module.html#a757fafd4351baaccf8745ce67980a4f9", null ],
+    [ "getTimeDistributionProtocol", "class_i_o_d_synchronization_module.html#a7d1a3c1138aa1450283ef39ac029de1f", null ],
+    [ "getTimeSource", "class_i_o_d_synchronization_module.html#a7af1a1cfe88ea00eb5258877f0a9b079", null ],
+    [ "getTriggerSourceOrType", "class_i_o_d_synchronization_module.html#a3637af6ab6e943c7575c8a23572ac3d1", null ],
+    [ "isValidAcquisitionTimeSynchronized", "class_i_o_d_synchronization_module.html#a3948fabe00fa8f04945c0ec6bdaffeaa", null ],
+    [ "isValidSynchronizationTrigger", "class_i_o_d_synchronization_module.html#abc566826057748993a8daae4c2a95e41", null ],
+    [ "isValidTimeDistributionProtocol", "class_i_o_d_synchronization_module.html#a6f49e34c1118597f7e11fff8ec2909e7", null ],
+    [ "resetRules", "class_i_o_d_synchronization_module.html#ab4d1a3b490d228e1bb207244a3552e1b", null ],
+    [ "setAcquisitionTimeSynchronized", "class_i_o_d_synchronization_module.html#adc5f39845a43dc8f85101bd80698a570", null ],
+    [ "setNTPSourceAddress", "class_i_o_d_synchronization_module.html#aedba7eb9e7c1217b7539dd1cfe70c493", null ],
+    [ "setSynchronizationChannel", "class_i_o_d_synchronization_module.html#ad44a62d7b2e9c10d0d63deb38fcea63c", null ],
+    [ "setSynchronizationFrameofReferenceUID", "class_i_o_d_synchronization_module.html#a87aba2f2c4062e0c5b3d6b6369d10ea5", null ],
+    [ "setSynchronizationTrigger", "class_i_o_d_synchronization_module.html#a214ee73158d56429925528ba3b7e3b86", null ],
+    [ "setTimeDistributionProtocol", "class_i_o_d_synchronization_module.html#aa24a530b7d12ace5e973bdd65f8bd02a", null ],
+    [ "setTimeSource", "class_i_o_d_synchronization_module.html#a379108cb8503398c54795df2ec1ee0eb", null ],
+    [ "setTriggerSourceOrType", "class_i_o_d_synchronization_module.html#aab5ce520a4b64cab289d8b45a1e480ab", null ]
+];

@@ -1,0 +1,220 @@
+\doxysection{fast\+\_\+mutex.\+h}
+\hypertarget{fast__mutex_8h_source}{}\label{fast__mutex_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/thirdparty/thread/fast\_mutex.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/thirdparty/thread/fast\_mutex.h}}
+\doxymbox{\hyperlink{fast__mutex_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ -\/*-\/\ mode:\ c++;\ tab-\/width:\ 2;\ indent-\/tabs-\/mode:\ nil;\ -\/*-\/}}
+\DoxyCodeLine{00002\ \textcolor{comment}{Copyright\ (c)\ 2010-\/2012\ Marcus\ Geelnard}}
+\DoxyCodeLine{00003\ \textcolor{comment}{}}
+\DoxyCodeLine{00004\ \textcolor{comment}{This\ software\ is\ provided\ 'as-\/is',\ without\ any\ express\ or\ implied}}
+\DoxyCodeLine{00005\ \textcolor{comment}{warranty.\ In\ no\ event\ will\ the\ authors\ be\ held\ liable\ for\ any\ damages}}
+\DoxyCodeLine{00006\ \textcolor{comment}{arising\ from\ the\ use\ of\ this\ software.}}
+\DoxyCodeLine{00007\ \textcolor{comment}{}}
+\DoxyCodeLine{00008\ \textcolor{comment}{Permission\ is\ granted\ to\ anyone\ to\ use\ this\ software\ for\ any\ purpose,}}
+\DoxyCodeLine{00009\ \textcolor{comment}{including\ commercial\ applications,\ and\ to\ alter\ it\ and\ redistribute\ it}}
+\DoxyCodeLine{00010\ \textcolor{comment}{freely,\ subject\ to\ the\ following\ restrictions:}}
+\DoxyCodeLine{00011\ \textcolor{comment}{}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ \ \ \ 1.\ The\ origin\ of\ this\ software\ must\ not\ be\ misrepresented;\ you\ must\ not}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ \ \ \ claim\ that\ you\ wrote\ the\ original\ software.\ If\ you\ use\ this\ software}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ \ \ \ in\ a\ product,\ an\ acknowledgment\ in\ the\ product\ documentation\ would\ be}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ \ \ \ appreciated\ but\ is\ not\ required.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ \ \ \ 2.\ Altered\ source\ versions\ must\ be\ plainly\ marked\ as\ such,\ and\ must\ not\ be}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ \ \ \ misrepresented\ as\ being\ the\ original\ software.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ \ \ \ 3.\ This\ notice\ may\ not\ be\ removed\ or\ altered\ from\ any\ source}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ \ \ \ distribution.}}
+\DoxyCodeLine{00022\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#ifndef\ \_FAST\_MUTEX\_H\_}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#define\ \_FAST\_MUTEX\_H\_}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ Which\ platform\ are\ we\ on?}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#if\ !defined(\_TTHREAD\_PLATFORM\_DEFINED\_)}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\ \ \#if\ defined(\_WIN32)\ ||\ defined(\_\_WIN32\_\_)\ ||\ defined(\_\_WINDOWS\_\_)}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\ \ \ \ \#define\ \_TTHREAD\_WIN32\_}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\ \ \#else}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\ \ \ \ \#define\ \_TTHREAD\_POSIX\_}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\ \ \#define\ \_TTHREAD\_PLATFORM\_DEFINED\_}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ Check\ if\ we\ can\ support\ the\ assembly\ language\ level\ implementation\ (otherwise}}
+\DoxyCodeLine{00040\ \textcolor{comment}{//\ revert\ to\ the\ system\ API)}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#if\ (defined(\_\_GNUC\_\_)\ \&\&\ (defined(\_\_i386\_\_)\ ||\ defined(\_\_x86\_64\_\_)))\ ||\ \(\backslash\)}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\ \ \ \ (defined(\_MSC\_VER)\ \&\&\ defined(\_M\_IX86))\ ||\ \(\backslash\)}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\ \ \ \ (defined(\_\_GNUC\_\_)\ \&\&\ (defined(\_\_ppc\_\_)))}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\ \ \#define\ \_FAST\_MUTEX\_ASM\_}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\ \ \#define\ \_FAST\_MUTEX\_SYS\_}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#if\ defined(\_TTHREAD\_WIN32\_)}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\ \ \#ifndef\ WIN32\_LEAN\_AND\_MEAN}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\ \ \ \ \#define\ WIN32\_LEAN\_AND\_MEAN}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\ \ \ \ \#define\ \_\_UNDEF\_LEAN\_AND\_MEAN}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\ \ \#include\ <windows.h>}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\ \ \#ifdef\ \_\_UNDEF\_LEAN\_AND\_MEAN}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\ \ \ \ \#undef\ WIN32\_LEAN\_AND\_MEAN}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\ \ \ \ \#undef\ \_\_UNDEF\_LEAN\_AND\_MEAN}}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\ \ \#ifdef\ \_FAST\_MUTEX\_ASM\_}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\ \ \ \ \#include\ <sched.h>}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\ \ \#else}}
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\ \ \ \ \#include\ <pthread.h>}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{keyword}{namespace\ }tthread\ \{}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00088\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtthread_1_1fast__mutex_a8cfde7cb742d74951f148cef58518eff}{fast\_mutex}}\ \{}
+\DoxyCodeLine{00089\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00091\ \textcolor{preprocessor}{\#if\ defined(\_FAST\_MUTEX\_ASM\_)}}
+\DoxyCodeLine{00092\ \ \ \ \ \doxymbox{\hyperlink{classtthread_1_1fast__mutex_a8cfde7cb742d74951f148cef58518eff}{fast\_mutex}}()\ :\ mLock(0)\ \{\}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00094\ \ \ \ \ \doxymbox{\hyperlink{classtthread_1_1fast__mutex_a8cfde7cb742d74951f148cef58518eff}{fast\_mutex}}()}
+\DoxyCodeLine{00095\ \ \ \ \ \{}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\ \ \#if\ defined(\_TTHREAD\_WIN32\_)}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ InitializeCriticalSection(\&mHandle);}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_TTHREAD\_POSIX\_)}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ pthread\_mutex\_init(\&mHandle,\ NULL);}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00101\ \ \ \ \ \}}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#if\ !defined(\_FAST\_MUTEX\_ASM\_)}}
+\DoxyCodeLine{00106\ \ \ \ \ \doxymbox{\hyperlink{classtthread_1_1fast__mutex_a2fdc596dad48d68c339d3374ab172768}{\string~fast\_mutex}}()}
+\DoxyCodeLine{00107\ \ \ \ \ \{}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\ \ \#if\ defined(\_TTHREAD\_WIN32\_)}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ DeleteCriticalSection(\&mHandle);}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_TTHREAD\_POSIX\_)}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ pthread\_mutex\_destroy(\&mHandle);}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00113\ \ \ \ \ \}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtthread_1_1fast__mutex_a4fa61071e9e59b0ecab8137eadfc4558}{lock}}()}
+\DoxyCodeLine{00121\ \ \ \ \ \{}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#if\ defined(\_FAST\_MUTEX\_ASM\_)}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ gotLock;}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \textcolor{keywordflow}{do}\ \{}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ gotLock\ =\ \doxymbox{\hyperlink{classtthread_1_1fast__mutex_a0bd0bcb244bc7680550fb52fe59e5742}{try\_lock}}();}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(!gotLock)}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\ \ \#if\ defined(\_TTHREAD\_WIN32\_)}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ Sleep(0);}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_TTHREAD\_POSIX\_)}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ sched\_yield();}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{while}(!gotLock);}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\ \ \#if\ defined(\_TTHREAD\_WIN32\_)}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ EnterCriticalSection(\&mHandle);}
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_TTHREAD\_POSIX\_)}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ pthread\_mutex\_lock(\&mHandle);}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00142\ \ \ \ \ \}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classtthread_1_1fast__mutex_a0bd0bcb244bc7680550fb52fe59e5742}{try\_lock}}()}
+\DoxyCodeLine{00150\ \ \ \ \ \{}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#if\ defined(\_FAST\_MUTEX\_ASM\_)}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ oldLock;}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\ \ \#if\ defined(\_\_GNUC\_\_)\ \&\&\ (defined(\_\_i386\_\_)\ ||\ defined(\_\_x86\_64\_\_))}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \textcolor{keyword}{asm}\ \textcolor{keyword}{volatile}\ (}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}movl\ \$1,\%\%eax\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}xchg\ \%\%eax,\%0\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}movl\ \%\%eax,\%1\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ :\ \textcolor{stringliteral}{"{}=m"{}}\ (mLock),\ \textcolor{stringliteral}{"{}=m"{}}\ (oldLock)}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ :}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ :\ \textcolor{stringliteral}{"{}\%eax"{}},\ \textcolor{stringliteral}{"{}memory"{}}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ );}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_MSC\_VER)\ \&\&\ defined(\_M\_IX86)}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *ptrLock\ =\ \&mLock;}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \_\_asm\ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ mov\ eax,1}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ mov\ ecx,ptrLock}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ xchg\ eax,[ecx]}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ mov\ oldLock,eax}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_\_GNUC\_\_)\ \&\&\ (defined(\_\_ppc\_\_))}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ newLock\ =\ 1;}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \textcolor{keyword}{asm}\ \textcolor{keyword}{volatile}\ (}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}\(\backslash\)n1:\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}lwarx\ \ \%0,0,\%1\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}cmpwi\ \ 0,\%0,0\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}bne-\/\ \ \ 2f\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}stwcx.\ \%2,0,\%1\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}bne-\/\ \ \ 1b\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}isync\(\backslash\)n"{}}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}2:\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ :\ \textcolor{stringliteral}{"{}=\&r"{}}\ (oldLock)}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ :\ \textcolor{stringliteral}{"{}r"{}}\ (\&mLock),\ \textcolor{stringliteral}{"{}r"{}}\ (newLock)}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ :\ \textcolor{stringliteral}{"{}cr0"{}},\ \textcolor{stringliteral}{"{}memory"{}}}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ );}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (oldLock\ ==\ 0);}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\ \ \#if\ defined(\_TTHREAD\_WIN32\_)}}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ TryEnterCriticalSection(\&mHandle)\ ?\ true\ :\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_TTHREAD\_POSIX\_)}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (pthread\_mutex\_trylock(\&mHandle)\ ==\ 0)\ ?\ true\ :\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00194\ \ \ \ \ \}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtthread_1_1fast__mutex_a5b4af3b4eb277bf5e747d3e098dd0c78}{unlock}}()}
+\DoxyCodeLine{00200\ \ \ \ \ \{}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#if\ defined(\_FAST\_MUTEX\_ASM\_)}}
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\ \ \#if\ defined(\_\_GNUC\_\_)\ \&\&\ (defined(\_\_i386\_\_)\ ||\ defined(\_\_x86\_64\_\_))}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \textcolor{keyword}{asm}\ \textcolor{keyword}{volatile}\ (}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}movl\ \$0,\%\%eax\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}xchg\ \%\%eax,\%0\(\backslash\)n\(\backslash\)t"{}}}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ :\ \textcolor{stringliteral}{"{}=m"{}}\ (mLock)}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ :}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ :\ \textcolor{stringliteral}{"{}\%eax"{}},\ \textcolor{stringliteral}{"{}memory"{}}}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ );}
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_MSC\_VER)\ \&\&\ defined(\_M\_IX86)}}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *ptrLock\ =\ \&mLock;}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \_\_asm\ \{}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ mov\ eax,0}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ mov\ ecx,ptrLock}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ xchg\ eax,[ecx]}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_\_GNUC\_\_)\ \&\&\ (defined(\_\_ppc\_\_))}}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \textcolor{keyword}{asm}\ \textcolor{keyword}{volatile}\ (}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}sync\(\backslash\)n\(\backslash\)t"{}}\ \ \textcolor{comment}{//\ Replace\ with\ lwsync\ where\ possible?}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ :\ :\ :\ \textcolor{stringliteral}{"{}memory"{}}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ );}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ mLock\ =\ 0;}
+\DoxyCodeLine{00223\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\ \ \#if\ defined(\_TTHREAD\_WIN32\_)}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ LeaveCriticalSection(\&mHandle);}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_TTHREAD\_POSIX\_)}}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ pthread\_mutex\_unlock(\&mHandle);}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00231\ \ \ \ \ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#if\ defined(\_FAST\_MUTEX\_ASM\_)}}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordtype}{int}\ mLock;}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\ \ \#if\ defined(\_TTHREAD\_WIN32\_)}}
+\DoxyCodeLine{00238\ \ \ \ \ CRITICAL\_SECTION\ mHandle;}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_TTHREAD\_POSIX\_)}}
+\DoxyCodeLine{00240\ \ \ \ \ pthread\_mutex\_t\ mHandle;}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00243\ \};}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ \_FAST\_MUTEX\_H\_}}
+\DoxyCodeLine{00248\ }
+
+\end{DoxyCode}

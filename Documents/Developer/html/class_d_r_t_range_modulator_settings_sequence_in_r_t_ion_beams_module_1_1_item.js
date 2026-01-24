@@ -1,0 +1,25 @@
+var class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item =
+[
+    [ "Item", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a24e33e9b863a9c2c79bcfe08a47964b7", null ],
+    [ "Item", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#aebbe72d340211a22f5b2c7a0307f96ac", null ],
+    [ "~Item", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a2d32af66ea22f13753a6609ddc34039a", null ],
+    [ "clear", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a64b64493adc9153ca3885539c6b5a7b9", null ],
+    [ "getIsocenterToRangeModulatorDistance", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#ae6aeb1f8d54a0b34ec3604f367ef0da4", null ],
+    [ "getRangeModulatorGatingStartValue", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a521c7d985fcb3f2eac199e0703e1cf41", null ],
+    [ "getRangeModulatorGatingStartWaterEquivalentThickness", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#ad728db34f64198867ec1775970180e9c", null ],
+    [ "getRangeModulatorGatingStopValue", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a27bbf08f3cec46ae62ee9b3a536b3939", null ],
+    [ "getRangeModulatorGatingStopWaterEquivalentThickness", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a53ca4832a64e31fcfac4b55183e9da07", null ],
+    [ "getReferencedRangeModulatorNumber", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#ac23664ef856656a12ccf332dcbf12c75", null ],
+    [ "getReferencedRangeModulatorNumber", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#aafdca69e49d9329e1d80dc6d3e2b7dac", null ],
+    [ "isEmpty", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a5fcd589ea69357f73ea62c6f7af8814b", null ],
+    [ "isValid", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a4b1dc66648c35a0a3c81c77600073fe8", null ],
+    [ "operator=", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#ac308ecd0bcd21ec541664a27039cd52e", null ],
+    [ "read", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a6be078f567c4f3c56d390d85c67ac694", null ],
+    [ "setIsocenterToRangeModulatorDistance", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#addea814a043083ed4d36656f7f738b7b", null ],
+    [ "setRangeModulatorGatingStartValue", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#ace41fb7d2ed21204fa8c87cb646bd138", null ],
+    [ "setRangeModulatorGatingStartWaterEquivalentThickness", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a0535db135bc94f86d809908b8cd11349", null ],
+    [ "setRangeModulatorGatingStopValue", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a74ae5130a40ba52e67ffa9c4084cb26f", null ],
+    [ "setRangeModulatorGatingStopWaterEquivalentThickness", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a58435b1e2b5f700a44ad41de5e2bd119", null ],
+    [ "setReferencedRangeModulatorNumber", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a6d59252177584130bafa9b324c2f0308", null ],
+    [ "write", "class_d_r_t_range_modulator_settings_sequence_in_r_t_ion_beams_module_1_1_item.html#a4ff77b784dd8f5f7d3024241f18adf6c", null ]
+];

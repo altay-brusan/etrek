@@ -1,0 +1,456 @@
+\doxysection{valid.\+h}
+\hypertarget{valid_8h_source}{}\label{valid_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibxml2/include/libxml/valid.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibxml2/include/libxml/valid.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Summary:\ The\ DTD\ validation}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ Description:\ API\ for\ the\ DTD\ handling\ and\ the\ validity\ checking}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ Copy:\ See\ Copyright\ for\ the\ status\ of\ this\ software.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ Author:\ Daniel\ Veillard}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#ifndef\ \_\_XML\_VALID\_H\_\_}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#define\ \_\_XML\_VALID\_H\_\_}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <libxml/xmlversion.h>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <libxml/xmlerror.h>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#define\ XML\_TREE\_INTERNALS}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <libxml/tree.h>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#undef\ XML\_TREE\_INTERNALS}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <libxml/list.h>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <libxml/xmlautomata.h>}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <libxml/xmlregexp.h>}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00026\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *\ Validation\ state\ added\ for\ non-\/determinist\ content\ model.}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_xmlValidState\ xmlValidState;}
+\DoxyCodeLine{00033\ \textcolor{keyword}{typedef}\ xmlValidState\ *xmlValidStatePtr;}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00046\ \textcolor{keyword}{typedef}\ void\ (*xmlValidityErrorFunc)\ (\textcolor{keywordtype}{void}\ *ctx,}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *msg,}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ...)\ LIBXML\_ATTR\_FORMAT(2,3);}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00061\ \textcolor{keyword}{typedef}\ void\ (*xmlValidityWarningFunc)\ (\textcolor{keywordtype}{void}\ *ctx,}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *msg,}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ...)\ LIBXML\_ATTR\_FORMAT(2,3);}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *\ xmlValidCtxt:}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ An\ xmlValidCtxt\ is\ used\ for\ error\ reporting\ when\ validating.}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00069\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct__xml_valid_ctxt}{\_xmlValidCtxt}}\ xmlValidCtxt;}
+\DoxyCodeLine{00070\ \textcolor{keyword}{typedef}\ xmlValidCtxt\ *xmlValidCtxtPtr;}
+\DoxyCodeLine{00071\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct__xml_valid_ctxt}{\_xmlValidCtxt}}\ \{}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordtype}{void}\ *userData;\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ user\ specific\ data\ block\ */}}
+\DoxyCodeLine{00073\ \ \ \ \ xmlValidityErrorFunc\ error;\ \ \ \ \ \textcolor{comment}{/*\ the\ callback\ in\ case\ of\ errors\ */}}
+\DoxyCodeLine{00074\ \ \ \ \ xmlValidityWarningFunc\ warning;\ \textcolor{comment}{/*\ the\ callback\ in\ case\ of\ warning\ */}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{comment}{/*\ Node\ analysis\ stack\ used\ when\ validating\ within\ entities\ */}}
+\DoxyCodeLine{00077\ \ \ \ \ xmlNodePtr\ \ \ \ \ \ \ \ \ node;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Current\ parsed\ Node\ */}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nodeNr;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Depth\ of\ the\ parsing\ stack\ */}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nodeMax;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Max\ depth\ of\ the\ parsing\ stack\ */}}
+\DoxyCodeLine{00080\ \ \ \ \ xmlNodePtr\ \ \ \ \ \ \ \ *nodeTab;\ \ \ \ \ \ \ \textcolor{comment}{/*\ array\ of\ nodes\ */}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ flags;\ \ \ \ \ \ \ \textcolor{comment}{/*\ internal\ flags\ */}}
+\DoxyCodeLine{00083\ \ \ \ \ xmlDocPtr\ \ \ \ \ \ \ \ \ \ \ \ \ \ doc;\ \ \ \ \ \ \ \textcolor{comment}{/*\ the\ document\ */}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ valid;\ \ \ \ \ \ \ \textcolor{comment}{/*\ temporary\ validity\ check\ result\ */}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{comment}{/*\ state\ state\ used\ for\ non-\/determinist\ content\ validation\ */}}
+\DoxyCodeLine{00087\ \ \ \ \ xmlValidState\ \ \ \ \ *vstate;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ current\ state\ */}}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vstateNr;\ \ \ \ \ \ \textcolor{comment}{/*\ Depth\ of\ the\ validation\ stack\ */}}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vstateMax;\ \ \ \ \ \textcolor{comment}{/*\ Max\ depth\ of\ the\ validation\ stack\ */}}
+\DoxyCodeLine{00090\ \ \ \ \ xmlValidState\ \ \ \ \ *vstateTab;\ \ \ \ \ \textcolor{comment}{/*\ array\ of\ validation\ states\ */}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_REGEXP\_ENABLED}}
+\DoxyCodeLine{00093\ \ \ \ \ xmlAutomataPtr\ \ \ \ \ \ \ \ \ \ \ \ am;\ \ \ \ \ \textcolor{comment}{/*\ the\ automata\ */}}
+\DoxyCodeLine{00094\ \ \ \ \ xmlAutomataStatePtr\ \ \ \ state;\ \ \ \ \ \textcolor{comment}{/*\ used\ to\ build\ the\ automata\ */}}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *am;}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *state;}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00099\ \};}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ *\ ALL\ notation\ declarations\ are\ stored\ in\ a\ table.}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ *\ There\ is\ one\ table\ per\ DTD.}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_xmlHashTable\ xmlNotationTable;}
+\DoxyCodeLine{00107\ \textcolor{keyword}{typedef}\ xmlNotationTable\ *xmlNotationTablePtr;}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ *\ ALL\ element\ declarations\ are\ stored\ in\ a\ table.}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ *\ There\ is\ one\ table\ per\ DTD.}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_xmlHashTable\ xmlElementTable;}
+\DoxyCodeLine{00115\ \textcolor{keyword}{typedef}\ xmlElementTable\ *xmlElementTablePtr;}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ *\ ALL\ attribute\ declarations\ are\ stored\ in\ a\ table.}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ *\ There\ is\ one\ table\ per\ DTD.}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_xmlHashTable\ xmlAttributeTable;}
+\DoxyCodeLine{00123\ \textcolor{keyword}{typedef}\ xmlAttributeTable\ *xmlAttributeTablePtr;}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ *\ ALL\ IDs\ attributes\ are\ stored\ in\ a\ table.}}
+\DoxyCodeLine{00127\ \textcolor{comment}{\ *\ There\ is\ one\ table\ per\ document.}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_xmlHashTable\ xmlIDTable;}
+\DoxyCodeLine{00131\ \textcolor{keyword}{typedef}\ xmlIDTable\ *xmlIDTablePtr;}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ *\ ALL\ Refs\ attributes\ are\ stored\ in\ a\ table.}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ *\ There\ is\ one\ table\ per\ document.}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_xmlHashTable\ xmlRefTable;}
+\DoxyCodeLine{00139\ \textcolor{keyword}{typedef}\ xmlRefTable\ *xmlRefTablePtr;}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{comment}{/*\ Notation\ */}}
+\DoxyCodeLine{00142\ XMLPUBFUN\ xmlNotationPtr}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ xmlAddNotationDecl\ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDtdPtr\ dtd,}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name,}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *PublicID,}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *SystemID);}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_TREE\_ENABLED}}
+\DoxyCodeLine{00149\ XMLPUBFUN\ xmlNotationTablePtr}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ xmlCopyNotationTable\ \ \ \ (xmlNotationTablePtr\ table);}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_TREE\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00152\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ xmlFreeNotationTable\ \ \ \ (xmlNotationTablePtr\ table);}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_OUTPUT\_ENABLED}}
+\DoxyCodeLine{00155\ XML\_DEPRECATED}
+\DoxyCodeLine{00156\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ xmlDumpNotationDecl\ (xmlBufferPtr\ buf,}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNotationPtr\ nota);}
+\DoxyCodeLine{00159\ \textcolor{comment}{/*\ XML\_DEPRECATED,\ still\ used\ in\ lxml\ */}}
+\DoxyCodeLine{00160\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ xmlDumpNotationTable\ \ \ \ (xmlBufferPtr\ buf,}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNotationTablePtr\ table);}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_OUTPUT\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \textcolor{comment}{/*\ Element\ Content\ */}}
+\DoxyCodeLine{00166\ \textcolor{comment}{/*\ the\ non\ Doc\ version\ are\ being\ deprecated\ */}}
+\DoxyCodeLine{00167\ XMLPUBFUN\ xmlElementContentPtr}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ xmlNewElementContent\ \ \ \ (\textcolor{keyword}{const}\ xmlChar\ *name,}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementContentType\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00170\ XMLPUBFUN\ xmlElementContentPtr}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ xmlCopyElementContent\ \ \ (xmlElementContentPtr\ content);}
+\DoxyCodeLine{00172\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ xmlFreeElementContent\ \ \ (xmlElementContentPtr\ cur);}
+\DoxyCodeLine{00174\ \textcolor{comment}{/*\ the\ new\ versions\ with\ doc\ argument\ */}}
+\DoxyCodeLine{00175\ XMLPUBFUN\ xmlElementContentPtr}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ xmlNewDocElementContent\ (xmlDocPtr\ doc,}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name,}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementContentType\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00179\ XMLPUBFUN\ xmlElementContentPtr}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ xmlCopyDocElementContent(xmlDocPtr\ doc,}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementContentPtr\ content);}
+\DoxyCodeLine{00182\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ xmlFreeDocElementContent(xmlDocPtr\ doc,}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementContentPtr\ cur);}
+\DoxyCodeLine{00185\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ xmlSnprintfElementContent(\textcolor{keywordtype}{char}\ *buf,}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ size,}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementContentPtr\ content,}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ englob);}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_OUTPUT\_ENABLED}}
+\DoxyCodeLine{00191\ XML\_DEPRECATED}
+\DoxyCodeLine{00192\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ xmlSprintfElementContent(\textcolor{keywordtype}{char}\ *buf,}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementContentPtr\ content,}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ englob);}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_OUTPUT\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \textcolor{comment}{/*\ Element\ */}}
+\DoxyCodeLine{00199\ XMLPUBFUN\ xmlElementPtr}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ xmlAddElementDecl\ \ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDtdPtr\ dtd,}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name,}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementTypeVal\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementContentPtr\ content);}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_TREE\_ENABLED}}
+\DoxyCodeLine{00206\ XMLPUBFUN\ xmlElementTablePtr}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ xmlCopyElementTable\ (xmlElementTablePtr\ table);}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_TREE\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00209\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ xmlFreeElementTable\ (xmlElementTablePtr\ table);}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_OUTPUT\_ENABLED}}
+\DoxyCodeLine{00212\ XML\_DEPRECATED}
+\DoxyCodeLine{00213\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ xmlDumpElementTable\ (xmlBufferPtr\ buf,}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementTablePtr\ table);}
+\DoxyCodeLine{00216\ XML\_DEPRECATED}
+\DoxyCodeLine{00217\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ xmlDumpElementDecl\ \ (xmlBufferPtr\ buf,}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementPtr\ elem);}
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_OUTPUT\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \textcolor{comment}{/*\ Enumeration\ */}}
+\DoxyCodeLine{00223\ XMLPUBFUN\ xmlEnumerationPtr}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ xmlCreateEnumeration\ \ \ \ (\textcolor{keyword}{const}\ xmlChar\ *name);}
+\DoxyCodeLine{00225\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ xmlFreeEnumeration\ \ (xmlEnumerationPtr\ cur);}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_TREE\_ENABLED}}
+\DoxyCodeLine{00228\ XMLPUBFUN\ xmlEnumerationPtr}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ xmlCopyEnumeration\ \ (xmlEnumerationPtr\ cur);}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_TREE\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \textcolor{comment}{/*\ Attribute\ */}}
+\DoxyCodeLine{00233\ XMLPUBFUN\ xmlAttributePtr}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ xmlAddAttributeDecl\ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDtdPtr\ dtd,}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *elem,}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name,}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *ns,}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttributeType\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttributeDefault\ def,}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *defaultValue,}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlEnumerationPtr\ tree);}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_TREE\_ENABLED}}
+\DoxyCodeLine{00244\ XMLPUBFUN\ xmlAttributeTablePtr}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ xmlCopyAttributeTable\ \ (xmlAttributeTablePtr\ table);}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_TREE\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00247\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ xmlFreeAttributeTable\ \ (xmlAttributeTablePtr\ table);}
+\DoxyCodeLine{00249\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_OUTPUT\_ENABLED}}
+\DoxyCodeLine{00250\ XML\_DEPRECATED}
+\DoxyCodeLine{00251\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ xmlDumpAttributeTable\ \ (xmlBufferPtr\ buf,}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttributeTablePtr\ table);}
+\DoxyCodeLine{00254\ XML\_DEPRECATED}
+\DoxyCodeLine{00255\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ xmlDumpAttributeDecl\ \ \ (xmlBufferPtr\ buf,}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttributePtr\ attr);}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_OUTPUT\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \textcolor{comment}{/*\ IDs\ */}}
+\DoxyCodeLine{00261\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ xmlAddIDSafe\ \ \ \ \ \ \ \ \ \ \ (xmlAttrPtr\ attr,}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00264\ XMLPUBFUN\ xmlIDPtr}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ xmlAddID\ \ \ \ \ \ \ \ \ \ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *value,}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttrPtr\ attr);}
+\DoxyCodeLine{00269\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ xmlFreeIDTable\ \ \ \ \ \ \ \ \ (xmlIDTablePtr\ table);}
+\DoxyCodeLine{00271\ XMLPUBFUN\ xmlAttrPtr}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ xmlGetID\ \ \ \ \ \ \ \ \ \ \ (xmlDocPtr\ doc,}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *ID);}
+\DoxyCodeLine{00274\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ xmlIsID\ \ \ \ \ \ \ \ \ \ \ \ (xmlDocPtr\ doc,}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem,}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttrPtr\ attr);}
+\DoxyCodeLine{00278\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ xmlRemoveID\ \ \ \ \ \ \ \ (xmlDocPtr\ doc,}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttrPtr\ attr);}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{comment}{/*\ IDREFs\ */}}
+\DoxyCodeLine{00283\ XML\_DEPRECATED}
+\DoxyCodeLine{00284\ XMLPUBFUN\ xmlRefPtr}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ xmlAddRef\ \ \ \ \ \ \ \ \ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *value,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttrPtr\ attr);}
+\DoxyCodeLine{00289\ XML\_DEPRECATED}
+\DoxyCodeLine{00290\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ xmlFreeRefTable\ \ \ \ \ \ \ \ (xmlRefTablePtr\ table);}
+\DoxyCodeLine{00292\ XML\_DEPRECATED}
+\DoxyCodeLine{00293\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ xmlIsRef\ \ \ \ \ \ \ \ \ \ \ (xmlDocPtr\ doc,}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem,}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttrPtr\ attr);}
+\DoxyCodeLine{00297\ XML\_DEPRECATED}
+\DoxyCodeLine{00298\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ xmlRemoveRef\ \ \ \ \ \ \ \ \ \ \ (xmlDocPtr\ doc,}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttrPtr\ attr);}
+\DoxyCodeLine{00301\ XML\_DEPRECATED}
+\DoxyCodeLine{00302\ XMLPUBFUN\ xmlListPtr}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ xmlGetRefs\ \ \ \ \ \ \ \ \ (xmlDocPtr\ doc,}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *ID);}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_VALID\_ENABLED}}
+\DoxyCodeLine{00310\ \textcolor{comment}{/*\ Allocate/Release\ Validation\ Contexts\ */}}
+\DoxyCodeLine{00311\ XMLPUBFUN\ xmlValidCtxtPtr}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ xmlNewValidCtxt(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00313\ XMLPUBFUN\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ xmlFreeValidCtxt(xmlValidCtxtPtr);}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ XML\_DEPRECATED}
+\DoxyCodeLine{00317\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ xmlValidateRoot\ \ \ \ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc);}
+\DoxyCodeLine{00320\ XML\_DEPRECATED}
+\DoxyCodeLine{00321\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ xmlValidateElementDecl\ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementPtr\ elem);}
+\DoxyCodeLine{00325\ XML\_DEPRECATED}
+\DoxyCodeLine{00326\ XMLPUBFUN\ xmlChar\ *}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ xmlValidNormalizeAttributeValue(xmlDocPtr\ doc,}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem,}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name,}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00331\ XML\_DEPRECATED}
+\DoxyCodeLine{00332\ XMLPUBFUN\ xmlChar\ *}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ xmlValidCtxtNormalizeAttributeValue(xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem,}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name,}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00338\ XML\_DEPRECATED}
+\DoxyCodeLine{00339\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ xmlValidateAttributeDecl(xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttributePtr\ attr);}
+\DoxyCodeLine{00343\ XML\_DEPRECATED}
+\DoxyCodeLine{00344\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ xmlValidateAttributeValue(xmlAttributeType\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00347\ XML\_DEPRECATED}
+\DoxyCodeLine{00348\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ xmlValidateNotationDecl\ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNotationPtr\ nota);}
+\DoxyCodeLine{00352\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ xmlValidateDtd\ \ \ \ \ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDtdPtr\ dtd);}
+\DoxyCodeLine{00356\ XML\_DEPRECATED}
+\DoxyCodeLine{00357\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ xmlValidateDtdFinal\ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc);}
+\DoxyCodeLine{00360\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ xmlValidateDocument\ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc);}
+\DoxyCodeLine{00363\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ xmlValidateElement\ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem);}
+\DoxyCodeLine{00367\ XML\_DEPRECATED}
+\DoxyCodeLine{00368\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ xmlValidateOneElement\ \ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem);}
+\DoxyCodeLine{00372\ XML\_DEPRECATED}
+\DoxyCodeLine{00373\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ xmlValidateOneAttribute\ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem,}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlAttrPtr\ attr,}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00379\ XML\_DEPRECATED}
+\DoxyCodeLine{00380\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ xmlValidateOneNamespace\ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem,}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *prefix,}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNsPtr\ ns,}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00387\ XML\_DEPRECATED}
+\DoxyCodeLine{00388\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ xmlValidateDocumentFinal(xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc);}
+\DoxyCodeLine{00391\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_VALID\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \textcolor{preprocessor}{\#if\ defined(LIBXML\_VALID\_ENABLED)\ ||\ defined(LIBXML\_SCHEMAS\_ENABLED)}}
+\DoxyCodeLine{00394\ XML\_DEPRECATED}
+\DoxyCodeLine{00395\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ xmlValidateNotationUse\ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *notationName);}
+\DoxyCodeLine{00399\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_VALID\_ENABLED\ or\ LIBXML\_SCHEMAS\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ xmlIsMixedElement\ \ \ (xmlDocPtr\ doc,}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name);}
+\DoxyCodeLine{00404\ XMLPUBFUN\ xmlAttributePtr}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ xmlGetDtdAttrDesc\ \ \ (xmlDtdPtr\ dtd,}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *elem,}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name);}
+\DoxyCodeLine{00408\ XMLPUBFUN\ xmlAttributePtr}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ xmlGetDtdQAttrDesc\ \ (xmlDtdPtr\ dtd,}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *elem,}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name,}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *prefix);}
+\DoxyCodeLine{00413\ XMLPUBFUN\ xmlNotationPtr}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ xmlGetDtdNotationDesc\ \ \ (xmlDtdPtr\ dtd,}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name);}
+\DoxyCodeLine{00416\ XMLPUBFUN\ xmlElementPtr}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ xmlGetDtdQElementDesc\ \ \ (xmlDtdPtr\ dtd,}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name,}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *prefix);}
+\DoxyCodeLine{00420\ XMLPUBFUN\ xmlElementPtr}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ xmlGetDtdElementDesc\ \ \ \ (xmlDtdPtr\ dtd,}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *name);}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_VALID\_ENABLED}}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ xmlValidGetPotentialChildren(xmlElementContent\ *ctree,}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ **names,}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *len,}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ max);}
+\DoxyCodeLine{00431\ }
+\DoxyCodeLine{00432\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ xmlValidGetValidElements(xmlNode\ *prev,}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNode\ *next,}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ **names,}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ max);}
+\DoxyCodeLine{00437\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ xmlValidateNameValue\ \ \ \ (\textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00439\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ xmlValidateNamesValue\ \ \ (\textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00441\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \ \ xmlValidateNmtokenValue\ (\textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00443\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ xmlValidateNmtokensValue(\textcolor{keyword}{const}\ xmlChar\ *value);}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \textcolor{preprocessor}{\#ifdef\ LIBXML\_REGEXP\_ENABLED}}
+\DoxyCodeLine{00447\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00448\ \textcolor{comment}{\ *\ Validation\ based\ on\ the\ regexp\ support}}
+\DoxyCodeLine{00449\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00450\ XML\_DEPRECATED}
+\DoxyCodeLine{00451\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ xmlValidBuildContentModel(xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlElementPtr\ elem);}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ XML\_DEPRECATED}
+\DoxyCodeLine{00456\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ xmlValidatePushElement\ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem,}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *qname);}
+\DoxyCodeLine{00461\ XML\_DEPRECATED}
+\DoxyCodeLine{00462\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ xmlValidatePushCData\ \ \ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *data,}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ len);}
+\DoxyCodeLine{00466\ XML\_DEPRECATED}
+\DoxyCodeLine{00467\ XMLPUBFUN\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ xmlValidatePopElement\ \ \ (xmlValidCtxtPtr\ ctxt,}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlDocPtr\ doc,}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ xmlNodePtr\ elem,}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ xmlChar\ *qname);}
+\DoxyCodeLine{00472\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_REGEXP\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00473\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LIBXML\_VALID\_ENABLED\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00474\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00475\ \}}
+\DoxyCodeLine{00476\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_\_XML\_VALID\_H\_\_\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

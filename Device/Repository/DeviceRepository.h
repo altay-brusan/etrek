@@ -1,3 +1,22 @@
+/**
+ * @file DeviceRepository.h
+ * @brief Repository for medical imaging device configuration data access.
+ *
+ * @details Provides CRUD operations for all device-related entities including
+ *          generators, detectors, X-ray tubes, collimators, institutions,
+ *          and environment settings.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see Generator
+ * @see Detector
+ * @see XRayTube
+ * @see Institution
+ */
+
 #pragma once
 
 #include <memory>
@@ -22,9 +41,40 @@
 #include "TranslationProvider.h"
 #include "AppLogger.h"
 
+/**
+ * @namespace Etrek::Device::Repository
+ * @brief Contains repository classes for device data access.
+ */
 namespace Etrek::Device::Repository
 {
 
+    /**
+     * @class DeviceRepository
+     * @brief Repository for medical imaging device configuration.
+     *
+     * @details Implements the Repository pattern for device-related data access.
+     *          Provides CRUD operations for:
+     *          - X-ray generators
+     *          - Digital detectors
+     *          - X-ray tubes
+     *          - Institutions
+     *          - General equipment
+     *          - Environment settings
+     *
+     *          Uses Qt SQL with MySQL backend. Includes soft-delete support
+     *          (deactivation) for entities that should not be permanently removed.
+     *
+     * @note Thread-safe for read operations. Write operations should be
+     *       synchronized by the caller.
+     *
+     * @see Generator
+     * @see Detector
+     * @see XRayTube
+     * @see Institution
+     * @see EnvironmentSetting
+     *
+     * @ingroup Device
+     */
     class DeviceRepository
     {
     public:

@@ -1,0 +1,26 @@
+var classvtk_tanglegram_item =
+[
+    [ "GenerateLookupTable", "classvtk_tanglegram_item.html#aaf6eb88c6715602f8003c052adbda0b3", null ],
+    [ "GetOrientation", "classvtk_tanglegram_item.html#a18d216b4b399a76505c36af09c268ab6", null ],
+    [ "GetPositionScoreForVertex", "classvtk_tanglegram_item.html#ad0f95a3374591d8419d99bb0fd92c479", null ],
+    [ "GetTable", "classvtk_tanglegram_item.html#aec41c07082cd2b5daf090a82f0789cfb", null ],
+    [ "GetTreeLineWidth", "classvtk_tanglegram_item.html#ab4b9ac319a5fba13357a9ccc127d909a", null ],
+    [ "Hit", "classvtk_tanglegram_item.html#a3b206eb0f14c2e31f53060784d0c0a46", null ],
+    [ "MouseDoubleClickEvent", "classvtk_tanglegram_item.html#a0cc9070a502e6aece4ee5c94b28c4d69", null ],
+    [ "Paint", "classvtk_tanglegram_item.html#abbbc0fe9f1924c02cdb3af19e8da5059", null ],
+    [ "PaintCorrespondenceLines", "classvtk_tanglegram_item.html#ab1c8e1148694a8760e6d6e41c8b5a8a2", null ],
+    [ "PaintTreeLabels", "classvtk_tanglegram_item.html#a434c428c9f4c8f3feb4ec4957a9cc01b", null ],
+    [ "PositionTree2", "classvtk_tanglegram_item.html#a5f7f07ded0a720385bf7aa545ab2a634", null ],
+    [ "PrintSelf", "classvtk_tanglegram_item.html#ae08e896aed0514d36de1d03896f141b7", null ],
+    [ "RefreshBuffers", "classvtk_tanglegram_item.html#a0606800fa7f5af7415b4b74b276e856c", null ],
+    [ "ReorderTree", "classvtk_tanglegram_item.html#a079f5bd5075e3392c3a44483ebee8b83", null ],
+    [ "ReorderTreeAtVertex", "classvtk_tanglegram_item.html#a54d2513e2471dc58df389fb2ed5e5de2", null ],
+    [ "SetOrientation", "classvtk_tanglegram_item.html#ae47e32ec29904af68f9aef59c12b6834", null ],
+    [ "SetTree1", "classvtk_tanglegram_item.html#adc01df7f10d3ed5d27c0b764f98fa706", null ],
+    [ "SetTree2", "classvtk_tanglegram_item.html#aed613100fedec6f7d1fa6d167af07643", null ],
+    [ "vtkGetMacro", "classvtk_tanglegram_item.html#a515e550d0fb5cc80a9ffbe5198d9a26a", null ],
+    [ "vtkGetMacro", "classvtk_tanglegram_item.html#ad172e13c04027f5ae974c23b6a0fed2a", null ],
+    [ "vtkGetMacro", "classvtk_tanglegram_item.html#a0212902397802feb07b030409f86afc5", null ],
+    [ "vtkGetStringMacro", "classvtk_tanglegram_item.html#a278fbb2c592bc13965ed21433fa9132c", null ],
+    [ "vtkGetStringMacro", "classvtk_tanglegram_item.html#ad38cb41fd47fb5e8cbe47535f4fe9a6d", null ]
+];

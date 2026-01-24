@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['generaloperationparameternnptr_0',['GeneralOperationParameterNNPtr',['../namespaceoperation.html#a096721d9c73b94c51c70d42dc5b3a28a',1,'operation']]],
+  ['generaloperationparameterptr_1',['GeneralOperationParameterPtr',['../namespaceoperation.html#a51c8e9542c13aaa8bc4d7de9bc2aab5d',1,'operation']]],
+  ['generalparametervaluennptr_2',['GeneralParameterValueNNPtr',['../namespaceoperation.html#ad3881fbdc92292ff756f2dd687561bcb',1,'operation']]],
+  ['generalparametervalueptr_3',['GeneralParameterValuePtr',['../namespaceoperation.html#a3cdd273f11706d45b65cc1022c039038',1,'operation']]],
+  ['genericnamennptr_4',['GenericNameNNPtr',['../namespaceutil.html#a4f30882195e8ab4648f986e4bd848345',1,'util']]],
+  ['genericnameptr_5',['GenericNamePtr',['../namespaceutil.html#acb49d06aa518447f1669ca80a13ae3f4',1,'util']]],
+  ['geodeticcrsnnptr_6',['GeodeticCRSNNPtr',['../namespacecrs.html#a046c43fab9b476eb908e6f7a41e971d7',1,'crs']]],
+  ['geodeticcrsptr_7',['GeodeticCRSPtr',['../namespacecrs.html#ab5a4678eb4757275b9509614aff538f5',1,'crs']]],
+  ['geodeticreferenceframennptr_8',['GeodeticReferenceFrameNNPtr',['../namespacedatum.html#abda497f9888388cb03dab75623b6651c',1,'datum']]],
+  ['geodeticreferenceframeptr_9',['GeodeticReferenceFramePtr',['../namespacedatum.html#ac2559a037a8685d4c6806966db88fb17',1,'datum']]],
+  ['geographicboundingboxnnptr_10',['GeographicBoundingBoxNNPtr',['../namespacemetadata.html#ad7538c47a6b9880a7722dfaf15f41a8f',1,'metadata']]],
+  ['geographicboundingboxptr_11',['GeographicBoundingBoxPtr',['../namespacemetadata.html#a5668fe9011aad56bd513857e44c2bac4',1,'metadata']]],
+  ['geographiccrsnnptr_12',['GeographicCRSNNPtr',['../namespacecrs.html#a41ac05f48cee17c4cc8b3b15527879f1',1,'crs']]],
+  ['geographiccrsptr_13',['GeographicCRSPtr',['../namespacecrs.html#a0e8de2409d7230def9f92918ae4ae7b7',1,'crs']]],
+  ['geographicextentnnptr_14',['GeographicExtentNNPtr',['../namespacemetadata.html#a64173bd947de4493e2b153d151007576',1,'metadata']]],
+  ['geographicextentptr_15',['GeographicExtentPtr',['../namespacemetadata.html#afa5d823b3a8d903dad02b204d27baa26',1,'metadata']]]
+];

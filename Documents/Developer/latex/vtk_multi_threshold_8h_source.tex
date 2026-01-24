@@ -1,0 +1,281 @@
+\doxysection{vtk\+Multi\+Threshold.\+h}
+\hypertarget{vtk_multi_threshold_8h_source}{}\label{vtk_multi_threshold_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMultiThreshold.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMultiThreshold.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Sandia\ Corporation}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#ifndef\ vtkMultiThreshold\_h}}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#define\ vtkMultiThreshold\_h}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#include\ "{}vtkFiltersGeneralModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#include\ "{}vtkMath.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ for\ Inf()\ and\ NegInf()}}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#include\ "{}vtkMultiBlockDataSetAlgorithm.h"{}}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#include\ <map>}\ \ \ \ \textcolor{comment}{//\ for\ IntervalRules\ map}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#include\ <set>}\ \ \ \ \textcolor{comment}{//\ for\ UpdateDependents()}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#include\ <string>}\ \textcolor{comment}{//\ for\ holding\ array\ names\ in\ NormKey}}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#include\ <vector>}\ \textcolor{comment}{//\ for\ lists\ of\ threshold\ rules}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00102\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_cell}{vtkCell}};}
+\DoxyCodeLine{00103\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_cell_data}{vtkCellData}};}
+\DoxyCodeLine{00104\ \textcolor{keyword}{class\ }vtkDataArray;}
+\DoxyCodeLine{00105\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_generic_cell}{vtkGenericCell}};}
+\DoxyCodeLine{00106\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_point_set}{vtkPointSet}};}
+\DoxyCodeLine{00107\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_unstructured_grid}{vtkUnstructuredGrid}};}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{keyword}{class\ }VTKFILTERSGENERAL\_EXPORT\ vtkMultiThreshold\ :\ \textcolor{keyword}{public}\ vtkMultiBlockDataSetAlgorithm}
+\DoxyCodeLine{00110\ \{}
+\DoxyCodeLine{00111\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00112\ \ \ vtkTypeMacro(vtkMultiThreshold,\ vtkMultiBlockDataSetAlgorithm);}
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{static}\ vtkMultiThreshold*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00114\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a7c7b802c6aa14003622b82626454cc9d}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00117\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652a}{Closure}}}
+\DoxyCodeLine{00118\ \ \ \{}
+\DoxyCodeLine{00119\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa3b17c12c438f91f692e509601e287a6b}{OPEN}}\ =\ 0,\ \ }
+\DoxyCodeLine{00120\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa60c3410038bf9395aa008097ded5ab59}{CLOSED}}\ =\ 1\ }
+\DoxyCodeLine{00121\ \ \ \};}
+\DoxyCodeLine{00123\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a2f93a36ad10fcf573fd56ad7019669a9}{Norm}}}
+\DoxyCodeLine{00124\ \ \ \{}
+\DoxyCodeLine{00125\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_a2f93a36ad10fcf573fd56ad7019669a9ae1437ffe251a70ef2f0813035e89e2b4}{LINFINITY\_NORM}}\ =\ -\/3,\ }
+\DoxyCodeLine{00126\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_a2f93a36ad10fcf573fd56ad7019669a9a3da0e662365787c89942eb6d172a8c72}{L2\_NORM}}\ =\ -\/2,\ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00127\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_a2f93a36ad10fcf573fd56ad7019669a9a86be001d5b995c8f68876e7c4fa3574f}{L1\_NORM}}\ =\ -\/1\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00128\ \ \ \};}
+\DoxyCodeLine{00131\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtk_multi_threshold_ad0e3f1e91b9c3e3bbf1825efedfcf5c0}{SetOperation}}}
+\DoxyCodeLine{00132\ \ \ \{}
+\DoxyCodeLine{00133\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_ad0e3f1e91b9c3e3bbf1825efedfcf5c0ad7fc2bcc703c6f429bad84890dabbf56}{AND}},\ }
+\DoxyCodeLine{00134\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_ad0e3f1e91b9c3e3bbf1825efedfcf5c0aef06f56d8ee68ac1fa9142da1e83bab3}{OR}},\ \ }
+\DoxyCodeLine{00135\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_ad0e3f1e91b9c3e3bbf1825efedfcf5c0a7772cfd715b7335065283e70190d5c66}{XOR}},\ }
+\DoxyCodeLine{00136\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_ad0e3f1e91b9c3e3bbf1825efedfcf5c0a1da2ce25b1814aebbb2f623b85a015cc}{WOR}},\ }
+\DoxyCodeLine{00137\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_ad0e3f1e91b9c3e3bbf1825efedfcf5c0a9291ac1421d14d9fe63feee0016dc29d}{NAND}}\ }
+\DoxyCodeLine{00138\ \ \ \};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_ac0e802afa864e4692c3d5d25d33cbe10}{AddIntervalSet}}(\textcolor{keywordtype}{double}\ xmin,\ \textcolor{keywordtype}{double}\ xmax,\ \textcolor{keywordtype}{int}\ omin,\ \textcolor{keywordtype}{int}\ omax,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arrayName,}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars);}
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_ac0e802afa864e4692c3d5d25d33cbe10}{AddIntervalSet}}(\textcolor{keywordtype}{double}\ xmin,\ \textcolor{keywordtype}{double}\ xmax,\ \textcolor{keywordtype}{int}\ omin,\ \textcolor{keywordtype}{int}\ omax,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keywordtype}{int}\ attribType,}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars);}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00207\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a71e5c4e302574535161742516c6ab6a5}{AddLowpassIntervalSet}}(}
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keywordtype}{double}\ xmax,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arrayName,\ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars);}
+\DoxyCodeLine{00209\ \ \ \textcolor{keywordtype}{int}\ AddHighpassIntervalSet(}
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keywordtype}{double}\ xmin,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arrayName,\ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars);}
+\DoxyCodeLine{00211\ \ \ \textcolor{keywordtype}{int}\ AddBandpassIntervalSet(}
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{keywordtype}{double}\ xmin,\ \textcolor{keywordtype}{double}\ xmax,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arrayName,\ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars);}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{int}\ AddNotchIntervalSet(}
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{keywordtype}{double}\ xlo,\ \textcolor{keywordtype}{double}\ xhi,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arrayName,\ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars);}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00220\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a9e37a69354f370ac89d8fd85e6664076}{AddBooleanSet}}(\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespaceoperation}{operation}},\ \textcolor{keywordtype}{int}\ numInputs,\ \textcolor{keywordtype}{int}*\ inputs);}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00225\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_aa6eedba6f61c10e3d1af7f6f83bc3234}{OutputSet}}(\textcolor{keywordtype}{int}\ setId);}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00230\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a690072865e8567dc5342c147d23a46d6}{Reset}}();}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00234\ \ \ \textcolor{keyword}{typedef}\ double\ (*\doxymbox{\hyperlink{classvtk_multi_threshold_aa9f3193c31796b8f30f509d45836ce6a}{TupleNorm}})(vtkDataArray*\ arr,\ vtkIdType\ tuple,\ \textcolor{keywordtype}{int}\ component);}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \textcolor{comment}{//\ NormKey\ must\ be\ able\ to\ use\ TupleNorm\ typedef:}}
+\DoxyCodeLine{00237\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_threshold_1_1_norm_key}{NormKey}};}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \textcolor{comment}{//\ Interval\ must\ be\ able\ to\ use\ NormKey\ typedef:}}
+\DoxyCodeLine{00240\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval}{Interval}};}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \textcolor{comment}{//\ Set\ needs\ to\ refer\ to\ boolean\ set\ pointers}}
+\DoxyCodeLine{00243\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set}{BooleanSet}};}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00246\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_threshold_1_1_norm_key}{NormKey}}}
+\DoxyCodeLine{00247\ \ \ \{}
+\DoxyCodeLine{00248\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{keywordtype}{int}\ Association;\ \textcolor{comment}{//\ vtkDataObject::FIELD\_ASSOCIATION\_POINTS\ or}}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ vtkDataObject::FIELD\_ASSOCIATION\_CELLS}}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordtype}{int}\ Type;\ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/1\ =>\ use\ Name,\ otherwise:\ vtkDataSetAttributes::\{SCALARS,\ VECTORS,\ TENSORS,}}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NORMALS,\ TCOORDS,\ GLOBALIDS\}}}
+\DoxyCodeLine{00253\ \ \ \ \ std::string\ Name;\ \textcolor{comment}{//\ Either\ empty\ or\ (when\ ArrayType\ ==\ -\/1)\ an\ input\ array\ name}}
+\DoxyCodeLine{00254\ \ \ \ \ \textcolor{keywordtype}{int}\ Component;\ \ \ \ \textcolor{comment}{//\ LINFINITY\_NORM,\ L1\_NORM,\ L2\_NORM\ or\ an\ integer\ component\ number}}
+\DoxyCodeLine{00255\ \ \ \ \ \textcolor{keywordtype}{int}\ AllScalars;\ \ \ \textcolor{comment}{//\ For\ Association\ ==\ vtkDataObject::FIELD\_ASSOCIATION\_POINTS,\ must\ all\ points}}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ be\ in\ the\ interval?}}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keywordtype}{int}\ InputArrayIndex;\ \ \ \ \textcolor{comment}{//\ The\ number\ passed\ to\ vtkAlgorithm::SetInputArrayToProcess()}}
+\DoxyCodeLine{00258\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_aa9f3193c31796b8f30f509d45836ce6a}{TupleNorm}}\ NormFunction;\ \textcolor{comment}{//\ A\ function\ pointer\ to\ compute\ the\ norm\ (or\ fetcht\ the\ correct}}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ component)\ of\ a\ tuple.}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00263\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_norm_key_a38b94ecec4504808900094fdbe80e228}{ComputeNorm}}(}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ vtkIdType\ cellId,\ \doxymbox{\hyperlink{classvtk_cell}{vtkCell}}*\ cell,\ vtkDataArray*\ array,\ \textcolor{keywordtype}{double}\ cellNorm[2])\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_norm_key_ac44e1b1e14a83bd8f5ebdd044faef257}{operator<}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_norm_key}{NormKey}}\&\ other)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00269\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>Association\ <\ other.Association)}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (this-\/>Association\ >\ other.Association)}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>Component\ <\ other.Component)}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (this-\/>Component\ >\ other.Component)}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((!this-\/>AllScalars)\ \&\&\ other.AllScalars)}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (this-\/>AllScalars\ \&\&\ (!other.AllScalars))}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>Type\ ==\ -\/1)}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (other.Type\ ==\ -\/1)}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Name\ <\ other.Name;}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Type\ <\ other.Type;}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00295\ \ \ \ \ \}}
+\DoxyCodeLine{00296\ \ \ \};}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00302\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_aeab182002954fd0e798979c2d5a87b55}{Set}}}
+\DoxyCodeLine{00303\ \ \ \{}
+\DoxyCodeLine{00304\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keywordtype}{int}\ Id;\ \ \ \ \ \ \ }
+\DoxyCodeLine{00306\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_a33e766ab2306e13fc65fec10ce47f9f6}{OutputId}};\ }
+\DoxyCodeLine{00308\ }
+\DoxyCodeLine{00311\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_aeab182002954fd0e798979c2d5a87b55}{Set}}()\ \{\ this-\/>OutputId\ =\ -\/1;\ \}}
+\DoxyCodeLine{00313\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_aff35744a264afdbb5789536c45b67182}{\string~Set}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_ab0bfa50aedde9e95efe95c63dcfa19f5}{PrintNodeName}}(ostream\&\ os);}
+\DoxyCodeLine{00317\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_ab6512f324720774f4cd4425963b03042}{PrintNode}}(ostream\&\ os)\ =\ 0;}
+\DoxyCodeLine{00319\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set}{BooleanSet}}*\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_abce72aa7940a448ea2eeb48884b845b7}{GetBooleanSetPointer}}();}
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval}{Interval}}*\ GetIntervalPointer();}
+\DoxyCodeLine{00321\ \ \ \};}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00324\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval}{Interval}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_aeab182002954fd0e798979c2d5a87b55}{Set}}}
+\DoxyCodeLine{00325\ \ \ \{}
+\DoxyCodeLine{00326\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval_af85a77e1ddd2b924951797198641362a}{EndpointValues}}[2];}
+\DoxyCodeLine{00330\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval_a98e6455926223657280b21e0a96c872b}{EndpointClosures}}[2];}
+\DoxyCodeLine{00332\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_norm_key}{NormKey}}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval_ad49959c1cfa069fa14e9391f6a8aa643}{Norm}};}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00339\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval_ac3dba8c1f5d542ed3043ba5ec4e4f393}{Match}}(\textcolor{keywordtype}{double}\ cellNorm[2]);}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval}{\string~Interval}}()\ \textcolor{keyword}{override}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00342\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval_a064d71cbb8bf7b88941a1575292c44d2}{PrintNode}}(ostream\&\ os)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00343\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval}{Interval}}*\ GetIntervalPointer()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00344\ \ \ \};}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00347\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set_a6d9dfa645a1148db424f7f4ccd32325f}{BooleanSet}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_aeab182002954fd0e798979c2d5a87b55}{Set}}}
+\DoxyCodeLine{00348\ \ \ \{}
+\DoxyCodeLine{00349\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00351\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set_a47b33bc89da836458453740cf2e16ddf}{Operator}};}
+\DoxyCodeLine{00353\ \ \ \ \ std::vector<int>\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set_ae7b2e4afac57bbe1b24742c4ff6a7ff0}{Inputs}};}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00356\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set_a6d9dfa645a1148db424f7f4ccd32325f}{BooleanSet}}(\textcolor{keywordtype}{int}\ sId,\ \textcolor{keywordtype}{int}\ op,\ \textcolor{keywordtype}{int}*\ inBegin,\ \textcolor{keywordtype}{int}*\ inEnd)}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set_ae7b2e4afac57bbe1b24742c4ff6a7ff0}{Inputs}}(inBegin,\ inEnd)}
+\DoxyCodeLine{00358\ \ \ \ \ \{}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ this-\/>Id\ =\ sId;}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ this-\/>Operator\ =\ op;}
+\DoxyCodeLine{00361\ \ \ \ \ \}}
+\DoxyCodeLine{00362\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set}{\string~BooleanSet}}()\ \textcolor{keyword}{override}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00363\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set_a76fed8083f5e184a1da5ad4981c77ea6}{PrintNode}}(ostream\&\ os)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00364\ \ \ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set_a6d9dfa645a1148db424f7f4ccd32325f}{BooleanSet}}*\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set_af09f8b1943958acdaa040347d2200cb3}{GetBooleanSetPointer}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00365\ \ \ \};}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00368\ \ \ vtkMultiThreshold();}
+\DoxyCodeLine{00369\ \ \ \string~vtkMultiThreshold()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00385\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a29b39d972882d0e3337ff6f0303cb547}{Ruling}}}
+\DoxyCodeLine{00386\ \ \ \{}
+\DoxyCodeLine{00387\ \ \ \ \ INCONCLUSIVE\ =\ -\/1,}
+\DoxyCodeLine{00388\ \ \ \ \ INCLUDE\ =\ -\/2,}
+\DoxyCodeLine{00389\ \ \ \ \ EXCLUDE\ =\ -\/3}
+\DoxyCodeLine{00390\ \ \ \};}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a8ccb9113ee6d50643c0112c811fd49b4}{RequestData}}(\doxymbox{\hyperlink{classvtk_information}{vtkInformation}}*,\ \doxymbox{\hyperlink{classvtk_information_vector}{vtkInformationVector}}**,\ \doxymbox{\hyperlink{classvtk_information_vector}{vtkInformationVector}}*)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00402\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_aefa7c6e42e6fbaa0c1203c05dddb6139}{FillInputPortInformation}}(\textcolor{keywordtype}{int}\ port,\ \doxymbox{\hyperlink{classvtk_information}{vtkInformation}}*\ info)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00409\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a34db76646279d171dc33e71d369c68da}{NextArrayIndex}};}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00414\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a17539c92e6b333fe82f45737500d3517}{NumberOfOutputs}};}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00417\ \ \ \textcolor{keyword}{typedef}\ std::vector<Interval*>\ \doxymbox{\hyperlink{classvtk_multi_threshold_a32ac5f044ef7b1933d60f14d11f193da}{IntervalList}};}
+\DoxyCodeLine{00419\ \ \ \textcolor{keyword}{typedef}\ std::map<NormKey,\ IntervalList>\ \doxymbox{\hyperlink{classvtk_multi_threshold_a30a1ab78e0e44d3328fe200d7b3be0c8}{RuleMap}};}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \ \ \textcolor{keyword}{typedef}\ std::vector<int>\ TruthTreeValues;}
+\DoxyCodeLine{00422\ \ \ \textcolor{keyword}{typedef}\ std::vector<TruthTreeValues>\ TruthTree;}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00427\ \ \ \doxymbox{\hyperlink{classvtk_multi_threshold_a30a1ab78e0e44d3328fe200d7b3be0c8}{RuleMap}}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a54aff018d3ea6c37685d248eed5b4983}{IntervalRules}};}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00434\ \ \ std::vector<Set*>\ \doxymbox{\hyperlink{classvtk_multi_threshold_a30ae5833202827f694fc66ca66351cd1}{Sets}};}
+\DoxyCodeLine{00435\ }
+\DoxyCodeLine{00442\ \ \ TruthTree\ \doxymbox{\hyperlink{classvtk_multi_threshold_a0fbc2a1c82eb821b1eaf1b98c7837267}{DependentSets}};}
+\DoxyCodeLine{00443\ }
+\DoxyCodeLine{00447\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threshold_aad03bfd138170a025efe607c3fc82b97}{UpdateDependents}}(\textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id},\ std::set<int>\&\ unresolvedOutputs,\ TruthTreeValues\&\ setStates,}
+\DoxyCodeLine{00448\ \ \ \ \ \doxymbox{\hyperlink{classvtk_cell_data}{vtkCellData}}*\ inCellData,\ vtkIdType\ inCell,\ \doxymbox{\hyperlink{classvtk_generic_cell}{vtkGenericCell}}*\ cell,}
+\DoxyCodeLine{00449\ \ \ \ \ std::vector<vtkUnstructuredGrid*>\&\ outv);}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00454\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_afe9cbf32062c0d85908e514a11d677d5}{AddIntervalSet}}(\doxymbox{\hyperlink{classvtk_multi_threshold_1_1_norm_key}{NormKey}}\&\ nk,\ \textcolor{keywordtype}{double}\ xmin,\ \textcolor{keywordtype}{double}\ xmax,\ \textcolor{keywordtype}{int}\ omin,\ \textcolor{keywordtype}{int}\ omax);}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00459\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a8277b759d56179acbeae247566d6d339}{PrintGraph}}(ostream\&\ os);}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \ \ vtkMultiThreshold(\textcolor{keyword}{const}\ vtkMultiThreshold\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00462\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkMultiThreshold\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00463\ \};}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threshold_a71e5c4e302574535161742516c6ab6a5}{vtkMultiThreshold::AddLowpassIntervalSet}}(}
+\DoxyCodeLine{00466\ \ \ \textcolor{keywordtype}{double}\ xmax,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arrayName,\ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars)}
+\DoxyCodeLine{00467\ \{}
+\DoxyCodeLine{00468\ \ \ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_multi_threshold_ac0e802afa864e4692c3d5d25d33cbe10}{AddIntervalSet}}(}
+\DoxyCodeLine{00469\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a49c88083ce2b8ed50d41fc4ebd9868af}{vtkMath::NegInf}}(),\ xmax,\ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa60c3410038bf9395aa008097ded5ab59}{CLOSED}},\ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa60c3410038bf9395aa008097ded5ab59}{CLOSED}},\ assoc,\ arrayName,\ component,\ allScalars);}
+\DoxyCodeLine{00470\ \}}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ vtkMultiThreshold::AddHighpassIntervalSet(}
+\DoxyCodeLine{00473\ \ \ \textcolor{keywordtype}{double}\ xmin,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arrayName,\ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars)}
+\DoxyCodeLine{00474\ \{}
+\DoxyCodeLine{00475\ \ \ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_multi_threshold_ac0e802afa864e4692c3d5d25d33cbe10}{AddIntervalSet}}(}
+\DoxyCodeLine{00476\ \ \ \ \ xmin,\ \doxymbox{\hyperlink{classvtk_math_a54193733c61913fb566e47ba284ca7e8}{vtkMath::Inf}}(),\ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa60c3410038bf9395aa008097ded5ab59}{CLOSED}},\ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa60c3410038bf9395aa008097ded5ab59}{CLOSED}},\ assoc,\ arrayName,\ component,\ allScalars);}
+\DoxyCodeLine{00477\ \}}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ vtkMultiThreshold::AddBandpassIntervalSet(}
+\DoxyCodeLine{00480\ \ \ \textcolor{keywordtype}{double}\ xmin,\ \textcolor{keywordtype}{double}\ xmax,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arrayName,\ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars)}
+\DoxyCodeLine{00481\ \{}
+\DoxyCodeLine{00482\ \ \ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_multi_threshold_ac0e802afa864e4692c3d5d25d33cbe10}{AddIntervalSet}}(xmin,\ xmax,\ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa60c3410038bf9395aa008097ded5ab59}{CLOSED}},\ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa60c3410038bf9395aa008097ded5ab59}{CLOSED}},\ assoc,\ arrayName,\ component,\ allScalars);}
+\DoxyCodeLine{00483\ \}}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ vtkMultiThreshold::AddNotchIntervalSet(}
+\DoxyCodeLine{00486\ \ \ \textcolor{keywordtype}{double}\ xlo,\ \textcolor{keywordtype}{double}\ xhi,\ \textcolor{keywordtype}{int}\ assoc,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arrayName,\ \textcolor{keywordtype}{int}\ component,\ \textcolor{keywordtype}{int}\ allScalars)}
+\DoxyCodeLine{00487\ \{}
+\DoxyCodeLine{00488\ \ \ \textcolor{keywordtype}{int}\ band\ =}
+\DoxyCodeLine{00489\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_multi_threshold_ac0e802afa864e4692c3d5d25d33cbe10}{AddIntervalSet}}(xlo,\ xhi,\ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa60c3410038bf9395aa008097ded5ab59}{CLOSED}},\ \doxymbox{\hyperlink{classvtk_multi_threshold_ae45472ebb7ff828e0513636244e0652aa60c3410038bf9395aa008097ded5ab59}{CLOSED}},\ assoc,\ arrayName,\ component,\ allScalars);}
+\DoxyCodeLine{00490\ \ \ \textcolor{keywordflow}{if}\ (band\ <\ 0)}
+\DoxyCodeLine{00491\ \ \ \{}
+\DoxyCodeLine{00492\ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00493\ \ \ \}}
+\DoxyCodeLine{00494\ \ \ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_multi_threshold_a9e37a69354f370ac89d8fd85e6664076}{AddBooleanSet}}(\doxymbox{\hyperlink{classvtk_multi_threshold_ad0e3f1e91b9c3e3bbf1825efedfcf5c0a9291ac1421d14d9fe63feee0016dc29d}{NAND}},\ 1,\ \&band);}
+\DoxyCodeLine{00495\ \}}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval}{vtkMultiThreshold::Interval}}*\ vtkMultiThreshold::Set::GetIntervalPointer()}
+\DoxyCodeLine{00498\ \{}
+\DoxyCodeLine{00499\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00500\ \}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set}{vtkMultiThreshold::BooleanSet}}*\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_set_abce72aa7940a448ea2eeb48884b845b7}{vtkMultiThreshold::Set::GetBooleanSetPointer}}()}
+\DoxyCodeLine{00503\ \{}
+\DoxyCodeLine{00504\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00505\ \}}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_interval}{vtkMultiThreshold::Interval}}*\ vtkMultiThreshold::Interval::GetIntervalPointer()}
+\DoxyCodeLine{00508\ \{}
+\DoxyCodeLine{00509\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00510\ \}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set}{vtkMultiThreshold::BooleanSet}}*\ \doxymbox{\hyperlink{classvtk_multi_threshold_1_1_boolean_set_af09f8b1943958acdaa040347d2200cb3}{vtkMultiThreshold::BooleanSet::GetBooleanSetPointer}}()}
+\DoxyCodeLine{00513\ \{}
+\DoxyCodeLine{00514\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};}
+\DoxyCodeLine{00515\ \}}
+\DoxyCodeLine{00516\ }
+\DoxyCodeLine{00517\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00518\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkMultiThreshold\_h}}
+
+\end{DoxyCode}

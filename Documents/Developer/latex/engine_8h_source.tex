@@ -1,0 +1,839 @@
+\doxysection{engine.\+h}
+\hypertarget{engine_8h_source}{}\label{engine_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/engine.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/engine.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Copyright\ 2000-\/2022\ The\ OpenSSL\ Project\ Authors.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ Copyright\ (c)\ 2002,\ Oracle\ and/or\ its\ affiliates.\ All\ rights\ reserved}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ Licensed\ under\ the\ Apache\ License\ 2.0\ (the\ "{}License"{}).\ \ You\ may\ not\ use}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ this\ file\ except\ in\ compliance\ with\ the\ License.\ \ You\ can\ obtain\ a\ copy}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ in\ the\ file\ LICENSE\ in\ the\ source\ distribution\ or\ at}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ https://www.openssl.org/source/license.html}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_ENGINE\_H}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#\ define\ OPENSSL\_ENGINE\_H}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#\ pragma\ once}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#\ include\ <openssl/macros.h>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#\ \ define\ HEADER\_ENGINE\_H}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#\ include\ <openssl/opensslconf.h>}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_ENGINE}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_1\_1\_0}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#\ \ \ include\ <openssl/bn.h>}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#\ \ \ include\ <openssl/rsa.h>}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#\ \ \ include\ <openssl/dsa.h>}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#\ \ \ include\ <openssl/dh.h>}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#\ \ \ include\ <openssl/ec.h>}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#\ \ \ include\ <openssl/rand.h>}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#\ \ \ include\ <openssl/ui.h>}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#\ \ \ include\ <openssl/err.h>}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#\ \ include\ <openssl/types.h>}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#\ \ include\ <openssl/symhacks.h>}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#\ \ include\ <openssl/x509.h>}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#\ \ include\ <openssl/engineerr.h>}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#\ \ ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00038\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ These\ flags\ are\ used\ to\ control\ combinations\ of\ algorithm\ (methods)\ by}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ bitwise\ "{}OR"{}ing.}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_RSA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unsigned\ int)0x0001}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_DSA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unsigned\ int)0x0002}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_DH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unsigned\ int)0x0004}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_RAND\ \ \ \ \ \ \ \ \ \ \ \ \ \ (unsigned\ int)0x0008}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_CIPHERS\ \ \ \ \ \ \ \ \ \ \ (unsigned\ int)0x0040}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_DIGESTS\ \ \ \ \ \ \ \ \ \ \ (unsigned\ int)0x0080}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_PKEY\_METHS\ \ \ \ \ \ \ \ (unsigned\ int)0x0200}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_PKEY\_ASN1\_METHS\ \ \ (unsigned\ int)0x0400}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_EC\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unsigned\ int)0x0800}}
+\DoxyCodeLine{00054\ \textcolor{comment}{/*\ Obvious\ all-\/or-\/nothing\ cases.\ */}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_ALL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (unsigned\ int)0xFFFF}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_METHOD\_NONE\ \ \ \ \ \ \ \ \ \ \ \ \ \ (unsigned\ int)0x0000}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ This(ese)\ flag(s)\ controls\ behaviour\ of\ the\ ENGINE\_TABLE\ mechanism\ used}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *\ internally\ to\ control\ registration\ of\ ENGINE\ implementations,\ and\ can\ be}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ *\ set\ by\ ENGINE\_set\_table\_flags().\ The\ "{}NOINIT"{}\ flag\ prevents\ attempts\ to}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *\ initialise\ registered\ ENGINEs\ if\ they\ are\ not\ already\ initialised.}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_TABLE\_FLAG\_NOINIT\ \ \ \ \ \ \ \ (unsigned\ int)0x0001}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{/*\ ENGINE\ flags\ that\ can\ be\ set\ by\ ENGINE\_set\_flags().\ */}}
+\DoxyCodeLine{00067\ \textcolor{comment}{/*\ Not\ used\ */}}
+\DoxyCodeLine{00068\ \textcolor{comment}{/*\ \#define\ ENGINE\_FLAGS\_MALLOCED\ \ \ \ \ \ \ \ 0x0001\ */}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ *\ This\ flag\ is\ for\ ENGINEs\ that\ wish\ to\ handle\ the\ various\ 'CMD'-\/related}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ *\ control\ commands\ on\ their\ own.\ Without\ this\ flag,\ ENGINE\_ctrl()\ handles}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ *\ these\ control\ commands\ on\ behalf\ of\ the\ ENGINE\ using\ their\ "{}cmd\_defns"{}}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ *\ data.}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_FLAGS\_MANUAL\_CMD\_CTRL\ \ \ \ (int)0x0002}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ *\ This\ flag\ is\ for\ ENGINEs\ who\ return\ new\ duplicate\ structures\ when\ found}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ *\ via\ "{}ENGINE\_by\_id()"{}.\ When\ an\ ENGINE\ must\ store\ state\ (eg.\ if}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ *\ ENGINE\_ctrl()\ commands\ are\ called\ in\ sequence\ as\ part\ of\ some\ stateful}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ *\ process\ like\ key-\/generation\ setup\ and\ execution),\ it\ can\ set\ this\ flag\ -\/}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ *\ then\ each\ attempt\ to\ obtain\ the\ ENGINE\ will\ result\ in\ it\ being\ copied\ into}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *\ a\ new\ structure.\ Normally,\ ENGINEs\ don't\ declare\ this\ flag\ so}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ *\ ENGINE\_by\_id()\ just\ increments\ the\ existing\ ENGINE's\ structural\ reference}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ *\ count.}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_FLAGS\_BY\_ID\_COPY\ \ \ \ \ \ \ \ \ (int)0x0004}}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ *\ This\ flag\ is\ for\ an\ ENGINE\ that\ does\ not\ want\ its\ methods\ registered\ as}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ *\ part\ of\ ENGINE\_register\_all\_complete()\ for\ example\ if\ the\ methods\ are\ not}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ *\ usable\ as\ default\ methods.}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_FLAGS\_NO\_REGISTER\_ALL\ \ \ \ (int)0x0008}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ *\ ENGINEs\ can\ support\ their\ own\ command\ types,\ and\ these\ flags\ are\ used\ in}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ *\ ENGINE\_CTRL\_GET\_CMD\_FLAGS\ to\ indicate\ to\ the\ caller\ what\ kind\ of\ input}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ *\ each\ command\ expects.\ Currently\ only\ numeric\ and\ string\ input\ is}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ *\ supported.\ If\ a\ control\ command\ supports\ none\ of\ the\ \_NUMERIC,\ \_STRING,\ or}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ *\ \_NO\_INPUT\ options,\ then\ it\ is\ regarded\ as\ an\ "{}internal"{}\ control\ command\ -\/}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ *\ and\ not\ for\ use\ in\ config\ setting\ situations.\ As\ such,\ they're\ not}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ *\ available\ to\ the\ ENGINE\_ctrl\_cmd\_string()\ function,\ only\ raw\ ENGINE\_ctrl()}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ *\ access.\ Changes\ to\ this\ list\ of\ 'command\ types'\ should\ be\ reflected}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ *\ carefully\ in\ ENGINE\_cmd\_is\_executable()\ and\ ENGINE\_ctrl\_cmd\_string().}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{comment}{/*\ accepts\ a\ 'long'\ input\ value\ (3rd\ parameter\ to\ ENGINE\_ctrl)\ */}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CMD\_FLAG\_NUMERIC\ \ \ \ \ \ \ \ \ (unsigned\ int)0x0001}}
+\DoxyCodeLine{00112\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ *\ accepts\ string\ input\ (cast\ from\ 'void*'\ to\ 'const\ char\ *',\ 4th\ parameter}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ *\ to\ ENGINE\_ctrl)}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CMD\_FLAG\_STRING\ \ \ \ \ \ \ \ \ \ (unsigned\ int)0x0002}}
+\DoxyCodeLine{00117\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ *\ Indicates\ that\ the\ control\ command\ takes\ *no*\ input.\ Ie.\ the\ control}}
+\DoxyCodeLine{00119\ \textcolor{comment}{\ *\ command\ is\ unparameterised.}}
+\DoxyCodeLine{00120\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CMD\_FLAG\_NO\_INPUT\ \ \ \ \ \ \ \ (unsigned\ int)0x0004}}
+\DoxyCodeLine{00122\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ *\ Indicates\ that\ the\ control\ command\ is\ internal.\ This\ control\ command\ won't}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ *\ be\ shown\ in\ any\ output,\ and\ is\ only\ usable\ through\ the\ ENGINE\_ctrl\_cmd()}}
+\DoxyCodeLine{00125\ \textcolor{comment}{\ *\ function.}}
+\DoxyCodeLine{00126\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CMD\_FLAG\_INTERNAL\ \ \ \ \ \ \ \ (unsigned\ int)0x0008}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ *\ NB:\ These\ 3\ control\ commands\ are\ deprecated\ and\ should\ not\ be\ used.}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ *\ ENGINEs\ relying\ on\ these\ commands\ should\ compile\ conditional\ support\ for}}
+\DoxyCodeLine{00132\ \textcolor{comment}{\ *\ compatibility\ (eg.\ if\ these\ symbols\ are\ defined)\ but\ should\ also\ migrate}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ *\ the\ same\ functionality\ to\ their\ own\ ENGINE-\/specific\ control\ functions\ that}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ *\ can\ be\ "{}discovered"{}\ by\ calling\ applications.\ The\ fact\ these\ control}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ *\ commands\ wouldn't\ be\ "{}executable"{}\ (ie.\ usable\ by\ text-\/based\ config)}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ *\ doesn't\ change\ the\ fact\ that\ application\ code\ can\ find\ and\ use\ them}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ *\ without\ requiring\ per-\/ENGINE\ hacking.}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00141\ \textcolor{comment}{\ *\ These\ flags\ are\ used\ to\ tell\ the\ ctrl\ function\ what\ should\ be\ done.\ All}}
+\DoxyCodeLine{00142\ \textcolor{comment}{\ *\ command\ numbers\ are\ shared\ between\ all\ engines,\ even\ if\ some\ don't\ make}}
+\DoxyCodeLine{00143\ \textcolor{comment}{\ *\ sense\ to\ some\ engines.\ \ In\ such\ a\ case,\ they\ do\ nothing\ but\ return\ the}}
+\DoxyCodeLine{00144\ \textcolor{comment}{\ *\ error\ ENGINE\_R\_CTRL\_COMMAND\_NOT\_IMPLEMENTED.}}
+\DoxyCodeLine{00145\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_SET\_LOGSTREAM\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_SET\_PASSWORD\_CALLBACK\ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_HUP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}\textcolor{comment}{/*\ Close\ and\ reinitialise}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ any\ handles/connections}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ etc.\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_SET\_USER\_INTERFACE\ \ \ \ \ \ \ \ \ \ 4}\textcolor{comment}{/*\ Alternative\ to\ callback\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_SET\_CALLBACK\_DATA\ \ \ \ \ \ \ \ \ \ \ 5}\textcolor{comment}{/*\ User-\/specific\ data,\ used}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ when\ calling\ the\ password}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ callback\ and\ the\ user}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ interface\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_LOAD\_CONFIGURATION\ \ \ \ \ \ \ \ \ \ 6}\textcolor{comment}{/*\ Load\ a\ configuration,}}
+\DoxyCodeLine{00157\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ given\ a\ string\ that}}
+\DoxyCodeLine{00158\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ represents\ a\ file\ name}}
+\DoxyCodeLine{00159\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ or\ so\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_LOAD\_SECTION\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}\textcolor{comment}{/*\ Load\ data\ from\ a\ given}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ section\ in\ the\ already}}
+\DoxyCodeLine{00162\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ loaded\ configuration\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ *\ These\ control\ commands\ allow\ an\ application\ to\ deal\ with\ an\ arbitrary}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ *\ engine\ in\ a\ dynamic\ way.\ Warn:\ Negative\ return\ values\ indicate\ errors\ FOR}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ *\ THESE\ COMMANDS\ because\ zero\ is\ used\ to\ indicate\ 'end-\/of-\/list'.\ Other}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ *\ commands,\ including\ ENGINE-\/specific\ command\ types,\ return\ zero\ for\ an}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ *\ error.\ An\ ENGINE\ can\ choose\ to\ implement\ these\ ctrl\ functions,\ and\ can}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ *\ internally\ manage\ things\ however\ it\ chooses\ -\/\ it\ does\ so\ by\ setting\ the}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ *\ ENGINE\_FLAGS\_MANUAL\_CMD\_CTRL\ flag\ (using\ ENGINE\_set\_flags()).\ Otherwise}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ *\ the\ ENGINE\_ctrl()\ code\ handles\ this\ on\ the\ ENGINE's\ behalf\ using\ the}}
+\DoxyCodeLine{00173\ \textcolor{comment}{\ *\ cmd\_defns\ data\ (set\ using\ ENGINE\_set\_cmd\_defns()).\ This\ means\ an\ ENGINE's}}
+\DoxyCodeLine{00174\ \textcolor{comment}{\ *\ ctrl()\ handler\ need\ only\ implement\ its\ own\ commands\ -\/\ the\ above\ "{}meta"{}}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ *\ commands\ will\ be\ taken\ care\ of.}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ *\ Returns\ non-\/zero\ if\ the\ supplied\ ENGINE\ has\ a\ ctrl()\ handler.\ If\ "{}not"{},}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ *\ then\ all\ the\ remaining\ control\ commands\ will\ return\ failure,\ so\ it\ is}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ *\ worth\ checking\ this\ first\ if\ the\ caller\ is\ trying\ to\ "{}discover"{}\ the}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ *\ engine's\ capabilities\ and\ doesn't\ want\ errors\ generated\ unnecessarily.}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_HAS\_CTRL\_FUNCTION\ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00185\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ *\ Returns\ a\ positive\ command\ number\ for\ the\ first\ command\ supported\ by\ the}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ *\ engine.\ Returns\ zero\ if\ no\ ctrl\ commands\ are\ supported.}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_GET\_FIRST\_CMD\_TYPE\ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00190\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ *\ The\ 'long'\ argument\ specifies\ a\ command\ implemented\ by\ the\ engine,\ and\ the}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ *\ return\ value\ is\ the\ next\ command\ supported,\ or\ zero\ if\ there\ are\ no\ more.}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_GET\_NEXT\_CMD\_TYPE\ \ \ \ \ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00195\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ *\ The\ 'void*'\ argument\ is\ a\ command\ name\ (cast\ from\ 'const\ char\ *'),\ and\ the}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ *\ return\ value\ is\ the\ command\ that\ corresponds\ to\ it.}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_GET\_CMD\_FROM\_NAME\ \ \ \ \ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00200\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00201\ \textcolor{comment}{\ *\ The\ next\ two\ allow\ a\ command\ to\ be\ converted\ into\ its\ corresponding\ string}}
+\DoxyCodeLine{00202\ \textcolor{comment}{\ *\ form.\ In\ each\ case,\ the\ 'long'\ argument\ supplies\ the\ command.\ In\ the}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ *\ NAME\_LEN\ case,\ the\ return\ value\ is\ the\ length\ of\ the\ command\ name\ (not}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ *\ counting\ a\ trailing\ EOL).\ In\ the\ NAME\ case,\ the\ 'void*'\ argument\ must\ be\ a}}
+\DoxyCodeLine{00205\ \textcolor{comment}{\ *\ string\ buffer\ large\ enough,\ and\ it\ will\ be\ populated\ with\ the\ name\ of\ the}}
+\DoxyCodeLine{00206\ \textcolor{comment}{\ *\ command\ (WITH\ a\ trailing\ EOL).}}
+\DoxyCodeLine{00207\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_GET\_NAME\_LEN\_FROM\_CMD\ \ \ \ \ \ \ 14}}
+\DoxyCodeLine{00209\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_GET\_NAME\_FROM\_CMD\ \ \ \ \ \ \ \ \ \ \ 15}}
+\DoxyCodeLine{00210\ \textcolor{comment}{/*\ The\ next\ two\ are\ similar\ but\ give\ a\ "{}short\ description"{}\ of\ a\ command.\ */}}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_GET\_DESC\_LEN\_FROM\_CMD\ \ \ \ \ \ \ 16}}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_GET\_DESC\_FROM\_CMD\ \ \ \ \ \ \ \ \ \ \ 17}}
+\DoxyCodeLine{00213\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ *\ With\ this\ command,\ the\ return\ value\ is\ the\ OR'd\ combination\ of}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ *\ ENGINE\_CMD\_FLAG\_***\ values\ that\ indicate\ what\ kind\ of\ input\ a\ given}}
+\DoxyCodeLine{00216\ \textcolor{comment}{\ *\ engine-\/specific\ ctrl\ command\ expects.}}
+\DoxyCodeLine{00217\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_GET\_CMD\_FLAGS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 18}}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00221\ \textcolor{comment}{\ *\ ENGINE\ implementations\ should\ start\ the\ numbering\ of\ their\ own\ control}}
+\DoxyCodeLine{00222\ \textcolor{comment}{\ *\ commands\ from\ this\ value.\ (ie.\ ENGINE\_CMD\_BASE,\ ENGINE\_CMD\_BASE\ +\ 1,\ etc).}}
+\DoxyCodeLine{00223\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CMD\_BASE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 200}}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ *\ NB:\ These\ 2\ nCipher\ "{}chil"{}\ control\ commands\ are\ deprecated,\ and\ their}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ *\ functionality\ is\ now\ available\ through\ ENGINE-\/specific\ control\ commands}}
+\DoxyCodeLine{00229\ \textcolor{comment}{\ *\ (exposed\ through\ the\ above-\/mentioned\ 'CMD'-\/handling).\ Code\ using\ these\ 2}}
+\DoxyCodeLine{00230\ \textcolor{comment}{\ *\ commands\ should\ be\ migrated\ to\ the\ more\ general\ command\ handling\ before}}
+\DoxyCodeLine{00231\ \textcolor{comment}{\ *\ these\ are\ removed.}}
+\DoxyCodeLine{00232\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{comment}{/*\ Flags\ specific\ to\ the\ nCipher\ "{}chil"{}\ engine\ */}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_CHIL\_SET\_FORKCHECK\ \ \ \ \ \ \ \ \ \ 100}}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00237\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ *\ Depending\ on\ the\ value\ of\ the\ (long)i\ argument,\ this\ sets\ or}}
+\DoxyCodeLine{00238\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ *\ unsets\ the\ SimpleForkCheck\ flag\ in\ the\ CHIL\ API\ to\ enable\ or}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ *\ disable\ checking\ and\ workarounds\ for\ applications\ that\ fork().}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_CTRL\_CHIL\_NO\_LOCKING\ \ \ \ \ \ \ \ \ \ \ \ \ 101}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00243\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ *\ This\ prevents\ the\ initialisation\ function\ from\ providing\ mutex}}
+\DoxyCodeLine{00244\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ *\ callbacks\ to\ the\ nCipher\ library.}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00248\ \textcolor{comment}{\ *\ If\ an\ ENGINE\ supports\ its\ own\ specific\ control\ commands\ and\ wishes\ the}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ *\ framework\ to\ handle\ the\ above\ 'ENGINE\_CMD\_***'-\/manipulation\ commands\ on}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ *\ its\ behalf,\ it\ should\ supply\ a\ null-\/terminated\ array\ of\ ENGINE\_CMD\_DEFN}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ *\ entries\ to\ ENGINE\_set\_cmd\_defns().\ It\ should\ also\ implement\ a\ ctrl()}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ *\ handler\ that\ supports\ the\ stated\ commands\ (ie.\ the\ "{}cmd\_num"{}\ entries\ as}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ *\ described\ by\ the\ array).\ NB:\ The\ array\ must\ be\ ordered\ in\ increasing\ order}}
+\DoxyCodeLine{00254\ \textcolor{comment}{\ *\ of\ cmd\_num.\ "{}null-\/terminated"{}\ means\ that\ the\ last\ ENGINE\_CMD\_DEFN\ element}}
+\DoxyCodeLine{00255\ \textcolor{comment}{\ *\ has\ cmd\_num\ set\ to\ zero\ and/or\ cmd\_name\ set\ to\ NULL.}}
+\DoxyCodeLine{00256\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00257\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_e_n_g_i_n_e___c_m_d___d_e_f_n__st}{ENGINE\_CMD\_DEFN\_st}}\ \{}
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ cmd\_num;\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ command\ number\ */}}
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cmd\_name;\ \ \ \ \ \ \ \textcolor{comment}{/*\ The\ command\ name\ itself\ */}}
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cmd\_desc;\ \ \ \ \ \ \ \textcolor{comment}{/*\ A\ short\ description\ of\ the\ command\ */}}
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ cmd\_flags;\ \ \ \ \ \textcolor{comment}{/*\ The\ input\ the\ command\ expects\ */}}
+\DoxyCodeLine{00262\ \}\ ENGINE\_CMD\_DEFN;}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \textcolor{comment}{/*\ Generic\ function\ pointer\ */}}
+\DoxyCodeLine{00265\ \textcolor{keyword}{typedef}\ int\ (*ENGINE\_GEN\_FUNC\_PTR)\ (void);}
+\DoxyCodeLine{00266\ \textcolor{comment}{/*\ Generic\ function\ pointer\ taking\ no\ arguments\ */}}
+\DoxyCodeLine{00267\ \textcolor{keyword}{typedef}\ int\ (*ENGINE\_GEN\_INT\_FUNC\_PTR)\ (ENGINE\ *);}
+\DoxyCodeLine{00268\ \textcolor{comment}{/*\ Specific\ control\ function\ pointer\ */}}
+\DoxyCodeLine{00269\ \textcolor{keyword}{typedef}\ int\ (*ENGINE\_CTRL\_FUNC\_PTR)\ (ENGINE\ *,\ int,\ long,\ \textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ void\ (*f)\ (void));}
+\DoxyCodeLine{00271\ \textcolor{comment}{/*\ Generic\ load\_key\ function\ pointer\ */}}
+\DoxyCodeLine{00272\ \textcolor{keyword}{typedef}\ EVP\_PKEY\ *(*ENGINE\_LOAD\_KEY\_PTR)(ENGINE\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ UI\_METHOD\ *ui\_method,}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *callback\_data);}
+\DoxyCodeLine{00275\ \textcolor{keyword}{typedef}\ int\ (*ENGINE\_SSL\_CLIENT\_CERT\_PTR)\ (ENGINE\ *,\ SSL\ *ssl,}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(X509\_NAME)\ *ca\_dn,}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\ **pcert,\ EVP\_PKEY\ **pkey,}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(X509)\ **pother,}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ UI\_METHOD\ *ui\_method,}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *callback\_data);}
+\DoxyCodeLine{00281\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00282\ \textcolor{comment}{\ *\ These\ callback\ types\ are\ for\ an\ ENGINE's\ handler\ for\ cipher\ and\ digest\ logic.}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ *\ These\ handlers\ have\ these\ prototypes;}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ *\ \ \ int\ foo(ENGINE\ *e,\ const\ EVP\_CIPHER\ **cipher,\ const\ int\ **nids,\ int\ nid);}}
+\DoxyCodeLine{00285\ \textcolor{comment}{\ *\ \ \ int\ foo(ENGINE\ *e,\ const\ EVP\_MD\ **digest,\ const\ int\ **nids,\ int\ nid);}}
+\DoxyCodeLine{00286\ \textcolor{comment}{\ *\ Looking\ at\ how\ to\ implement\ these\ handlers\ in\ the\ case\ of\ cipher\ support,\ if}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ *\ the\ framework\ wants\ the\ EVP\_CIPHER\ for\ 'nid',\ it\ will\ call;}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ *\ \ \ foo(e,\ \&p\_evp\_cipher,\ NULL,\ nid);\ \ \ \ (return\ zero\ for\ failure)}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ *\ If\ the\ framework\ wants\ a\ list\ of\ supported\ 'nid's,\ it\ will\ call;}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ *\ \ \ foo(e,\ NULL,\ \&p\_nids,\ 0);\ (returns\ number\ of\ 'nids'\ or\ -\/1\ for\ error)}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00292\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ *\ Returns\ to\ a\ pointer\ to\ the\ array\ of\ supported\ cipher\ 'nid's.\ If\ the}}
+\DoxyCodeLine{00294\ \textcolor{comment}{\ *\ second\ parameter\ is\ non-\/NULL\ it\ is\ set\ to\ the\ size\ of\ the\ returned\ array.}}
+\DoxyCodeLine{00295\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00296\ \textcolor{keyword}{typedef}\ int\ (*ENGINE\_CIPHERS\_PTR)\ (ENGINE\ *,\ \textcolor{keyword}{const}\ EVP\_CIPHER\ **,}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ **,\ int);}
+\DoxyCodeLine{00298\ \textcolor{keyword}{typedef}\ int\ (*ENGINE\_DIGESTS\_PTR)\ (ENGINE\ *,\ \textcolor{keyword}{const}\ EVP\_MD\ **,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ **,}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int);}
+\DoxyCodeLine{00300\ \textcolor{keyword}{typedef}\ int\ (*ENGINE\_PKEY\_METHS\_PTR)\ (ENGINE\ *,\ EVP\_PKEY\_METHOD\ **,}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ **,\ int);}
+\DoxyCodeLine{00302\ \textcolor{keyword}{typedef}\ int\ (*ENGINE\_PKEY\_ASN1\_METHS\_PTR)\ (ENGINE\ *,\ EVP\_PKEY\_ASN1\_METHOD\ **,}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ **,\ int);}
+\DoxyCodeLine{00304\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00305\ \textcolor{comment}{\ *\ STRUCTURE\ functions\ ...\ all\ of\ these\ functions\ deal\ with\ pointers\ to}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ *\ ENGINE\ structures\ where\ the\ pointers\ have\ a\ "{}structural\ reference"{}.\ This}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ *\ means\ that\ their\ reference\ is\ to\ allowed\ access\ to\ the\ structure\ but\ it}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ *\ does\ not\ imply\ that\ the\ structure\ is\ functional.\ To\ simply\ increment\ or}}
+\DoxyCodeLine{00309\ \textcolor{comment}{\ *\ decrement\ the\ structural\ reference\ count,\ use\ ENGINE\_by\_id\ and}}
+\DoxyCodeLine{00310\ \textcolor{comment}{\ *\ ENGINE\_free.\ NB:\ This\ is\ not\ required\ when\ iterating\ using\ ENGINE\_get\_next}}
+\DoxyCodeLine{00311\ \textcolor{comment}{\ *\ as\ it\ will\ automatically\ decrement\ the\ structural\ reference\ count\ of\ the}}
+\DoxyCodeLine{00312\ \textcolor{comment}{\ *\ "{}current"{}\ ENGINE\ and\ increment\ the\ structural\ reference\ count\ of\ the}}
+\DoxyCodeLine{00313\ \textcolor{comment}{\ *\ ENGINE\ it\ returns\ (unless\ it\ is\ NULL).}}
+\DoxyCodeLine{00314\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \textcolor{comment}{/*\ Get\ the\ first/last\ "{}ENGINE"{}\ type\ available.\ */}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00318\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_first(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00319\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_last(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00321\ \textcolor{comment}{/*\ Iterate\ to\ the\ next/previous\ "{}ENGINE"{}\ type\ (NULL\ =\ end\ of\ the\ list).\ */}}
+\DoxyCodeLine{00322\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00323\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_next(ENGINE\ *e);}
+\DoxyCodeLine{00324\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_prev(ENGINE\ *e);}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00326\ \textcolor{comment}{/*\ Add\ another\ "{}ENGINE"{}\ type\ into\ the\ array.\ */}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00328\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_add(ENGINE\ *e);}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00330\ \textcolor{comment}{/*\ Remove\ an\ existing\ "{}ENGINE"{}\ type\ from\ the\ array.\ */}}
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00332\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_remove(ENGINE\ *e);}
+\DoxyCodeLine{00333\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00334\ \textcolor{comment}{/*\ Retrieve\ an\ engine\ from\ the\ list\ by\ its\ unique\ "{}id"{}\ value.\ */}}
+\DoxyCodeLine{00335\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00336\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_by\_id(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keywordtype}{id});}
+\DoxyCodeLine{00337\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_1\_1\_0}}
+\DoxyCodeLine{00340\ \textcolor{preprocessor}{\#\ \ \ define\ ENGINE\_load\_openssl()\ \(\backslash\)}}
+\DoxyCodeLine{00341\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_init\_crypto(OPENSSL\_INIT\_ENGINE\_OPENSSL,\ NULL)}}
+\DoxyCodeLine{00342\ \textcolor{preprocessor}{\#\ \ \ define\ ENGINE\_load\_dynamic()\ \(\backslash\)}}
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_init\_crypto(OPENSSL\_INIT\_ENGINE\_DYNAMIC,\ NULL)}}
+\DoxyCodeLine{00344\ \textcolor{preprocessor}{\#\ \ \ ifndef\ OPENSSL\_NO\_STATIC\_ENGINE}}
+\DoxyCodeLine{00345\ \textcolor{preprocessor}{\#\ \ \ \ define\ ENGINE\_load\_padlock()\ \(\backslash\)}}
+\DoxyCodeLine{00346\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_init\_crypto(OPENSSL\_INIT\_ENGINE\_PADLOCK,\ NULL)}}
+\DoxyCodeLine{00347\ \textcolor{preprocessor}{\#\ \ \ \ define\ ENGINE\_load\_capi()\ \(\backslash\)}}
+\DoxyCodeLine{00348\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_init\_crypto(OPENSSL\_INIT\_ENGINE\_CAPI,\ NULL)}}
+\DoxyCodeLine{00349\ \textcolor{preprocessor}{\#\ \ \ \ define\ ENGINE\_load\_afalg()\ \(\backslash\)}}
+\DoxyCodeLine{00350\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_init\_crypto(OPENSSL\_INIT\_ENGINE\_AFALG,\ NULL)}}
+\DoxyCodeLine{00351\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00352\ \textcolor{preprocessor}{\#\ \ \ define\ ENGINE\_load\_cryptodev()\ \(\backslash\)}}
+\DoxyCodeLine{00353\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_init\_crypto(OPENSSL\_INIT\_ENGINE\_CRYPTODEV,\ NULL)}}
+\DoxyCodeLine{00354\ \textcolor{preprocessor}{\#\ \ \ define\ ENGINE\_load\_rdrand()\ \(\backslash\)}}
+\DoxyCodeLine{00355\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_init\_crypto(OPENSSL\_INIT\_ENGINE\_RDRAND,\ NULL)}}
+\DoxyCodeLine{00356\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00357\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00358\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_load\_builtin\_engines(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00359\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ *\ Get\ and\ set\ global\ flags\ (ENGINE\_TABLE\_FLAG\_***)\ for\ the\ implementation}}
+\DoxyCodeLine{00363\ \textcolor{comment}{\ *\ "{}registry"{}\ handling.}}
+\DoxyCodeLine{00364\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00365\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00366\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ENGINE\_get\_table\_flags(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00367\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_set\_table\_flags(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ flags);}
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \textcolor{comment}{/*-\/\ Manage\ registration\ of\ ENGINEs\ per\ "{}table"{}.\ For\ each\ type,\ there\ are\ 3}}
+\DoxyCodeLine{00371\ \textcolor{comment}{\ *\ functions;}}
+\DoxyCodeLine{00372\ \textcolor{comment}{\ *\ \ \ ENGINE\_register\_***(e)\ -\/\ registers\ the\ implementation\ from\ 'e'\ (if\ it\ has\ one)}}
+\DoxyCodeLine{00373\ \textcolor{comment}{\ *\ \ \ ENGINE\_unregister\_***(e)\ -\/\ unregister\ the\ implementation\ from\ 'e'}}
+\DoxyCodeLine{00374\ \textcolor{comment}{\ *\ \ \ ENGINE\_register\_all\_***()\ -\/\ call\ ENGINE\_register\_***()\ for\ each\ 'e'\ in\ the\ list}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ *\ Cleanup\ is\ automatically\ registered\ from\ each\ table\ when\ required.}}
+\DoxyCodeLine{00376\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00378\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_RSA(ENGINE\ *e);}
+\DoxyCodeLine{00379\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_unregister\_RSA(ENGINE\ *e);}
+\DoxyCodeLine{00380\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_register\_all\_RSA(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00381\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_DSA(ENGINE\ *e);}
+\DoxyCodeLine{00382\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_unregister\_DSA(ENGINE\ *e);}
+\DoxyCodeLine{00383\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_register\_all\_DSA(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00384\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_EC(ENGINE\ *e);}
+\DoxyCodeLine{00385\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_unregister\_EC(ENGINE\ *e);}
+\DoxyCodeLine{00386\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_register\_all\_EC(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00387\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_DH(ENGINE\ *e);}
+\DoxyCodeLine{00388\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_unregister\_DH(ENGINE\ *e);}
+\DoxyCodeLine{00389\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_register\_all\_DH(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00390\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_RAND(ENGINE\ *e);}
+\DoxyCodeLine{00391\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_unregister\_RAND(ENGINE\ *e);}
+\DoxyCodeLine{00392\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_register\_all\_RAND(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00393\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_ciphers(ENGINE\ *e);}
+\DoxyCodeLine{00394\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_unregister\_ciphers(ENGINE\ *e);}
+\DoxyCodeLine{00395\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_register\_all\_ciphers(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00396\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_digests(ENGINE\ *e);}
+\DoxyCodeLine{00397\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_unregister\_digests(ENGINE\ *e);}
+\DoxyCodeLine{00398\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_register\_all\_digests(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00399\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_pkey\_meths(ENGINE\ *e);}
+\DoxyCodeLine{00400\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_unregister\_pkey\_meths(ENGINE\ *e);}
+\DoxyCodeLine{00401\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_register\_all\_pkey\_meths(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00402\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_pkey\_asn1\_meths(ENGINE\ *e);}
+\DoxyCodeLine{00403\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_unregister\_pkey\_asn1\_meths(ENGINE\ *e);}
+\DoxyCodeLine{00404\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_register\_all\_pkey\_asn1\_meths(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00405\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00408\ \textcolor{comment}{\ *\ These\ functions\ register\ all\ support\ from\ the\ above\ categories.\ Note,\ use}}
+\DoxyCodeLine{00409\ \textcolor{comment}{\ *\ of\ these\ functions\ can\ result\ in\ static\ linkage\ of\ code\ your\ application}}
+\DoxyCodeLine{00410\ \textcolor{comment}{\ *\ may\ not\ need.\ If\ you\ only\ need\ a\ subset\ of\ functionality,\ consider\ using}}
+\DoxyCodeLine{00411\ \textcolor{comment}{\ *\ more\ selective\ initialisation.}}
+\DoxyCodeLine{00412\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00413\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00414\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_complete(ENGINE\ *e);}
+\DoxyCodeLine{00415\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_register\_all\_complete(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00416\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00419\ \textcolor{comment}{\ *\ Send\ parameterised\ control\ commands\ to\ the\ engine.\ The\ possibilities\ to}}
+\DoxyCodeLine{00420\ \textcolor{comment}{\ *\ send\ down\ an\ integer,\ a\ pointer\ to\ data\ or\ a\ function\ pointer\ are}}
+\DoxyCodeLine{00421\ \textcolor{comment}{\ *\ provided.\ Any\ of\ the\ parameters\ may\ or\ may\ not\ be\ NULL,\ depending\ on\ the}}
+\DoxyCodeLine{00422\ \textcolor{comment}{\ *\ command\ number.\ In\ actuality,\ this\ function\ only\ requires\ a\ structural}}
+\DoxyCodeLine{00423\ \textcolor{comment}{\ *\ (rather\ than\ functional)\ reference\ to\ an\ engine,\ but\ many\ control\ commands}}
+\DoxyCodeLine{00424\ \textcolor{comment}{\ *\ may\ require\ the\ engine\ be\ functional.\ The\ caller\ should\ be\ aware\ of\ trying}}
+\DoxyCodeLine{00425\ \textcolor{comment}{\ *\ commands\ that\ require\ an\ operational\ ENGINE,\ and\ only\ use\ functional}}
+\DoxyCodeLine{00426\ \textcolor{comment}{\ *\ references\ in\ such\ situations.}}
+\DoxyCodeLine{00427\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00428\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00429\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_ctrl(ENGINE\ *e,\ \textcolor{keywordtype}{int}\ cmd,\ \textcolor{keywordtype}{long}\ i,\ \textcolor{keywordtype}{void}\ *p,}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*f)\ (\textcolor{keywordtype}{void}));}
+\DoxyCodeLine{00431\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00433\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00434\ \textcolor{comment}{\ *\ This\ function\ tests\ if\ an\ ENGINE-\/specific\ command\ is\ usable\ as\ a}}
+\DoxyCodeLine{00435\ \textcolor{comment}{\ *\ "{}setting"{}.\ Eg.\ in\ an\ application's\ config\ file\ that\ gets\ processed\ through}}
+\DoxyCodeLine{00436\ \textcolor{comment}{\ *\ ENGINE\_ctrl\_cmd\_string().\ If\ this\ returns\ zero,\ it\ is\ not\ available\ to}}
+\DoxyCodeLine{00437\ \textcolor{comment}{\ *\ ENGINE\_ctrl\_cmd\_string(),\ only\ ENGINE\_ctrl().}}
+\DoxyCodeLine{00438\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00439\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00440\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_cmd\_is\_executable(ENGINE\ *e,\ \textcolor{keywordtype}{int}\ cmd);}
+\DoxyCodeLine{00441\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00444\ \textcolor{comment}{\ *\ This\ function\ works\ like\ ENGINE\_ctrl()\ with\ the\ exception\ of\ taking\ a}}
+\DoxyCodeLine{00445\ \textcolor{comment}{\ *\ command\ name\ instead\ of\ a\ command\ number,\ and\ can\ handle\ optional}}
+\DoxyCodeLine{00446\ \textcolor{comment}{\ *\ commands.\ See\ the\ comment\ on\ ENGINE\_ctrl\_cmd\_string()\ for\ an\ explanation}}
+\DoxyCodeLine{00447\ \textcolor{comment}{\ *\ on\ how\ to\ use\ the\ cmd\_name\ and\ cmd\_optional.}}
+\DoxyCodeLine{00448\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00449\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00450\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_ctrl\_cmd(ENGINE\ *e,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cmd\_name,}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{long}\ i,\ \textcolor{keywordtype}{void}\ *p,\ \textcolor{keywordtype}{void}\ (*f)\ (\textcolor{keywordtype}{void}),}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ cmd\_optional);}
+\DoxyCodeLine{00453\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00456\ \textcolor{comment}{\ *\ This\ function\ passes\ a\ command-\/name\ and\ argument\ to\ an\ ENGINE.\ The}}
+\DoxyCodeLine{00457\ \textcolor{comment}{\ *\ cmd\_name\ is\ converted\ to\ a\ command\ number\ and\ the\ control\ command\ is}}
+\DoxyCodeLine{00458\ \textcolor{comment}{\ *\ called\ using\ 'arg'\ as\ an\ argument\ (unless\ the\ ENGINE\ doesn't\ support\ such}}
+\DoxyCodeLine{00459\ \textcolor{comment}{\ *\ a\ command,\ in\ which\ case\ no\ control\ command\ is\ called).\ The\ command\ is}}
+\DoxyCodeLine{00460\ \textcolor{comment}{\ *\ checked\ for\ input\ flags,\ and\ if\ necessary\ the\ argument\ will\ be\ converted}}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ *\ to\ a\ numeric\ value.\ If\ cmd\_optional\ is\ non-\/zero,\ then\ if\ the\ ENGINE}}
+\DoxyCodeLine{00462\ \textcolor{comment}{\ *\ doesn't\ support\ the\ given\ cmd\_name\ the\ return\ value\ will\ be\ success}}
+\DoxyCodeLine{00463\ \textcolor{comment}{\ *\ anyway.\ This\ function\ is\ intended\ for\ applications\ to\ use\ so\ that\ users}}
+\DoxyCodeLine{00464\ \textcolor{comment}{\ *\ (or\ config\ files)\ can\ supply\ engine-\/specific\ config\ data\ to\ the\ ENGINE\ at}}
+\DoxyCodeLine{00465\ \textcolor{comment}{\ *\ run-\/time\ to\ control\ behaviour\ of\ specific\ engines.\ As\ such,\ it\ shouldn't}}
+\DoxyCodeLine{00466\ \textcolor{comment}{\ *\ be\ used\ for\ calling\ ENGINE\_ctrl()\ functions\ that\ return\ data,\ deal\ with}}
+\DoxyCodeLine{00467\ \textcolor{comment}{\ *\ binary\ data,\ or\ that\ are\ otherwise\ supposed\ to\ be\ used\ directly\ through}}
+\DoxyCodeLine{00468\ \textcolor{comment}{\ *\ ENGINE\_ctrl()\ in\ application\ code.\ Any\ "{}return"{}\ data\ from\ an\ ENGINE\_ctrl()}}
+\DoxyCodeLine{00469\ \textcolor{comment}{\ *\ operation\ in\ this\ function\ will\ be\ lost\ -\/\ the\ return\ value\ is\ interpreted}}
+\DoxyCodeLine{00470\ \textcolor{comment}{\ *\ as\ failure\ if\ the\ return\ value\ is\ zero,\ success\ otherwise,\ and\ this}}
+\DoxyCodeLine{00471\ \textcolor{comment}{\ *\ function\ returns\ a\ boolean\ value\ as\ a\ result.\ In\ other\ words,\ vendors\ of}}
+\DoxyCodeLine{00472\ \textcolor{comment}{\ *\ 'ENGINE'-\/enabled\ devices\ should\ write\ ENGINE\ implementations\ with}}
+\DoxyCodeLine{00473\ \textcolor{comment}{\ *\ parameterisations\ that\ work\ in\ this\ scheme,\ so\ that\ compliant\ ENGINE-\/based}}
+\DoxyCodeLine{00474\ \textcolor{comment}{\ *\ applications\ can\ work\ consistently\ with\ the\ same\ configuration\ for\ the}}
+\DoxyCodeLine{00475\ \textcolor{comment}{\ *\ same\ ENGINE-\/enabled\ devices,\ across\ applications.}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00478\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00479\ \textcolor{keywordtype}{int}\ ENGINE\_ctrl\_cmd\_string(ENGINE\ *e,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cmd\_name,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *arg,}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ cmd\_optional);}
+\DoxyCodeLine{00481\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00483\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00484\ \textcolor{comment}{\ *\ These\ functions\ are\ useful\ for\ manufacturing\ new\ ENGINE\ structures.\ They}}
+\DoxyCodeLine{00485\ \textcolor{comment}{\ *\ don't\ address\ reference\ counting\ at\ all\ -\/\ one\ uses\ them\ to\ populate\ an}}
+\DoxyCodeLine{00486\ \textcolor{comment}{\ *\ ENGINE\ structure\ with\ personalised\ implementations\ of\ things\ prior\ to}}
+\DoxyCodeLine{00487\ \textcolor{comment}{\ *\ using\ it\ directly\ or\ adding\ it\ to\ the\ builtin\ ENGINE\ list\ in\ OpenSSL.}}
+\DoxyCodeLine{00488\ \textcolor{comment}{\ *\ These\ are\ also\ here\ so\ that\ the\ ENGINE\ structure\ doesn't\ have\ to\ be}}
+\DoxyCodeLine{00489\ \textcolor{comment}{\ *\ exposed\ and\ break\ binary\ compatibility!}}
+\DoxyCodeLine{00490\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00491\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00492\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_new(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00493\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_free(ENGINE\ *e);}
+\DoxyCodeLine{00494\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_up\_ref(ENGINE\ *e);}
+\DoxyCodeLine{00495\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_id(ENGINE\ *e,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keywordtype}{id});}
+\DoxyCodeLine{00496\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_name(ENGINE\ *e,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00497\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_RSA(ENGINE\ *e,\ \textcolor{keyword}{const}\ RSA\_METHOD\ *rsa\_meth);}
+\DoxyCodeLine{00498\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_DSA(ENGINE\ *e,\ \textcolor{keyword}{const}\ DSA\_METHOD\ *dsa\_meth);}
+\DoxyCodeLine{00499\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_EC(ENGINE\ *e,\ \textcolor{keyword}{const}\ EC\_KEY\_METHOD\ *ecdsa\_meth);}
+\DoxyCodeLine{00500\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_DH(ENGINE\ *e,\ \textcolor{keyword}{const}\ DH\_METHOD\ *dh\_meth);}
+\DoxyCodeLine{00501\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_RAND(ENGINE\ *e,\ \textcolor{keyword}{const}\ RAND\_METHOD\ *rand\_meth);}
+\DoxyCodeLine{00502\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00503\ \textcolor{keywordtype}{int}\ ENGINE\_set\_destroy\_function(ENGINE\ *e,ENGINE\_GEN\_INT\_FUNC\_PTR\ destroy\_f);}
+\DoxyCodeLine{00504\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00505\ \textcolor{keywordtype}{int}\ ENGINE\_set\_init\_function(ENGINE\ *e,\ ENGINE\_GEN\_INT\_FUNC\_PTR\ init\_f);}
+\DoxyCodeLine{00506\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00507\ \textcolor{keywordtype}{int}\ ENGINE\_set\_finish\_function(ENGINE\ *e,\ ENGINE\_GEN\_INT\_FUNC\_PTR\ finish\_f);}
+\DoxyCodeLine{00508\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00509\ \textcolor{keywordtype}{int}\ ENGINE\_set\_ctrl\_function(ENGINE\ *e,\ ENGINE\_CTRL\_FUNC\_PTR\ ctrl\_f);}
+\DoxyCodeLine{00510\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00511\ \textcolor{keywordtype}{int}\ ENGINE\_set\_load\_privkey\_function(ENGINE\ *e,\ ENGINE\_LOAD\_KEY\_PTR\ loadpriv\_f);}
+\DoxyCodeLine{00512\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00513\ \textcolor{keywordtype}{int}\ ENGINE\_set\_load\_pubkey\_function(ENGINE\ *e,\ ENGINE\_LOAD\_KEY\_PTR\ loadpub\_f);}
+\DoxyCodeLine{00514\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00515\ \textcolor{keywordtype}{int}\ ENGINE\_set\_load\_ssl\_client\_cert\_function(ENGINE\ *e,}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ENGINE\_SSL\_CLIENT\_CERT\_PTR\ loadssl\_f);}
+\DoxyCodeLine{00517\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00518\ \textcolor{keywordtype}{int}\ ENGINE\_set\_ciphers(ENGINE\ *e,\ ENGINE\_CIPHERS\_PTR\ f);}
+\DoxyCodeLine{00519\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00520\ \textcolor{keywordtype}{int}\ ENGINE\_set\_digests(ENGINE\ *e,\ ENGINE\_DIGESTS\_PTR\ f);}
+\DoxyCodeLine{00521\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00522\ \textcolor{keywordtype}{int}\ ENGINE\_set\_pkey\_meths(ENGINE\ *e,\ ENGINE\_PKEY\_METHS\_PTR\ f);}
+\DoxyCodeLine{00523\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00524\ \textcolor{keywordtype}{int}\ ENGINE\_set\_pkey\_asn1\_meths(ENGINE\ *e,\ ENGINE\_PKEY\_ASN1\_METHS\_PTR\ f);}
+\DoxyCodeLine{00525\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_flags(ENGINE\ *e,\ \textcolor{keywordtype}{int}\ flags);}
+\DoxyCodeLine{00526\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_cmd\_defns(ENGINE\ *e,}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ENGINE\_CMD\_DEFN\ *defns);}
+\DoxyCodeLine{00528\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00529\ \textcolor{comment}{/*\ These\ functions\ allow\ control\ over\ any\ per-\/structure\ ENGINE\ data.\ */}}
+\DoxyCodeLine{00530\ \textcolor{preprocessor}{\#\ \ define\ ENGINE\_get\_ex\_new\_index(l,\ p,\ newf,\ dupf,\ freef)\ \(\backslash\)}}
+\DoxyCodeLine{00531\ \textcolor{preprocessor}{\ \ \ \ CRYPTO\_get\_ex\_new\_index(CRYPTO\_EX\_INDEX\_ENGINE,\ l,\ p,\ newf,\ dupf,\ freef)}}
+\DoxyCodeLine{00532\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00533\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_ex\_data(ENGINE\ *e,\ \textcolor{keywordtype}{int}\ idx,\ \textcolor{keywordtype}{void}\ *arg);}
+\DoxyCodeLine{00534\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ *ENGINE\_get\_ex\_data(\textcolor{keyword}{const}\ ENGINE\ *e,\ \textcolor{keywordtype}{int}\ idx);}
+\DoxyCodeLine{00535\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_1\_1\_0}}
+\DoxyCodeLine{00538\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00539\ \textcolor{comment}{\ *\ This\ function\ previously\ cleaned\ up\ anything\ that\ needs\ it.\ Auto-\/deinit\ will}}
+\DoxyCodeLine{00540\ \textcolor{comment}{\ *\ now\ take\ care\ of\ it\ so\ it\ is\ no\ longer\ required\ to\ call\ this\ function.}}
+\DoxyCodeLine{00541\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00542\ \textcolor{preprocessor}{\#\ \ \ define\ ENGINE\_cleanup()\ while(0)\ continue}}
+\DoxyCodeLine{00543\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00544\ }
+\DoxyCodeLine{00545\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00546\ \textcolor{comment}{\ *\ These\ return\ values\ from\ within\ the\ ENGINE\ structure.\ These\ can\ be\ useful}}
+\DoxyCodeLine{00547\ \textcolor{comment}{\ *\ with\ functional\ references\ as\ well\ as\ structural\ references\ -\/\ it\ depends}}
+\DoxyCodeLine{00548\ \textcolor{comment}{\ *\ which\ you\ obtained.\ Using\ the\ result\ for\ functional\ purposes\ if\ you\ only}}
+\DoxyCodeLine{00549\ \textcolor{comment}{\ *\ obtained\ a\ structural\ reference\ may\ be\ problematic!}}
+\DoxyCodeLine{00550\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00551\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00552\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *ENGINE\_get\_id(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00553\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *ENGINE\_get\_name(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00554\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keyword}{const}\ RSA\_METHOD\ *ENGINE\_get\_RSA(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00555\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keyword}{const}\ DSA\_METHOD\ *ENGINE\_get\_DSA(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00556\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keyword}{const}\ EC\_KEY\_METHOD\ *ENGINE\_get\_EC(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00557\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keyword}{const}\ DH\_METHOD\ *ENGINE\_get\_DH(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00558\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keyword}{const}\ RAND\_METHOD\ *ENGINE\_get\_RAND(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00559\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00560\ ENGINE\_GEN\_INT\_FUNC\_PTR\ ENGINE\_get\_destroy\_function(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00561\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00562\ ENGINE\_GEN\_INT\_FUNC\_PTR\ ENGINE\_get\_init\_function(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00563\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00564\ ENGINE\_GEN\_INT\_FUNC\_PTR\ ENGINE\_get\_finish\_function(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00565\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00566\ ENGINE\_CTRL\_FUNC\_PTR\ ENGINE\_get\_ctrl\_function(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00567\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00568\ ENGINE\_LOAD\_KEY\_PTR\ ENGINE\_get\_load\_privkey\_function(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00569\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00570\ ENGINE\_LOAD\_KEY\_PTR\ ENGINE\_get\_load\_pubkey\_function(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00571\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00572\ ENGINE\_SSL\_CLIENT\_CERT\_PTR\ ENGINE\_get\_ssl\_client\_cert\_function(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00573\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00574\ ENGINE\_CIPHERS\_PTR\ ENGINE\_get\_ciphers(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00575\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00576\ ENGINE\_DIGESTS\_PTR\ ENGINE\_get\_digests(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00577\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00578\ ENGINE\_PKEY\_METHS\_PTR\ ENGINE\_get\_pkey\_meths(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00579\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00580\ ENGINE\_PKEY\_ASN1\_METHS\_PTR\ ENGINE\_get\_pkey\_asn1\_meths(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00581\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00582\ \textcolor{keyword}{const}\ EVP\_CIPHER\ *ENGINE\_get\_cipher(ENGINE\ *e,\ \textcolor{keywordtype}{int}\ nid);}
+\DoxyCodeLine{00583\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00584\ \textcolor{keyword}{const}\ EVP\_MD\ *ENGINE\_get\_digest(ENGINE\ *e,\ \textcolor{keywordtype}{int}\ nid);}
+\DoxyCodeLine{00585\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00586\ \textcolor{keyword}{const}\ EVP\_PKEY\_METHOD\ *ENGINE\_get\_pkey\_meth(ENGINE\ *e,\ \textcolor{keywordtype}{int}\ nid);}
+\DoxyCodeLine{00587\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00588\ \textcolor{keyword}{const}\ EVP\_PKEY\_ASN1\_METHOD\ *ENGINE\_get\_pkey\_asn1\_meth(ENGINE\ *e,\ \textcolor{keywordtype}{int}\ nid);}
+\DoxyCodeLine{00589\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00590\ \textcolor{keyword}{const}\ EVP\_PKEY\_ASN1\_METHOD\ *ENGINE\_get\_pkey\_asn1\_meth\_str(ENGINE\ *e,}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *str,}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ len);}
+\DoxyCodeLine{00593\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00594\ \textcolor{keyword}{const}\ EVP\_PKEY\_ASN1\_METHOD\ *ENGINE\_pkey\_asn1\_find\_str(ENGINE\ **pe,}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *str,\ \textcolor{keywordtype}{int}\ len);}
+\DoxyCodeLine{00596\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00597\ \textcolor{keyword}{const}\ ENGINE\_CMD\_DEFN\ *ENGINE\_get\_cmd\_defns(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00598\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_get\_flags(\textcolor{keyword}{const}\ ENGINE\ *e);}
+\DoxyCodeLine{00599\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00602\ \textcolor{comment}{\ *\ FUNCTIONAL\ functions.\ These\ functions\ deal\ with\ ENGINE\ structures\ that}}
+\DoxyCodeLine{00603\ \textcolor{comment}{\ *\ have\ (or\ will)\ be\ initialised\ for\ use.\ Broadly\ speaking,\ the\ structural}}
+\DoxyCodeLine{00604\ \textcolor{comment}{\ *\ functions\ are\ useful\ for\ iterating\ the\ list\ of\ available\ engine\ types,}}
+\DoxyCodeLine{00605\ \textcolor{comment}{\ *\ creating\ new\ engine\ types,\ and\ other\ "{}list"{}\ operations.\ These\ functions}}
+\DoxyCodeLine{00606\ \textcolor{comment}{\ *\ actually\ deal\ with\ ENGINEs\ that\ are\ to\ be\ used.\ As\ such\ these\ functions}}
+\DoxyCodeLine{00607\ \textcolor{comment}{\ *\ can\ fail\ (if\ applicable)\ when\ particular\ engines\ are\ unavailable\ -\/\ eg.\ if}}
+\DoxyCodeLine{00608\ \textcolor{comment}{\ *\ a\ hardware\ accelerator\ is\ not\ attached\ or\ not\ functioning\ correctly.\ Each}}
+\DoxyCodeLine{00609\ \textcolor{comment}{\ *\ ENGINE\ has\ 2\ reference\ counts;\ structural\ and\ functional.\ Every\ time\ a}}
+\DoxyCodeLine{00610\ \textcolor{comment}{\ *\ functional\ reference\ is\ obtained\ or\ released,\ a\ corresponding\ structural}}
+\DoxyCodeLine{00611\ \textcolor{comment}{\ *\ reference\ is\ automatically\ obtained\ or\ released\ too.}}
+\DoxyCodeLine{00612\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00614\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00615\ \textcolor{comment}{\ *\ Initialise\ an\ engine\ type\ for\ use\ (or\ up\ its\ reference\ count\ if\ it's}}
+\DoxyCodeLine{00616\ \textcolor{comment}{\ *\ already\ in\ use).\ This\ will\ fail\ if\ the\ engine\ is\ not\ currently\ operational}}
+\DoxyCodeLine{00617\ \textcolor{comment}{\ *\ and\ cannot\ initialise.}}
+\DoxyCodeLine{00618\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00619\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00620\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_init(ENGINE\ *e);}
+\DoxyCodeLine{00621\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00622\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00623\ \textcolor{comment}{\ *\ Free\ a\ functional\ reference\ to\ an\ engine\ type.\ This\ does\ not\ require\ a}}
+\DoxyCodeLine{00624\ \textcolor{comment}{\ *\ corresponding\ call\ to\ ENGINE\_free\ as\ it\ also\ releases\ a\ structural}}
+\DoxyCodeLine{00625\ \textcolor{comment}{\ *\ reference.}}
+\DoxyCodeLine{00626\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00627\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00628\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_finish(ENGINE\ *e);}
+\DoxyCodeLine{00629\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00630\ }
+\DoxyCodeLine{00631\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00632\ \textcolor{comment}{\ *\ The\ following\ functions\ handle\ keys\ that\ are\ stored\ in\ some\ secondary}}
+\DoxyCodeLine{00633\ \textcolor{comment}{\ *\ location,\ handled\ by\ the\ engine.\ \ The\ storage\ may\ be\ on\ a\ card\ or}}
+\DoxyCodeLine{00634\ \textcolor{comment}{\ *\ whatever.}}
+\DoxyCodeLine{00635\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00636\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00637\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00638\ EVP\_PKEY\ *ENGINE\_load\_private\_key(ENGINE\ *e,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key\_id,}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *callback\_data);}
+\DoxyCodeLine{00640\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00641\ EVP\_PKEY\ *ENGINE\_load\_public\_key(ENGINE\ *e,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key\_id,}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *callback\_data);}
+\DoxyCodeLine{00643\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00644\ \textcolor{keywordtype}{int}\ ENGINE\_load\_ssl\_client\_cert(ENGINE\ *e,\ SSL\ *s,\ STACK\_OF(X509\_NAME)\ *ca\_dn,}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\ **pcert,\ EVP\_PKEY\ **ppkey,}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(X509)\ **pother,}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *callback\_data);}
+\DoxyCodeLine{00648\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00649\ }
+\DoxyCodeLine{00650\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00651\ \textcolor{comment}{\ *\ This\ returns\ a\ pointer\ for\ the\ current\ ENGINE\ structure\ that\ is\ (by}}
+\DoxyCodeLine{00652\ \textcolor{comment}{\ *\ default)\ performing\ any\ RSA\ operations.\ The\ value\ returned\ is\ an}}
+\DoxyCodeLine{00653\ \textcolor{comment}{\ *\ incremented\ reference,\ so\ it\ should\ be\ free'd\ (ENGINE\_finish)\ before\ it\ is}}
+\DoxyCodeLine{00654\ \textcolor{comment}{\ *\ discarded.}}
+\DoxyCodeLine{00655\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00656\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00657\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_default\_RSA(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00658\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00659\ \textcolor{comment}{/*\ Same\ for\ the\ other\ "{}methods"{}\ */}}
+\DoxyCodeLine{00660\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00661\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_default\_DSA(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00662\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_default\_EC(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00663\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_default\_DH(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00664\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_default\_RAND(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00665\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00666\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00667\ \textcolor{comment}{\ *\ These\ functions\ can\ be\ used\ to\ get\ a\ functional\ reference\ to\ perform}}
+\DoxyCodeLine{00668\ \textcolor{comment}{\ *\ ciphering\ or\ digesting\ corresponding\ to\ "{}nid"{}.}}
+\DoxyCodeLine{00669\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00670\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00671\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_cipher\_engine(\textcolor{keywordtype}{int}\ nid);}
+\DoxyCodeLine{00672\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_digest\_engine(\textcolor{keywordtype}{int}\ nid);}
+\DoxyCodeLine{00673\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_pkey\_meth\_engine(\textcolor{keywordtype}{int}\ nid);}
+\DoxyCodeLine{00674\ OSSL\_DEPRECATEDIN\_3\_0\ ENGINE\ *ENGINE\_get\_pkey\_asn1\_meth\_engine(\textcolor{keywordtype}{int}\ nid);}
+\DoxyCodeLine{00675\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00676\ }
+\DoxyCodeLine{00677\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00678\ \textcolor{comment}{\ *\ This\ sets\ a\ new\ default\ ENGINE\ structure\ for\ performing\ RSA\ operations.\ If}}
+\DoxyCodeLine{00679\ \textcolor{comment}{\ *\ the\ result\ is\ non-\/zero\ (success)\ then\ the\ ENGINE\ structure\ will\ have\ had}}
+\DoxyCodeLine{00680\ \textcolor{comment}{\ *\ its\ reference\ count\ up'd\ so\ the\ caller\ should\ still\ free\ their\ own}}
+\DoxyCodeLine{00681\ \textcolor{comment}{\ *\ reference\ 'e'.}}
+\DoxyCodeLine{00682\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00683\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00684\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_RSA(ENGINE\ *e);}
+\DoxyCodeLine{00685\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_string(ENGINE\ *e,}
+\DoxyCodeLine{00686\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *def\_list);}
+\DoxyCodeLine{00687\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00688\ \textcolor{comment}{/*\ Same\ for\ the\ other\ "{}methods"{}\ */}}
+\DoxyCodeLine{00689\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00690\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_DSA(ENGINE\ *e);}
+\DoxyCodeLine{00691\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_EC(ENGINE\ *e);}
+\DoxyCodeLine{00692\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_DH(ENGINE\ *e);}
+\DoxyCodeLine{00693\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_RAND(ENGINE\ *e);}
+\DoxyCodeLine{00694\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_ciphers(ENGINE\ *e);}
+\DoxyCodeLine{00695\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_digests(ENGINE\ *e);}
+\DoxyCodeLine{00696\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_pkey\_meths(ENGINE\ *e);}
+\DoxyCodeLine{00697\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default\_pkey\_asn1\_meths(ENGINE\ *e);}
+\DoxyCodeLine{00698\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00699\ }
+\DoxyCodeLine{00700\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00701\ \textcolor{comment}{\ *\ The\ combination\ "{}set"{}\ -\/\ the\ flags\ are\ bitwise\ "{}OR"{}d\ from\ the}}
+\DoxyCodeLine{00702\ \textcolor{comment}{\ *\ ENGINE\_METHOD\_***\ defines\ above.\ As\ with\ the\ "{}ENGINE\_register\_complete()"{}}}
+\DoxyCodeLine{00703\ \textcolor{comment}{\ *\ function,\ this\ function\ can\ result\ in\ unnecessary\ static\ linkage.\ If\ your}}
+\DoxyCodeLine{00704\ \textcolor{comment}{\ *\ application\ requires\ only\ specific\ functionality,\ consider\ using\ more}}
+\DoxyCodeLine{00705\ \textcolor{comment}{\ *\ selective\ functions.}}
+\DoxyCodeLine{00706\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00707\ \textcolor{preprocessor}{\#\ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00708\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ ENGINE\_set\_default(ENGINE\ *e,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ flags);}
+\DoxyCodeLine{00709\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{void}\ ENGINE\_add\_conf\_module(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00710\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00711\ }
+\DoxyCodeLine{00712\ \textcolor{comment}{/*\ Deprecated\ functions\ ...\ */}}
+\DoxyCodeLine{00713\ \textcolor{comment}{/*\ int\ ENGINE\_clear\_defaults(void);\ */}}
+\DoxyCodeLine{00714\ }
+\DoxyCodeLine{00715\ \textcolor{comment}{/**************************/}}
+\DoxyCodeLine{00716\ \textcolor{comment}{/*\ DYNAMIC\ ENGINE\ SUPPORT\ */}}
+\DoxyCodeLine{00717\ \textcolor{comment}{/**************************/}}
+\DoxyCodeLine{00718\ }
+\DoxyCodeLine{00719\ \textcolor{comment}{/*\ Binary/behaviour\ compatibility\ levels\ */}}
+\DoxyCodeLine{00720\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_DYNAMIC\_VERSION\ \ \ \ \ \ \ \ \ \ \ \ (unsigned\ long)0x00030000}}
+\DoxyCodeLine{00721\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00722\ \textcolor{comment}{\ *\ Binary\ versions\ older\ than\ this\ are\ too\ old\ for\ us\ (whether\ we're\ a\ loader}}
+\DoxyCodeLine{00723\ \textcolor{comment}{\ *\ or\ a\ loadee)}}
+\DoxyCodeLine{00724\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00725\ \textcolor{preprocessor}{\#\ \ define\ OSSL\_DYNAMIC\_OLDEST\ \ \ \ \ \ \ \ \ \ \ \ \ (unsigned\ long)0x00030000}}
+\DoxyCodeLine{00726\ }
+\DoxyCodeLine{00727\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00728\ \textcolor{comment}{\ *\ When\ compiling\ an\ ENGINE\ entirely\ as\ an\ external\ shared\ library,\ loadable}}
+\DoxyCodeLine{00729\ \textcolor{comment}{\ *\ by\ the\ "{}dynamic"{}\ ENGINE,\ these\ types\ are\ needed.\ The\ 'dynamic\_fns'}}
+\DoxyCodeLine{00730\ \textcolor{comment}{\ *\ structure\ type\ provides\ the\ calling\ application's\ (or\ library's)\ error}}
+\DoxyCodeLine{00731\ \textcolor{comment}{\ *\ functionality\ and\ memory\ management\ function\ pointers\ to\ the\ loaded}}
+\DoxyCodeLine{00732\ \textcolor{comment}{\ *\ library.\ These\ should\ be\ used/set\ in\ the\ loaded\ library\ code\ so\ that\ the}}
+\DoxyCodeLine{00733\ \textcolor{comment}{\ *\ loading\ application's\ 'state'\ will\ be\ used/changed\ in\ all\ operations.\ The}}
+\DoxyCodeLine{00734\ \textcolor{comment}{\ *\ 'static\_state'\ pointer\ allows\ the\ loaded\ library\ to\ know\ if\ it\ shares\ the}}
+\DoxyCodeLine{00735\ \textcolor{comment}{\ *\ same\ static\ data\ as\ the\ calling\ application\ (or\ library),\ and\ thus\ whether}}
+\DoxyCodeLine{00736\ \textcolor{comment}{\ *\ these\ callbacks\ need\ to\ be\ set\ or\ not.}}
+\DoxyCodeLine{00737\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00738\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}\ *(*dyn\_MEM\_malloc\_fn)\ (size\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ int);}
+\DoxyCodeLine{00739\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}\ *(*dyn\_MEM\_realloc\_fn)\ (\textcolor{keywordtype}{void}\ *,\ size\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ int);}
+\DoxyCodeLine{00740\ \textcolor{keyword}{typedef}\ void\ (*dyn\_MEM\_free\_fn)\ (\textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ int);}
+\DoxyCodeLine{00741\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structst__dynamic___m_e_m__fns}{st\_dynamic\_MEM\_fns}}\ \{}
+\DoxyCodeLine{00742\ \ \ \ \ dyn\_MEM\_malloc\_fn\ malloc\_fn;}
+\DoxyCodeLine{00743\ \ \ \ \ dyn\_MEM\_realloc\_fn\ realloc\_fn;}
+\DoxyCodeLine{00744\ \ \ \ \ dyn\_MEM\_free\_fn\ free\_fn;}
+\DoxyCodeLine{00745\ \}\ dynamic\_MEM\_fns;}
+\DoxyCodeLine{00746\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00747\ \textcolor{comment}{\ *\ FIXME:\ Perhaps\ the\ memory\ and\ locking\ code\ (crypto.h)\ should\ declare\ and}}
+\DoxyCodeLine{00748\ \textcolor{comment}{\ *\ use\ these\ types\ so\ we\ (and\ any\ other\ dependent\ code)\ can\ simplify\ a\ bit??}}
+\DoxyCodeLine{00749\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00750\ \textcolor{comment}{/*\ The\ top-\/level\ structure\ */}}
+\DoxyCodeLine{00751\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structst__dynamic__fns}{st\_dynamic\_fns}}\ \{}
+\DoxyCodeLine{00752\ \ \ \ \ \textcolor{keywordtype}{void}\ *static\_state;}
+\DoxyCodeLine{00753\ \ \ \ \ dynamic\_MEM\_fns\ mem\_fns;}
+\DoxyCodeLine{00754\ \}\ dynamic\_fns;}
+\DoxyCodeLine{00755\ }
+\DoxyCodeLine{00756\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00757\ \textcolor{comment}{\ *\ The\ version\ checking\ function\ should\ be\ of\ this\ prototype.\ NB:\ The}}
+\DoxyCodeLine{00758\ \textcolor{comment}{\ *\ ossl\_version\ value\ passed\ in\ is\ the\ OSSL\_DYNAMIC\_VERSION\ of\ the\ loading}}
+\DoxyCodeLine{00759\ \textcolor{comment}{\ *\ code.\ If\ this\ function\ returns\ zero,\ it\ indicates\ a\ (potential)\ version}}
+\DoxyCodeLine{00760\ \textcolor{comment}{\ *\ incompatibility\ and\ the\ loaded\ library\ doesn't\ believe\ it\ can\ proceed.}}
+\DoxyCodeLine{00761\ \textcolor{comment}{\ *\ Otherwise,\ the\ returned\ value\ is\ the\ (latest)\ version\ supported\ by\ the}}
+\DoxyCodeLine{00762\ \textcolor{comment}{\ *\ loading\ library.\ The\ loader\ may\ still\ decide\ that\ the\ loaded\ code's}}
+\DoxyCodeLine{00763\ \textcolor{comment}{\ *\ version\ is\ unsatisfactory\ and\ could\ veto\ the\ load.\ The\ function\ is}}
+\DoxyCodeLine{00764\ \textcolor{comment}{\ *\ expected\ to\ be\ implemented\ with\ the\ symbol\ name\ "{}v\_check"{},\ and\ a\ default}}
+\DoxyCodeLine{00765\ \textcolor{comment}{\ *\ implementation\ can\ be\ fully\ instantiated\ with}}
+\DoxyCodeLine{00766\ \textcolor{comment}{\ *\ IMPLEMENT\_DYNAMIC\_CHECK\_FN().}}
+\DoxyCodeLine{00767\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00768\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ long\ (*dynamic\_v\_check\_fn)\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ ossl\_version);}
+\DoxyCodeLine{00769\ \textcolor{preprocessor}{\#\ \ define\ IMPLEMENT\_DYNAMIC\_CHECK\_FN()\ \(\backslash\)}}
+\DoxyCodeLine{00770\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_EXPORT\ unsigned\ long\ v\_check(unsigned\ long\ v);\ \(\backslash\)}}
+\DoxyCodeLine{00771\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_EXPORT\ unsigned\ long\ v\_check(unsigned\ long\ v)\ \{\ \(\backslash\)}}
+\DoxyCodeLine{00772\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ (v\ >=\ OSSL\_DYNAMIC\_OLDEST)\ return\ OSSL\_DYNAMIC\_VERSION;\ \(\backslash\)}}
+\DoxyCodeLine{00773\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ 0;\ \}}}
+\DoxyCodeLine{00774\ }
+\DoxyCodeLine{00775\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00776\ \textcolor{comment}{\ *\ This\ function\ is\ passed\ the\ ENGINE\ structure\ to\ initialise\ with\ its\ own}}
+\DoxyCodeLine{00777\ \textcolor{comment}{\ *\ function\ and\ command\ settings.\ It\ should\ not\ adjust\ the\ structural\ or}}
+\DoxyCodeLine{00778\ \textcolor{comment}{\ *\ functional\ reference\ counts.\ If\ this\ function\ returns\ zero,\ (a)\ the\ load}}
+\DoxyCodeLine{00779\ \textcolor{comment}{\ *\ will\ be\ aborted,\ (b)\ the\ previous\ ENGINE\ state\ will\ be\ memcpy'd\ back\ onto}}
+\DoxyCodeLine{00780\ \textcolor{comment}{\ *\ the\ structure,\ and\ (c)\ the\ shared\ library\ will\ be\ unloaded.\ So}}
+\DoxyCodeLine{00781\ \textcolor{comment}{\ *\ implementations\ should\ do\ their\ own\ internal\ cleanup\ in\ failure}}
+\DoxyCodeLine{00782\ \textcolor{comment}{\ *\ circumstances\ otherwise\ they\ could\ leak.\ The\ 'id'\ parameter,\ if\ non-\/NULL,}}
+\DoxyCodeLine{00783\ \textcolor{comment}{\ *\ represents\ the\ ENGINE\ id\ that\ the\ loader\ is\ looking\ for.\ If\ this\ is\ NULL,}}
+\DoxyCodeLine{00784\ \textcolor{comment}{\ *\ the\ shared\ library\ can\ choose\ to\ return\ failure\ or\ to\ initialise\ a}}
+\DoxyCodeLine{00785\ \textcolor{comment}{\ *\ 'default'\ ENGINE.\ If\ non-\/NULL,\ the\ shared\ library\ must\ initialise\ only\ an}}
+\DoxyCodeLine{00786\ \textcolor{comment}{\ *\ ENGINE\ matching\ the\ passed\ 'id'.\ The\ function\ is\ expected\ to\ be}}
+\DoxyCodeLine{00787\ \textcolor{comment}{\ *\ implemented\ with\ the\ symbol\ name\ "{}bind\_engine"{}.\ A\ standard\ implementation}}
+\DoxyCodeLine{00788\ \textcolor{comment}{\ *\ can\ be\ instantiated\ with\ IMPLEMENT\_DYNAMIC\_BIND\_FN(fn)\ where\ the\ parameter}}
+\DoxyCodeLine{00789\ \textcolor{comment}{\ *\ 'fn'\ is\ a\ callback\ function\ that\ populates\ the\ ENGINE\ structure\ and}}
+\DoxyCodeLine{00790\ \textcolor{comment}{\ *\ returns\ an\ int\ value\ (zero\ for\ failure).\ 'fn'\ should\ have\ prototype;}}
+\DoxyCodeLine{00791\ \textcolor{comment}{\ *\ [static]\ int\ fn(ENGINE\ *e,\ const\ char\ *id);}}
+\DoxyCodeLine{00792\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00793\ \textcolor{keyword}{typedef}\ int\ (*dynamic\_bind\_engine)\ (ENGINE\ *e,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *id,}
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ dynamic\_fns\ *fns);}
+\DoxyCodeLine{00795\ \textcolor{preprocessor}{\#\ \ define\ IMPLEMENT\_DYNAMIC\_BIND\_FN(fn)\ \(\backslash\)}}
+\DoxyCodeLine{00796\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_EXPORT\ \(\backslash\)}}
+\DoxyCodeLine{00797\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ int\ bind\_engine(ENGINE\ *e,\ const\ char\ *id,\ const\ dynamic\_fns\ *fns);\ \(\backslash\)}}
+\DoxyCodeLine{00798\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ OPENSSL\_EXPORT\ \(\backslash\)}}
+\DoxyCodeLine{00799\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ int\ bind\_engine(ENGINE\ *e,\ const\ char\ *id,\ const\ dynamic\_fns\ *fns)\ \{\ \(\backslash\)}}
+\DoxyCodeLine{00800\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ if\ (ENGINE\_get\_static\_state()\ ==\ fns-\/>static\_state)\ goto\ skip\_cbs;\ \(\backslash\)}}
+\DoxyCodeLine{00801\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ CRYPTO\_set\_mem\_functions(fns-\/>mem\_fns.malloc\_fn,\ \(\backslash\)}}
+\DoxyCodeLine{00802\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fns-\/>mem\_fns.realloc\_fn,\ \(\backslash\)}}
+\DoxyCodeLine{00803\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fns-\/>mem\_fns.free\_fn);\ \(\backslash\)}}
+\DoxyCodeLine{00804\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ OPENSSL\_init\_crypto(OPENSSL\_INIT\_NO\_ATEXIT,\ NULL);\ \(\backslash\)}}
+\DoxyCodeLine{00805\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ skip\_cbs:\ \(\backslash\)}}
+\DoxyCodeLine{00806\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ if\ (!fn(e,\ id))\ return\ 0;\ \(\backslash\)}}
+\DoxyCodeLine{00807\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ return\ 1;\ \}}}
+\DoxyCodeLine{00808\ }
+\DoxyCodeLine{00809\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00810\ \textcolor{comment}{\ *\ If\ the\ loading\ application\ (or\ library)\ and\ the\ loaded\ ENGINE\ library}}
+\DoxyCodeLine{00811\ \textcolor{comment}{\ *\ share\ the\ same\ static\ data\ (eg.\ they're\ both\ dynamically\ linked\ to\ the}}
+\DoxyCodeLine{00812\ \textcolor{comment}{\ *\ same\ libcrypto.so)\ we\ need\ a\ way\ to\ avoid\ trying\ to\ set\ system\ callbacks\ -\/}}
+\DoxyCodeLine{00813\ \textcolor{comment}{\ *\ this\ would\ fail,\ and\ for\ the\ same\ reason\ that\ it's\ unnecessary\ to\ try.\ If}}
+\DoxyCodeLine{00814\ \textcolor{comment}{\ *\ the\ loaded\ ENGINE\ has\ (or\ gets\ from\ through\ the\ loader)\ its\ own\ copy\ of}}
+\DoxyCodeLine{00815\ \textcolor{comment}{\ *\ the\ libcrypto\ static\ data,\ we\ will\ need\ to\ set\ the\ callbacks.\ The\ easiest}}
+\DoxyCodeLine{00816\ \textcolor{comment}{\ *\ way\ to\ detect\ this\ is\ to\ have\ a\ function\ that\ returns\ a\ pointer\ to\ some}}
+\DoxyCodeLine{00817\ \textcolor{comment}{\ *\ static\ data\ and\ let\ the\ loading\ application\ and\ loaded\ ENGINE\ compare}}
+\DoxyCodeLine{00818\ \textcolor{comment}{\ *\ their\ respective\ values.}}
+\DoxyCodeLine{00819\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00820\ \textcolor{keywordtype}{void}\ *ENGINE\_get\_static\_state(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00821\ }
+\DoxyCodeLine{00822\ \textcolor{preprocessor}{\#\ \ if\ defined(\_\_OpenBSD\_\_)\ ||\ defined(\_\_FreeBSD\_\_)\ ||\ defined(\_\_DragonFly\_\_)}}
+\DoxyCodeLine{00823\ \textcolor{preprocessor}{\#\ \ \ ifndef\ OPENSSL\_NO\_DEPRECATED\_1\_1\_0}}
+\DoxyCodeLine{00824\ OSSL\_DEPRECATEDIN\_1\_1\_0\ \textcolor{keywordtype}{void}\ ENGINE\_setup\_bsd\_cryptodev(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00825\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00826\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00827\ }
+\DoxyCodeLine{00828\ }
+\DoxyCodeLine{00829\ \textcolor{preprocessor}{\#\ \ ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00830\ \}}
+\DoxyCodeLine{00831\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00832\ \textcolor{preprocessor}{\#\ endif\ }\textcolor{comment}{/*\ OPENSSL\_NO\_ENGINE\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00833\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{/*\ OPENSSL\_ENGINE\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

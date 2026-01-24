@@ -1,0 +1,27 @@
+var class_d_v_p_s_displayed_area =
+[
+    [ "DVPSDisplayedArea", "class_d_v_p_s_displayed_area.html#a654ca39a4b00914edf8d31eda6191dc0", null ],
+    [ "DVPSDisplayedArea", "class_d_v_p_s_displayed_area.html#af181241b2514a02d4641fc21413410ba", null ],
+    [ "~DVPSDisplayedArea", "class_d_v_p_s_displayed_area.html#af07c18cd63444d5e6eb335e5a13263dd", null ],
+    [ "addImageReference", "class_d_v_p_s_displayed_area.html#a59cd6b4e3b01b10eb7bc2aa146d5a71e", null ],
+    [ "canUseTrueSize", "class_d_v_p_s_displayed_area.html#a24d5bd4e4d669f51c11b193dcc2a6ed6", null ],
+    [ "clearImageReferences", "class_d_v_p_s_displayed_area.html#a6e5c096053fed5d39151e0f339bcb298", null ],
+    [ "clone", "class_d_v_p_s_displayed_area.html#a5c8646c6e42c43f60cf1d92537ce9ed3", null ],
+    [ "getDisplayedArea", "class_d_v_p_s_displayed_area.html#ab107eaf35e6ece8b8ffe0b309f2fa0a0", null ],
+    [ "getPresentationPixelAspectRatio", "class_d_v_p_s_displayed_area.html#a6078b6e3ca3fcfa0c825904b8fad7779", null ],
+    [ "getPresentationPixelMagnificationRatio", "class_d_v_p_s_displayed_area.html#a83b4a37a577b0b6784b080bad2ed7ff5", null ],
+    [ "getPresentationPixelSpacing", "class_d_v_p_s_displayed_area.html#a288410a22bbeb69c2c6b1b2b706b393c", null ],
+    [ "getPresentationSizeMode", "class_d_v_p_s_displayed_area.html#acbc52137c4d1de3642cd2df8f7ddbada", null ],
+    [ "imageReferencesEmpty", "class_d_v_p_s_displayed_area.html#a6d0599baa5ef059f1579f59fd86ffe70", null ],
+    [ "isApplicable", "class_d_v_p_s_displayed_area.html#a6679fecce21b55c71d32c04625ad59b5", null ],
+    [ "matchesApplicability", "class_d_v_p_s_displayed_area.html#ac400a93c0760ed8694fdbf3a49879c13", null ],
+    [ "read", "class_d_v_p_s_displayed_area.html#a73c66b0c92e5df4244345356604c97cb", null ],
+    [ "removeImageReference", "class_d_v_p_s_displayed_area.html#af2f3145f9d9959377836976ccf938fe5", null ],
+    [ "rotateAndFlip", "class_d_v_p_s_displayed_area.html#affd25e7c1de1fd2ebc5fdd9ff44ae701", null ],
+    [ "setDisplayedArea", "class_d_v_p_s_displayed_area.html#a4eee1d104828e9f578c2bc3bf92cd626", null ],
+    [ "setDisplayedAreaPixelAspectRatio", "class_d_v_p_s_displayed_area.html#a5624055c8a5bc4df0fb1d9eeb2d7deb4", null ],
+    [ "setDisplayedAreaPixelAspectRatio", "class_d_v_p_s_displayed_area.html#a5e51a65274d7ce0aa4ab77bf79a9b997", null ],
+    [ "setDisplayedAreaPixelSpacing", "class_d_v_p_s_displayed_area.html#afbd59ba8ecd54e9b3be3108755b521ea", null ],
+    [ "setDisplayedAreaPixelSpacing", "class_d_v_p_s_displayed_area.html#a86ff36f19e59e52c83bcd06250d9614a", null ],
+    [ "write", "class_d_v_p_s_displayed_area.html#a5c2b4d8930bf04bbd72c1e0be8ff36cf", null ]
+];

@@ -1,0 +1,497 @@
+\chapter{Examination Workflow Design }
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design}{}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design}\index{Examination Workflow Design@{Examination Workflow Design}}
+\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md521}%
+\Hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md521}%
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md522}{}\doxysection{\texorpdfstring{Overview}{Overview}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md522}
+This document outlines the complete examination workflow from worklist selection to image acquisition, including LOCAL vs RIS source handling, database operations, and UI components.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md523}{}\doxysection{\texorpdfstring{Workflow Diagram}{Workflow Diagram}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md523}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{User\ Double-\/Clicks\ Worklist\ Entry}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{WorkListPageDelegate::onWorklistItemDoubleClicked()}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{Retrieve\ WorklistEntry\ from\ Repository}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{Set\ ExaminationContext\ in\ ContextManager}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{Check\ WorklistEntry.Source}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{┌──────────────────────┴──────────────────────┐}
+\DoxyCodeLine{│\ LOCAL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ RIS\ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ (User-\/created\ in\ worklist)\ \ \ \ │\ (From\ PACS)│}
+\DoxyCodeLine{├───────────────────────────────┼────────────┤}
+\DoxyCodeLine{│\ 1.\ Open\ ViewSelectionDialog\ \ \ │\ Skip\ this\ \ │}
+\DoxyCodeLine{│\ 2.\ User\ selects\ Procedure\ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ 3.\ User\ selects\ Views\ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ 4.\ Update\ ExaminationContext\ \ │\ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└──────────────────────┬──────────────────────┘}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{Create/Update\ Study\ in\ Database}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ studies\ table}
+\DoxyCodeLine{\ \ \ \ │\ \ -\/\ study\_instance\_uid\ (DICOM\ UID)}
+\DoxyCodeLine{\ \ \ \ │\ \ -\/\ patient\_id\ (FK\ →\ patients)}
+\DoxyCodeLine{\ \ \ \ │\ \ -\/\ accession\_number\ (from\ worklist)}
+\DoxyCodeLine{\ \ \ \ │\ \ -\/\ study\_date,\ study\_time}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ └─\ Update\ MWL\ Entry\ Status}
+\DoxyCodeLine{\ \ \ \ \ \ \ mwl\_entries.status\ =\ IN\_PROGRESS}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{Create\ Series\ for\ Each\ Selected\ View}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ └─\ series\ table\ (one\ per\ view)}
+\DoxyCodeLine{\ \ \ \ \ \ \ -\/\ series\_instance\_uid\ (DICOM\ UID)}
+\DoxyCodeLine{\ \ \ \ \ \ \ -\/\ study\_id\ (FK\ →\ studies)}
+\DoxyCodeLine{\ \ \ \ \ \ \ -\/\ modality\ =\ 'DX'}
+\DoxyCodeLine{\ \ \ \ \ \ \ -\/\ series\_description\ =\ view\ name}
+\DoxyCodeLine{\ \ \ \ \ \ \ -\/\ body\_part\_examined}
+\DoxyCodeLine{\ \ \ \ \ \ \ -\/\ view\_position}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{Open\ ExaminationPage}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ Left\ Panel\ (Main\ Display\ Area)}
+\DoxyCodeLine{\ \ \ \ │\ \ ├─\ View\ Thumbnails\ (ThumbnailImageListWidget)}
+\DoxyCodeLine{\ \ \ \ │\ \ │\ \ -\/\ VTK-\/based\ icon\ rendering}
+\DoxyCodeLine{\ \ \ \ │\ \ │\ \ -\/\ Shows\ each\ series/view}
+\DoxyCodeLine{\ \ \ \ │\ \ │\ \ -\/\ Clickable\ to\ select\ active\ series}
+\DoxyCodeLine{\ \ \ \ │\ \ │}
+\DoxyCodeLine{\ \ \ \ │\ \ └─\ Main\ Image\ Viewer\ (QVTKOpenGLNativeWidget)}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Large\ VTK\ viewer\ for\ current\ image}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Window/level\ controls}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Zoom/pan\ controls}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ └─\ Right\ Panel\ (Control\ Area)}
+\DoxyCodeLine{\ \ \ \ \ \ \ ├─\ Patient\ Demographics\ (ExamTitleWidget)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Patient\ Name,\ ID,\ Gender,\ Age}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Accession\ Number}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ├─\ Study\ Control\ (StudyControlWidget)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ New\ Study,\ Edit\ Study\ buttons}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Study\ list\ table}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ├─\ Technical\ Parameters\ (ExposureDetailWidget)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ kVp,\ mA,\ mAs,\ TIME,\ DEN}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Load\ from\ TechniqueParameter}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Editable\ with\ up/down\ buttons}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ├─\ Body\ Size\ Selection\ (BodySizeWidget)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Child,\ Adult\ icons}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Standing,\ hand\ positions}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ├─\ Exposure\ Controls\ (ExposureControlWidget)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ AEC,\ Manual,\ Time\ mode}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ├─\ Generator\ Control\ (GeneratorControlWidget)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Focal\ spot\ selection}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Tube\ selection}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ├─\ Detector\ Control\ (DetectorControlWidget)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Detector\ selection}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Position\ control}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ├─\ Message\ Display}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Current\ view\ name}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ -\/\ Device\ status\ messages}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ └─\ Action\ Buttons}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ -\/\ Ready,\ Reset,\ 0\%}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ -\/\ Print,\ Close}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{Image\ Acquisition\ Loop}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ For\ each\ selected\ view/series:}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ 1.\ Load\ Technique\ Parameters}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Retrieve\ from\ technique\_parameters\ table}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Match:\ body\_part\ +\ size\ +\ projection}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Display\ in\ ExposureDetailWidget}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ 2.\ Configure\ Equipment}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Set\ generator\ parameters\ (kVp,\ mA)}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Position\ detector}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Set\ collimator}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ 3.\ User\ Presses\ "{}Ready"{}\ →\ Expose\ Button}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Send\ exposure\ command\ to\ generator}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Trigger\ image\ acquisition}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ 4.\ Image\ Received\ from\ Detector}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Raw\ image\ data}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Apply\ calibration}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Display\ in\ VTK\ viewer}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ 5.\ Create\ Image\ Record\ in\ Database}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ images\ table}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ sop\_commons\ table}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ acquisitions\ table}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Link\ to\ series\_id}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ 6.\ Add\ Thumbnail\ to\ List}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Update\ ThumbnailImageListWidget}
+\DoxyCodeLine{\ \ \ \ │\ \ \ \ \ -\/\ Show\ acquired\ image\ icon}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ └─\ 7.\ Move\ to\ Next\ View\ (if\ any)}
+\DoxyCodeLine{\ \ \ \ \ \ \ -\/\ Repeat\ loop}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{Examination\ Complete}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ Update\ MWL\ Entry\ Status}
+\DoxyCodeLine{\ \ \ \ │\ \ mwl\_entries.status\ =\ COMPLETED}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├─\ Create\ MWL\ Task\ Mapping}
+\DoxyCodeLine{\ \ \ \ │\ \ mwl\_task\_mapping\ links\ worklist\ →\ study\ →\ series\ →\ images}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ └─\ Optional:\ Send\ to\ PACS}
+\DoxyCodeLine{\ \ \ \ \ \ \ -\/\ C-\/STORE\ to\ Archive\ PACS}
+\DoxyCodeLine{\ \ \ \ \ \ \ -\/\ MPPS\ status\ update}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md524}{}\doxysection{\texorpdfstring{Database Operations}{Database Operations}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md524}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md525}{}\doxysubsection{\texorpdfstring{1. Study Creation}{1. Study Creation}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md525}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{INSERT}\ \textcolor{keyword}{INTO}\ studies\ (}
+\DoxyCodeLine{\ \ \ \ patient\_id,}
+\DoxyCodeLine{\ \ \ \ study\_instance\_uid,}
+\DoxyCodeLine{\ \ \ \ study\_id,}
+\DoxyCodeLine{\ \ \ \ admission\_id,}
+\DoxyCodeLine{\ \ \ \ accession\_number,}
+\DoxyCodeLine{\ \ \ \ referring\_physician\_name,}
+\DoxyCodeLine{\ \ \ \ study\_date,}
+\DoxyCodeLine{\ \ \ \ study\_time,}
+\DoxyCodeLine{\ \ \ \ study\_description}
+\DoxyCodeLine{)\ \textcolor{keyword}{VALUES}\ (}
+\DoxyCodeLine{\ \ \ \ <patient\_id\ \textcolor{keyword}{from}\ worklist>,}
+\DoxyCodeLine{\ \ \ \ <generated\ DICOM\ UID>,}
+\DoxyCodeLine{\ \ \ \ <auto-\/increment\ \textcolor{keyword}{or}\ user-\/defined>,}
+\DoxyCodeLine{\ \ \ \ <\textcolor{keyword}{from}\ worklist>,}
+\DoxyCodeLine{\ \ \ \ <\textcolor{keyword}{from}\ worklist>,}
+\DoxyCodeLine{\ \ \ \ <\textcolor{keyword}{from}\ worklist>,}
+\DoxyCodeLine{\ \ \ \ CURDATE(),}
+\DoxyCodeLine{\ \ \ \ CURTIME(),}
+\DoxyCodeLine{\ \ \ \ <\textcolor{keyword}{procedure}\ name>}
+\DoxyCodeLine{);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md526}{}\doxysubsection{\texorpdfstring{2. Series Creation (One Per View)}{2. Series Creation (One Per View)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md526}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{INSERT}\ \textcolor{keyword}{INTO}\ series\ (}
+\DoxyCodeLine{\ \ \ \ study\_id,}
+\DoxyCodeLine{\ \ \ \ series\_instance\_uid,}
+\DoxyCodeLine{\ \ \ \ series\_number,}
+\DoxyCodeLine{\ \ \ \ modality,}
+\DoxyCodeLine{\ \ \ \ series\_description,}
+\DoxyCodeLine{\ \ \ \ body\_part\_examined,}
+\DoxyCodeLine{\ \ \ \ patient\_position,}
+\DoxyCodeLine{\ \ \ \ view\_position,}
+\DoxyCodeLine{\ \ \ \ image\_laterality}
+\DoxyCodeLine{)\ \textcolor{keyword}{VALUES}\ (}
+\DoxyCodeLine{\ \ \ \ <study\_id>,}
+\DoxyCodeLine{\ \ \ \ <generated\ DICOM\ UID>,}
+\DoxyCodeLine{\ \ \ \ <sequence\ \textcolor{stringliteral}{1},\ \textcolor{stringliteral}{2},\ \textcolor{stringliteral}{3}...>,}
+\DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{'DX'},}
+\DoxyCodeLine{\ \ \ \ <view\ name>,}
+\DoxyCodeLine{\ \ \ \ <body\ part\ \textcolor{keyword}{from}\ view>,}
+\DoxyCodeLine{\ \ \ \ <patient\ position\ \textcolor{keyword}{from}\ view>,}
+\DoxyCodeLine{\ \ \ \ <view\ position:\ AP,\ LAT,\ etc.>,}
+\DoxyCodeLine{\ \ \ \ <laterality:\ R,\ L,\ B>}
+\DoxyCodeLine{);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md527}{}\doxysubsection{\texorpdfstring{3. Image Creation (After Acquisition)}{3. Image Creation (After Acquisition)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md527}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{INSERT}\ \textcolor{keyword}{INTO}\ images\ (}
+\DoxyCodeLine{\ \ \ \ study\_id,}
+\DoxyCodeLine{\ \ \ \ series\_id,}
+\DoxyCodeLine{\ \ \ \ instance\_number,}
+\DoxyCodeLine{\ \ \ \ content\_date,}
+\DoxyCodeLine{\ \ \ \ content\_time,}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{rows},}
+\DoxyCodeLine{\ \ \ \ columns,}
+\DoxyCodeLine{\ \ \ \ bits\_allocated,}
+\DoxyCodeLine{\ \ \ \ bits\_stored,}
+\DoxyCodeLine{\ \ \ \ kvp,}
+\DoxyCodeLine{\ \ \ \ rescale\_intercept,}
+\DoxyCodeLine{\ \ \ \ rescale\_slope,}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{-\/-\/\ ...\ more\ DICOM\ attributes}}
+\DoxyCodeLine{)\ \textcolor{keyword}{VALUES}\ (...);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md528}{}\doxysubsection{\texorpdfstring{4. Worklist Status Update}{4. Worklist Status Update}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md528}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{-\/-\/\ When\ examination\ starts}}
+\DoxyCodeLine{\textcolor{keyword}{UPDATE}\ mwl\_entries}
+\DoxyCodeLine{\textcolor{keyword}{SET}\ status\ =\ \textcolor{stringliteral}{'IN\_PROGRESS'},}
+\DoxyCodeLine{\ \ \ \ study\_instance\_uid\ =\ <created\_study\_uid>}
+\DoxyCodeLine{\textcolor{keyword}{WHERE}\ id\ =\ <worklist\_entry\_id>;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{-\/-\/\ When\ examination\ completes}}
+\DoxyCodeLine{\textcolor{keyword}{UPDATE}\ mwl\_entries}
+\DoxyCodeLine{\textcolor{keyword}{SET}\ status\ =\ \textcolor{stringliteral}{'COMPLETED'}}
+\DoxyCodeLine{\textcolor{keyword}{WHERE}\ id\ =\ <worklist\_entry\_id>;}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md529}{}\doxysubsection{\texorpdfstring{5. MWL Task Mapping}{5. MWL Task Mapping}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md529}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{INSERT}\ \textcolor{keyword}{INTO}\ mwl\_task\_mapping\ (}
+\DoxyCodeLine{\ \ \ \ mwl\_entry\_id,}
+\DoxyCodeLine{\ \ \ \ procedure\_id,}
+\DoxyCodeLine{\ \ \ \ study\_id,}
+\DoxyCodeLine{\ \ \ \ series\_id,}
+\DoxyCodeLine{\ \ \ \ images\_id,}
+\DoxyCodeLine{\ \ \ \ sop\_common\_id,}
+\DoxyCodeLine{\ \ \ \ acquisition\_id}
+\DoxyCodeLine{)\ \textcolor{keyword}{VALUES}\ (}
+\DoxyCodeLine{\ \ \ \ <worklist\_entry\_id>,}
+\DoxyCodeLine{\ \ \ \ <procedure\_id>,}
+\DoxyCodeLine{\ \ \ \ <study\_id>,}
+\DoxyCodeLine{\ \ \ \ <series\_id>,}
+\DoxyCodeLine{\ \ \ \ <image\_id>,}
+\DoxyCodeLine{\ \ \ \ <sop\_common\_id>,}
+\DoxyCodeLine{\ \ \ \ <acquisition\_id>}
+\DoxyCodeLine{);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md530}{}\doxysection{\texorpdfstring{Component Architecture}{Component Architecture}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md530}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md531}{}\doxysubsection{\texorpdfstring{Exam\+Page Widget Composition}{Exam\+Page Widget Composition}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md531}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ExamPage\ (QWidget)}
+\DoxyCodeLine{├─\ Main\ Layout\ (QHBoxLayout)}
+\DoxyCodeLine{│\ \ ├─\ Left\ Panel\ (QWidget)}
+\DoxyCodeLine{│\ \ │\ \ ├─\ Thumbnail\ Area\ (QWidget)}
+\DoxyCodeLine{│\ \ │\ \ │\ \ └─\ ThumbnailImageListWidget}
+\DoxyCodeLine{│\ \ │\ \ │\ \ \ \ \ -\/\ VTK-\/based\ thumbnail\ rendering}
+\DoxyCodeLine{│\ \ │\ \ │\ \ \ \ \ -\/\ Horizontal\ or\ vertical\ list}
+\DoxyCodeLine{│\ \ │\ \ │\ \ \ \ \ -\/\ Click\ to\ select\ active\ view}
+\DoxyCodeLine{│\ \ │\ \ │}
+\DoxyCodeLine{│\ \ │\ \ └─\ Main\ Viewer\ Area\ (QWidget)}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ └─\ QVTKOpenGLNativeWidget}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ -\/\ vtkGenericOpenGLRenderWindow}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ -\/\ vtkRenderer}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ -\/\ vtkImageActor\ for\ DICOM\ image}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ -\/\ vtkInteractorStyleImage\ (window/level,\ zoom,\ pan)}
+\DoxyCodeLine{│\ \ │}
+\DoxyCodeLine{│\ \ └─\ Right\ Panel\ (QScrollArea)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ ExamTitleWidget\ (Patient\ demographics)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ StudyControlWidget\ (Study\ management)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ ExposureDetailWidget\ (kVp,\ mA,\ mAs,\ TIME,\ DEN)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ BodySizeWidget\ (Patient\ size\ selection)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ ExposureControlWidget\ (AEC,\ Manual,\ Time\ mode)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ GeneratorControlWidget\ (Focal\ spot,\ tube)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ DetectorControlWidget\ (Detector\ selection)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ BuckyControlWidget\ (Grid\ control)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ AecControlWidget\ (AEC\ fields)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ EndExposureControlWidget\ (Termination\ mode)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ FocalSpotControlWidget\ (Focal\ spot\ size)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ ExposureApplicationControlWidget\ (Ready,\ Expose\ buttons)}
+\DoxyCodeLine{│\ \ \ \ \ ├─\ Message\ Display\ (QLabel)}
+\DoxyCodeLine{│\ \ \ \ \ └─\ Action\ Buttons\ (Print,\ Close)}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md532}{}\doxysubsection{\texorpdfstring{Exam\+Page\+Delegate Responsibilities}{Exam\+Page\+Delegate Responsibilities}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md532}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ExamPageDelegate\ :\ \textcolor{keyword}{public}\ QObject,\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_delegate}{IDelegate}},\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_page_action}{IPageAction}}\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{\ \ \ \ Q\_INTERFACES(IDelegate\ IPageAction)}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ ExamPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ExamPage*\ ui,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<WorklistRepository>\ worklistRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DicomRepository>\ dicomRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<ScanProtocolRepository>\ scanProtocolRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DeviceRepository>\ deviceRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::weak\_ptr<IContextManager>\ contextManager,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QObject*\ parent\ =\ \textcolor{keyword}{nullptr}}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ IDelegate}}
+\DoxyCodeLine{\ \ \ \ QString\ \doxymbox{\hyperlink{class_i_delegate_a3311f37c49184175fb981daba0b821d1}{name}}()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}ExamPageDelegate"{}};\ \}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_delegate_a5267844d782bc5a29bdb7a2f5c629dbd}{attachDelegates}}(\textcolor{keyword}{const}\ QVector<QObject*>\&\ delegates)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ IPageAction}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a503b226f082d06649b2a6d50f640bfd6}{apply}}()\ \textcolor{keyword}{override};\ \ \ \textcolor{comment}{//\ Save\ intermediate\ state}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a3bba6aded34b5f77cdc4543ad1a0054b}{accept}}()\ \textcolor{keyword}{override};\ \ \textcolor{comment}{//\ Finalize\ examination}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a1952f133192230834c11116c7d6ac7c9}{reject}}()\ \textcolor{keyword}{override};\ \ \textcolor{comment}{//\ Cancel\ examination}}
+\DoxyCodeLine{}
+\DoxyCodeLine{signals:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ examinationCompleted(\textcolor{keywordtype}{int}\ studyId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ closeExamination();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}\ slots:}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Initialization}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onPageLoaded();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ loadExaminationContext();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ loadPatientDemographics();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ loadTechniqueParameters();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ View/Series\ management}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onViewSelected(\textcolor{keywordtype}{int}\ seriesId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onNextView();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onPreviousView();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Image\ acquisition}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onReadyButtonClicked();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onExposeButtonClicked();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onImageReceived(\textcolor{keyword}{const}\ QByteArray\&\ imageData);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onAcquisitionComplete();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Technical\ parameter\ changes}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onKvpChanged(\textcolor{keywordtype}{int}\ kvp);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onMaChanged(\textcolor{keywordtype}{int}\ ma);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onMasChanged(\textcolor{keywordtype}{int}\ mas);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onTimeChanged(\textcolor{keywordtype}{int}\ time);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Study/Series\ operations}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onNewStudyClicked();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onEditStudyClicked();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onNewViewClicked();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Database\ operations}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ createStudy();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ createSeries(\textcolor{keyword}{const}\ Etrek::ScanProtocol::Data::Entity::View\&\ view);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ createImage(\textcolor{keyword}{const}\ QByteArray\&\ imageData);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ updateWorklistStatus(ProcedureStepStatus\ status);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ VTK\ operations}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ initializeVtkViewer();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ displayImage(\textcolor{keyword}{const}\ QByteArray\&\ imageData);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ updateThumbnails();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Equipment\ control}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ configureGenerator();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ configureDetector();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setTechniqueParameters();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ ExamPage*\ ui;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<WorklistRepository>\ m\_worklistRepo;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DicomRepository>\ m\_dicomRepo;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<ScanProtocolRepository>\ m\_scanProtocolRepo;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DeviceRepository>\ m\_deviceRepo;}
+\DoxyCodeLine{\ \ \ \ std::weak\_ptr<IContextManager>\ m\_contextManager;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Current\ examination\ state}}
+\DoxyCodeLine{\ \ \ \ WorklistEntry\ m\_worklistEntry;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ m\_studyId\ =\ -\/1;}
+\DoxyCodeLine{\ \ \ \ QVector<int>\ m\_seriesIds;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ m\_currentSeriesIndex\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ QVector<Etrek::ScanProtocol::Data::Entity::View>\ m\_views;}
+\DoxyCodeLine{\ \ \ \ Etrek::ScanProtocol::Data::Entity::TechniqueParameter\ m\_currentTechnique;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ VTK\ members}}
+\DoxyCodeLine{\ \ \ \ vtkRenderer*\ m\_renderer\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\ \ \ \ vtkGenericOpenGLRenderWindow*\ m\_renderWindow\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\ \ \ \ vtkImageActor*\ m\_imageActor\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md533}{}\doxysubsection{\texorpdfstring{Exam\+Page\+Builder}{Exam\+Page\+Builder}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md533}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ExamPageBuilder\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_widget_delegate_builder}{IWidgetDelegateBuilder}}<ExamPage,\ ExamPageDelegate>\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ std::pair<ExamPage*,\ ExamPageDelegate*>}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_i_widget_delegate_builder_a024312e1df508463df4d0a2efc1da6c2}{build}}(\textcolor{keyword}{const}\ DelegateParameter\&\ params,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ QWidget*\ parentWidget\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ QObject*\ parentDelegate\ =\ \textcolor{keyword}{nullptr})\textcolor{keyword}{\ override\ }\{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ repositories}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ worklistRepo\ =\ std::make\_shared<WorklistRepository>(params.dbConnection);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ dicomRepo\ =\ std::make\_shared<DicomRepository>(params.dbConnection);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ scanProtocolRepo\ =\ std::make\_shared<ScanProtocolRepository>(params.dbConnection,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ deviceRepo\ =\ std::make\_shared<DeviceRepository>(params.dbConnection,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ widget}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ ExamPage(parentWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ delegate}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ ExamPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ widget,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ worklistRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ dicomRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ scanProtocolRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ deviceRepo,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ params.contextManager,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ parentDelegate}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{\ widget,\ delegate\ \};}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md534}{}\doxysection{\texorpdfstring{Implementation Steps}{Implementation Steps}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md534}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md535}{}\doxysubsection{\texorpdfstring{Phase 1:\+ Workflow Routing (LOCAL vs RIS)}{Phase 1:\+ Workflow Routing (LOCAL vs RIS)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md535}
+
+\begin{DoxyEnumerate}
+\item Update {\ttfamily Work\+List\+Page\+Delegate::\+on\+Worklist\+Item\+Double\+Clicked()}
+\begin{DoxyItemize}
+\item Check {\ttfamily Worklist\+Entry.\+Source}
+\item If LOCAL:\+ Open \doxylink{class_view_selection_dialog}{View\+Selection\+Dialog}
+\item If RIS:\+ Skip directly to Examination\+Page
+\end{DoxyItemize}
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md536}{}\doxysubsection{\texorpdfstring{Phase 2:\+ Exam\+Page\+Delegate Creation}{Phase 2:\+ Exam\+Page\+Delegate Creation}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md536}
+
+\begin{DoxyEnumerate}
+\item Create {\ttfamily \doxylink{_exam_page_delegate_8h_source}{Application/\+\+Delegate/\+\+Exam\+Page\+Delegate.\+h}}
+\item Create {\ttfamily Application/\+\+Delegate/\+\+Exam\+Page\+Delegate.\+cpp}
+\item Implement MVD pattern with repository injection
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md537}{}\doxysubsection{\texorpdfstring{Phase 3:\+ Exam\+Page\+Builder Creation}{Phase 3:\+ Exam\+Page\+Builder Creation}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md537}
+
+\begin{DoxyEnumerate}
+\item Create {\ttfamily \doxylink{_exam_page_builder_8h_source}{Application/\+\+Builder/\+\+Exam\+Page\+Builder.\+h}}
+\item Create {\ttfamily Application/\+\+Builder/\+\+Exam\+Page\+Builder.\+cpp}
+\item Follow builder pattern with \doxylink{struct_delegate_parameter}{Delegate\+Parameter}
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md538}{}\doxysubsection{\texorpdfstring{Phase 4:\+ VTK Image Viewer Integration}{Phase 4:\+ VTK Image Viewer Integration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md538}
+
+\begin{DoxyEnumerate}
+\item Add \doxylink{class_q_v_t_k_open_g_l_native_widget}{QVTKOpen\+GLNative\+Widget} to Exam\+Page.\+ui
+\item Initialize VTK pipeline in Exam\+Page\+Delegate
+\item Implement image display functions
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md539}{}\doxysubsection{\texorpdfstring{Phase 5:\+ Database Operations}{Phase 5:\+ Database Operations}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md539}
+
+\begin{DoxyEnumerate}
+\item Implement study creation
+\item Implement series creation (one per view)
+\item Implement image creation
+\item Implement worklist status updates
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md540}{}\doxysubsection{\texorpdfstring{Phase 6:\+ Context Flow}{Phase 6:\+ Context Flow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md540}
+
+\begin{DoxyEnumerate}
+\item Set Examination\+Context when worklist item selected
+\item Pass context through \doxylink{class_view_selection_dialog}{View\+Selection\+Dialog} (if LOCAL)
+\item Retrieve context in Exam\+Page\+Delegate
+\item Update context as examination progresses
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md541}{}\doxysubsection{\texorpdfstring{Phase 7:\+ UI Enhancements}{Phase 7:\+ UI Enhancements}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md541}
+
+\begin{DoxyEnumerate}
+\item Connect technical parameter widgets to delegate
+\item Implement thumbnail list updates
+\item Add device message display
+\item Wire action buttons
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md542}{}\doxysection{\texorpdfstring{Next Steps}{Next Steps}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design_autotoc_md542}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Immediate}}:\+ Update Work\+List\+Page\+Delegate to route based on source
+\item {\bfseries{Next}}:\+ Create Exam\+Page\+Delegate skeleton
+\item {\bfseries{Then}}:\+ Add VTK viewer to \doxylink{class_exam_page}{Exam\+Page}
+\item {\bfseries{Finally}}:\+ Implement database operations
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+
+
+{\bfseries{Related Documentation}}:\+
+\begin{DoxyItemize}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern}{Model-\/\+View-\/\+Delegate Pattern}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern}{Builder Pattern}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows}{Application Workflows}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema}{Database Schema}{0} 
+\end{DoxyItemize}

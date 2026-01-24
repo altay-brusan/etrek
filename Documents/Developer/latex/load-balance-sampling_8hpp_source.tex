@@ -1,0 +1,223 @@
+\doxysection{load-\/balance-\/sampling.hpp}
+\hypertarget{load-balance-sampling_8hpp_source}{}\label{load-balance-sampling_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/algorithms/load-\/balance-\/sampling.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/algorithms/load-\/balance-\/sampling.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ "{}load-\/balance.hpp"{}}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00006\ \{}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00009\ \{}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ send\ requests\ for\ work\ info}}
+\DoxyCodeLine{00012\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ send\_req(AuxBlock*,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ local\ block\ (unused)}}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ diy::Master::ProxyWithLink\&\ cp,\ \ \ \ \ \textcolor{comment}{//\ communication\ proxy\ for\ neighbor\ blocks}}
+\DoxyCodeLine{00014\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::set<int>\&\ procs)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ processes\ to\ query}}
+\DoxyCodeLine{00015\ \{}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{comment}{//\ send\ requests\ for\ work\ info\ to\ sample\_procs}}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keywordtype}{int}\ v\ =\ 1;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ any\ message\ will\ do}}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ proc\_iter\ =\ procs.begin();\ proc\_iter\ !=\ procs.end();\ proc\_iter++)}
+\DoxyCodeLine{00019\ \ \ \ \ \{}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ gid\ \ \ \ =\ *proc\_iter;}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ proc\ \ \ =\ *proc\_iter;}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ diy::BlockID\ dest\_block\ =\ \{gid,\ proc\};}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ cp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(dest\_block,\ v);}
+\DoxyCodeLine{00024\ \ \ \ \ \}}
+\DoxyCodeLine{00025\ \}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{//\ receive\ requests\ for\ work\ info}}
+\DoxyCodeLine{00028\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ recv\_req(AuxBlock*,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ local\ block\ (unused)}}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ diy::Master::ProxyWithLink\&\ cp,\ \ \ \ \ \textcolor{comment}{//\ communication\ proxy\ for\ neighbor\ blocks}}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<int>\&\ req\_procs)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ processes\ requesting\ work\ info}}
+\DoxyCodeLine{00031\ \{}
+\DoxyCodeLine{00032\ \ \ \ \ std::vector<int>\ incoming\_gids;}
+\DoxyCodeLine{00033\ \ \ \ \ cp.incoming(incoming\_gids);}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{comment}{//\ for\ anything\ incoming,\ dequeue\ data\ received\ in\ the\ last\ exchange}}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ incoming\_gids.size();\ i++)}
+\DoxyCodeLine{00037\ \ \ \ \ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ gid\ =\ incoming\_gids[i];}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cp.incoming(gid).size())}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ v;}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ cp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(gid,\ v);}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ \ \ req\_procs.push\_back(gid);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ aux\_master\ has\ 1\ gid\ per\ proc,\ so\ gid\ =\ proc}}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00045\ \ \ \ \ \}}
+\DoxyCodeLine{00046\ \}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{comment}{//\ get\ work\ information\ from\ a\ random\ sample\ of\ processes}}
+\DoxyCodeLine{00049\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ exchange\_sample\_work\_info(diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ the\ real\ master\ with\ multiple\ blocks\ per\ process}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ aux\_master,\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ auxiliary\ master\ with\ 1\ block\ per\ process\ for\ communicating\ between\ procs}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sample\_frac,\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ fraction\ of\ procs\ to\ sample\ 0.0\ <\ sample\_size\ <=\ 1.0}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ WorkInfo\&\ \ \ \ \ \ \ \ \ \ my\_work\_info,\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ my\ process'\ work\ info}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<WorkInfo>\&\ \ \ sample\_work\_info)\ \ \ \ \ \ \ \textcolor{comment}{//\ (output)\ vector\ of\ sorted\ sample\ work\ info,\ sorted\ by\ increasing\ total\ work\ per\ process}}
+\DoxyCodeLine{00054\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{auto}\ nprocs\ =\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().size();\ \ \ \ \ \textcolor{comment}{//\ global\ number\ of\ procs}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keyword}{auto}\ my\_proc\ =\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().rank();\ \ \ \ \textcolor{comment}{//\ rank\ of\ my\ proc}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{//\ pick\ a\ random\ sample\ of\ processes,\ w/o\ duplicates,\ and\ excluding\ myself}}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keywordtype}{int}\ nsamples\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(sample\_frac\ *\ (nprocs\ -\/\ 1));}
+\DoxyCodeLine{00060\ \ \ \ \ std::set<int>\ sample\_procs;}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ nsamples;\ i++)}
+\DoxyCodeLine{00062\ \ \ \ \ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ rand\_proc;}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ std::uniform\_int\_distribution<>\ distrib(0,\ nprocs\ -\/\ 1);\ \ \ \ \ \textcolor{comment}{//\ inclusive}}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ rand\_proc\ =\ distrib(master.mt\_gen);}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{while}\ (sample\_procs.find(rand\_proc)\ !=\ sample\_procs.end()\ ||\ rand\_proc\ ==\ my\_proc);}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ sample\_procs.insert(rand\_proc);}
+\DoxyCodeLine{00070\ \ \ \ \ \}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{//\ rexchange\ requests\ for\ work\ info}}
+\DoxyCodeLine{00073\ \ \ \ \ std::vector<int>\ req\_procs;\ \ \ \ \ \textcolor{comment}{//\ requests\ for\ work\ info\ received\ from\ these\ processes}}
+\DoxyCodeLine{00074\ \ \ \ \ aux\_master.foreach([\&](AuxBlock*\ b,\ \textcolor{keyword}{const}\ diy::Master::ProxyWithLink\&\ cp)}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ send\_req(b,\ cp,\ sample\_procs);\ \});}
+\DoxyCodeLine{00076\ \ \ \ \ aux\_master.\doxymbox{\hyperlink{classdiy_1_1_master_a5357e1f57740dacd190e8c09abe5058e}{exchange}}(\textcolor{keyword}{true});\ \ \ \ \ \ \textcolor{comment}{//\ true\ =\ remote}}
+\DoxyCodeLine{00077\ \ \ \ \ aux\_master.foreach([\&](AuxBlock*\ b,\ \textcolor{keyword}{const}\ diy::Master::ProxyWithLink\&\ cp)}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ recv\_req(b,\ cp,\ req\_procs);\ \});}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ send\ work\ info}}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordtype}{int}\ work\_info\_tag\ =\ 0;}
+\DoxyCodeLine{00082\ \ \ \ \ std::vector<diy::mpi::request>\ reqs(req\_procs.size());}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ req\_procs.size();\ i++)}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ reqs[i]\ =\ mpi::detail::isend(MPI\_Comm(master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}()),\ req\_procs[i],\ work\_info\_tag,\ \&my\_work\_info,\ \textcolor{keyword}{sizeof}(WorkInfo),\ MPI\_BYTE);}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{comment}{//\ receive\ work\ info}}
+\DoxyCodeLine{00087\ \ \ \ \ sample\_work\_info.resize(nsamples);}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ nsamples;\ i++)}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ mpi::detail::recv(MPI\_Comm(master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}()),\ diy::mpi::any\_source,\ work\_info\_tag,\ \&sample\_work\_info[i],\ \textcolor{keyword}{sizeof}(WorkInfo),\ MPI\_BYTE);}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{//\ ensure\ all\ the\ send\ requests\ cleared}}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ req\_procs.size();\ i++)}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ reqs[i].wait();}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{//\ sort\ sample\_work\_info\ by\ proc\_work}}
+\DoxyCodeLine{00096\ \ \ \ \ std::sort(sample\_work\_info.begin(),\ sample\_work\_info.end(),}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ [\&](WorkInfo\&\ a,\ WorkInfo\&\ b)\ \{\ return\ a.proc\_work\ <\ b.proc\_work;\ \});}
+\DoxyCodeLine{00098\ \}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{comment}{//\ send\ block}}
+\DoxyCodeLine{00101\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ send\_block(AuxBlock*,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ local\ block\ (unused)}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ diy::Master::ProxyWithLink\&\ \ \ cp,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ communication\ proxy\ for\ neighbor\ blocks}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ real\ master\ with\ multiple\ blocks\ per\ process}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<WorkInfo>\&\ \ \ \ \ \ \ \ sample\_work\_info,\ \ \ \textcolor{comment}{//\ sampled\ work\ info}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ WorkInfo\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ my\_work\_info,\ \ \ \ \ \ \ \textcolor{comment}{//\ my\ work\ info}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quantile)\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ quantile\ cutoff\ above\ which\ to\ move\ blocks\ (0.0\ -\/\ 1.0)}}
+\DoxyCodeLine{00107\ \{}
+\DoxyCodeLine{00108\ \ \ \ \ MoveInfo\ move\_info\ =\ \{-\/1,\ -\/1,\ -\/1\};}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{comment}{//\ my\ rank's\ position\ in\ the\ sampled\ work\ info,\ sorted\ by\ proc\_work}}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordtype}{int}\ my\_work\_idx\ =\ sample\_work\_info.size();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ index\ where\ my\ work\ would\ be\ in\ the\ sample\_work}}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ sample\_work\_info.size();\ i++)}
+\DoxyCodeLine{00113\ \ \ \ \ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (my\_work\_info.proc\_work\ <\ sample\_work\_info[i].proc\_work)}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ my\_work\_idx\ =\ i;}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00119\ \ \ \ \ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{comment}{//\ send\ my\ heaviest\ block\ if\ it\ passes\ the\ quantile\ cutoff}}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordflow}{if}\ (my\_work\_idx\ >=\ quantile\ *\ sample\_work\_info.size())}
+\DoxyCodeLine{00123\ \ \ \ \ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ pick\ the\ destination\ process\ to\ be\ the\ mirror\ image\ of\ my\ work\ location\ in\ the\ samples}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ ie,\ the\ heavier\ my\ process,\ the\ lighter\ the\ destination\ process}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ target\ =\ sample\_work\_info.size()\ -\/\ my\_work\_idx;}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ src\_work\_info\ =\ my\_work\_info;}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ dst\_work\_info\ =\ sample\_work\_info[target];}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ sanity\ check\ that\ the\ move\ makes\ sense}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (src\_work\_info.proc\_work\ -\/\ dst\_work\_info.proc\_work\ >\ src\_work\_info.top\_work\ \&\&\ \ \ \textcolor{comment}{//\ improve\ load\ balance}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ src\_work\_info.proc\_rank\ !=\ dst\_work\_info.proc\_rank\ \&\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ not\ self}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ src\_work\_info.nlids\ >\ 1)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ don't\ leave\ a\ proc\ with\ no\ blocks}}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ move\_info.move\_gid\ =\ my\_work\_info.top\_gid;}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ move\_info.src\_proc\ =\ my\_work\_info.proc\_rank;}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ move\_info.dst\_proc\ =\ sample\_work\_info[target].proc\_rank;}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ destination\ in\ aux\_master,\ where\ gid\ =\ proc}}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ diy::BlockID\ dest\_block\ =\ \{move\_info.dst\_proc,\ move\_info.dst\_proc\};}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ enqueue\ the\ gid\ of\ the\ moving\ block}}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ cp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(dest\_block,\ move\_info.move\_gid);}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ enqueue\ the\ block}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ send\_b\ =\ master.block(master.\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(move\_info.move\_gid));}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ diy::MemoryBuffer\ bb;}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ master.saver()(send\_b,\ bb);}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ cp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(dest\_block,\ bb.buffer);}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ enqueue\ the\ link\ for\ the\ block}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ diy::Link*\ send\_link\ =\ master.link(master.\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(move\_info.move\_gid));}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ diy::LinkFactory::save(bb,\ send\_link);}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ cp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(dest\_block,\ bb.buffer);}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ remove\ the\ block\ from\ the\ master}}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ move\_lid\ =\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(move\_info.move\_gid);}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ master.destroyer()(master.\doxymbox{\hyperlink{classdiy_1_1_master_a4e8f7b4f8af7041559385b54e82d0f1c}{release}}(move\_lid));}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00162\ \ \ \ \ \}}
+\DoxyCodeLine{00163\ \}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \textcolor{comment}{//\ receive\ block}}
+\DoxyCodeLine{00166\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ recv\_block(AuxBlock*,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ local\ block\ (unused)}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ diy::Master::ProxyWithLink\&\ \ \ cp,\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ communication\ proxy\ for\ neighbor\ blocks}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master)\ \ \ \ \ \textcolor{comment}{//\ real\ master\ with\ multiple\ blocks\ per\ process}}
+\DoxyCodeLine{00169\ \{}
+\DoxyCodeLine{00170\ \ \ \ \ std::vector<int>\ incoming\_gids;}
+\DoxyCodeLine{00171\ \ \ \ \ cp.incoming(incoming\_gids);}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{comment}{//\ for\ anything\ incoming,\ dequeue\ data\ received\ in\ the\ last\ exchange}}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ incoming\_gids.size();\ i++)}
+\DoxyCodeLine{00175\ \ \ \ \ \{}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ gid\ =\ incoming\_gids[i];}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cp.incoming(gid).size())}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ dequeue\ the\ gid\ of\ the\ moving\ block}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ move\_gid;}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ cp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(gid,\ move\_gid);}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ dequeue\ the\ block}}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ recv\_b\ =\ master.creator()();}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ diy::MemoryBuffer\ bb;}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ cp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(gid,\ bb.buffer);}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ master.loader()(recv\_b,\ bb);}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ dequeue\ the\ link}}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ diy::Link*\ recv\_link;}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ cp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(gid,\ bb.buffer);}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ recv\_link\ =\ diy::LinkFactory::load(bb);}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ block\ to\ the\ master}}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ master.\doxymbox{\hyperlink{classdiy_1_1_master_aeab2723bb0ecd4f7316b4805c1b53a61}{add}}(move\_gid,\ recv\_b,\ recv\_link);}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00197\ \ \ \ \ \}}
+\DoxyCodeLine{00198\ \}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{comment}{//\ move\ blocks\ based\ on\ sampled\ work\ info}}
+\DoxyCodeLine{00201\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ move\_sample\_blocks(diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ real\ master\ with\ multiple\ blocks\ per\ process}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ aux\_master,\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ auxiliary\ master\ with\ 1\ block\ per\ process\ for\ communcating\ between\ procs}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<WorkInfo>\&\ \ \ \ sample\_work\_info,\ \ \ \ \ \ \ \textcolor{comment}{//\ sampled\ work\ info}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ WorkInfo\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ my\_work\_info,\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ my\ work\ info}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quantile)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ quantile\ cutoff\ above\ which\ to\ move\ blocks\ (0.0\ -\/\ 1.0)}}
+\DoxyCodeLine{00206\ \{}
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{comment}{//\ rexchange\ moving\ blocks}}
+\DoxyCodeLine{00208\ \ \ \ \ aux\_master.foreach([\&](AuxBlock*\ b,\ \textcolor{keyword}{const}\ diy::Master::ProxyWithLink\&\ cp)}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ send\_block(b,\ cp,\ master,\ sample\_work\_info,\ my\_work\_info,\ quantile);\ \});}
+\DoxyCodeLine{00210\ \ \ \ \ aux\_master.\doxymbox{\hyperlink{classdiy_1_1_master_a5357e1f57740dacd190e8c09abe5058e}{exchange}}(\textcolor{keyword}{true});\ \ \ \ \ \ \textcolor{comment}{//\ true\ =\ remote}}
+\DoxyCodeLine{00211\ \ \ \ \ aux\_master.foreach([\&](AuxBlock*\ b,\ \textcolor{keyword}{const}\ diy::Master::ProxyWithLink\&\ cp)}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ recv\_block(b,\ cp,\ master);\ \});}
+\DoxyCodeLine{00213\ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \}\ \ \ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \}\ \ \ \textcolor{comment}{//\ namespace\ diy}}
+
+\end{DoxyCode}

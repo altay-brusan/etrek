@@ -1,0 +1,25 @@
+var class_dcm_signed64bit_very_long =
+[
+    [ "DcmSigned64bitVeryLong", "class_dcm_signed64bit_very_long.html#aa39752c8b0487bc50436d6a045913660", null ],
+    [ "DcmSigned64bitVeryLong", "class_dcm_signed64bit_very_long.html#a662a0428e6b23ae31317597111f2378d", null ],
+    [ "~DcmSigned64bitVeryLong", "class_dcm_signed64bit_very_long.html#a78f11c02fb4c69a3bb5527dd36b3951a", null ],
+    [ "DcmSigned64bitVeryLong", "class_dcm_signed64bit_very_long.html#afbcf76394efb683cf9afcb3ac4412508", null ],
+    [ "checkValue", "class_dcm_signed64bit_very_long.html#a15953f62c09610833d31e0fa3fc0b6db", null ],
+    [ "clone", "class_dcm_signed64bit_very_long.html#a154558c30820a036ebe5b2458fd96591", null ],
+    [ "compare", "class_dcm_signed64bit_very_long.html#ac23995157a22c0091b3b53121142640f", null ],
+    [ "copyFrom", "class_dcm_signed64bit_very_long.html#a8053013f190905639c80f1e849d4de02", null ],
+    [ "getNumberOfValues", "class_dcm_signed64bit_very_long.html#a4deddda0ef2bcec4b6440b0961e3e9cf", null ],
+    [ "getOFString", "class_dcm_signed64bit_very_long.html#a7e8a9d26e54f3a6e5dd6dbc388273730", null ],
+    [ "getSint64", "class_dcm_signed64bit_very_long.html#ae060798dea8a69d03c65d6d70b13ce59", null ],
+    [ "getSint64Array", "class_dcm_signed64bit_very_long.html#aea79b8b8429ca3d6566e53ef21b54d77", null ],
+    [ "getVM", "class_dcm_signed64bit_very_long.html#a54c94a7019355f3ef203929388163f8e", null ],
+    [ "ident", "class_dcm_signed64bit_very_long.html#a1b7523816a7a53499a1f588df138818c", null ],
+    [ "operator=", "class_dcm_signed64bit_very_long.html#a43c24d4856ef22f294dc13316d2925bc", null ],
+    [ "print", "class_dcm_signed64bit_very_long.html#a934858c9950feed0b6520a60158c9a69", null ],
+    [ "putSint64", "class_dcm_signed64bit_very_long.html#a58c3d4fb1eba96dcd624e0895184e4db", null ],
+    [ "putSint64Array", "class_dcm_signed64bit_very_long.html#ac35343bc8ce82eb074c330f502847563", null ],
+    [ "putString", "class_dcm_signed64bit_very_long.html#aa4017fcdb3fb9d11714f8add3d314494", null ],
+    [ "putString", "class_dcm_signed64bit_very_long.html#a1aa78fed34378b938b0db40636d92cea", null ],
+    [ "verify", "class_dcm_signed64bit_very_long.html#af4ee9b1f90ee375a45936acdc8dcdfa3", null ],
+    [ "writeJson", "class_dcm_signed64bit_very_long.html#aad68dc8b4cf35e3fadb1421835d61136", null ]
+];

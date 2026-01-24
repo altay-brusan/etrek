@@ -1,0 +1,634 @@
+\doxysection{util.\+hpp}
+\hypertarget{util_8hpp_source}{}\label{util_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibproj/include/proj/util.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibproj/include/proj/util.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/******************************************************************************}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ Project:\ \ PROJ}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Purpose:\ \ ISO19111:2019\ implementation}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ Author:\ \ \ Even\ Rouault\ <even\ dot\ rouault\ at\ spatialys\ dot\ com>}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ ******************************************************************************}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ Copyright\ (c)\ 2018,\ Even\ Rouault\ <even\ dot\ rouault\ at\ spatialys\ dot\ com>}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ Permission\ is\ hereby\ granted,\ free\ of\ charge,\ to\ any\ person\ obtaining\ a}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ copy\ of\ this\ software\ and\ associated\ documentation\ files\ (the\ "{}Software"{}),}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *\ to\ deal\ in\ the\ Software\ without\ restriction,\ including\ without\ limitation}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *\ the\ rights\ to\ use,\ copy,\ modify,\ merge,\ publish,\ distribute,\ sublicense,}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ and/or\ sell\ copies\ of\ the\ Software,\ and\ to\ permit\ persons\ to\ whom\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *\ Software\ is\ furnished\ to\ do\ so,\ subject\ to\ the\ following\ conditions:}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *\ The\ above\ copyright\ notice\ and\ this\ permission\ notice\ shall\ be\ included}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ in\ all\ copies\ or\ substantial\ portions\ of\ the\ Software.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ THE\ SOFTWARE\ IS\ PROVIDED\ "{}AS\ IS"{},\ WITHOUT\ WARRANTY\ OF\ ANY\ KIND,\ EXPRESS}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *\ OR\ IMPLIED,\ INCLUDING\ BUT\ NOT\ LIMITED\ TO\ THE\ WARRANTIES\ OF\ MERCHANTABILITY,}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE\ AND\ NONINFRINGEMENT.\ IN\ NO\ EVENT\ SHALL}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *\ THE\ AUTHORS\ OR\ COPYRIGHT\ HOLDERS\ BE\ LIABLE\ FOR\ ANY\ CLAIM,\ DAMAGES\ OR\ OTHER}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ LIABILITY,\ WHETHER\ IN\ AN\ ACTION\ OF\ CONTRACT,\ TORT\ OR\ OTHERWISE,\ ARISING}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ FROM,\ OUT\ OF\ OR\ IN\ CONNECTION\ WITH\ THE\ SOFTWARE\ OR\ THE\ USE\ OR\ OTHER}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ *\ DEALINGS\ IN\ THE\ SOFTWARE.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ ****************************************************************************/}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#ifndef\ UTIL\_HH\_INCLUDED}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#define\ UTIL\_HH\_INCLUDED}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#if\ !(\_\_cplusplus\ >=\ 201103L\ ||\ (defined(\_MSC\_VER)\ \&\&\ \_MSC\_VER\ >=\ 1900))}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#error\ Must\ have\ C++11\ or\ newer.}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#include\ "{}vtk\_libproj\_mangle.h"{}}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#include\ "{}vtklibproj\_export.h"{}}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ windows.h\ can\ confict\ with\ Criterion::STRICT}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#ifdef\ STRICT}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#undef\ STRICT}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#include\ <exception>}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#ifndef\ NS\_PROJ}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00052\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceosgeo}{osgeo}}\ \{}
+\DoxyCodeLine{00054\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceosgeo_1_1proj}{proj}}\ \{\}}
+\DoxyCodeLine{00055\ \}\ \textcolor{comment}{//\ namespace\ osgeo}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#ifndef\ PROJ\_DLL}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#ifdef\ PROJ\_MSVC\_DLL\_EXPORT}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#define\ PROJ\_DLL\ \_\_declspec(dllexport)}}
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#elif\ defined(PROJ\_MSVC\_DLL\_IMPORT)}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#define\ PROJ\_DLL\ \_\_declspec(dllimport)}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#elif\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00066\ \textcolor{preprocessor}{\#define\ PROJ\_DLL\ \_\_attribute\_\_((visibility("{}default"{})))}}
+\DoxyCodeLine{00067\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#define\ PROJ\_DLL}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#ifndef\ PROJ\_MSVC\_DLL}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{\#ifdef\ PROJ\_MSVC\_DLL\_EXPORT}}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\#define\ PROJ\_MSVC\_DLL\ PROJ\_DLL}}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#define\ PROJ\_GCC\_DLL}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#define\ PROJ\_INTERNAL}}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#elif\ defined(PROJ\_MSVC\_DLL\_IMPORT)}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\#define\ PROJ\_MSVC\_DLL\ PROJ\_DLL}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#define\ PROJ\_GCC\_DLL}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#define\ PROJ\_INTERNAL}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#elif\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#define\ PROJ\_MSVC\_DLL}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#define\ PROJ\_GCC\_DLL\ PROJ\_DLL}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#if\ !defined(\_\_MINGW32\_\_)}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{\#define\ PROJ\_INTERNAL\ \_\_attribute\_\_((visibility("{}hidden"{})))}}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#define\ PROJ\_INTERNAL}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00091\ \textcolor{preprocessor}{\#define\ PROJ\_MSVC\_DLL}}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#define\ PROJ\_GCC\_DLL}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#define\ PROJ\_INTERNAL}}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#define\ PROJ\_FOR\_TEST\ PROJ\_DLL}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#include\ "{}nn.hpp"{}}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{comment}{/*\ To\ allow\ customizing\ the\ base\ namespace\ of\ PROJ\ */}}
+\DoxyCodeLine{00103\ \textcolor{preprocessor}{\#ifdef\ PROJ\_INTERNAL\_CPP\_NAMESPACE}}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#define\ NS\_PROJ\ osgeo::internalproj}}
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#define\ NS\_PROJ\_START\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\ \ \ \ namespace\ osgeo\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{\ \ \ \ namespace\ internalproj\ \{}}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#define\ NS\_PROJ\_END\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\ \ \ \ \}}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#ifndef\ NS\_PROJ}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{\#define\ NS\_PROJ\ osgeo::proj}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#define\ NS\_PROJ\_START\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{\ \ \ \ namespace\ osgeo\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\ \ \ \ namespace\ proj\ \{}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#define\ NS\_PROJ\_END\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\ \ \ \ \}}}
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{comment}{//\ Private-\/implementation\ (Pimpl)\ pattern}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#define\ PROJ\_OPAQUE\_PRIVATE\_DATA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\ \ private:\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\ \ \ \ struct\ PROJ\_INTERNAL\ Private;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\ \ \ \ std::unique\_ptr<Private>\ d;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\ \ protected:\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\ \ \ \ PROJ\_INTERNAL\ Private\ *getPrivate()\ noexcept\ \{\ return\ d.get();\ \}\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\ \ \ \ PROJ\_INTERNAL\ const\ Private\ *getPrivate()\ const\ noexcept\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ d.get();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\ \ private:}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{comment}{//\ To\ include\ in\ the\ protected/private\ section\ of\ a\ class\ definition,}}
+\DoxyCodeLine{00138\ \textcolor{comment}{//\ to\ be\ able\ to\ call\ make\_shared\ on\ a\ protected/private\ constructor}}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{\#define\ INLINED\_MAKE\_SHARED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\ \ \ \ template\ <typename\ T,\ typename...\ Args>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\ \ \ \ static\ std::shared\_ptr<T>\ make\_shared(Args\ \&\&...\ args)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ std::shared\_ptr<T>(new\ T(std::forward<Args>(args)...));\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00144\ \textcolor{preprocessor}{\ \ \ \ template\ <typename\ T,\ typename...\ Args>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\ \ \ \ static\ util::nn\_shared\_ptr<T>\ nn\_make\_shared(Args\ \&\&...\ args)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ util::nn\_shared\_ptr<T>(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ util::i\_promise\_i\_checked\_for\_null,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<T>(new\ T(std::forward<Args>(args)...)));\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\ \ \ \ \}}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{comment}{//\ To\ include\ in\ the\ protected/private\ section\ of\ a\ class\ definition,}}
+\DoxyCodeLine{00152\ \textcolor{comment}{//\ to\ be\ able\ to\ call\ make\_unique\ on\ a\ protected/private\ constructor}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#define\ INLINED\_MAKE\_UNIQUE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\ \ \ \ template\ <typename\ T,\ typename...\ Args>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\ \ \ \ static\ std::unique\_ptr<T>\ make\_unique(Args\ \&\&...\ args)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ std::unique\_ptr<T>(new\ T(std::forward<Args>(args)...));\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\ \ \ \ \}}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#ifdef\ DOXYGEN\_ENABLED}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#define\ PROJ\_FRIEND(mytype)}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#define\ PROJ\_FRIEND\_OPTIONAL(mytype)}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#define\ PROJ\_FRIEND(mytype)\ friend\ class\ mytype}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#define\ PROJ\_FRIEND\_OPTIONAL(mytype)\ friend\ class\ util::optional<mytype>}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#ifndef\ PROJ\_PRIVATE}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#define\ PROJ\_PRIVATE\ public}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\#if\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\#define\ PROJ\_NO\_INLINE\ \_\_attribute\_\_((noinline))}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#define\ PROJ\_NO\_RETURN\ \_\_attribute\_\_((noreturn))}}
+\DoxyCodeLine{00174\ \textcolor{comment}{//\ Applies\ to\ a\ function\ that\ has\ no\ side\ effect.}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#define\ PROJ\_PURE\_DECL\ const\ noexcept\ \_\_attribute\_\_((pure))}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\#define\ PROJ\_NO\_RETURN}}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{\#define\ PROJ\_NO\_INLINE}}
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\#define\ PROJ\_PURE\_DECL\ const\ noexcept}}
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#define\ PROJ\_PURE\_DEFN\ const\ noexcept}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ NS\_PROJ\_START}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00188\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceio}{io}}\ \{}
+\DoxyCodeLine{00189\ \textcolor{keyword}{class\ }DatabaseContext;}
+\DoxyCodeLine{00190\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{DatabaseContextPtr}}\ =\ std::shared\_ptr<DatabaseContext>;}
+\DoxyCodeLine{00191\ \}\ \textcolor{comment}{//\ namespace\ io}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00199\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceutil}{util}}\ \{}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00202\ \textcolor{comment}{//\ Import\ a\ few\ classes\ from\ nn.hpp\ to\ expose\ them\ under\ our\ ::util\ namespace}}
+\DoxyCodeLine{00203\ \textcolor{comment}{//\ for\ conveniency.}}
+\DoxyCodeLine{00204\ \textcolor{keyword}{using\ }::dropbox::oxygen::i\_promise\_i\_checked\_for\_null;}
+\DoxyCodeLine{00205\ \textcolor{keyword}{using\ }::dropbox::oxygen::nn;}
+\DoxyCodeLine{00206\ \textcolor{keyword}{using\ }::dropbox::oxygen::nn\_dynamic\_pointer\_cast;}
+\DoxyCodeLine{00207\ \textcolor{keyword}{using\ }::dropbox::oxygen::nn\_make\_shared;}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{comment}{//\ For\ return\ statements,\ to\ convert\ from\ derived\ type\ to\ base\ type}}
+\DoxyCodeLine{00210\ \textcolor{keyword}{using\ }::dropbox::oxygen::nn\_static\_pointer\_cast;}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{using\ }nn\_shared\_ptr\ =\ nn<std::shared\_ptr<T>>;}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#define\ NN\_NO\_CHECK(p)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\ \ \ \ ::dropbox::oxygen::nn<typename\ std::remove\_const<\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ typename\ std::remove\_reference<decltype(p)>::type>::type>(\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ dropbox::oxygen::i\_promise\_i\_checked\_for\_null,\ (p))}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \textcolor{comment}{//\ To\ avoid\ formatting\ differences\ between\ clang-\/format\ 3.8\ and\ 7}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{\#define\ PROJ\_NOEXCEPT\ noexcept}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00225\ \textcolor{comment}{//\ isOfExactType<MyType>(*p)\ checks\ that\ the\ type\ of\ *p\ is\ exactly\ MyType}}
+\DoxyCodeLine{00226\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TemplateT,\ \textcolor{keyword}{typename}\ ObjectT>}
+\DoxyCodeLine{00227\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ isOfExactType(\textcolor{keyword}{const}\ ObjectT\ \&o)\ \{}
+\DoxyCodeLine{00228\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{typeid}(TemplateT).hash\_code()\ ==\ \textcolor{keyword}{typeid}(o).hash\_code();}
+\DoxyCodeLine{00229\ \}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00234\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classutil_1_1optional}{optional}}\ \{}
+\DoxyCodeLine{00235\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}()\ :\ hasVal\_(\textcolor{keyword}{false})\ \{\}}
+\DoxyCodeLine{00238\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}(\textcolor{keyword}{const}\ T\ \&val)\ :\ hasVal\_(\textcolor{keyword}{true}),\ val\_(val)\ \{\}}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}(T\ \&\&val)}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ :\ hasVal\_(\textcolor{keyword}{true}),\ val\_(std::forward<T>(val))\ \{\}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}\ \&)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}(\doxymbox{\hyperlink{classutil_1_1optional}{optional}}\ \&\&other)\ PROJ\_NOEXCEPT}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ :\ hasVal\_(other.hasVal\_),}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ cppcheck-\/suppress\ functionStatic}}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ val\_(std::forward<T>(other.val\_))\ \{}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ other.hasVal\_\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00248\ \ \ \ \ \}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}\ \&operator=(\textcolor{keyword}{const}\ T\ \&val)\ \{}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ hasVal\_\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ val\_\ =\ val;}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00254\ \ \ \ \ \}}
+\DoxyCodeLine{00255\ \ \ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}\ \&operator=(T\ \&\&val)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ hasVal\_\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ val\_\ =\ std::forward<T>(val);}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00259\ \ \ \ \ \}}
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}\ \&operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}\ \&)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classutil_1_1optional}{optional}}\ \&operator=(\doxymbox{\hyperlink{classutil_1_1optional}{optional}}\ \&\&other)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ hasVal\_\ =\ other.hasVal\_;}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ val\_\ =\ std::forward<T>(other.val\_);}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ other.hasVal\_\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00266\ \ \ \ \ \}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keyword}{inline}\ T\ *\doxymbox{\hyperlink{classutil_1_1optional_aaba6dc4248cb054b3cf486a968c11b4f}{operator-\/>}}()\ \{\ \textcolor{keywordflow}{return}\ \&val\_;\ \}}
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{keyword}{inline}\ T\ \&\doxymbox{\hyperlink{classutil_1_1optional_ac5c9ae81645d8fa5a0a0bcc5c401fb80}{operator*}}()\ \{\ \textcolor{keywordflow}{return}\ val\_;\ \}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00274\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ T\ *\doxymbox{\hyperlink{classutil_1_1optional_aaba6dc4248cb054b3cf486a968c11b4f}{operator-\/>}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \&val\_;\ \}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ T\ \&\doxymbox{\hyperlink{classutil_1_1optional_ac5c9ae81645d8fa5a0a0bcc5c401fb80}{operator*}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ val\_;\ \}}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{explicit}\ \textcolor{keyword}{operator}\ bool()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ hasVal\_;\ \}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classutil_1_1optional_af5242d01df4becf5fcf4b21d3d95e761}{has\_value}}()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ hasVal\_;\ \}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{keywordtype}{bool}\ hasVal\_;}
+\DoxyCodeLine{00287\ \ \ \ \ T\ val\_\{\};}
+\DoxyCodeLine{00288\ \};}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classutil_1_1_base_object}{BaseObject}};}
+\DoxyCodeLine{00294\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_ac81323c8b0700b39a7ba1984152b26d6}{BaseObjectPtr}}\ =\ std::shared\_ptr<BaseObject>;}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\#if\ 1}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00297\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}\ :\ \textcolor{keyword}{public}\ util::nn<BaseObjectPtr>\ \{}
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{comment}{//\ This\ trick\ enables\ to\ avoid\ inlining\ of\ the\ destructor.}}
+\DoxyCodeLine{00299\ \ \ \ \ \textcolor{comment}{//\ This\ is\ mostly\ an\ alias\ of\ the\ base\ class.}}
+\DoxyCodeLine{00301\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00302\ \ \ \ \ \textcolor{comment}{//\ cppcheck-\/suppress\ noExplicitConstructor}}
+\DoxyCodeLine{00303\ \ \ \ \ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}(\textcolor{keyword}{const}\ util::nn<std::shared\_ptr<T>>\ \&x)}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ :\ util::nn<BaseObjectPtr>(x)\ \{\}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{comment}{//\ cppcheck-\/suppress\ noExplicitConstructor}}
+\DoxyCodeLine{00308\ \ \ \ \ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}(util::nn<std::shared\_ptr<T>>\ \&\&x)\ noexcept}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ :\ util::nn<BaseObjectPtr>(NN\_NO\_CHECK(std::move(x.as\_nullable())))\ \{\}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}(::dropbox::oxygen::i\_promise\_i\_checked\_for\_null\_t,}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceutil_ac81323c8b0700b39a7ba1984152b26d6}{BaseObjectPtr}}\ \&\&arg)\ noexcept}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ :\ util::nn<BaseObjectPtr>(i\_promise\_i\_checked\_for\_null,}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::move(arg))\ \{\}}
+\DoxyCodeLine{00315\ \ \ \ \ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}\ \&)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00316\ \ \ \ \ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}\ \&operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}\ \&)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \ \ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{\string~BaseObjectNNPtr}}();}
+\DoxyCodeLine{00320\ \};}
+\DoxyCodeLine{00321\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00322\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}\ =\ util::nn<BaseObjectPtr>;}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00327\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ \doxymbox{\hyperlink{classutil_1_1_base_object}{BaseObject}}\ \{}
+\DoxyCodeLine{00328\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00330\ \ \ \ \ \textcolor{keyword}{virtual}\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{classutil_1_1_base_object}{\string~BaseObject}}();}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ shared\_from\_this()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00340\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{classutil_1_1_base_object}{BaseObject}}();}
+\DoxyCodeLine{00341\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ assignSelf(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}\ \&self);}
+\DoxyCodeLine{00342\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{classutil_1_1_base_object}{BaseObject}}\ \&operator=(\doxymbox{\hyperlink{classutil_1_1_base_object}{BaseObject}}\ \&\&other);}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00345\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00346\ \};}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00352\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{IComparable}}\ \{}
+\DoxyCodeLine{00353\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00355\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{\string~IComparable}}();}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00359\ \ \ \ \ \textcolor{keyword}{enum\ class}\ PROJ\_MSVC\_DLL\ Criterion\ \{}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ STRICT,}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ EQUIVALENT,}
+\DoxyCodeLine{00371\ }
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ EQUIVALENT\_EXCEPT\_AXIS\_ORDER\_GEOGCRS,}
+\DoxyCodeLine{00377\ \ \ \ \ \};}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00380\ \ \ \ \ isEquivalentTo(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{IComparable}}\ *other,}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Criterion\ criterion\ =\ Criterion::STRICT,}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \_isEquivalentTo(}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{IComparable}}\ *other,\ Criterion\ criterion\ =\ Criterion::STRICT,}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00392\ \};}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00398\ \textcolor{keyword}{class\ }BoxedValue\ final\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_base_object}{BaseObject}}\ \{}
+\DoxyCodeLine{00399\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{keyword}{enum\ class}\ Type\ \{}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ STRING,}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ INTEGER,}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ BOOLEAN}
+\DoxyCodeLine{00409\ \ \ \ \ \};}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \ \ \ \ \textcolor{comment}{//\ cppcheck-\/suppress\ noExplicitConstructor}}
+\DoxyCodeLine{00413\ \ \ \ \ vtklibproj\_EXPORT\ BoxedValue(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *stringValueIn);\ \textcolor{comment}{//\ needed\ to\ avoid\ the\ bool}}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ constructor\ to\ be\ taken\ !}}
+\DoxyCodeLine{00415\ \ \ \ \ \textcolor{comment}{//\ cppcheck-\/suppress\ noExplicitConstructor}}
+\DoxyCodeLine{00416\ \ \ \ \ vtklibproj\_EXPORT\ BoxedValue(\textcolor{keyword}{const}\ std::string\ \&stringValueIn);}
+\DoxyCodeLine{00417\ \ \ \ \ \textcolor{comment}{//\ cppcheck-\/suppress\ noExplicitConstructor}}
+\DoxyCodeLine{00418\ \ \ \ \ vtklibproj\_EXPORT\ BoxedValue(\textcolor{keywordtype}{int}\ integerValueIn);}
+\DoxyCodeLine{00419\ \ \ \ \ \textcolor{comment}{//\ cppcheck-\/suppress\ noExplicitConstructor}}
+\DoxyCodeLine{00420\ \ \ \ \ vtklibproj\_EXPORT\ BoxedValue(\textcolor{keywordtype}{bool}\ booleanValueIn);}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ PROJ\_INTERNAL}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ BoxedValue(\textcolor{keyword}{const}\ BoxedValue\ \&other);}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \ \ \ \ vtklibproj\_EXPORT\ \string~BoxedValue()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{const}\ Type\ \&\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00430\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{const}\ std::string\ \&stringValue()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00431\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{int}\ integerValue()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00432\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ booleanValue()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00436\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00437\ \ \ \ \ BoxedValue\ \&operator=(\textcolor{keyword}{const}\ BoxedValue\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \ \ \ \ PROJ\_INTERNAL\ BoxedValue();}
+\DoxyCodeLine{00440\ \};}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00443\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_a770859a12e79c4d7bbb45ff3d6eaf0df}{BoxedValuePtr}}\ =\ std::shared\_ptr<BoxedValue>;}
+\DoxyCodeLine{00445\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_a38fd42b4a2dbc80c6a7ec7ddd05db48a}{BoxedValueNNPtr}}\ =\ util::nn<BoxedValuePtr>;}
+\DoxyCodeLine{00446\ }
+\DoxyCodeLine{00447\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00448\ }
+\DoxyCodeLine{00449\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classutil_1_1_array_of_base_object}{ArrayOfBaseObject}};}
+\DoxyCodeLine{00451\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_a842cb177154385d31c18ef1421ea5b9a}{ArrayOfBaseObjectPtr}}\ =\ std::shared\_ptr<ArrayOfBaseObject>;}
+\DoxyCodeLine{00453\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_ab489f39fb49cb71e02c1dfc7206a6153}{ArrayOfBaseObjectNNPtr}}\ =\ util::nn<ArrayOfBaseObjectPtr>;}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00457\ \textcolor{keyword}{class\ }ArrayOfBaseObject\ final\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_base_object}{BaseObject}}\ \{}
+\DoxyCodeLine{00458\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00460\ \ \ \ \ vtklibproj\_EXPORT\ \string~ArrayOfBaseObject()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00462\ }
+\DoxyCodeLine{00463\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ add(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}\ \&obj);}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceutil_ab489f39fb49cb71e02c1dfc7206a6153}{ArrayOfBaseObjectNNPtr}}\ create();}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ std::vector<BaseObjectNNPtr>::const\_iterator}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ begin()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00471\ \ \ \ \ std::vector<BaseObjectNNPtr>::const\_iterator\ end()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00472\ \ \ \ \ \textcolor{keywordtype}{bool}\ empty()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00474\ }
+\DoxyCodeLine{00475\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00476\ \ \ \ \ ArrayOfBaseObject();}
+\DoxyCodeLine{00477\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00480\ \ \ \ \ ArrayOfBaseObject(\textcolor{keyword}{const}\ ArrayOfBaseObject\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00481\ \ \ \ \ ArrayOfBaseObject\ \&operator=(\textcolor{keyword}{const}\ ArrayOfBaseObject\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00482\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00483\ \};}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00486\ }
+\DoxyCodeLine{00488\ \textcolor{keyword}{class\ }PropertyMap\ \{}
+\DoxyCodeLine{00489\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00490\ \ \ \ \ vtklibproj\_EXPORT\ PropertyMap();}
+\DoxyCodeLine{00492\ \ \ \ \ vtklibproj\_EXPORT\ PropertyMap(\textcolor{keyword}{const}\ PropertyMap\ \&other);}
+\DoxyCodeLine{00493\ \ \ \ \ vtklibproj\_EXPORT\ \string~PropertyMap();}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00496\ \ \ \ \ vtklibproj\_EXPORT\ PropertyMap\ \&set(\textcolor{keyword}{const}\ std::string\ \&key,}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}\ \&val);}
+\DoxyCodeLine{00498\ }
+\DoxyCodeLine{00500\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00501\ \ \ \ \ \textcolor{keyword}{inline}\ PropertyMap\ \&set(\textcolor{keyword}{const}\ std::string\ \&key,}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ nn\_shared\_ptr<T>\ \&val)\ \{}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ set(}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \ \ \ \ key,\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}(i\_promise\_i\_checked\_for\_null,}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceutil_ac81323c8b0700b39a7ba1984152b26d6}{BaseObjectPtr}}(val.as\_nullable(),\ val.get())));}
+\DoxyCodeLine{00506\ \ \ \ \ \}}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00509\ \ \ \ \ \textcolor{comment}{//\ needed\ to\ avoid\ the\ bool\ constructor\ to\ be\ taken\ !}}
+\DoxyCodeLine{00510\ \ \ \ \ vtklibproj\_EXPORT\ PropertyMap\ \&set(\textcolor{keyword}{const}\ std::string\ \&key,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *val);}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ \ \ vtklibproj\_EXPORT\ PropertyMap\ \&set(\textcolor{keyword}{const}\ std::string\ \&key,\ \textcolor{keyword}{const}\ std::string\ \&val);}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \ \ \ \ vtklibproj\_EXPORT\ PropertyMap\ \&set(\textcolor{keyword}{const}\ std::string\ \&key,\ \textcolor{keywordtype}{int}\ val);}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \ \ \ \ vtklibproj\_EXPORT\ PropertyMap\ \&set(\textcolor{keyword}{const}\ std::string\ \&key,\ \textcolor{keywordtype}{bool}\ val);}
+\DoxyCodeLine{00517\ }
+\DoxyCodeLine{00518\ \ \ \ \ vtklibproj\_EXPORT\ PropertyMap\ \&set(\textcolor{keyword}{const}\ std::string\ \&key,}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\ \&array);}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00521\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structutil_1_1_base_object_n_n_ptr}{BaseObjectNNPtr}}\ *}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ get(\textcolor{keyword}{const}\ std::string\ \&key)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \ \ \ \ \textcolor{comment}{//\ throw(InvalidValueTypeException)}}
+\DoxyCodeLine{00527\ \ \ \ \ \textcolor{keywordtype}{bool}\ getStringValue(\textcolor{keyword}{const}\ std::string\ \&key,\ std::string\ \&outVal)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00528\ \ \ \ \ \textcolor{keywordtype}{bool}\ getStringValue(\textcolor{keyword}{const}\ std::string\ \&key,}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classutil_1_1optional}{optional<std::string>}}\ \&outVal)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00530\ \ \ \ \ \textcolor{keywordtype}{void}\ unset(\textcolor{keyword}{const}\ std::string\ \&key);}
+\DoxyCodeLine{00531\ }
+\DoxyCodeLine{00532\ \ \ \ \ \textcolor{keyword}{static}\ PropertyMap\ createAndSetName(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00533\ \ \ \ \ \textcolor{keyword}{static}\ PropertyMap\ createAndSetName(\textcolor{keyword}{const}\ std::string\ \&name);}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00536\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00537\ \ \ \ \ PropertyMap\ \&operator=(\textcolor{keyword}{const}\ PropertyMap\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00540\ \};}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00543\ }
+\DoxyCodeLine{00544\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classutil_1_1_local_name}{LocalName}};}
+\DoxyCodeLine{00546\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_a3be4023b6fd63ffc42f6b3bd84146d54}{LocalNamePtr}}\ =\ std::shared\_ptr<LocalName>;}
+\DoxyCodeLine{00548\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_a8dd4101f677acf74eacc65d18e5b4397}{LocalNameNNPtr}}\ =\ util::nn<LocalNamePtr>;}
+\DoxyCodeLine{00549\ }
+\DoxyCodeLine{00550\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classutil_1_1_name_space}{NameSpace}};}
+\DoxyCodeLine{00552\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_ae5337681577b3d91aad8291563c21541}{NameSpacePtr}}\ =\ std::shared\_ptr<NameSpace>;}
+\DoxyCodeLine{00554\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_a8ce9cbbeb9592c7decb3cea1f1c59fbb}{NameSpaceNNPtr}}\ =\ util::nn<NameSpacePtr>;}
+\DoxyCodeLine{00555\ }
+\DoxyCodeLine{00556\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classutil_1_1_generic_name}{GenericName}};}
+\DoxyCodeLine{00558\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_acb49d06aa518447f1669ca80a13ae3f4}{GenericNamePtr}}\ =\ std::shared\_ptr<GenericName>;}
+\DoxyCodeLine{00560\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceutil_a4f30882195e8ab4648f986e4bd848345}{GenericNameNNPtr}}\ =\ util::nn<GenericNamePtr>;}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00563\ }
+\DoxyCodeLine{00570\ \textcolor{keyword}{class\ }GenericName\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_base_object}{BaseObject}}\ \{}
+\DoxyCodeLine{00571\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00573\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{virtual}\ \string~GenericName()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00577\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceutil_ae5337681577b3d91aad8291563c21541}{NameSpacePtr}}\ \doxymbox{\hyperlink{classutil_1_1_generic_name_a2b0abfabc7ac263138f2f32c5edfd7d1}{scope}}()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00578\ }
+\DoxyCodeLine{00580\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{virtual}\ std::string\ \doxymbox{\hyperlink{classutil_1_1_generic_name_a9af86388f62eb525930253b1ba747204}{toString}}()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00581\ }
+\DoxyCodeLine{00586\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{namespaceutil_a4f30882195e8ab4648f986e4bd848345}{GenericNameNNPtr}}\ \doxymbox{\hyperlink{classutil_1_1_generic_name_a65c2eaeee779bd85b1ee3153d6a5f84f}{toFullyQualifiedName}}()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00587\ }
+\DoxyCodeLine{00588\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00589\ \ \ \ \ GenericName();}
+\DoxyCodeLine{00590\ \ \ \ \ GenericName(\textcolor{keyword}{const}\ GenericName\ \&other);}
+\DoxyCodeLine{00591\ }
+\DoxyCodeLine{00592\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00593\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00594\ \ \ \ \ GenericName\ \&operator=(\textcolor{keyword}{const}\ GenericName\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00595\ \};}
+\DoxyCodeLine{00596\ }
+\DoxyCodeLine{00597\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00605\ \textcolor{keyword}{class\ }NameSpace\ \{}
+\DoxyCodeLine{00606\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00608\ \ \ \ \ vtklibproj\_EXPORT\ \string~NameSpace();}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keywordtype}{bool}\ isGlobal()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00612\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceutil_acb49d06aa518447f1669ca80a13ae3f4}{GenericNamePtr}}\ \&name()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00614\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00615\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classutil_1_1_name_factory}{NameFactory}});}
+\DoxyCodeLine{00616\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classutil_1_1_local_name}{LocalName}});}
+\DoxyCodeLine{00617\ \ \ \ \ \textcolor{keyword}{explicit}\ NameSpace(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceutil_acb49d06aa518447f1669ca80a13ae3f4}{GenericNamePtr}}\ \&name);}
+\DoxyCodeLine{00618\ \ \ \ \ NameSpace(\textcolor{keyword}{const}\ NameSpace\ \&other);}
+\DoxyCodeLine{00619\ \ \ \ \ \doxymbox{\hyperlink{namespaceutil_a8ce9cbbeb9592c7decb3cea1f1c59fbb}{NameSpaceNNPtr}}\ getGlobalFromThis()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00620\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&separator()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00621\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceutil_a8ce9cbbeb9592c7decb3cea1f1c59fbb}{NameSpaceNNPtr}}\ GLOBAL;}
+\DoxyCodeLine{00622\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{00623\ }
+\DoxyCodeLine{00624\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00625\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00626\ \ \ \ \ NameSpace\ \&operator=(\textcolor{keyword}{const}\ NameSpace\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceutil_a8ce9cbbeb9592c7decb3cea1f1c59fbb}{NameSpaceNNPtr}}\ createGLOBAL();}
+\DoxyCodeLine{00629\ \};}
+\DoxyCodeLine{00630\ }
+\DoxyCodeLine{00631\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00642\ \textcolor{keyword}{class\ }LocalName\ :\ \textcolor{keyword}{public}\ GenericName\ \{}
+\DoxyCodeLine{00643\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00645\ \ \ \ \ vtklibproj\_EXPORT\ \string~LocalName()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00647\ }
+\DoxyCodeLine{00648\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceutil_ae5337681577b3d91aad8291563c21541}{NameSpacePtr}}\ \doxymbox{\hyperlink{classutil_1_1_local_name_abbc6a81dd956a513514dde5bcd8846a3}{scope}}()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00649\ \ \ \ \ vtklibproj\_EXPORT\ std::string\ \doxymbox{\hyperlink{classutil_1_1_local_name_a70f1d3a998e1028f632b58d12f2ea06a}{toString}}()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00650\ \ \ \ \ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{namespaceutil_a4f30882195e8ab4648f986e4bd848345}{GenericNameNNPtr}}\ \doxymbox{\hyperlink{classutil_1_1_local_name_a9dee6cafce6e7df6d1ce52830d550639}{toFullyQualifiedName}}()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00651\ }
+\DoxyCodeLine{00652\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00653\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classutil_1_1_name_factory}{NameFactory}});}
+\DoxyCodeLine{00654\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classutil_1_1_name_space}{NameSpace}});}
+\DoxyCodeLine{00655\ \ \ \ \ \textcolor{keyword}{explicit}\ LocalName(\textcolor{keyword}{const}\ std::string\ \&nameIn);}
+\DoxyCodeLine{00656\ \ \ \ \ LocalName(\textcolor{keyword}{const}\ LocalName\ \&other);}
+\DoxyCodeLine{00657\ \ \ \ \ LocalName(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceutil_ae5337681577b3d91aad8291563c21541}{NameSpacePtr}}\ \&ns,\ \textcolor{keyword}{const}\ std::string\ \&name);}
+\DoxyCodeLine{00658\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{00659\ }
+\DoxyCodeLine{00660\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00661\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00662\ \ \ \ \ LocalName\ \&operator=(\textcolor{keyword}{const}\ LocalName\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00663\ \};}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00666\ }
+\DoxyCodeLine{00673\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classutil_1_1_name_factory}{NameFactory}}\ \{}
+\DoxyCodeLine{00674\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00675\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceutil_a8ce9cbbeb9592c7decb3cea1f1c59fbb}{NameSpaceNNPtr}}}
+\DoxyCodeLine{00676\ \ \ \ \ createNameSpace(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceutil_a4f30882195e8ab4648f986e4bd848345}{GenericNameNNPtr}}\ \&name,}
+\DoxyCodeLine{00677\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{PropertyMap}}\ \&properties);}
+\DoxyCodeLine{00678\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceutil_a8dd4101f677acf74eacc65d18e5b4397}{LocalNameNNPtr}}\ createLocalName(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceutil_ae5337681577b3d91aad8291563c21541}{NameSpacePtr}}\ \&scope,}
+\DoxyCodeLine{00679\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&name);}
+\DoxyCodeLine{00680\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceutil_a4f30882195e8ab4648f986e4bd848345}{GenericNameNNPtr}}}
+\DoxyCodeLine{00681\ \ \ \ \ createGenericName(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceutil_ae5337681577b3d91aad8291563c21541}{NameSpacePtr}}\ \&scope,}
+\DoxyCodeLine{00682\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\ \&parsedNames);}
+\DoxyCodeLine{00683\ \};}
+\DoxyCodeLine{00684\ }
+\DoxyCodeLine{00685\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00686\ }
+\DoxyCodeLine{00689\ \textcolor{keyword}{class\ }CodeList\ \{}
+\DoxyCodeLine{00690\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00692\ \ \ \ \ vtklibproj\_EXPORT\ \string~CodeList();}
+\DoxyCodeLine{00694\ }
+\DoxyCodeLine{00696\ \ \ \ \ \textcolor{comment}{//\ cppcheck-\/suppress\ functionStatic}}
+\DoxyCodeLine{00697\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ std::string\ \&\doxymbox{\hyperlink{classutil_1_1_code_list_ab1758d0d8da907ee00075a1b196d582e}{toString}}()\ PROJ\_PURE\_DECL\ \{\ \textcolor{keywordflow}{return}\ name\_;\ \}}
+\DoxyCodeLine{00698\ }
+\DoxyCodeLine{00700\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{operator}\ std::string()\ PROJ\_PURE\_DECL\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classutil_1_1_code_list_ab1758d0d8da907ee00075a1b196d582e}{toString}}();\ \}}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00703\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_code_list}{CodeList}}\ \&other)\ PROJ\_PURE\_DECL\ \{}
+\DoxyCodeLine{00704\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ name\_\ ==\ other.name\_;}
+\DoxyCodeLine{00705\ \ \ \ \ \}}
+\DoxyCodeLine{00706\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_ab1c443221b96a6760851925131468a98}{operator!=}}(\textcolor{keyword}{const}\ CodeList\ \&other)\ PROJ\_PURE\_DECL\ \{}
+\DoxyCodeLine{00707\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ name\_\ !=\ other.name\_;}
+\DoxyCodeLine{00708\ \ \ \ \ \}}
+\DoxyCodeLine{00710\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00711\ \ \ \ \ \textcolor{keyword}{explicit}\ CodeList(\textcolor{keyword}{const}\ std::string\ \&nameIn)\ :\ name\_(nameIn)\ \{\}}
+\DoxyCodeLine{00712\ \ \ \ \ CodeList(\textcolor{keyword}{const}\ CodeList\ \&)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00713\ \ \ \ \ CodeList\ \&operator=(\textcolor{keyword}{const}\ CodeList\ \&other);}
+\DoxyCodeLine{00714\ }
+\DoxyCodeLine{00715\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00716\ \ \ \ \ std::string\ name\_\{\};}
+\DoxyCodeLine{00717\ \};}
+\DoxyCodeLine{00718\ }
+\DoxyCodeLine{00719\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00720\ }
+\DoxyCodeLine{00723\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ \doxymbox{\hyperlink{classutil_1_1_exception}{Exception}}\ :\ \textcolor{keyword}{public}\ std::exception\ \{}
+\DoxyCodeLine{00724\ \ \ \ \ std::string\ msg\_;}
+\DoxyCodeLine{00725\ }
+\DoxyCodeLine{00726\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00728\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classutil_1_1_exception}{Exception}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *message);}
+\DoxyCodeLine{00729\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classutil_1_1_exception}{Exception}}(\textcolor{keyword}{const}\ std::string\ \&message);}
+\DoxyCodeLine{00730\ \ \ \ \ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{classutil_1_1_exception}{Exception}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_exception}{Exception}}\ \&other);}
+\DoxyCodeLine{00731\ \ \ \ \ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{classutil_1_1_exception}{\string~Exception}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00733\ \ \ \ \ vtklibproj\_EXPORT\ \textcolor{keyword}{virtual}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *what()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00734\ \};}
+\DoxyCodeLine{00735\ }
+\DoxyCodeLine{00736\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00737\ }
+\DoxyCodeLine{00741\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ \doxymbox{\hyperlink{classutil_1_1_invalid_value_type_exception}{InvalidValueTypeException}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_exception}{Exception}}\ \{}
+\DoxyCodeLine{00742\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00744\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classutil_1_1_invalid_value_type_exception}{InvalidValueTypeException}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *message);}
+\DoxyCodeLine{00745\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classutil_1_1_invalid_value_type_exception}{InvalidValueTypeException}}(}
+\DoxyCodeLine{00746\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&message);}
+\DoxyCodeLine{00747\ \ \ \ \ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{classutil_1_1_invalid_value_type_exception}{InvalidValueTypeException}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_invalid_value_type_exception}{InvalidValueTypeException}}\ \&other);}
+\DoxyCodeLine{00748\ \ \ \ \ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{classutil_1_1_invalid_value_type_exception}{\string~InvalidValueTypeException}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00750\ \};}
+\DoxyCodeLine{00751\ }
+\DoxyCodeLine{00752\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00753\ }
+\DoxyCodeLine{00757\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ \doxymbox{\hyperlink{classutil_1_1_unsupported_operation_exception}{UnsupportedOperationException}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_exception}{Exception}}\ \{}
+\DoxyCodeLine{00758\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00760\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classutil_1_1_unsupported_operation_exception}{UnsupportedOperationException}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *message);}
+\DoxyCodeLine{00761\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classutil_1_1_unsupported_operation_exception}{UnsupportedOperationException}}(}
+\DoxyCodeLine{00762\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&message);}
+\DoxyCodeLine{00763\ \ \ \ \ vtklibproj\_EXPORT}
+\DoxyCodeLine{00764\ \ \ \ \ \doxymbox{\hyperlink{classutil_1_1_unsupported_operation_exception}{UnsupportedOperationException}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_unsupported_operation_exception}{UnsupportedOperationException}}\ \&other);}
+\DoxyCodeLine{00765\ \ \ \ \ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{classutil_1_1_unsupported_operation_exception}{\string~UnsupportedOperationException}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00767\ \};}
+\DoxyCodeLine{00768\ }
+\DoxyCodeLine{00769\ \}\ \textcolor{comment}{//\ namespace\ util}}
+\DoxyCodeLine{00770\ }
+\DoxyCodeLine{00771\ NS\_PROJ\_END}
+\DoxyCodeLine{00772\ }
+\DoxyCodeLine{00773\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ UTIL\_HH\_INCLUDED}}
+
+\end{DoxyCode}

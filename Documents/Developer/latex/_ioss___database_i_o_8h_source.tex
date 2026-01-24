@@ -1,0 +1,715 @@
+\doxysection{Ioss\+\_\+\+Database\+IO.\+h}
+\hypertarget{_ioss___database_i_o_8h_source}{}\label{_ioss___database_i_o_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_DatabaseIO.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_DatabaseIO.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright(C)\ 1999-\/2024\ National\ Technology\ \&\ Engineering\ Solutions}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ of\ Sandia,\ LLC\ (NTESS).\ \ Under\ the\ terms\ of\ Contract\ DE-\/NA0003525\ with}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ NTESS,\ the\ U.S.\ Government\ retains\ certain\ rights\ in\ this\ software.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ See\ packages/seacas/LICENSE\ for\ details}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}Ioss\_BoundingBox.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}Ioss\_CodeTypes.h"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}Ioss\_DBUsage.h"{}}\ \ \ \ \textcolor{comment}{//\ for\ DatabaseUsage,\ etc}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}Ioss\_DataSize.h"{}}\ \ \ \textcolor{comment}{//\ for\ DataSize}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}Ioss\_EntityType.h"{}}\ \textcolor{comment}{//\ for\ EntityType}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}Ioss\_Map.h"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}Ioss\_ParallelUtils.h"{}}\ \ \ \textcolor{comment}{//\ for\ ParallelUtils}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}Ioss\_PropertyManager.h"{}}\ \textcolor{comment}{//\ for\ PropertyManager}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}Ioss\_State.h"{}}\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ for\ State,\ State::STATE\_INVALID}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}Ioss\_SurfaceSplit.h"{}}\ \ \ \ \textcolor{comment}{//\ for\ SurfaceSplitType}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <cstddef>}\ \textcolor{comment}{//\ for\ size\_t,\ nullptr}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <cstdint>}\ \textcolor{comment}{//\ for\ int64\_t}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <map>}\ \ \ \ \ \textcolor{comment}{//\ for\ map}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <string>}\ \ \textcolor{comment}{//\ for\ string}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ <utility>}\ \textcolor{comment}{//\ for\ pair}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ <vector>}\ \ \textcolor{comment}{//\ for\ vector}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}Ioss\_Field.h"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}ioss\_export.h"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}vtk\_ioss\_mangle.h"{}}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_ioss}{Ioss}}\ \{}
+\DoxyCodeLine{00032\ \ \ \textcolor{keyword}{class\ }Assembly;}
+\DoxyCodeLine{00033\ \ \ \textcolor{keyword}{class\ }Blob;}
+\DoxyCodeLine{00034\ \ \ \textcolor{keyword}{class\ }CommSet;}
+\DoxyCodeLine{00035\ \ \ \textcolor{keyword}{class\ }EdgeBlock;}
+\DoxyCodeLine{00036\ \ \ \textcolor{keyword}{class\ }EdgeSet;}
+\DoxyCodeLine{00037\ \ \ \textcolor{keyword}{class\ }ElementBlock;}
+\DoxyCodeLine{00038\ \ \ \textcolor{keyword}{class\ }ElementSet;}
+\DoxyCodeLine{00039\ \ \ \textcolor{keyword}{class\ }ElementTopology;}
+\DoxyCodeLine{00040\ \ \ \textcolor{keyword}{class\ }FaceBlock;}
+\DoxyCodeLine{00041\ \ \ \textcolor{keyword}{class\ }FaceSet;}
+\DoxyCodeLine{00042\ \ \ \textcolor{keyword}{class\ }Field;}
+\DoxyCodeLine{00043\ \ \ \textcolor{keyword}{class\ }GroupingEntity;}
+\DoxyCodeLine{00044\ \ \ \textcolor{keyword}{class\ }NodeBlock;}
+\DoxyCodeLine{00045\ \ \ \textcolor{keyword}{class\ }NodeSet;}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{class\ }Region;}
+\DoxyCodeLine{00047\ \ \ \textcolor{keyword}{class\ }SideBlock;}
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{class\ }SideSet;}
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{class\ }StructuredBlock;}
+\DoxyCodeLine{00050\ \}\ \textcolor{comment}{//\ namespace\ Ioss}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_ioss}{Ioss}}\ \{}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{class\ }EntityBlock;}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{enum\ class}\ DuplicateFieldBehavior\ \{\ UNSET\_,\ IGNORE\_,\ WARNING\_,\ ERROR\_\ \};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{//\ Contains\ (parent\_element,\ side)\ topology\ pairs}}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{using\ }TopoContainer\ =\ std::vector<std::pair<const\ ElementTopology\ *,\ const\ ElementTopology\ *>>;}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{keyword}{class\ }IOSS\_EXPORT\ DatabaseIO}
+\DoxyCodeLine{00064\ \ \ \{}
+\DoxyCodeLine{00065\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }SerializeIO;}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ DatabaseIO()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00069\ \ \ \ \ DatabaseIO(\textcolor{keyword}{const}\ DatabaseIO\ \&)\ \ \ \ \ \ \ \ \ \ \ \ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00070\ \ \ \ \ DatabaseIO(DatabaseIO\ \&\&)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00071\ \ \ \ \ DatabaseIO\ \&operator=(\textcolor{keyword}{const}\ DatabaseIO\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00072\ \ \ \ \ DatabaseIO\ \&operator=(DatabaseIO\ \&\&)\ \ \ \ \ \ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keyword}{virtual}\ \string~DatabaseIO();}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00085\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_aa059cee234638d9b774d6d12ad6265d1}{ok}}(\textcolor{keywordtype}{bool}\ write\_message\ =\ \textcolor{keyword}{false},\ std::string\ *error\_message\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *bad\_count\ =\ \textcolor{keyword}{nullptr})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00087\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ok\_nl(write\_message,\ error\_message,\ bad\_count);}
+\DoxyCodeLine{00090\ \ \ \ \ \}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{comment}{//\ Check\ capabilities\ of\ input/output\ database...\ \ Returns\ an}}
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{//\ unsigned\ int\ with\ the\ supported\ Ioss::EntityTypes\ or'ed}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{//\ together.\ If\ "{}return\_value\ \&\ Ioss::EntityType"{}\ is\ set,\ then\ the}}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{//\ database\ supports\ that\ type\ (e.g.\ return\_value\ \&\ Ioss::FACESET)}}
+\DoxyCodeLine{00096\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{unsigned}\ entity\_field\_support()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ using\_parallel\_io()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ usingParallelIO;\ \}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00107\ \ \ \ \ IOSS\_NODISCARD\ int64\_t\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a00c11e2f2892ba8047a2e4681b26b149}{node\_global\_to\_local}}(int64\_t\ global,\ \textcolor{keywordtype}{bool}\ must\_exist)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00108\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ node\_global\_to\_local\_nl(global,\ must\_exist);}
+\DoxyCodeLine{00111\ \ \ \ \ \}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \ \ IOSS\_NODISCARD\ int64\_t\ element\_global\_to\_local(int64\_t\ global)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00114\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ element\_global\_to\_local\_nl(global);}
+\DoxyCodeLine{00117\ \ \ \ \ \}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00124\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_ad596a05ee31a90415c24ece793226f4e}{node\_major}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};\ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{comment}{//\ Eliminate\ as\ much\ memory\ as\ possible,\ but\ still\ retain\ meta\ data\ information}}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{comment}{//\ Typically,\ eliminate\ the\ maps...}}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordtype}{void}\ release\_memory()}
+\DoxyCodeLine{00129\ \ \ \ \ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ release\_memory\_nl();}
+\DoxyCodeLine{00132\ \ \ \ \ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{comment}{//\ Do\ anything\ that\ might\ be\ needed\ to\ the\ database\ prior\ to\ it}}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{comment}{//\ being\ closed\ and\ destructed.}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ finalize\_database()\textcolor{keyword}{\ const\ }\{\}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{comment}{//\ Let's\ save\ the\ name\ on\ disk\ after\ Filename\ gets\ modified,\ e.g:\ decoded\_filename}}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_pfs\_name(\textcolor{keyword}{const}\ std::string\ \&name)\textcolor{keyword}{\ const\ }\{\ pfsName\ =\ name;\ \}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ IOSS\_NODISCARD\ std::string\ get\_pfs\_name()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ pfsName;\ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a6b4fb16f67b9a0bc1c969005b67ec35c}{set\_dw\_name}}(\textcolor{keyword}{const}\ std::string\ \&name)\textcolor{keyword}{\ const\ }\{\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a75d8447712b2656a0ef06ffc24263b09}{bbName}}\ =\ name;\ \}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \ \ IOSS\_NODISCARD\ std::string\ get\_dw\_name()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00148\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!bbName.empty()\ \&\&\ !is\_input()\ \&\&\ using\_dw())\ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bbName;}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ get\_filename();}
+\DoxyCodeLine{00153\ \ \ \ \ \}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00158\ \ \ \ \ IOSS\_NODISCARD\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_aa466ebbb885bf52bf16879448e4527b6}{get\_dw\_path}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ dwPath;\ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a6e8613a173b573a4501e6c665f0ae26b}{check\_set\_dw}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00169\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_ab9c4593c3990e6b1764ec9a5dbd61a00}{using\_dw}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ usingDataWarp;\ \}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00175\ \ \ \ \ IOSS\_NODISCARD\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a00a8cfc40675b2817ed5a0c333aae73f}{get\_filename}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ DBFilename;\ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00181\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_aae147a9228e74750b8d609a4d1441fac}{get\_file\_pointer}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ 0;\ \}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00187\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{const}\ std::string\ \&\doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a845517754df07f54d0c7e096888d0b38}{decoded\_filename}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00190\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a737ed0679f21976ce3719a5e291f9f87}{get\_format}}()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00196\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_ad7cd691d5190433dc90e403719380e73}{is\_input}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ isInput;\ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00202\ \ \ \ \ IOSS\_NODISCARD\ \doxymbox{\hyperlink{namespace_ioss_a4ec41517502e82a7291184cd7b68b34f}{Ioss::DatabaseUsage}}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a1fa86b791022e9a0ad9e752b5671f373}{usage}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ dbUsage;\ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00208\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a6eac605f3a5bca1f91a980e8024e2fb8}{needs\_shared\_node\_information}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ IOSS\_NODISCARD\ Ioss::IfDatabaseExistsBehavior\ open\_create\_behavior()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_region(\doxymbox{\hyperlink{class_ioss_1_1_region}{Region}}\ *region)\ \{\ region\_\ =\ region;\ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_aeee6acce78b8a1577fa63355eb430362}{open\_dw}}(\textcolor{keyword}{const}\ std::string\ \&filename)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_ac201adc95a5acb830216663746ef4ffd}{close\_dw}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{keywordtype}{void}\ openDatabase()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00230\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ progress(\_\_func\_\_);}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ openDatabase\_nl();}
+\DoxyCodeLine{00234\ \ \ \ \ \}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{keywordtype}{void}\ closeDatabase()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00237\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ progress(\_\_func\_\_);}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ closeDatabase\_nl();}
+\DoxyCodeLine{00241\ \ \ \ \ \}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{keywordtype}{void}\ flush\_database()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00244\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ progress(\_\_func\_\_);}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ flush\_database\_nl();}
+\DoxyCodeLine{00248\ \ \ \ \ \}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordtype}{void}\ reset\_database()}
+\DoxyCodeLine{00251\ \ \ \ \ \{}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ progress(\_\_func\_\_);}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ reset\_database\_nl();}
+\DoxyCodeLine{00255\ \ \ \ \ \}}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00263\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_abe8fa66cfaaaef51085ed9a305782e29}{open\_internal\_change\_set}}(\textcolor{keyword}{const}\ std::string\ \&set\_name)}
+\DoxyCodeLine{00264\ \ \ \ \ \{}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ open\_internal\_change\_set\_nl(set\_name);}
+\DoxyCodeLine{00267\ \ \ \ \ \}}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_ad6033631df566e4a3ca4e96f2c136eb3}{create\_internal\_change\_set}}(\textcolor{keyword}{const}\ std::string\ \&set\_name)}
+\DoxyCodeLine{00276\ \ \ \ \ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ create\_internal\_change\_set\_nl(set\_name);}
+\DoxyCodeLine{00279\ \ \ \ \ \}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_ab490dd67f1ca85031947f6832bd17444}{num\_internal\_change\_set}}()}
+\DoxyCodeLine{00285\ \ \ \ \ \{}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ num\_internal\_change\_set\_nl();}
+\DoxyCodeLine{00288\ \ \ \ \ \}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a925e6ee6dbbb827d7014db45541a2e42}{open\_internal\_change\_set}}(\textcolor{keywordtype}{int}\ set\_index)}
+\DoxyCodeLine{00297\ \ \ \ \ \{}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ open\_internal\_change\_set\_nl(set\_index);}
+\DoxyCodeLine{00300\ \ \ \ \ \}}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00308\ \ \ \ \ Ioss::NameList\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a3ba671e2821ad71d925f844b617d7a9b}{internal\_change\_set\_describe}}(\textcolor{keywordtype}{bool}\ return\_full\_names\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00309\ \ \ \ \ \{}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ internal\_change\_set\_describe\_nl(return\_full\_names);}
+\DoxyCodeLine{00312\ \ \ \ \ \}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00318\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a651586eb12a6b439875b54221a13be72}{supports\_internal\_change\_set}}()}
+\DoxyCodeLine{00319\ \ \ \ \ \{}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ supports\_internal\_change\_set\_nl();}
+\DoxyCodeLine{00322\ \ \ \ \ \}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ std::string\ get\_internal\_change\_set\_name()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}"{}};\ \}}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00340\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a53913dd63638db01ec12c0d82dae06d1}{begin}}(Ioss::State\ state)}
+\DoxyCodeLine{00341\ \ \ \ \ \{}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ progress(\_\_func\_\_);}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ begin\_nl(state);}
+\DoxyCodeLine{00345\ \ \ \ \ \}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00357\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a5d8e540f4416132b1453c0c7a7fa6c7e}{end}}(Ioss::State\ state)}
+\DoxyCodeLine{00358\ \ \ \ \ \{}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ progress(\_\_func\_\_);}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ end\_nl(state);}
+\DoxyCodeLine{00362\ \ \ \ \ \}}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \ \ \ \ \textcolor{keywordtype}{bool}\ begin\_state(\textcolor{keywordtype}{int}\ state,\ \textcolor{keywordtype}{double}\ time);}
+\DoxyCodeLine{00365\ \ \ \ \ \textcolor{keywordtype}{bool}\ end\_state(\textcolor{keywordtype}{int}\ state,\ \textcolor{keywordtype}{double}\ time);}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \ \ \textcolor{comment}{//\ Metadata-\/related\ functions.}}
+\DoxyCodeLine{00368\ \ \ \ \ \textcolor{keywordtype}{void}\ read\_meta\_data()}
+\DoxyCodeLine{00369\ \ \ \ \ \{}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ progress(\textcolor{stringliteral}{"{}Begin\ read\_meta\_data()"{}});}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ read\_meta\_data\_nl();}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ progress(\textcolor{stringliteral}{"{}End\ read\_meta\_data()"{}});}
+\DoxyCodeLine{00374\ \ \ \ \ \}}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \ \ \textcolor{keywordtype}{void}\ get\_step\_times()}
+\DoxyCodeLine{00377\ \ \ \ \ \{}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ get\_step\_times\_nl();}
+\DoxyCodeLine{00380\ \ \ \ \ \}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00392\ \ \ \ \ std::vector<double>\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_aa5bc2d27df37da68478edf7f450c8638}{get\_db\_step\_times}}()}
+\DoxyCodeLine{00393\ \ \ \ \ \{}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ get\_db\_step\_times\_nl();}
+\DoxyCodeLine{00396\ \ \ \ \ \}}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ internal\_edges\_available()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00399\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ internal\_faces\_available()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \ \ \ \ \textcolor{comment}{//\ Information\ Records:}}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00407\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{const}\ Ioss::NameList\ \&\doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a1ed0798419be74e0ecc7a08b40732d8b}{get\_information\_records}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00408\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ informationRecords;}
+\DoxyCodeLine{00410\ \ \ \ \ \}}
+\DoxyCodeLine{00411\ \ \ \ \ \textcolor{keywordtype}{void}\ add\_information\_records(\textcolor{keyword}{const}\ Ioss::NameList\ \&info);}
+\DoxyCodeLine{00412\ \ \ \ \ \textcolor{keywordtype}{void}\ add\_information\_record(\textcolor{keyword}{const}\ std::string\ \&info);}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00414\ \ \ \ \ \textcolor{comment}{//\ QA\ Records:}}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00431\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{const}\ Ioss::NameList\ \&\doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a8918a4d16dc07c976355019f7373b513}{get\_qa\_records}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ qaRecords;\ \}}
+\DoxyCodeLine{00432\ \ \ \ \ \textcolor{keywordtype}{void}\ add\_qa\_record(\textcolor{keyword}{const}\ std::string\ \&code,\ \textcolor{keyword}{const}\ std::string\ \&code\_qa,\ \textcolor{keyword}{const}\ std::string\ \&date,}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&time);}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ get\_logging()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ doLogging\ \&\&\ !singleProcOnly;\ \}}
+\DoxyCodeLine{00436\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_logging(\textcolor{keywordtype}{bool}\ on\_off)\ \{\ doLogging\ =\ on\_off;\ \}}
+\DoxyCodeLine{00437\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ get\_nan\_detection()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ doNanDetection;\ \}}
+\DoxyCodeLine{00438\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_nan\_detection(\textcolor{keywordtype}{bool}\ on\_off)\ \{\ doNanDetection\ =\ on\_off;\ \}}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00440\ \ \ \ \ \textcolor{comment}{//\ The\ get\_field\ and\ put\_field\ functions\ are\ just\ a\ wrapper\ around\ the}}
+\DoxyCodeLine{00441\ \ \ \ \ \textcolor{comment}{//\ pure\ virtual\ get\_field\_internal\ and\ put\_field\_internal\ functions,}}
+\DoxyCodeLine{00442\ \ \ \ \ \textcolor{comment}{//\ but\ this\ lets\ me\ add\ some\ debug/checking/common\ code\ to\ the}}
+\DoxyCodeLine{00443\ \ \ \ \ \textcolor{comment}{//\ functions\ without\ having\ to\ do\ it\ in\ the\ calling\ code\ or\ in\ the}}
+\DoxyCodeLine{00444\ \ \ \ \ \textcolor{comment}{//\ derived\ classes\ code.\ \ This\ also\ fulfills\ the\ heuristic\ that\ a}}
+\DoxyCodeLine{00445\ \ \ \ \ \textcolor{comment}{//\ public\ interface\ should\ not\ contain\ pure\ virtual\ functions.}}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00447\ \ \ \ \ int64\_t\ get\_field(\textcolor{keyword}{const}\ T\ *reg,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,\ \textcolor{keywordtype}{size\_t}\ data\_size)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00448\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ verify\_and\_log(reg,\ field,\ 1);}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ int64\_t\ retval\ =\ get\_field\_internal(reg,\ field,\ data,\ data\_size);}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (get\_nan\_detection())\ \{}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ verify\_field\_data(reg,\ field,\ Ioss::Field::InOut::INPUT,\ data);}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ verify\_and\_log(\textcolor{keyword}{nullptr},\ field,\ 1);}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ retval;}
+\DoxyCodeLine{00457\ \ \ \ \ \}}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00460\ \ \ \ \ int64\_t\ put\_field(\textcolor{keyword}{const}\ T\ *reg,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,\ \textcolor{keywordtype}{size\_t}\ data\_size)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00461\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ verify\_and\_log(reg,\ field,\ 0);}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (get\_nan\_detection())\ \{}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ verify\_field\_data(reg,\ field,\ Ioss::Field::InOut::OUTPUT,\ data);}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ int64\_t\ retval\ =\ put\_field\_internal(reg,\ field,\ data,\ data\_size);}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ verify\_and\_log(\textcolor{keyword}{nullptr},\ field,\ 0);}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ retval;}
+\DoxyCodeLine{00470\ \ \ \ \ \}}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00473\ \ \ \ \ int64\_t\ get\_zc\_field(\textcolor{keyword}{const}\ T\ *reg,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,\ \textcolor{keywordtype}{size\_t}\ *data\_size)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00474\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ IOSS\_FUNC\_ENTER(m\_);}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ verify\_and\_log(reg,\ field,\ 1);}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ int64\_t\ retval\ =\ get\_zc\_field\_internal(reg,\ field,\ data,\ data\_size);}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (get\_nan\_detection())\ \{}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ verify\_field\_data(reg,\ field,\ Ioss::Field::InOut::INPUT,\ data);}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ verify\_and\_log(\textcolor{keyword}{nullptr},\ field,\ 1);}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ retval;}
+\DoxyCodeLine{00483\ \ \ \ \ \}}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00493\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a8310d007b2801e27ea2c21ce4d347536}{is\_parallel\_consistent}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ isParallelConsistent;\ \}}
+\DoxyCodeLine{00494\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_parallel\_consistency(\textcolor{keywordtype}{bool}\ on\_off)\ \{\ isParallelConsistent\ =\ on\_off;\ \}}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00496\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ get\_use\_generic\_canonical\_name()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ useGenericCanonicalName;\ \}}
+\DoxyCodeLine{00497\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_use\_generic\_canonical\_name(\textcolor{keywordtype}{bool}\ yes\_no)\ \{\ useGenericCanonicalName\ =\ yes\_no;\ \}}
+\DoxyCodeLine{00498\ }
+\DoxyCodeLine{00499\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ ignore\_database\_names()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ ignoreDatabaseNames;\ \}}
+\DoxyCodeLine{00500\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ignore\_database\_names(\textcolor{keywordtype}{bool}\ yes\_no)\ \{\ ignoreDatabaseNames\ =\ yes\_no;\ \}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ get\_ignore\_realn\_fields()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_ignoreRealnFields;\ \}}
+\DoxyCodeLine{00503\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_ignore\_realn\_fields(\textcolor{keywordtype}{bool}\ yes\_no)\ \{\ m\_ignoreRealnFields\ =\ yes\_no;\ \}}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00509\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a68939c4c34f1424bba630aef5aaf3f4b}{maximum\_symbol\_length}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00510\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00512\ \ \ \ \ \}\ \textcolor{comment}{//\ Default\ is\ unlimited...}}
+\DoxyCodeLine{00513\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ set\_maximum\_symbol\_length(\textcolor{keywordtype}{int}\ \textcolor{comment}{/*\ requested\_symbol\_size\ */})\ \{}
+\DoxyCodeLine{00514\ \ \ \ \ \}\ \textcolor{comment}{//\ Default\ does\ nothing...}}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \ \ \ \ IOSS\_NODISCARD\ std::string\ get\_component\_name(\textcolor{keyword}{const}\ Ioss::Field\ \&field,}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss::Field::InOut\ in\_out,\ \textcolor{keywordtype}{int}\ component)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00518\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ get\_field\_separator()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ fieldSeparator;\ \}}
+\DoxyCodeLine{00519\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ get\_field\_recognition()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ enableFieldRecognition;\ \}}
+\DoxyCodeLine{00520\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ get\_field\_strip\_trailing\_()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ fieldStripTrailing\_;\ \}}
+\DoxyCodeLine{00521\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_field\_separator(\textcolor{keywordtype}{char}\ separator);}
+\DoxyCodeLine{00522\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_field\_recognition(\textcolor{keywordtype}{bool}\ yes\_no)\ \{\ enableFieldRecognition\ =\ yes\_no;\ \}}
+\DoxyCodeLine{00523\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_field\_strip\_trailing\_(\textcolor{keywordtype}{bool}\ yes\_no)\ \{\ fieldStripTrailing\_\ =\ yes\_no;\ \}}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \ \ \ \ IOSS\_NODISCARD\ DuplicateFieldBehavior\ get\_duplicate\_field\_behavior()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00526\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ duplicateFieldBehavior;}
+\DoxyCodeLine{00528\ \ \ \ \ \}}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00530\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_lower\_case\_variable\_names(\textcolor{keywordtype}{bool}\ true\_false)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00531\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ lowerCaseVariableNames\ =\ true\_false;}
+\DoxyCodeLine{00533\ \ \ \ \ \}}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \ \ \ \ \textcolor{comment}{/*\ \(\backslash\)brief\ Set\ the\ method\ used\ to\ split\ sidesets\ into\ homogeneous\ blocks.}}
+\DoxyCodeLine{00536\ \textcolor{comment}{\ \ \ \ \ *}}
+\DoxyCodeLine{00537\ \textcolor{comment}{\ \ \ \ \ *\ \ \(\backslash\)param[in]\ split\_type\ The\ desired\ method.}}
+\DoxyCodeLine{00538\ \textcolor{comment}{\ \ \ \ \ *}}
+\DoxyCodeLine{00539\ \textcolor{comment}{\ \ \ \ \ */}}
+\DoxyCodeLine{00540\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_surface\_split\_type(Ioss::SurfaceSplitType\ split\_type)\ \{\ splitType\ =\ split\_type;\ \}}
+\DoxyCodeLine{00541\ \ \ \ \ IOSS\_NODISCARD\ \doxymbox{\hyperlink{namespace_ioss_aac97d071c77181adce98f1569c36d222}{Ioss::SurfaceSplitType}}\ get\_surface\_split\_type()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ splitType;\ \}}
+\DoxyCodeLine{00542\ }
+\DoxyCodeLine{00543\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_block\_omissions(\textcolor{keyword}{const}\ Ioss::NameList\ \&omissions,}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::NameList\ \&inclusions\ =\ \{\});}
+\DoxyCodeLine{00545\ }
+\DoxyCodeLine{00546\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_assembly\_omissions(\textcolor{keyword}{const}\ Ioss::NameList\ \&omissions,}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::NameList\ \&inclusions\ =\ \{\});}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \ \ \ \ \textcolor{keywordtype}{void}\ get\_block\_adjacencies(\textcolor{keyword}{const}\ Ioss::ElementBlock\ *eb,\ Ioss::NameList\ \&block\_adjacency)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00550\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ get\_block\_adjacencies\_nl(eb,\ block\_adjacency);}
+\DoxyCodeLine{00552\ \ \ \ \ \}}
+\DoxyCodeLine{00553\ \ \ \ \ \textcolor{keywordtype}{void}\ compute\_block\_membership(Ioss::SideBlock\ *efblock,\ Ioss::NameList\ \&block\_membership)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00554\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ compute\_block\_membership\_nl(efblock,\ block\_membership);}
+\DoxyCodeLine{00556\ \ \ \ \ \}}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \ \ \ \ IOSS\_NODISCARD\ AxisAlignedBoundingBox\ get\_bounding\_box(\textcolor{keyword}{const}\ Ioss::NodeBlock\ *nb)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00559\ \ \ \ \ IOSS\_NODISCARD\ AxisAlignedBoundingBox\ get\_bounding\_box(\textcolor{keyword}{const}\ Ioss::ElementBlock\ *eb)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00560\ \ \ \ \ IOSS\_NODISCARD\ AxisAlignedBoundingBox\ get\_bounding\_box(\textcolor{keyword}{const}\ Ioss::StructuredBlock\ *sb)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ int\_byte\_size\_db()\ \textcolor{keyword}{const}\ =\ 0;\ }
+\DoxyCodeLine{00563\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a71f0b2da41a404b838b2ab5870dbb360}{int\_byte\_size\_api}}()\ \textcolor{keyword}{const};\ \ \ \ }
+\DoxyCodeLine{00564\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a0d41d13e0cc0b2eeda19028b9f6c19e9}{set\_int\_byte\_size\_api}}(Ioss::DataSize\ size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00565\ \ \ \ \ IOSS\_NODISCARD\ \doxymbox{\hyperlink{namespace_ioss_a471a5f1fc4d6837c650722e41edb2822}{Ioss::DataSize}}\ int\_byte\_size\_data\_size()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00566\ }
+\DoxyCodeLine{00570\ \ \ \ \ IOSS\_NODISCARD\ \doxymbox{\hyperlink{class_ioss_1_1_region}{Region}}\ *\doxymbox{\hyperlink{class_ioss_1_1_database_i_o_ad013b48df6d593deb7ffc98ab5de7777}{get\_region}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ region\_;\ \}}
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00615\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a4a135bac653f6408c2105c5dc2db0b65}{set\_cycle\_count}}(\textcolor{keywordtype}{int}\ count)\textcolor{keyword}{\ const\ }\{\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a57b5b83cf120cf5e313f696f7720f1cb}{cycleCount}}\ =\ count;\ \}}
+\DoxyCodeLine{00616\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{int}\ \ get\_cycle\_count()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ cycleCount;\ \}}
+\DoxyCodeLine{00617\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_overlay\_count(\textcolor{keywordtype}{int}\ count)\textcolor{keyword}{\ const\ }\{\ overlayCount\ =\ count;\ \}}
+\DoxyCodeLine{00618\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{int}\ \ get\_overlay\_count()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ overlayCount;\ \}}
+\DoxyCodeLine{00619\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_file\_per\_state(\textcolor{keywordtype}{bool}\ yes\_no)\textcolor{keyword}{\ const\ }\{\ filePerState\ =\ yes\_no;\ \}}
+\DoxyCodeLine{00620\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ get\_file\_per\_state()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ filePerState;\ \}}
+\DoxyCodeLine{00621\ }
+\DoxyCodeLine{00622\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_time\_scale\_factor(\textcolor{keywordtype}{double}\ factor)\ \{\ timeScaleFactor\ =\ factor;\ \}}
+\DoxyCodeLine{00623\ }
+\DoxyCodeLine{00624\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{const}\ Ioss::ParallelUtils\ \&util()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ util\_;\ \}}
+\DoxyCodeLine{00625\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{const}\ Ioss::PropertyManager\ \&get\_property\_manager()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ properties;\ \}}
+\DoxyCodeLine{00630\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{int}\ \ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a66e6b99f81ef6af8ed5c6c2ed15d5639}{parallel\_rank}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a1c53cb32bfb7940d689ead8c42deab8f}{myProcessor}};\ \}}
+\DoxyCodeLine{00631\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{int}\ \ parallel\_size()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{namespaceutil}{util}}().parallel\_size();\ \}}
+\DoxyCodeLine{00632\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ is\_parallel()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ isParallel;\ \}}
+\DoxyCodeLine{00633\ }
+\DoxyCodeLine{00634\ \ \ \ \ \textcolor{keywordtype}{void}\ progress(\textcolor{keyword}{const}\ std::string\ \&output)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00635\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_enableTracing)\ \{}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ util().progress(output);}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00639\ \ \ \ \ \}}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \ \ \ \ \textcolor{keyword}{virtual}\ std::vector<size\_t>}
+\DoxyCodeLine{00642\ \ \ \ \ get\_entity\_field\_data(\textcolor{keyword}{const}\ std::string\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&field\_name,}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<Ioss::ElementBlock\ *>\ \&elem\_blocks,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00645\ }
+\DoxyCodeLine{00646\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00647\ \ \ \ \ DatabaseIO(Region\ *region,\ std::string\ filename,\ Ioss::DatabaseUsage\ db\_usage,}
+\DoxyCodeLine{00648\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss\_MPI\_Comm\ communicator,\ \textcolor{keyword}{const}\ Ioss::PropertyManager\ \&props);}
+\DoxyCodeLine{00649\ }
+\DoxyCodeLine{00669\ }
+\DoxyCodeLine{00670\ \ \ \ \ Ioss::PropertyManager\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_af79dd0ec8b3e8d09142362ff875a07e7}{properties}};}
+\DoxyCodeLine{00671\ }
+\DoxyCodeLine{00679\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a8f7ffe6187feb373a5b37ea874228c6a}{set\_common\_side\_topology}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00680\ \ \ \ \ \doxymbox{\hyperlink{class_ioss_1_1_element_topology}{ElementTopology}}\ *commonSideTopology\{\textcolor{keyword}{nullptr}\};}
+\DoxyCodeLine{00681\ }
+\DoxyCodeLine{00682\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00683\ \ \ \ \ \textcolor{keywordtype}{void}\ create\_groups(\textcolor{keyword}{const}\ std::string\ \&property\_name,\ \doxymbox{\hyperlink{namespace_ioss_afc1c64ae70b8e805a24de65bafc9c89f}{EntityType}}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00684\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&type\_name,\ \textcolor{keyword}{const}\ T\ *set\_type);}
+\DoxyCodeLine{00685\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00686\ \ \ \ \ \textcolor{keywordtype}{void}\ create\_group(\doxymbox{\hyperlink{namespace_ioss_afc1c64ae70b8e805a24de65bafc9c89f}{EntityType}}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},\ \textcolor{keyword}{const}\ std::string\ \&type\_name,}
+\DoxyCodeLine{00687\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::NameList\ \&group\_spec,\ \textcolor{keyword}{const}\ T\ *set\_type);}
+\DoxyCodeLine{00688\ }
+\DoxyCodeLine{00689\ \ \ \ \ \textcolor{comment}{//\ Create\ new\ sets\ as\ groups\ of\ existing\ exodus\ sets...}}
+\DoxyCodeLine{00690\ \ \ \ \ \textcolor{keywordtype}{void}\ handle\_groups();}
+\DoxyCodeLine{00691\ }
+\DoxyCodeLine{00700\ \ \ \ \ std::string\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a5fc3c1ac04516bfb5993be9e28118cbd}{originalDBFilename}}\{\};}
+\DoxyCodeLine{00701\ \ \ \ \ std::string\ \ \ \ \ \ \ \ \ DBFilename\{\};}
+\DoxyCodeLine{00702\ \ \ \ \ \textcolor{keyword}{mutable}\ std::string\ decodedFilename\{\};}
+\DoxyCodeLine{00703\ }
+\DoxyCodeLine{00712\ \ \ \ \ \textcolor{keyword}{mutable}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a75d8447712b2656a0ef06ffc24263b09}{bbName}}\{\};}
+\DoxyCodeLine{00713\ \ \ \ \ \textcolor{keyword}{mutable}\ std::string\ pfsName\{\};}
+\DoxyCodeLine{00714\ \ \ \ \ \textcolor{keyword}{mutable}\ std::string\ dwPath\{\};}
+\DoxyCodeLine{00715\ }
+\DoxyCodeLine{00716\ \ \ \ \ \textcolor{keyword}{mutable}\ \doxymbox{\hyperlink{namespace_ioss_a02dbd3bfbd7f633e636c8c0c385c4a34}{Ioss::State}}\ dbState\{\doxymbox{\hyperlink{namespace_ioss_a02dbd3bfbd7f633e636c8c0c385c4a34aa32814d2f8fedbeb5f265250004b584e}{STATE\_INVALID}}\};}
+\DoxyCodeLine{00717\ }
+\DoxyCodeLine{00718\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a1c53cb32bfb7940d689ead8c42deab8f}{myProcessor}}\{0\};\ }
+\DoxyCodeLine{00719\ }
+\DoxyCodeLine{00720\ \ \ \ \ int64\_t\ nodeCount\{0\};}
+\DoxyCodeLine{00721\ \ \ \ \ int64\_t\ elementCount\{0\};}
+\DoxyCodeLine{00722\ }
+\DoxyCodeLine{00731\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_aa0a0a89a632e9400e9b972d4ed0a40b7}{check\_side\_topology}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00732\ }
+\DoxyCodeLine{00734\ \ \ \ \ TopoContainer\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a47d138d2dbbd0e6f5091a4a2380ca1d4}{sideTopology}}\{\};}
+\DoxyCodeLine{00735\ }
+\DoxyCodeLine{00742\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a57b5b83cf120cf5e313f696f7720f1cb}{cycleCount}}\{0\};}
+\DoxyCodeLine{00743\ }
+\DoxyCodeLine{00744\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{int}\ overlayCount\{0\};}
+\DoxyCodeLine{00745\ }
+\DoxyCodeLine{00754\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a7f540603f53cef160be5b769e9f929a5}{timeScaleFactor}}\{1.0\};}
+\DoxyCodeLine{00755\ }
+\DoxyCodeLine{00756\ \ \ \ \ \doxymbox{\hyperlink{namespace_ioss_aac97d071c77181adce98f1569c36d222}{Ioss::SurfaceSplitType}}\ splitType\{SPLIT\_BY\_TOPOLOGIES\};}
+\DoxyCodeLine{00757\ \ \ \ \ Ioss::DatabaseUsage\ \ \ \ dbUsage\{\};}
+\DoxyCodeLine{00758\ }
+\DoxyCodeLine{00759\ \ \ \ \ \textcolor{keyword}{mutable}\ \doxymbox{\hyperlink{namespace_ioss_a471a5f1fc4d6837c650722e41edb2822}{Ioss::DataSize}}\ dbIntSizeAPI\{USE\_INT32\_API\};}
+\DoxyCodeLine{00760\ }
+\DoxyCodeLine{00766\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_a38565407d3e3d1a980f8ad98f67d6b4a}{filePerState}}\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00767\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{bool}\ usingDataWarp\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00768\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o_aea8f55d83b4ae9599f443ba49f0a219a}{isParallel}}\{\textcolor{keyword}{false}\};\ }
+\DoxyCodeLine{00769\ }
+\DoxyCodeLine{00770\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{bool}\ lowerCaseVariableNames\{\textcolor{keyword}{true}\};}
+\DoxyCodeLine{00771\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ usingParallelIO\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00772\ }
+\DoxyCodeLine{00773\ \ \ \ \ \textcolor{comment}{//\ List\ of\ element\ blocks\ that\ should\ be\ omitted\ or\ included\ from}}
+\DoxyCodeLine{00774\ \ \ \ \ \textcolor{comment}{//\ this\ model.\ \ Surfaces\ will\ take\ this\ into\ account\ while}}
+\DoxyCodeLine{00775\ \ \ \ \ \textcolor{comment}{//\ splitting;\ however,\ node\ and\ nodesets\ will\ not\ be\ filtered}}
+\DoxyCodeLine{00776\ \ \ \ \ \textcolor{comment}{//\ (perhaps\ this\ will\ be\ done\ at\ a\ later\ time...)\ \ NOTE:\ All\ local}}
+\DoxyCodeLine{00777\ \ \ \ \ \textcolor{comment}{//\ element\ ids\ and\ offsets\ are\ still\ calculated\ assuming\ that\ the}}
+\DoxyCodeLine{00778\ \ \ \ \ \textcolor{comment}{//\ blocks\ exist\ in\ the\ model...}}
+\DoxyCodeLine{00779\ \ \ \ \ \textcolor{comment}{//\ Only\ one\ of\ these\ can\ have\ values\ and\ the\ other\ must\ be\ empty.}}
+\DoxyCodeLine{00780\ \ \ \ \ Ioss::NameList\ blockOmissions\{\};}
+\DoxyCodeLine{00781\ \ \ \ \ Ioss::NameList\ blockInclusions\{\};}
+\DoxyCodeLine{00782\ \ \ \ \ Ioss::NameList\ assemblyOmissions\{\};}
+\DoxyCodeLine{00783\ \ \ \ \ Ioss::NameList\ assemblyInclusions\{\};}
+\DoxyCodeLine{00784\ }
+\DoxyCodeLine{00785\ \ \ \ \ Ioss::NameList\ informationRecords\{\};}
+\DoxyCodeLine{00786\ \ \ \ \ Ioss::NameList\ qaRecords\{\};}
+\DoxyCodeLine{00787\ }
+\DoxyCodeLine{00788\ \ \ \ \ \textcolor{comment}{//-\/-\/-\/Node\ Map\ -\/-\/\ Maps\ internal\ (1..NUMNP)\ ids\ to\ global\ ids\ used\ on\ the}}
+\DoxyCodeLine{00789\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ application\ side.\ \ \ global\ =\ nodeMap[local]}}
+\DoxyCodeLine{00790\ \ \ \ \ \textcolor{keyword}{mutable}\ Ioss::Map\ nodeMap\{\textcolor{stringliteral}{"{}node"{}},\ DBFilename,\ myProcessor\};}
+\DoxyCodeLine{00791\ \ \ \ \ \textcolor{keyword}{mutable}\ Ioss::Map\ edgeMap\{\textcolor{stringliteral}{"{}edge"{}},\ DBFilename,\ myProcessor\};}
+\DoxyCodeLine{00792\ \ \ \ \ \textcolor{keyword}{mutable}\ Ioss::Map\ faceMap\{\textcolor{stringliteral}{"{}face"{}},\ DBFilename,\ myProcessor\};}
+\DoxyCodeLine{00793\ \ \ \ \ \textcolor{keyword}{mutable}\ Ioss::Map\ elemMap\{\textcolor{stringliteral}{"{}element"{}},\ DBFilename,\ myProcessor\};}
+\DoxyCodeLine{00794\ }
+\DoxyCodeLine{00795\ \ \ \ \ \textcolor{keyword}{mutable}\ std::vector<std::vector<bool>>\ blockAdjacency;}
+\DoxyCodeLine{00796\ }
+\DoxyCodeLine{00797\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ openDatabase\_nl()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00798\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ closeDatabase\_nl()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00799\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ flush\_database\_nl()\textcolor{keyword}{\ const\ }\{\}}
+\DoxyCodeLine{00800\ }
+\DoxyCodeLine{00801\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ release\_memory\_nl();}
+\DoxyCodeLine{00802\ }
+\DoxyCodeLine{00803\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ reset\_database\_nl();}
+\DoxyCodeLine{00804\ }
+\DoxyCodeLine{00805\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00806\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ ok\_nl(\textcolor{keywordtype}{bool}\ \textcolor{comment}{/*\ write\_message\ */},\ std::string\ *\ \textcolor{comment}{/*\ error\_message\ */},}
+\DoxyCodeLine{00807\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *bad\_count)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00808\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00809\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bad\_count\ !=\ \textcolor{keyword}{nullptr})\ \{}
+\DoxyCodeLine{00810\ \ \ \ \ \ \ \ \ *bad\_count\ =\ 0;}
+\DoxyCodeLine{00811\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00812\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ dbState\ !=\ \doxymbox{\hyperlink{namespace_ioss_a02dbd3bfbd7f633e636c8c0c385c4a34aa32814d2f8fedbeb5f265250004b584e}{Ioss::STATE\_INVALID}};}
+\DoxyCodeLine{00813\ \ \ \ \ \}}
+\DoxyCodeLine{00814\ }
+\DoxyCodeLine{00815\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ node\_global\_to\_local\_nl(int64\_t\ global,\ \textcolor{keywordtype}{bool}\ must\_exist)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00816\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00817\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ nodeMap.global\_to\_local(global,\ must\_exist);}
+\DoxyCodeLine{00818\ \ \ \ \ \}}
+\DoxyCodeLine{00819\ }
+\DoxyCodeLine{00820\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ element\_global\_to\_local\_nl(int64\_t\ global)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00821\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00822\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ elemMap.global\_to\_local(global);}
+\DoxyCodeLine{00823\ \ \ \ \ \}}
+\DoxyCodeLine{00824\ }
+\DoxyCodeLine{00825\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ supports\_internal\_change\_set\_nl()\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00826\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ open\_internal\_change\_set\_nl(\textcolor{keyword}{const}\ std::string\ \&\ \textcolor{comment}{/*\ set\_name\ */})\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00827\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ open\_internal\_change\_set\_nl(\textcolor{keywordtype}{int}\ \textcolor{comment}{/*\ index\ */})\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00828\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ create\_internal\_change\_set\_nl(\textcolor{keyword}{const}\ std::string\ \&\ \textcolor{comment}{/*\ set\_name\ */})\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00829\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \ num\_internal\_change\_set\_nl()\ \{\ \textcolor{keywordflow}{return}\ 0;\ \}}
+\DoxyCodeLine{00830\ \ \ \ \ \textcolor{keyword}{virtual}\ Ioss::NameList\ internal\_change\_set\_describe\_nl(\textcolor{keywordtype}{bool}\ \textcolor{comment}{/*\ return\_full\_names\ */})}
+\DoxyCodeLine{00831\ \ \ \ \ \{}
+\DoxyCodeLine{00832\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Ioss::NameList();}
+\DoxyCodeLine{00833\ \ \ \ \ \}}
+\DoxyCodeLine{00834\ }
+\DoxyCodeLine{00835\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ begin\_nl(Ioss::State\ state)\ =\ 0;}
+\DoxyCodeLine{00836\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ end\_nl(Ioss::State\ state)\ \ \ =\ 0;}
+\DoxyCodeLine{00837\ }
+\DoxyCodeLine{00838\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ read\_meta\_data\_nl()\ =\ 0;}
+\DoxyCodeLine{00839\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ get\_step\_times\_nl()\ \{\}}
+\DoxyCodeLine{00840\ \ \ \ \ \textcolor{keyword}{virtual}\ std::vector<double>\ get\_db\_step\_times\_nl()\ \{\ \textcolor{keywordflow}{return}\ std::vector<double>();\ \}}
+\DoxyCodeLine{00841\ }
+\DoxyCodeLine{00842\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ begin\_state\_nl(\textcolor{keywordtype}{int}\ state,\ \textcolor{keywordtype}{double}\ time);}
+\DoxyCodeLine{00843\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ end\_state\_nl(\textcolor{keywordtype}{int}\ state,\ \textcolor{keywordtype}{double}\ time);}
+\DoxyCodeLine{00844\ }
+\DoxyCodeLine{00845\ \ \ \ \ \textcolor{keywordtype}{void}\ get\_block\_adjacencies\_nl(\textcolor{keyword}{const}\ Ioss::ElementBlock\ *eb,}
+\DoxyCodeLine{00846\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss::NameList\ \ \ \ \ \ \ \ \ \ \ \&block\_adjacency)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00847\ }
+\DoxyCodeLine{00848\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ compute\_block\_membership\_nl(Ioss::SideBlock\ *\ \textcolor{comment}{/*\ efblock\ */},}
+\DoxyCodeLine{00849\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss::NameList\ \&\ \textcolor{comment}{/*\ block\_membership\ */})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00850\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00851\ \ \ \ \ \}}
+\DoxyCodeLine{00852\ }
+\DoxyCodeLine{00853\ \ \ \ \ \textcolor{keywordtype}{void}\ compute\_block\_adjacencies()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00854\ }
+\DoxyCodeLine{00855\ \ \ \ \ \textcolor{keywordtype}{bool}\ verify\_field\_data(\textcolor{keyword}{const}\ GroupingEntity\ *ge,\ \textcolor{keyword}{const}\ Field\ \&field,\ Ioss::Field::InOut\ in\_out,}
+\DoxyCodeLine{00856\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *data)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00857\ \ \ \ \ \textcolor{keywordtype}{void}\ verify\_and\_log(\textcolor{keyword}{const}\ GroupingEntity\ *ge,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{int}\ in\_out)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00858\ }
+\DoxyCodeLine{00859\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ Region\ *reg,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00860\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00861\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ NodeBlock\ *nb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00862\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00863\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ EdgeBlock\ *nb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00864\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00865\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ FaceBlock\ *nb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00866\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00867\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ ElementBlock\ *eb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00868\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00869\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ SideBlock\ *fb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00870\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00871\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ NodeSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00872\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00873\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ EdgeSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00874\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00875\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ FaceSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00876\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00877\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ ElementSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00878\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00879\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ SideSet\ *fs,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00880\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00881\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ CommSet\ *cs,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00883\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ Assembly\ *as,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00884\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00885\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ Blob\ *bl,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00886\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00887\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_field\_internal(\textcolor{keyword}{const}\ StructuredBlock\ *sb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00888\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00889\ }
+\DoxyCodeLine{00890\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ Region\ *reg,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00891\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00892\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ NodeBlock\ *nb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00893\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00894\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ EdgeBlock\ *nb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00895\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00896\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ FaceBlock\ *nb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00897\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00898\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ ElementBlock\ *eb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00899\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00900\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ SideBlock\ *fb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00901\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00902\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ NodeSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00903\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00904\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ EdgeSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00905\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00906\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ FaceSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00907\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00908\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ ElementSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00909\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00910\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ SideSet\ *fs,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00911\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00912\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ CommSet\ *cs,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00913\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00914\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ Assembly\ *as,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00915\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00916\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ Blob\ *bl,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00917\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00918\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ put\_field\_internal(\textcolor{keyword}{const}\ StructuredBlock\ *sb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00919\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00920\ }
+\DoxyCodeLine{00921\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ Region\ *reg,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00922\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00923\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ NodeBlock\ *nb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00924\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00925\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ EdgeBlock\ *nb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00926\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00927\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ FaceBlock\ *nb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00928\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00929\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ ElementBlock\ *eb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00930\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00931\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ SideBlock\ *fb,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00932\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00933\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ NodeSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00934\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00935\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ EdgeSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00936\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00937\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ FaceSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00938\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00939\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ ElementSet\ *ns,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00940\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00941\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ SideSet\ *fs,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00942\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00943\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ CommSet\ *cs,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00944\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00945\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ Assembly\ *as,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00946\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00947\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ Blob\ *bl,\ \textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00948\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00949\ \ \ \ \ \textcolor{keyword}{virtual}\ int64\_t\ get\_zc\_field\_internal(\textcolor{keyword}{const}\ StructuredBlock\ *sb,\ \textcolor{keyword}{const}\ Field\ \&field,}
+\DoxyCodeLine{00950\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ **data,\ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00951\ }
+\DoxyCodeLine{00952\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00953\ \ \ \ \ std::vector<size\_t>\ get\_entity\_field\_data\_internal(\textcolor{keyword}{const}\ std::string\ \ \ \ \ \ \&field\_name,}
+\DoxyCodeLine{00954\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<T\ *>\ \&entity\_container,}
+\DoxyCodeLine{00955\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *data,\ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00956\ }
+\DoxyCodeLine{00957\ \ \ \ \ \textcolor{keyword}{mutable}\ std::map<std::string,\ AxisAlignedBoundingBox>\ elementBlockBoundingBoxes;}
+\DoxyCodeLine{00958\ }
+\DoxyCodeLine{00959\ \ \ \ \ Ioss::ParallelUtils\ util\_;\ \textcolor{comment}{//\ Encapsulate\ parallel\ and\ other\ utility\ functions.}}
+\DoxyCodeLine{00960\ \textcolor{preprocessor}{\#if\ defined(IOSS\_THREADSAFE)}}
+\DoxyCodeLine{00961\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00962\ \ \ \ \ \textcolor{keyword}{mutable}\ std::mutex\ m\_;}
+\DoxyCodeLine{00963\ }
+\DoxyCodeLine{00964\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00965\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00966\ \ \ \ \ Region\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *region\_\{\textcolor{keyword}{nullptr}\};}
+\DoxyCodeLine{00967\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fieldSeparator\{\textcolor{charliteral}{'\_'}\};}
+\DoxyCodeLine{00968\ \ \ \ \ DuplicateFieldBehavior\ duplicateFieldBehavior\{DuplicateFieldBehavior::UNSET\_\};}
+\DoxyCodeLine{00969\ }
+\DoxyCodeLine{00970\ \ \ \ \ \textcolor{keywordtype}{bool}\ fieldSeparatorSpecified\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00971\ \ \ \ \ \textcolor{keywordtype}{bool}\ enableFieldRecognition\{\textcolor{keyword}{true}\};}
+\DoxyCodeLine{00972\ \ \ \ \ \textcolor{keywordtype}{bool}\ fieldStripTrailing\_\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00973\ \ \ \ \ \textcolor{keywordtype}{bool}\ isInput\{\textcolor{keyword}{true}\};\ \textcolor{comment}{//\ No\ good\ default...}}
+\DoxyCodeLine{00974\ \ \ \ \ \textcolor{keywordtype}{bool}\ isParallelConsistent\{}
+\DoxyCodeLine{00975\ \ \ \ \ \ \ \ \ \textcolor{keyword}{true}\};\ \textcolor{comment}{//\ True\ if\ application\ will\ make\ field\ data\ get/put\ calls\ parallel}}
+\DoxyCodeLine{00976\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ consistently.}}
+\DoxyCodeLine{00977\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ True\ is\ default\ and\ required\ for\ parallel-\/io\ databases.}}
+\DoxyCodeLine{00978\ \ \ \ \ \textcolor{comment}{//\ Even\ if\ false,\ metadata\ operations\ must\ be\ called\ by\ all\ processors}}
+\DoxyCodeLine{00979\ }
+\DoxyCodeLine{00980\ \ \ \ \ \textcolor{keywordtype}{bool}\ singleProcOnly\{\textcolor{keyword}{false}\};\ \textcolor{comment}{//\ True\ if\ history\ or\ heartbeat\ which\ is\ only\ written\ from\ proc\ 0...}}
+\DoxyCodeLine{00981\ \ \ \ \ \textcolor{keywordtype}{bool}\ doLogging\{\textcolor{keyword}{false}\};\ \ \ \ \ \ \textcolor{comment}{//\ True\ if\ logging\ field\ input/output}}
+\DoxyCodeLine{00982\ \ \ \ \ \textcolor{keywordtype}{bool}\ doNanDetection\{\textcolor{keyword}{false}\};\ \textcolor{comment}{//\ True\ if\ checking\ all\ floating\ point\ field\ data\ for\ NaNs}}
+\DoxyCodeLine{00983\ \ \ \ \ \textcolor{keywordtype}{bool}\ useGenericCanonicalName\{}
+\DoxyCodeLine{00984\ \ \ \ \ \ \ \ \ \textcolor{keyword}{false}\};\ \textcolor{comment}{//\ True\ if\ "{}block\_id"{}\ is\ used\ as\ canonical\ name\ instead\ of\ the\ name}}
+\DoxyCodeLine{00985\ \ \ \ \ \textcolor{comment}{//\ given\ on\ the\ mesh\ file\ e.g.\ "{}fireset"{}.\ \ Both\ names\ are\ still\ aliases.}}
+\DoxyCodeLine{00986\ \ \ \ \ \textcolor{keywordtype}{bool}\ ignoreDatabaseNames\{\textcolor{keyword}{false}\};\ \textcolor{comment}{//\ True\ if\ "{}block\_\{id\}"{}\ used\ as\ canonical\ name;\ ignore\ any}}
+\DoxyCodeLine{00987\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ names\ on\ database.}}
+\DoxyCodeLine{00988\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{bool}\ blockAdjacenciesCalculated\{\textcolor{keyword}{false}\};\ \textcolor{comment}{//\ True\ if\ the\ lazy\ creation\ of}}
+\DoxyCodeLine{00989\ \ \ \ \ \textcolor{comment}{//\ block\ adjacencies\ has\ been\ calculated.}}
+\DoxyCodeLine{00990\ }
+\DoxyCodeLine{00991\ \ \ \ \ \textcolor{keywordtype}{bool}\ m\_timeStateInOut\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00992\ \ \ \ \ \textcolor{keywordtype}{bool}\ m\_enableTracing\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00993\ \ \ \ \ \textcolor{keywordtype}{bool}\ m\_ignoreRealnFields\{\textcolor{keyword}{false}\};\ \textcolor{comment}{//\ Do\ not\ recognize\ var\_1,\ var\_2,\ ...,\ var\_n\ as\ an\ n-\/component}}
+\DoxyCodeLine{00994\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ field.\ \ Keep\ as\ n\ scalar\ fields.}}
+\DoxyCodeLine{00995\ \ \ \ \ std::chrono::time\_point<std::chrono::steady\_clock>}
+\DoxyCodeLine{00996\ \ \ \ \ \ \ \ \ m\_stateStart;\ \textcolor{comment}{//\ Used\ for\ optional\ output\ step\ timing.}}
+\DoxyCodeLine{00997\ \ \ \};}
+\DoxyCodeLine{00998\ \}\ \textcolor{comment}{//\ namespace\ Ioss}}
+
+\end{DoxyCode}

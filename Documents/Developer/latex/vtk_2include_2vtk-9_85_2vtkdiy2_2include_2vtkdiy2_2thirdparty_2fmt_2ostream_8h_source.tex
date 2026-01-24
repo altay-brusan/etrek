@@ -1,0 +1,174 @@
+\doxysection{ostream.\+h}
+\hypertarget{vtk_2include_2vtk-9_85_2vtkdiy2_2include_2vtkdiy2_2thirdparty_2fmt_2ostream_8h_source}{}\label{vtk_2include_2vtk-9_85_2vtkdiy2_2include_2vtkdiy2_2thirdparty_2fmt_2ostream_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/thirdparty/fmt/ostream.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/thirdparty/fmt/ostream.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Formatting\ library\ for\ C++\ -\/\ std::ostream\ support}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ Copyright\ (c)\ 2012\ -\/\ present,\ Victor\ Zverovich}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ All\ rights\ reserved.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ For\ the\ license\ information\ refer\ to\ format.h.}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#ifndef\ FMT\_OSTREAM\_H\_}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#define\ FMT\_OSTREAM\_H\_}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <ostream>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}format.h"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ FMT\_BEGIN\_NAMESPACE}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Char>\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classbasic__printf__parse__context}{basic\_printf\_parse\_context}};}
+\DoxyCodeLine{00018\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OutputIt,\ \textcolor{keyword}{typename}\ Char>\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classbasic__printf__context}{basic\_printf\_context}};}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacedetail}{detail}}\ \{}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Char>\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdetail_1_1formatbuf}{formatbuf}}\ :\ \textcolor{keyword}{public}\ std::basic\_streambuf<Char>\ \{}
+\DoxyCodeLine{00023\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00024\ \ \ \textcolor{keyword}{using\ }int\_type\ =\ \textcolor{keyword}{typename}\ std::basic\_streambuf<Char>::int\_type;}
+\DoxyCodeLine{00025\ \ \ \textcolor{keyword}{using\ }traits\_type\ =\ \textcolor{keyword}{typename}\ std::basic\_streambuf<Char>::traits\_type;}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \ \ buffer<Char>\&\ buffer\_;}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00030\ \ \ formatbuf(buffer<Char>\&\ buf)\ :\ buffer\_(buf)\ \{\}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00033\ \ \ \textcolor{comment}{//\ The\ put-\/area\ is\ actually\ always\ empty.\ This\ makes\ the\ implementation}}
+\DoxyCodeLine{00034\ \ \ \textcolor{comment}{//\ simpler\ and\ has\ the\ advantage\ that\ the\ streambuf\ and\ the\ buffer\ are\ always}}
+\DoxyCodeLine{00035\ \ \ \textcolor{comment}{//\ in\ sync\ and\ sputc\ never\ writes\ into\ uninitialized\ memory.\ The\ obvious}}
+\DoxyCodeLine{00036\ \ \ \textcolor{comment}{//\ disadvantage\ is\ that\ each\ call\ to\ sputc\ always\ results\ in\ a\ (virtual)\ call}}
+\DoxyCodeLine{00037\ \ \ \textcolor{comment}{//\ to\ overflow.\ There\ is\ no\ disadvantage\ here\ for\ sputn\ since\ this\ always}}
+\DoxyCodeLine{00038\ \ \ \textcolor{comment}{//\ results\ in\ a\ call\ to\ xsputn.}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ int\_type\ overflow(int\_type\ ch\ =\ traits\_type::eof())\ FMT\_OVERRIDE\ \{}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordflow}{if}\ (!traits\_type::eq\_int\_type(ch,\ traits\_type::eof()))}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ buffer\_.push\_back(\textcolor{keyword}{static\_cast<}Char\textcolor{keyword}{>}(ch));}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordflow}{return}\ ch;}
+\DoxyCodeLine{00044\ \ \ \}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ std::streamsize\ xsputn(\textcolor{keyword}{const}\ Char*\ s,\ std::streamsize\ count)\ FMT\_OVERRIDE\ \{}
+\DoxyCodeLine{00047\ \ \ \ \ buffer\_.append(s,\ s\ +\ count);}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{return}\ count;}
+\DoxyCodeLine{00049\ \ \ \}}
+\DoxyCodeLine{00050\ \};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{struct\ }converter\ \{}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ FMT\_ENABLE\_IF(is\_\textcolor{keywordtype}{int}egral<T>::value)>\ converter(T);}
+\DoxyCodeLine{00054\ \};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Char>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdetail_1_1test__stream}{test\_stream}}\ :\ std::basic\_ostream<Char>\ \{}
+\DoxyCodeLine{00057\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00058\ \ \ void\_t<>\ operator<<(\doxymbox{\hyperlink{structdetail_1_1converter}{converter}});}
+\DoxyCodeLine{00059\ \};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{comment}{//\ Hide\ insertion\ operators\ for\ built-\/in\ types.}}
+\DoxyCodeLine{00062\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Char,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00063\ void\_t<>\ operator<<(std::basic\_ostream<Char,\ Traits>\&,\ Char);}
+\DoxyCodeLine{00064\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Char,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00065\ void\_t<>\ operator<<(std::basic\_ostream<Char,\ Traits>\&,\ \textcolor{keywordtype}{char});}
+\DoxyCodeLine{00066\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00067\ void\_t<>\ operator<<(std::basic\_ostream<char,\ Traits>\&,\ \textcolor{keywordtype}{char});}
+\DoxyCodeLine{00068\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00069\ void\_t<>\ operator<<(std::basic\_ostream<char,\ Traits>\&,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char});}
+\DoxyCodeLine{00070\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00071\ void\_t<>\ operator<<(std::basic\_ostream<char,\ Traits>\&,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char});}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{comment}{//\ Checks\ if\ T\ has\ a\ user-\/defined\ operator<<\ (e.g.\ not\ a\ member\ of}}
+\DoxyCodeLine{00074\ \textcolor{comment}{//\ std::ostream).}}
+\DoxyCodeLine{00075\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Char>\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdetail_1_1is__streamable}{is\_streamable}}\ \{}
+\DoxyCodeLine{00076\ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00077\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00078\ \ \ \textcolor{keyword}{static}\ bool\_constant<!std::is\_same<\textcolor{keyword}{decltype}(std::declval<test\_stream<Char>\&>()}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <<\ std::declval<U>()),}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ void\_t<>>::value>}
+\DoxyCodeLine{00081\ \ \ test(\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}>\ \textcolor{keyword}{static}\ std::false\_type\ test(...);}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{keyword}{using\ }result\ =\ \textcolor{keyword}{decltype}(test<T>(0));}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00088\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{bool}\ value\ =\ result::value;}
+\DoxyCodeLine{00089\ \};}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{comment}{//\ Write\ the\ content\ of\ buf\ to\ os.}}
+\DoxyCodeLine{00092\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Char>}
+\DoxyCodeLine{00093\ \textcolor{keywordtype}{void}\ write\_buffer(std::basic\_ostream<Char>\&\ os,\ \doxymbox{\hyperlink{classdetail_1_1buffer}{buffer<Char>}}\&\ buf)\ \{}
+\DoxyCodeLine{00094\ \ \ \textcolor{keyword}{const}\ Char*\ buf\_data\ =\ buf.data();}
+\DoxyCodeLine{00095\ \ \ \textcolor{keyword}{using\ }unsigned\_streamsize\ =\ std::make\_unsigned<std::streamsize>::type;}
+\DoxyCodeLine{00096\ \ \ unsigned\_streamsize\ size\ =\ buf.size();}
+\DoxyCodeLine{00097\ \ \ unsigned\_streamsize\ max\_size\ =\ to\_unsigned(max\_value<std::streamsize>());}
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordflow}{do}\ \{}
+\DoxyCodeLine{00099\ \ \ \ \ unsigned\_streamsize\ n\ =\ size\ <=\ max\_size\ ?\ size\ :\ max\_size;}
+\DoxyCodeLine{00100\ \ \ \ \ os.write(buf\_data,\ \textcolor{keyword}{static\_cast<}std::streamsize\textcolor{keyword}{>}(n));}
+\DoxyCodeLine{00101\ \ \ \ \ buf\_data\ +=\ n;}
+\DoxyCodeLine{00102\ \ \ \ \ size\ -\/=\ n;}
+\DoxyCodeLine{00103\ \ \ \}\ \textcolor{keywordflow}{while}\ (size\ !=\ 0);}
+\DoxyCodeLine{00104\ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Char,\ \textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00107\ \textcolor{keywordtype}{void}\ format\_value(\doxymbox{\hyperlink{classdetail_1_1buffer}{buffer<Char>}}\&\ buf,\ \textcolor{keyword}{const}\ T\&\ \doxymbox{\hyperlink{classdetail_1_1value}{value}},}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdetail_1_1locale__ref}{locale\_ref}}\ loc\ =\ \doxymbox{\hyperlink{classdetail_1_1locale__ref}{locale\_ref}}())\ \{}
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{classdetail_1_1formatbuf}{formatbuf<Char>}}\ format\_buf(buf);}
+\DoxyCodeLine{00110\ \ \ std::basic\_ostream<Char>\ output(\&format\_buf);}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#if\ !defined(FMT\_STATIC\_THOUSANDS\_SEPARATOR)}}
+\DoxyCodeLine{00112\ \ \ \textcolor{keywordflow}{if}\ (loc)\ output.imbue(loc.get<std::locale>());}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00114\ \ \ output\ <<\ \doxymbox{\hyperlink{classdetail_1_1value}{value}};}
+\DoxyCodeLine{00115\ \ \ output.exceptions(std::ios\_base::failbit\ |\ std::ios\_base::badbit);}
+\DoxyCodeLine{00116\ \ \ buf.try\_resize(buf.size());}
+\DoxyCodeLine{00117\ \}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{comment}{//\ Formats\ an\ object\ of\ type\ T\ that\ has\ an\ overloaded\ ostream\ operator<<.}}
+\DoxyCodeLine{00120\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Char>}
+\DoxyCodeLine{00121\ \textcolor{keyword}{struct\ }fallback\_formatter<T,\ Char,\ enable\_if\_t<\doxymbox{\hyperlink{classdetail_1_1is__streamable}{is\_streamable}}<T,\ Char>::\doxymbox{\hyperlink{classdetail_1_1value}{value}}>>}
+\DoxyCodeLine{00122\ \ \ \ \ :\ \textcolor{keyword}{private}\ formatter<basic\_string\_view<Char>,\ Char>\ \{}
+\DoxyCodeLine{00123\ \ \ FMT\_CONSTEXPR\ \textcolor{keyword}{auto}\ parse(\doxymbox{\hyperlink{classbasic__format__parse__context}{basic\_format\_parse\_context<Char>}}\&\ ctx)}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ -\/>\ \textcolor{keyword}{decltype}(ctx.begin())\ \{}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordflow}{return}\ formatter<basic\_string\_view<Char>,\ Char>::parse(ctx);}
+\DoxyCodeLine{00126\ \ \ \}}
+\DoxyCodeLine{00127\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ParseCtx,}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(std::is\_same<}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ParseCtx,\ \doxymbox{\hyperlink{classbasic__printf__parse__context}{basic\_printf\_parse\_context<Char>}}>\doxymbox{\hyperlink{classdetail_1_1value}{::value}})>}
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{auto}\ parse(ParseCtx\&\ ctx)\ -\/>\ \textcolor{keyword}{decltype}(ctx.begin())\ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordflow}{return}\ ctx.begin();}
+\DoxyCodeLine{00132\ \ \ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OutputIt>}
+\DoxyCodeLine{00135\ \ \ \textcolor{keyword}{auto}\ format(\textcolor{keyword}{const}\ T\&\ \doxymbox{\hyperlink{classdetail_1_1value}{value}},\ \doxymbox{\hyperlink{classbasic__format__context}{basic\_format\_context<OutputIt,\ Char>}}\&\ ctx)}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ -\/>\ OutputIt\ \{}
+\DoxyCodeLine{00137\ \ \ \ \ \doxymbox{\hyperlink{classbasic__memory__buffer}{basic\_memory\_buffer<Char>}}\ \doxymbox{\hyperlink{classdetail_1_1buffer}{buffer}};}
+\DoxyCodeLine{00138\ \ \ \ \ format\_value(\doxymbox{\hyperlink{classdetail_1_1buffer}{buffer}},\ \doxymbox{\hyperlink{classdetail_1_1value}{value}},\ ctx.locale());}
+\DoxyCodeLine{00139\ \ \ \ \ \doxymbox{\hyperlink{classbasic__string__view}{basic\_string\_view<Char>}}\ str(\doxymbox{\hyperlink{classdetail_1_1buffer}{buffer}}.\doxymbox{\hyperlink{classdetail_1_1buffer_aeb33e0a2d2be2bbca9e0236c148089c8}{data}}(),\ \doxymbox{\hyperlink{classdetail_1_1buffer}{buffer}}.\doxymbox{\hyperlink{classdetail_1_1buffer_a8685285932360c284d19003fc4ba3edc}{size}}());}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keywordflow}{return}\ formatter<basic\_string\_view<Char>,\ Char>::format(str,\ ctx);}
+\DoxyCodeLine{00141\ \ \ \}}
+\DoxyCodeLine{00142\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OutputIt>}
+\DoxyCodeLine{00143\ \ \ \textcolor{keyword}{auto}\ format(\textcolor{keyword}{const}\ T\&\ \doxymbox{\hyperlink{classdetail_1_1value}{value}},\ \doxymbox{\hyperlink{classbasic__printf__context}{basic\_printf\_context<OutputIt,\ Char>}}\&\ ctx)}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ -\/>\ OutputIt\ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \doxymbox{\hyperlink{classbasic__memory__buffer}{basic\_memory\_buffer<Char>}}\ \doxymbox{\hyperlink{classdetail_1_1buffer}{buffer}};}
+\DoxyCodeLine{00146\ \ \ \ \ format\_value(\doxymbox{\hyperlink{classdetail_1_1buffer}{buffer}},\ \doxymbox{\hyperlink{classdetail_1_1value}{value}},\ ctx.locale());}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordflow}{return}\ std::copy(\doxymbox{\hyperlink{classdetail_1_1buffer}{buffer}}.begin(),\ \doxymbox{\hyperlink{classdetail_1_1buffer}{buffer}}.end(),\ ctx.out());}
+\DoxyCodeLine{00148\ \ \ \}}
+\DoxyCodeLine{00149\ \};}
+\DoxyCodeLine{00150\ \}\ \ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Char>}
+\DoxyCodeLine{00153\ \textcolor{keywordtype}{void}\ vprint(std::basic\_ostream<Char>\&\ os,\ \doxymbox{\hyperlink{classbasic__string__view}{basic\_string\_view<Char>}}\ format\_str,}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classbasic__format__args}{basic\_format\_args}}<buffer\_context<type\_identity\_t<Char>>>\ args)\ \{}
+\DoxyCodeLine{00155\ \ \ \doxymbox{\hyperlink{classbasic__memory__buffer}{basic\_memory\_buffer<Char>}}\ buffer;}
+\DoxyCodeLine{00156\ \ \ detail::vformat\_to(buffer,\ format\_str,\ args);}
+\DoxyCodeLine{00157\ \ \ detail::write\_buffer(os,\ buffer);}
+\DoxyCodeLine{00158\ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00169\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ S,\ \textcolor{keyword}{typename}...\ Args,}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ Char\ =\ enable\_if\_t<detail::is\_string<S>::value,\ char\_t<S>>>}
+\DoxyCodeLine{00171\ \textcolor{keywordtype}{void}\ print(std::basic\_ostream<Char>\&\ os,\ \textcolor{keyword}{const}\ S\&\ format\_str,\ Args\&\&...\ args)\ \{}
+\DoxyCodeLine{00172\ \ \ vprint(os,\ to\_string\_view(format\_str),}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ fmt::make\_args\_checked<Args...>(format\_str,\ args...));}
+\DoxyCodeLine{00174\ \}}
+\DoxyCodeLine{00175\ FMT\_END\_NAMESPACE}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{//\ FMT\_OSTREAM\_H\_}}
+
+\end{DoxyCode}

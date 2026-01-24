@@ -1,0 +1,594 @@
+\doxysection{vtk\+Fixed\+Point\+Volume\+Ray\+Cast\+Mapper.\+h}
+\hypertarget{vtk_fixed_point_volume_ray_cast_mapper_8h_source}{}\label{vtk_fixed_point_volume_ray_cast_mapper_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkFixedPointVolumeRayCastMapper.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkFixedPointVolumeRayCastMapper.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#ifndef\ vtkFixedPointVolumeRayCastMapper\_h}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#define\ vtkFixedPointVolumeRayCastMapper\_h}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#include\ "{}vtkRenderingVolumeModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#include\ "{}vtkThreads.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ for\ VTK\_THREAD\_RETURN\_TYPE}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#include\ "{}vtkVolumeMapper.h"{}}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#define\ VTKKW\_FP\_SHIFT\ 15}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#define\ VTKKW\_FPMM\_SHIFT\ 17}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#define\ VTKKW\_FP\_MASK\ 0x7fff}}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#define\ VTKKW\_FP\_SCALE\ 32767.0}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00057\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}};}
+\DoxyCodeLine{00058\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_threader}{vtkMultiThreader}};}
+\DoxyCodeLine{00059\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_plane_collection}{vtkPlaneCollection}};}
+\DoxyCodeLine{00060\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}};}
+\DoxyCodeLine{00061\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_timer_log}{vtkTimerLog}};}
+\DoxyCodeLine{00062\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_volume}{vtkVolume}};}
+\DoxyCodeLine{00063\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_transform}{vtkTransform}};}
+\DoxyCodeLine{00064\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_render_window}{vtkRenderWindow}};}
+\DoxyCodeLine{00065\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_color_transfer_function}{vtkColorTransferFunction}};}
+\DoxyCodeLine{00066\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_piecewise_function}{vtkPiecewiseFunction}};}
+\DoxyCodeLine{00067\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_m_i_p_helper}{vtkFixedPointVolumeRayCastMIPHelper}};}
+\DoxyCodeLine{00068\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_helper}{vtkFixedPointVolumeRayCastCompositeHelper}};}
+\DoxyCodeLine{00069\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_g_o_helper}{vtkFixedPointVolumeRayCastCompositeGOHelper}};}
+\DoxyCodeLine{00070\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_g_o_shade_helper}{vtkFixedPointVolumeRayCastCompositeGOShadeHelper}};}
+\DoxyCodeLine{00071\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_shade_helper}{vtkFixedPointVolumeRayCastCompositeShadeHelper}};}
+\DoxyCodeLine{00072\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_volume_ray_cast_space_leaping_image_filter}{vtkVolumeRayCastSpaceLeapingImageFilter}};}
+\DoxyCodeLine{00073\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_direction_encoder}{vtkDirectionEncoder}};}
+\DoxyCodeLine{00074\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_encoded_gradient_shader}{vtkEncodedGradientShader}};}
+\DoxyCodeLine{00075\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_finite_difference_gradient_estimator}{vtkFiniteDifferenceGradientEstimator}};}
+\DoxyCodeLine{00076\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_ray_cast_image_display_helper}{vtkRayCastImageDisplayHelper}};}
+\DoxyCodeLine{00077\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_fixed_point_ray_cast_image}{vtkFixedPointRayCastImage}};}
+\DoxyCodeLine{00078\ \textcolor{keyword}{class\ }vtkDataArray;}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{comment}{//\ Forward\ declaration\ needed\ for\ use\ by\ friend\ declaration\ below.}}
+\DoxyCodeLine{00081\ VTK\_THREAD\_RETURN\_TYPE\ FixedPointVolumeRayCastMapper\_CastRays(\textcolor{keywordtype}{void}*\ arg);}
+\DoxyCodeLine{00082\ VTK\_THREAD\_RETURN\_TYPE\ vtkFPVRCMSwitchOnDataType(\textcolor{keywordtype}{void}*\ arg);}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{keyword}{class\ }VTKRENDERINGVOLUME\_EXPORT\ vtkFixedPointVolumeRayCastMapper\ :\ \textcolor{keyword}{public}\ vtkVolumeMapper}
+\DoxyCodeLine{00085\ \{}
+\DoxyCodeLine{00086\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00087\ \ \ \textcolor{keyword}{static}\ vtkFixedPointVolumeRayCastMapper*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00088\ \ \ vtkTypeMacro(vtkFixedPointVolumeRayCastMapper,\ vtkVolumeMapper);}
+\DoxyCodeLine{00089\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_ab34b4767fd52b3213c36c70266752137}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00097\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_abd75d9b88b24cbe52ac74be02292a2b3}{vtkSetMacro}}(SampleDistance,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00098\ \ \ vtkGetMacro(SampleDistance,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00109\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a7a10674e3a566b06be784c623e22d99e}{vtkSetMacro}}(InteractiveSampleDistance,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00110\ \ \ vtkGetMacro(InteractiveSampleDistance,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00121\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_abbc7905fa15369bb68f78a58e22e87e8}{vtkSetClampMacro}}(ImageSampleDistance,\ \textcolor{keywordtype}{float},\ 0.1f,\ 100.0f);}
+\DoxyCodeLine{00122\ \ \ vtkGetMacro(ImageSampleDistance,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00130\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a5ed988d410cfe735e33f2fd3c3bddcf2}{vtkSetClampMacro}}(MinimumImageSampleDistance,\ \textcolor{keywordtype}{float},\ 0.1f,\ 100.0f);}
+\DoxyCodeLine{00131\ \ \ vtkGetMacro(MinimumImageSampleDistance,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00139\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a815a2b9c40d00dcec018d12ff3a2e69d}{vtkSetClampMacro}}(MaximumImageSampleDistance,\ \textcolor{keywordtype}{float},\ 0.1f,\ 100.0f);}
+\DoxyCodeLine{00140\ \ \ vtkGetMacro(MaximumImageSampleDistance,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00153\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a73ce94361c12a433bbd05c3d14e662ba}{vtkSetClampMacro}}(AutoAdjustSampleDistances,\ vtkTypeBool,\ 0,\ 1);}
+\DoxyCodeLine{00154\ \ \ vtkGetMacro(AutoAdjustSampleDistances,\ vtkTypeBool);}
+\DoxyCodeLine{00155\ \ \ vtkBooleanMacro(AutoAdjustSampleDistances,\ vtkTypeBool);}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00167\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a30fefa5f6509721525859d9436906c2a}{vtkSetClampMacro}}(LockSampleDistanceToInputSpacing,\ vtkTypeBool,\ 0,\ 1);}
+\DoxyCodeLine{00168\ \ \ vtkGetMacro(LockSampleDistanceToInputSpacing,\ vtkTypeBool);}
+\DoxyCodeLine{00169\ \ \ vtkBooleanMacro(LockSampleDistanceToInputSpacing,\ vtkTypeBool);}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a76672d5e444faca81d197f654221834d}{SetNumberOfThreads}}(\textcolor{keywordtype}{int}\ num);}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{int}\ GetNumberOfThreads();}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00187\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a9f2c6cd6887814c2d9969c3bf322aea9}{vtkSetClampMacro}}(IntermixIntersectingGeometry,\ vtkTypeBool,\ 0,\ 1);}
+\DoxyCodeLine{00188\ \ \ vtkGetMacro(IntermixIntersectingGeometry,\ vtkTypeBool);}
+\DoxyCodeLine{00189\ \ \ vtkBooleanMacro(IntermixIntersectingGeometry,\ vtkTypeBool);}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00200\ \ \ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a3c3ccf087ad37a7391f5bee2b67fd220}{ComputeRequiredImageSampleDistance}}(\textcolor{keywordtype}{float}\ desiredTime,\ \doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren);}
+\DoxyCodeLine{00201\ \ \ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a3c3ccf087ad37a7391f5bee2b67fd220}{ComputeRequiredImageSampleDistance}}(\textcolor{keywordtype}{float}\ desiredTime,\ \doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol);}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00208\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a78634f5dd949e57d876f3840a990a80e}{Render}}(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ToFixedPointPosition(\textcolor{keywordtype}{float}\ val);}
+\DoxyCodeLine{00211\ \ \ \textcolor{keywordtype}{void}\ ToFixedPointPosition(\textcolor{keywordtype}{float}\ in[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ out[3]);}
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ ToFixedPointDirection(\textcolor{keywordtype}{float}\ dir);}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{void}\ ToFixedPointDirection(\textcolor{keywordtype}{float}\ in[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ out[3]);}
+\DoxyCodeLine{00214\ \ \ \textcolor{keywordtype}{void}\ FixedPointIncrement(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ position[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ increment[3]);}
+\DoxyCodeLine{00215\ \ \ \textcolor{keywordtype}{void}\ GetFloatTripleFromPointer(\textcolor{keywordtype}{float}\ v[3],\ \textcolor{keywordtype}{float}*\ ptr);}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordtype}{void}\ GetUIntTripleFromPointer(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ v[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ ptr);}
+\DoxyCodeLine{00217\ \ \ \textcolor{keywordtype}{void}\ ShiftVectorDown(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ in[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ out[3]);}
+\DoxyCodeLine{00218\ \ \ \textcolor{keywordtype}{int}\ CheckMinMaxVolumeFlag(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pos[3],\ \textcolor{keywordtype}{int}\ c);}
+\DoxyCodeLine{00219\ \ \ \textcolor{keywordtype}{int}\ CheckMIPMinMaxVolumeFlag(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pos[3],\ \textcolor{keywordtype}{int}\ c,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ maxIdx,\ \textcolor{keywordtype}{int}\ flip);}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{keywordtype}{void}\ LookupColorUC(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ colorTable,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ scalarOpacityTable,}
+\DoxyCodeLine{00222\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ index,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ color[4]);}
+\DoxyCodeLine{00223\ \ \ \textcolor{keywordtype}{void}\ LookupDependentColorUC(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ colorTable,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ scalarOpacityTable,}
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ index[4],\ \textcolor{keywordtype}{int}\ components,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ color[4]);}
+\DoxyCodeLine{00225\ \ \ \textcolor{keywordtype}{void}\ LookupAndCombineIndependentColorsUC(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ colorTable[4],}
+\DoxyCodeLine{00226\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ scalarOpacityTable[4],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ index[4],\ \textcolor{keywordtype}{float}\ weights[4],}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordtype}{int}\ components,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ color[4]);}
+\DoxyCodeLine{00228\ \ \ \textcolor{keywordtype}{int}\ CheckIfCropped(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pos[3]);}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ vtkGetObjectMacro(RenderWindow,\ \doxymbox{\hyperlink{classvtk_render_window}{vtkRenderWindow}});}
+\DoxyCodeLine{00231\ \ \ vtkGetObjectMacro(MIPHelper,\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_m_i_p_helper}{vtkFixedPointVolumeRayCastMIPHelper}});}
+\DoxyCodeLine{00232\ \ \ vtkGetObjectMacro(CompositeHelper,\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_helper}{vtkFixedPointVolumeRayCastCompositeHelper}});}
+\DoxyCodeLine{00233\ \ \ vtkGetObjectMacro(CompositeGOHelper,\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_g_o_helper}{vtkFixedPointVolumeRayCastCompositeGOHelper}});}
+\DoxyCodeLine{00234\ \ \ vtkGetObjectMacro(CompositeGOShadeHelper,\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_g_o_shade_helper}{vtkFixedPointVolumeRayCastCompositeGOShadeHelper}});}
+\DoxyCodeLine{00235\ \ \ vtkGetObjectMacro(CompositeShadeHelper,\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_shade_helper}{vtkFixedPointVolumeRayCastCompositeShadeHelper}});}
+\DoxyCodeLine{00236\ \ \ vtkGetVectorMacro(TableShift,\ \textcolor{keywordtype}{float},\ 4);}
+\DoxyCodeLine{00237\ \ \ vtkGetVectorMacro(TableScale,\ \textcolor{keywordtype}{float},\ 4);}
+\DoxyCodeLine{00238\ \ \ vtkGetMacro(ShadingRequired,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00239\ \ \ vtkGetMacro(GradientOpacityRequired,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ vtkGetObjectMacro(CurrentScalars,\ vtkDataArray);}
+\DoxyCodeLine{00242\ \ \ vtkGetObjectMacro(PreviousScalars,\ vtkDataArray);}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \textcolor{keywordtype}{int}*\ GetRowBounds()\ \{\ \textcolor{keywordflow}{return}\ this-\/>RowBounds;\ \}}
+\DoxyCodeLine{00245\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ GetColorTable(\textcolor{keywordtype}{int}\ c)\ \{\ \textcolor{keywordflow}{return}\ this-\/>ColorTable[c];\ \}}
+\DoxyCodeLine{00246\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ GetScalarOpacityTable(\textcolor{keywordtype}{int}\ c)\ \{\ \textcolor{keywordflow}{return}\ this-\/>ScalarOpacityTable[c];\ \}}
+\DoxyCodeLine{00247\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ GetGradientOpacityTable(\textcolor{keywordtype}{int}\ c)\ \{\ \textcolor{keywordflow}{return}\ this-\/>GradientOpacityTable[c];\ \}}
+\DoxyCodeLine{00248\ \ \ vtkVolume*\ GetVolume()\ \{\ \textcolor{keywordflow}{return}\ this-\/>Volume;\ \}}
+\DoxyCodeLine{00249\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}**\ GetGradientNormal()\ \{\ \textcolor{keywordflow}{return}\ this-\/>GradientNormal;\ \}}
+\DoxyCodeLine{00250\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}**\ GetGradientMagnitude()\ \{\ \textcolor{keywordflow}{return}\ this-\/>GradientMagnitude;\ \}}
+\DoxyCodeLine{00251\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ GetDiffuseShadingTable(\textcolor{keywordtype}{int}\ c)\ \{\ \textcolor{keywordflow}{return}\ this-\/>DiffuseShadingTable[c];\ \}}
+\DoxyCodeLine{00252\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ GetSpecularShadingTable(\textcolor{keywordtype}{int}\ c)\ \{\ \textcolor{keywordflow}{return}\ this-\/>SpecularShadingTable[c];\ \}}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \ \ \textcolor{keywordtype}{void}\ ComputeRayInfo(}
+\DoxyCodeLine{00255\ \ \ \ \ \textcolor{keywordtype}{int}\ x,\ \textcolor{keywordtype}{int}\ y,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pos[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ dir[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ numSteps);}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \textcolor{keywordtype}{void}\ InitializeRayInfo(vtkVolume*\ vol);}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \textcolor{keywordtype}{int}\ ShouldUseNearestNeighborInterpolation(vtkVolume*\ vol);}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00267\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a00ab3687c120323fc7c6847862e66504}{SetRayCastImage}}(\doxymbox{\hyperlink{classvtk_fixed_point_ray_cast_image}{vtkFixedPointRayCastImage}}*);}
+\DoxyCodeLine{00268\ \ \ vtkGetObjectMacro(RayCastImage,\ \doxymbox{\hyperlink{classvtk_fixed_point_ray_cast_image}{vtkFixedPointRayCastImage}});}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordtype}{int}\ PerImageInitialization(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*,\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{double}*,\ \textcolor{keywordtype}{double}*,\ \textcolor{keywordtype}{int}*);}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordtype}{void}\ PerVolumeInitialization(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*);}
+\DoxyCodeLine{00273\ \ \ \textcolor{keywordtype}{void}\ PerSubVolumeInitialization(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00274\ \ \ \textcolor{keywordtype}{void}\ RenderSubVolume();}
+\DoxyCodeLine{00275\ \ \ \textcolor{keywordtype}{void}\ DisplayRenderedImage(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*);}
+\DoxyCodeLine{00276\ \ \ \textcolor{keywordtype}{void}\ AbortRender();}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \ \ \textcolor{keywordtype}{void}\ CreateCanonicalView(\doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ volume,\ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ image,\ \textcolor{keywordtype}{int}\ blend\_mode,}
+\DoxyCodeLine{00279\ \ \ \ \ \textcolor{keywordtype}{double}\ viewDirection[3],\ \textcolor{keywordtype}{double}\ viewUp[3]);}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00287\ \ \ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a87d9012ddff05ec65f19aa9ca836f333}{GetEstimatedRenderTime}}(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol)}
+\DoxyCodeLine{00288\ \ \ \{}
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>RetrieveRenderTime(ren,\ vol);}
+\DoxyCodeLine{00290\ \ \ \}}
+\DoxyCodeLine{00291\ \ \ \textcolor{keywordtype}{float}\ GetEstimatedRenderTime(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren)\ \{\ \textcolor{keywordflow}{return}\ this-\/>RetrieveRenderTime(ren);\ \}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00307\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_acdae9b2323b4ad52be732ac2054e7c49}{vtkSetMacro}}(FinalColorWindow,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00308\ \ \ vtkGetMacro(FinalColorWindow,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00309\ \ \ \doxymbox{\hyperlink{classvtk_volume_mapper_ac09406c09222a36c6756543e56dbe839}{vtkSetMacro}}(FinalColorLevel,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00310\ \ \ vtkGetMacro(FinalColorLevel,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \textcolor{comment}{//\ Here\ to\ be\ used\ by\ the\ mapper\ to\ tell\ the\ helper}}
+\DoxyCodeLine{00314\ \ \ \textcolor{comment}{//\ to\ flip\ the\ MIP\ comparison\ in\ order\ to\ support}}
+\DoxyCodeLine{00315\ \ \ \textcolor{comment}{//\ minimum\ intensity\ blending}}
+\DoxyCodeLine{00316\ \ \ vtkGetMacro(FlipMIPComparison,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00324\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_mapper_a1066763b2b33c6fa5cefe3b8da93ac98}{ReleaseGraphicsResources}}(\doxymbox{\hyperlink{classvtk_window}{vtkWindow}}*)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00327\ \ \ vtkFixedPointVolumeRayCastMapper();}
+\DoxyCodeLine{00328\ \ \ \string~vtkFixedPointVolumeRayCastMapper()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \textcolor{comment}{//\ The\ helper\ class\ that\ displays\ the\ image}}
+\DoxyCodeLine{00331\ \ \ \doxymbox{\hyperlink{classvtk_ray_cast_image_display_helper}{vtkRayCastImageDisplayHelper}}*\ ImageDisplayHelper;}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \ \ \textcolor{comment}{//\ The\ distance\ between\ sample\ points\ along\ the\ ray}}
+\DoxyCodeLine{00334\ \ \ \textcolor{keywordtype}{float}\ SampleDistance;}
+\DoxyCodeLine{00335\ \ \ \textcolor{keywordtype}{float}\ InteractiveSampleDistance;}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \textcolor{comment}{//\ The\ distance\ between\ rays\ in\ the\ image}}
+\DoxyCodeLine{00338\ \ \ \textcolor{keywordtype}{float}\ ImageSampleDistance;}
+\DoxyCodeLine{00339\ \ \ \textcolor{keywordtype}{float}\ MinimumImageSampleDistance;}
+\DoxyCodeLine{00340\ \ \ \textcolor{keywordtype}{float}\ MaximumImageSampleDistance;}
+\DoxyCodeLine{00341\ \ \ vtkTypeBool\ AutoAdjustSampleDistances;}
+\DoxyCodeLine{00342\ \ \ vtkTypeBool\ LockSampleDistanceToInputSpacing;}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \ \ \textcolor{comment}{//\ Saved\ values\ used\ to\ restore}}
+\DoxyCodeLine{00345\ \ \ \textcolor{keywordtype}{float}\ OldSampleDistance;}
+\DoxyCodeLine{00346\ \ \ \textcolor{keywordtype}{float}\ OldImageSampleDistance;}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \textcolor{comment}{//\ Internal\ method\ for\ computing\ matrices\ needed\ during}}
+\DoxyCodeLine{00349\ \ \ \textcolor{comment}{//\ ray\ casting}}
+\DoxyCodeLine{00350\ \ \ \textcolor{keywordtype}{void}\ ComputeMatrices(\textcolor{keywordtype}{double}\ inputOrigin[3],\ \textcolor{keywordtype}{double}\ inputSpacing[3],\ \textcolor{keywordtype}{int}\ inputExtent[6],}
+\DoxyCodeLine{00351\ \ \ \ \ \doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol);}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \textcolor{keywordtype}{int}\ ComputeRowBounds(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren,\ \textcolor{keywordtype}{int}\ imageFlag,\ \textcolor{keywordtype}{int}\ rowBoundsFlag,\ \textcolor{keywordtype}{int}\ inputExtent[6]);}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \ \ \textcolor{keywordtype}{void}\ CaptureZBuffer(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren);}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \ \ \textcolor{keyword}{friend}\ VTK\_THREAD\_RETURN\_TYPE\ FixedPointVolumeRayCastMapper\_CastRays(\textcolor{keywordtype}{void}*\ arg);}
+\DoxyCodeLine{00358\ \ \ \textcolor{keyword}{friend}\ VTK\_THREAD\_RETURN\_TYPE\ vtkFPVRCMSwitchOnDataType(\textcolor{keywordtype}{void}*\ arg);}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \doxymbox{\hyperlink{classvtk_multi_threader}{vtkMultiThreader}}*\ Threader;}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ \doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}}*\ PerspectiveMatrix;}
+\DoxyCodeLine{00363\ \ \ \doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}}*\ ViewToWorldMatrix;}
+\DoxyCodeLine{00364\ \ \ \doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}}*\ ViewToVoxelsMatrix;}
+\DoxyCodeLine{00365\ \ \ \doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}}*\ VoxelsToViewMatrix;}
+\DoxyCodeLine{00366\ \ \ \doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}}*\ WorldToVoxelsMatrix;}
+\DoxyCodeLine{00367\ \ \ \doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}}*\ VoxelsToWorldMatrix;}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00369\ \ \ \doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}}*\ VolumeMatrix;}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ \doxymbox{\hyperlink{classvtk_transform}{vtkTransform}}*\ PerspectiveTransform;}
+\DoxyCodeLine{00372\ \ \ \doxymbox{\hyperlink{classvtk_transform}{vtkTransform}}*\ VoxelsTransform;}
+\DoxyCodeLine{00373\ \ \ \doxymbox{\hyperlink{classvtk_transform}{vtkTransform}}*\ VoxelsToViewTransform;}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \ \ \textcolor{comment}{//\ This\ object\ encapsulated\ the\ image\ and\ all\ related\ information}}
+\DoxyCodeLine{00376\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_ray_cast_image}{vtkFixedPointRayCastImage}}*\ RayCastImage;}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \textcolor{keywordtype}{int}*\ RowBounds;}
+\DoxyCodeLine{00379\ \ \ \textcolor{keywordtype}{int}*\ OldRowBounds;}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \ \ \textcolor{keywordtype}{float}*\ RenderTimeTable;}
+\DoxyCodeLine{00382\ \ \ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}**\ RenderVolumeTable;}
+\DoxyCodeLine{00383\ \ \ \doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}**\ RenderRendererTable;}
+\DoxyCodeLine{00384\ \ \ \textcolor{keywordtype}{int}\ RenderTableSize;}
+\DoxyCodeLine{00385\ \ \ \textcolor{keywordtype}{int}\ RenderTableEntries;}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \textcolor{keywordtype}{void}\ StoreRenderTime(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol,\ \textcolor{keywordtype}{float}\ t);}
+\DoxyCodeLine{00388\ \ \ \textcolor{keywordtype}{float}\ RetrieveRenderTime(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol);}
+\DoxyCodeLine{00389\ \ \ \textcolor{keywordtype}{float}\ RetrieveRenderTime(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren);}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \ \ vtkTypeBool\ IntermixIntersectingGeometry;}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \ \ \textcolor{keywordtype}{float}\ MinimumViewDistance;}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00395\ \ \ \doxymbox{\hyperlink{classvtk_color_transfer_function}{vtkColorTransferFunction}}*\ SavedRGBFunction[4];}
+\DoxyCodeLine{00396\ \ \ \doxymbox{\hyperlink{classvtk_piecewise_function}{vtkPiecewiseFunction}}*\ SavedGrayFunction[4];}
+\DoxyCodeLine{00397\ \ \ \doxymbox{\hyperlink{classvtk_piecewise_function}{vtkPiecewiseFunction}}*\ SavedScalarOpacityFunction[4];}
+\DoxyCodeLine{00398\ \ \ \doxymbox{\hyperlink{classvtk_piecewise_function}{vtkPiecewiseFunction}}*\ SavedGradientOpacityFunction[4];}
+\DoxyCodeLine{00399\ \ \ \textcolor{keywordtype}{int}\ SavedColorChannels[4];}
+\DoxyCodeLine{00400\ \ \ \textcolor{keywordtype}{float}\ SavedScalarOpacityDistance[4];}
+\DoxyCodeLine{00401\ \ \ \textcolor{keywordtype}{int}\ SavedBlendMode;}
+\DoxyCodeLine{00402\ \ \ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ SavedParametersInput;}
+\DoxyCodeLine{00403\ \ \ \doxymbox{\hyperlink{classvtk_time_stamp}{vtkTimeStamp}}\ SavedParametersMTime;}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00405\ \ \ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ SavedGradientsInput;}
+\DoxyCodeLine{00406\ \ \ \doxymbox{\hyperlink{classvtk_time_stamp}{vtkTimeStamp}}\ SavedGradientsMTime;}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \ \ \textcolor{keywordtype}{float}\ SavedSampleDistance;}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ColorTable[4][32768\ *\ 3];}
+\DoxyCodeLine{00411\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ScalarOpacityTable[4][32768];}
+\DoxyCodeLine{00412\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ GradientOpacityTable[4][256];}
+\DoxyCodeLine{00413\ \ \ \textcolor{keywordtype}{int}\ TableSize[4];}
+\DoxyCodeLine{00414\ \ \ \textcolor{keywordtype}{float}\ TableScale[4];}
+\DoxyCodeLine{00415\ \ \ \textcolor{keywordtype}{float}\ TableShift[4];}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \ \ \textcolor{keywordtype}{float}\ GradientMagnitudeScale[4];}
+\DoxyCodeLine{00418\ \ \ \textcolor{keywordtype}{float}\ GradientMagnitudeShift[4];}
+\DoxyCodeLine{00419\ }
+\DoxyCodeLine{00420\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}**\ GradientNormal;}
+\DoxyCodeLine{00421\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}**\ GradientMagnitude;}
+\DoxyCodeLine{00422\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ ContiguousGradientNormal;}
+\DoxyCodeLine{00423\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ ContiguousGradientMagnitude;}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00425\ \ \ \textcolor{keywordtype}{int}\ NumberOfGradientSlices;}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \ \ \doxymbox{\hyperlink{classvtk_direction_encoder}{vtkDirectionEncoder}}*\ DirectionEncoder;}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ \ \ \doxymbox{\hyperlink{classvtk_encoded_gradient_shader}{vtkEncodedGradientShader}}*\ GradientShader;}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \ \ \doxymbox{\hyperlink{classvtk_finite_difference_gradient_estimator}{vtkFiniteDifferenceGradientEstimator}}*\ GradientEstimator;}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00433\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DiffuseShadingTable[4][65536\ *\ 3];}
+\DoxyCodeLine{00434\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ SpecularShadingTable[4][65536\ *\ 3];}
+\DoxyCodeLine{00435\ }
+\DoxyCodeLine{00436\ \ \ \textcolor{keywordtype}{int}\ ShadingRequired;}
+\DoxyCodeLine{00437\ \ \ \textcolor{keywordtype}{int}\ GradientOpacityRequired;}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \ \ vtkDataArray*\ CurrentScalars;}
+\DoxyCodeLine{00440\ \ \ vtkDataArray*\ PreviousScalars;}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00442\ \ \ \doxymbox{\hyperlink{classvtk_render_window}{vtkRenderWindow}}*\ RenderWindow;}
+\DoxyCodeLine{00443\ \ \ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ Volume;}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ \ \ \textcolor{keywordtype}{int}\ ClipRayAgainstVolume(}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{keywordtype}{double}\ rayStart[3],\ \textcolor{keywordtype}{double}\ rayEnd[3],\ \textcolor{keywordtype}{float}\ rayDirection[3],\ \textcolor{keywordtype}{double}\ bounds[6]);}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \textcolor{keywordtype}{int}\ UpdateColorTable(\doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol);}
+\DoxyCodeLine{00449\ \ \ \textcolor{keywordtype}{int}\ UpdateGradients(\doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol);}
+\DoxyCodeLine{00450\ \ \ \textcolor{keywordtype}{int}\ UpdateShadingTable(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ ren,\ \doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol);}
+\DoxyCodeLine{00451\ \ \ \textcolor{keywordtype}{void}\ UpdateCroppingRegions();}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \ \ \textcolor{keywordtype}{void}\ ComputeGradients(\doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol);}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \ \ \textcolor{keywordtype}{int}\ ClipRayAgainstClippingPlanes(}
+\DoxyCodeLine{00456\ \ \ \ \ \textcolor{keywordtype}{double}\ rayStart[3],\ \textcolor{keywordtype}{double}\ rayEnd[3],\ \textcolor{keywordtype}{int}\ numClippingPlanes,\ \textcolor{keywordtype}{float}*\ clippingPlanes);}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00458\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ FixedPointCroppingRegionPlanes[6];}
+\DoxyCodeLine{00459\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ CroppingRegionMask[27];}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \ \ \textcolor{comment}{//\ Get\ the\ ZBuffer\ value\ corresponding\ to\ location\ (x,y)\ where\ (x,y)}}
+\DoxyCodeLine{00462\ \ \ \textcolor{comment}{//\ are\ indexing\ into\ the\ ImageInUse\ image.\ This\ must\ be\ converted\ to}}
+\DoxyCodeLine{00463\ \ \ \textcolor{comment}{//\ the\ zbuffer\ image\ coordinates.\ Nearest\ neighbor\ value\ is\ returned.}}
+\DoxyCodeLine{00464\ \ \ \textcolor{keywordtype}{float}\ GetZBufferValue(\textcolor{keywordtype}{int}\ x,\ \textcolor{keywordtype}{int}\ y);}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_m_i_p_helper}{vtkFixedPointVolumeRayCastMIPHelper}}*\ MIPHelper;}
+\DoxyCodeLine{00467\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_helper}{vtkFixedPointVolumeRayCastCompositeHelper}}*\ CompositeHelper;}
+\DoxyCodeLine{00468\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_g_o_helper}{vtkFixedPointVolumeRayCastCompositeGOHelper}}*\ CompositeGOHelper;}
+\DoxyCodeLine{00469\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_shade_helper}{vtkFixedPointVolumeRayCastCompositeShadeHelper}}*\ CompositeShadeHelper;}
+\DoxyCodeLine{00470\ \ \ \doxymbox{\hyperlink{classvtk_fixed_point_volume_ray_cast_composite_g_o_shade_helper}{vtkFixedPointVolumeRayCastCompositeGOShadeHelper}}*\ CompositeGOShadeHelper;}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00472\ \ \ \textcolor{comment}{//\ Some\ variables\ used\ for\ ray\ computation}}
+\DoxyCodeLine{00473\ \ \ \textcolor{keywordtype}{float}\ ViewToVoxelsArray[16];}
+\DoxyCodeLine{00474\ \ \ \textcolor{keywordtype}{float}\ WorldToVoxelsArray[16];}
+\DoxyCodeLine{00475\ \ \ \textcolor{keywordtype}{float}\ VoxelsToWorldArray[16];}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \ \ \textcolor{keywordtype}{double}\ CroppingBounds[6];}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \ \ \textcolor{keywordtype}{int}\ NumTransformedClippingPlanes;}
+\DoxyCodeLine{00480\ \ \ \textcolor{keywordtype}{float}*\ TransformedClippingPlanes;}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \ \ \textcolor{keywordtype}{double}\ SavedSpacing[3];}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ \ \ \textcolor{comment}{//\ Min\ Max\ structure\ used\ to\ do\ space\ leaping}}
+\DoxyCodeLine{00485\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ MinMaxVolume;}
+\DoxyCodeLine{00486\ \ \ \textcolor{keywordtype}{int}\ MinMaxVolumeSize[4];}
+\DoxyCodeLine{00487\ \ \ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ SavedMinMaxInput;}
+\DoxyCodeLine{00488\ \ \ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ MinMaxVolumeCache;}
+\DoxyCodeLine{00489\ \ \ \doxymbox{\hyperlink{classvtk_volume_ray_cast_space_leaping_image_filter}{vtkVolumeRayCastSpaceLeapingImageFilter}}*\ SpaceLeapFilter;}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00491\ \ \ \textcolor{keywordtype}{void}\ UpdateMinMaxVolume(\doxymbox{\hyperlink{classvtk_volume}{vtkVolume}}*\ vol);}
+\DoxyCodeLine{00492\ \ \ \textcolor{keywordtype}{void}\ FillInMaxGradientMagnitudes(\textcolor{keywordtype}{int}\ fullDim[3],\ \textcolor{keywordtype}{int}\ smallDim[3]);}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \ \ \textcolor{keywordtype}{float}\ FinalColorWindow;}
+\DoxyCodeLine{00495\ \ \ \textcolor{keywordtype}{float}\ FinalColorLevel;}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \ \ \textcolor{keywordtype}{int}\ FlipMIPComparison;}
+\DoxyCodeLine{00498\ }
+\DoxyCodeLine{00499\ \ \ \textcolor{keywordtype}{void}\ ApplyFinalColorWindowLevel();}
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00501\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00502\ \ \ vtkFixedPointVolumeRayCastMapper(\textcolor{keyword}{const}\ vtkFixedPointVolumeRayCastMapper\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00503\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkFixedPointVolumeRayCastMapper\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \ \ \textcolor{keywordtype}{bool}\ ThreadWarning;}
+\DoxyCodeLine{00506\ \};}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vtkFixedPointVolumeRayCastMapper::ToFixedPointPosition(\textcolor{keywordtype}{float}\ val)}
+\DoxyCodeLine{00509\ \{}
+\DoxyCodeLine{00510\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(val\ *\ VTKKW\_FP\_SCALE\ +\ 0.5);}
+\DoxyCodeLine{00511\ \}}
+\DoxyCodeLine{00512\ }
+\DoxyCodeLine{00513\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkFixedPointVolumeRayCastMapper::ToFixedPointPosition(\textcolor{keywordtype}{float}\ in[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ out[3])}
+\DoxyCodeLine{00514\ \{}
+\DoxyCodeLine{00515\ \ \ out[0]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(in[0]\ *\ VTKKW\_FP\_SCALE\ +\ 0.5);}
+\DoxyCodeLine{00516\ \ \ out[1]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(in[1]\ *\ VTKKW\_FP\_SCALE\ +\ 0.5);}
+\DoxyCodeLine{00517\ \ \ out[2]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(in[2]\ *\ VTKKW\_FP\_SCALE\ +\ 0.5);}
+\DoxyCodeLine{00518\ \}}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vtkFixedPointVolumeRayCastMapper::ToFixedPointDirection(\textcolor{keywordtype}{float}\ dir)}
+\DoxyCodeLine{00521\ \{}
+\DoxyCodeLine{00522\ \ \ \textcolor{keywordflow}{return}\ ((dir\ <\ 0.0)\ ?\ (\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(-\/dir\ *\ VTKKW\_FP\_SCALE\ +\ 0.5))}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ (0x80000000\ +\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(dir\ *\ VTKKW\_FP\_SCALE\ +\ 0.5)));}
+\DoxyCodeLine{00524\ \}}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkFixedPointVolumeRayCastMapper::ToFixedPointDirection(}
+\DoxyCodeLine{00527\ \ \ \textcolor{keywordtype}{float}\ in[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ out[3])}
+\DoxyCodeLine{00528\ \{}
+\DoxyCodeLine{00529\ \ \ out[0]\ =\ ((in[0]\ <\ 0.0)\ ?\ (\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(-\/in[0]\ *\ VTKKW\_FP\_SCALE\ +\ 0.5))}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ (0x80000000\ +\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(in[0]\ *\ VTKKW\_FP\_SCALE\ +\ 0.5)));}
+\DoxyCodeLine{00531\ \ \ out[1]\ =\ ((in[1]\ <\ 0.0)\ ?\ (\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(-\/in[1]\ *\ VTKKW\_FP\_SCALE\ +\ 0.5))}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ (0x80000000\ +\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(in[1]\ *\ VTKKW\_FP\_SCALE\ +\ 0.5)));}
+\DoxyCodeLine{00533\ \ \ out[2]\ =\ ((in[2]\ <\ 0.0)\ ?\ (\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(-\/in[2]\ *\ VTKKW\_FP\_SCALE\ +\ 0.5))}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ (0x80000000\ +\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(in[2]\ *\ VTKKW\_FP\_SCALE\ +\ 0.5)));}
+\DoxyCodeLine{00535\ \}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkFixedPointVolumeRayCastMapper::FixedPointIncrement(}
+\DoxyCodeLine{00538\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ position[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ increment[3])}
+\DoxyCodeLine{00539\ \{}
+\DoxyCodeLine{00540\ \ \ \textcolor{keywordflow}{if}\ (increment[0]\ \&\ 0x80000000)}
+\DoxyCodeLine{00541\ \ \ \{}
+\DoxyCodeLine{00542\ \ \ \ \ position[0]\ +=\ (increment[0]\ \&\ 0x7fffffff);}
+\DoxyCodeLine{00543\ \ \ \}}
+\DoxyCodeLine{00544\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00545\ \ \ \{}
+\DoxyCodeLine{00546\ \ \ \ \ position[0]\ -\/=\ increment[0];}
+\DoxyCodeLine{00547\ \ \ \}}
+\DoxyCodeLine{00548\ \ \ \textcolor{keywordflow}{if}\ (increment[1]\ \&\ 0x80000000)}
+\DoxyCodeLine{00549\ \ \ \{}
+\DoxyCodeLine{00550\ \ \ \ \ position[1]\ +=\ (increment[1]\ \&\ 0x7fffffff);}
+\DoxyCodeLine{00551\ \ \ \}}
+\DoxyCodeLine{00552\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00553\ \ \ \{}
+\DoxyCodeLine{00554\ \ \ \ \ position[1]\ -\/=\ increment[1];}
+\DoxyCodeLine{00555\ \ \ \}}
+\DoxyCodeLine{00556\ \ \ \textcolor{keywordflow}{if}\ (increment[2]\ \&\ 0x80000000)}
+\DoxyCodeLine{00557\ \ \ \{}
+\DoxyCodeLine{00558\ \ \ \ \ position[2]\ +=\ (increment[2]\ \&\ 0x7fffffff);}
+\DoxyCodeLine{00559\ \ \ \}}
+\DoxyCodeLine{00560\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00561\ \ \ \{}
+\DoxyCodeLine{00562\ \ \ \ \ position[2]\ -\/=\ increment[2];}
+\DoxyCodeLine{00563\ \ \ \}}
+\DoxyCodeLine{00564\ \}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkFixedPointVolumeRayCastMapper::GetFloatTripleFromPointer(\textcolor{keywordtype}{float}\ v[3],\ \textcolor{keywordtype}{float}*\ ptr)}
+\DoxyCodeLine{00567\ \{}
+\DoxyCodeLine{00568\ \ \ v[0]\ =\ *(ptr);}
+\DoxyCodeLine{00569\ \ \ v[1]\ =\ *(ptr\ +\ 1);}
+\DoxyCodeLine{00570\ \ \ v[2]\ =\ *(ptr\ +\ 2);}
+\DoxyCodeLine{00571\ \}}
+\DoxyCodeLine{00572\ }
+\DoxyCodeLine{00573\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkFixedPointVolumeRayCastMapper::GetUIntTripleFromPointer(}
+\DoxyCodeLine{00574\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ v[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ ptr)}
+\DoxyCodeLine{00575\ \{}
+\DoxyCodeLine{00576\ \ \ v[0]\ =\ *(ptr);}
+\DoxyCodeLine{00577\ \ \ v[1]\ =\ *(ptr\ +\ 1);}
+\DoxyCodeLine{00578\ \ \ v[2]\ =\ *(ptr\ +\ 2);}
+\DoxyCodeLine{00579\ \}}
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00581\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkFixedPointVolumeRayCastMapper::ShiftVectorDown(}
+\DoxyCodeLine{00582\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ in[3],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ out[3])}
+\DoxyCodeLine{00583\ \{}
+\DoxyCodeLine{00584\ \ \ out[0]\ =\ in[0]\ >>\ VTKKW\_FP\_SHIFT;}
+\DoxyCodeLine{00585\ \ \ out[1]\ =\ in[1]\ >>\ VTKKW\_FP\_SHIFT;}
+\DoxyCodeLine{00586\ \ \ out[2]\ =\ in[2]\ >>\ VTKKW\_FP\_SHIFT;}
+\DoxyCodeLine{00587\ \}}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ vtkFixedPointVolumeRayCastMapper::CheckMinMaxVolumeFlag(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ mmpos[3],\ \textcolor{keywordtype}{int}\ c)}
+\DoxyCodeLine{00590\ \{}
+\DoxyCodeLine{00591\ \ \ vtkIdType\ offset\ =\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(this-\/>MinMaxVolumeSize[3])\ *}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ (mmpos[2]\ *\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(this-\/>MinMaxVolumeSize[0]\ *\ this-\/>MinMaxVolumeSize[1])\ +}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \ \ mmpos[1]\ *\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(this-\/>MinMaxVolumeSize[0])\ +\ mmpos[0])\ +}
+\DoxyCodeLine{00594\ \ \ \ \ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(c);}
+\DoxyCodeLine{00595\ }
+\DoxyCodeLine{00596\ \ \ \textcolor{keywordflow}{return}\ ((*(this-\/>MinMaxVolume\ +\ 3\ *\ offset\ +\ 2))\ \&\ 0x00ff);}
+\DoxyCodeLine{00597\ \}}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00599\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ vtkFixedPointVolumeRayCastMapper::CheckMIPMinMaxVolumeFlag(}
+\DoxyCodeLine{00600\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ mmpos[3],\ \textcolor{keywordtype}{int}\ c,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ maxIdx,\ \textcolor{keywordtype}{int}\ flip)}
+\DoxyCodeLine{00601\ \{}
+\DoxyCodeLine{00602\ \ \ vtkIdType\ offset\ =\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(this-\/>MinMaxVolumeSize[3])\ *}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ (mmpos[2]\ *\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(this-\/>MinMaxVolumeSize[0]\ *\ this-\/>MinMaxVolumeSize[1])\ +}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ mmpos[1]\ *\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(this-\/>MinMaxVolumeSize[0])\ +\ mmpos[0])\ +}
+\DoxyCodeLine{00605\ \ \ \ \ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(c);}
+\DoxyCodeLine{00606\ }
+\DoxyCodeLine{00607\ \ \ \textcolor{keywordflow}{if}\ ((*(this-\/>MinMaxVolume\ +\ 3\ *\ offset\ +\ 2)\ \&\ 0x00ff))}
+\DoxyCodeLine{00608\ \ \ \{}
+\DoxyCodeLine{00609\ \ \ \ \ \textcolor{keywordflow}{if}\ (flip)}
+\DoxyCodeLine{00610\ \ \ \ \ \{}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (*(this-\/>MinMaxVolume\ +\ 3\ *\ offset)\ <\ maxIdx);}
+\DoxyCodeLine{00612\ \ \ \ \ \}}
+\DoxyCodeLine{00613\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00614\ \ \ \ \ \{}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (*(this-\/>MinMaxVolume\ +\ 3\ *\ offset\ +\ 1)\ >\ maxIdx);}
+\DoxyCodeLine{00616\ \ \ \ \ \}}
+\DoxyCodeLine{00617\ \ \ \}}
+\DoxyCodeLine{00618\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00619\ \ \ \{}
+\DoxyCodeLine{00620\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00621\ \ \ \}}
+\DoxyCodeLine{00622\ \}}
+\DoxyCodeLine{00623\ }
+\DoxyCodeLine{00624\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkFixedPointVolumeRayCastMapper::LookupColorUC(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ colorTable,}
+\DoxyCodeLine{00625\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ scalarOpacityTable,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ index,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ color[4])}
+\DoxyCodeLine{00626\ \{}
+\DoxyCodeLine{00627\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ alpha\ =\ scalarOpacityTable[index];}
+\DoxyCodeLine{00628\ \ \ color[0]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00629\ \ \ \ \ (colorTable[3\ *\ index]\ *\ alpha\ +\ 0x7fff)\ >>\ (2\ *\ VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00630\ \ \ color[1]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00631\ \ \ \ \ (colorTable[3\ *\ index\ +\ 1]\ *\ alpha\ +\ 0x7fff)\ >>\ (2\ *\ VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00632\ \ \ color[2]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00633\ \ \ \ \ (colorTable[3\ *\ index\ +\ 2]\ *\ alpha\ +\ 0x7fff)\ >>\ (2\ *\ VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00634\ \ \ color[3]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(alpha\ >>\ (VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00635\ \}}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkFixedPointVolumeRayCastMapper::LookupDependentColorUC(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ colorTable,}
+\DoxyCodeLine{00638\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ scalarOpacityTable,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ index[4],\ \textcolor{keywordtype}{int}\ components,}
+\DoxyCodeLine{00639\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ color[4])}
+\DoxyCodeLine{00640\ \{}
+\DoxyCodeLine{00641\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ alpha;}
+\DoxyCodeLine{00642\ \ \ \textcolor{keywordflow}{switch}\ (components)}
+\DoxyCodeLine{00643\ \ \ \{}
+\DoxyCodeLine{00644\ \ \ \ \ \textcolor{keywordflow}{case}\ 2:}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ alpha\ =\ scalarOpacityTable[index[1]];}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ color[0]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \ \ (colorTable[3\ *\ index[0]]\ *\ alpha\ +\ 0x7fff)\ >>\ (2\ *\ VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00648\ \ \ \ \ \ \ color[1]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \ \ (colorTable[3\ *\ index[0]\ +\ 1]\ *\ alpha\ +\ 0x7fff)\ >>\ (2\ *\ VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ color[2]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ (colorTable[3\ *\ index[0]\ +\ 2]\ *\ alpha\ +\ 0x7fff)\ >>\ (2\ *\ VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00652\ \ \ \ \ \ \ color[3]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(alpha\ >>\ (VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00653\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00654\ \ \ \ \ \textcolor{keywordflow}{case}\ 4:}
+\DoxyCodeLine{00655\ \ \ \ \ \ \ alpha\ =\ scalarOpacityTable[index[3]];}
+\DoxyCodeLine{00656\ \ \ \ \ \ \ color[0]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}((index[0]\ *\ alpha\ +\ 0x7fff)\ >>\ VTKKW\_FP\_SHIFT);}
+\DoxyCodeLine{00657\ \ \ \ \ \ \ color[1]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}((index[1]\ *\ alpha\ +\ 0x7fff)\ >>\ VTKKW\_FP\_SHIFT);}
+\DoxyCodeLine{00658\ \ \ \ \ \ \ color[2]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}((index[2]\ *\ alpha\ +\ 0x7fff)\ >>\ VTKKW\_FP\_SHIFT);}
+\DoxyCodeLine{00659\ \ \ \ \ \ \ color[3]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(alpha\ >>\ (VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00660\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00661\ \ \ \}}
+\DoxyCodeLine{00662\ \}}
+\DoxyCodeLine{00663\ }
+\DoxyCodeLine{00664\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkFixedPointVolumeRayCastMapper::LookupAndCombineIndependentColorsUC(}
+\DoxyCodeLine{00665\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ colorTable[4],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ scalarOpacityTable[4],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ index[4],}
+\DoxyCodeLine{00666\ \ \ \textcolor{keywordtype}{float}\ weights[4],\ \textcolor{keywordtype}{int}\ components,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ color[4])}
+\DoxyCodeLine{00667\ \{}
+\DoxyCodeLine{00668\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ tmp[4]\ =\ \{\ 0,\ 0,\ 0,\ 0\ \};}
+\DoxyCodeLine{00669\ }
+\DoxyCodeLine{00670\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ components;\ i++)}
+\DoxyCodeLine{00671\ \ \ \{}
+\DoxyCodeLine{00672\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ alpha\ =}
+\DoxyCodeLine{00673\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\textcolor{keyword}{>}(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(scalarOpacityTable[i][index[i]])\ *\ weights[i]);}
+\DoxyCodeLine{00674\ \ \ \ \ tmp[0]\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00675\ \ \ \ \ \ \ ((colorTable[i][3\ *\ index[i]])\ *\ alpha\ +\ 0x7fff)\ >>\ (2\ *\ VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00676\ \ \ \ \ tmp[1]\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00677\ \ \ \ \ \ \ ((colorTable[i][3\ *\ index[i]\ +\ 1])\ *\ alpha\ +\ 0x7fff)\ >>\ (2\ *\ VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00678\ \ \ \ \ tmp[2]\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(}
+\DoxyCodeLine{00679\ \ \ \ \ \ \ ((colorTable[i][3\ *\ index[i]\ +\ 2])\ *\ alpha\ +\ 0x7fff)\ >>\ (2\ *\ VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00680\ \ \ \ \ tmp[3]\ +=\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}(alpha\ >>\ (VTKKW\_FP\_SHIFT\ -\/\ 8));}
+\DoxyCodeLine{00681\ \ \ \}}
+\DoxyCodeLine{00682\ }
+\DoxyCodeLine{00683\ \ \ color[0]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}((tmp[0]\ >\ 255)\ ?\ (255)\ :\ (tmp[0]));}
+\DoxyCodeLine{00684\ \ \ color[1]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}((tmp[1]\ >\ 255)\ ?\ (255)\ :\ (tmp[1]));}
+\DoxyCodeLine{00685\ \ \ color[2]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}((tmp[2]\ >\ 255)\ ?\ (255)\ :\ (tmp[2]));}
+\DoxyCodeLine{00686\ \ \ color[3]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\textcolor{keyword}{>}((tmp[3]\ >\ 255)\ ?\ (255)\ :\ (tmp[3]));}
+\DoxyCodeLine{00687\ \}}
+\DoxyCodeLine{00688\ }
+\DoxyCodeLine{00689\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ vtkFixedPointVolumeRayCastMapper::CheckIfCropped(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pos[3])}
+\DoxyCodeLine{00690\ \{}
+\DoxyCodeLine{00691\ \ \ \textcolor{keywordtype}{int}\ idx;}
+\DoxyCodeLine{00692\ }
+\DoxyCodeLine{00693\ \ \ \textcolor{keywordflow}{if}\ (pos[2]\ <\ this-\/>FixedPointCroppingRegionPlanes[4])}
+\DoxyCodeLine{00694\ \ \ \{}
+\DoxyCodeLine{00695\ \ \ \ \ idx\ =\ 0;}
+\DoxyCodeLine{00696\ \ \ \}}
+\DoxyCodeLine{00697\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (pos[2]\ >\ this-\/>FixedPointCroppingRegionPlanes[5])}
+\DoxyCodeLine{00698\ \ \ \{}
+\DoxyCodeLine{00699\ \ \ \ \ idx\ =\ 18;}
+\DoxyCodeLine{00700\ \ \ \}}
+\DoxyCodeLine{00701\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00702\ \ \ \{}
+\DoxyCodeLine{00703\ \ \ \ \ idx\ =\ 9;}
+\DoxyCodeLine{00704\ \ \ \}}
+\DoxyCodeLine{00705\ }
+\DoxyCodeLine{00706\ \ \ \textcolor{keywordflow}{if}\ (pos[1]\ >=\ this-\/>FixedPointCroppingRegionPlanes[2])}
+\DoxyCodeLine{00707\ \ \ \{}
+\DoxyCodeLine{00708\ \ \ \ \ \textcolor{keywordflow}{if}\ (pos[1]\ >\ this-\/>FixedPointCroppingRegionPlanes[3])}
+\DoxyCodeLine{00709\ \ \ \ \ \{}
+\DoxyCodeLine{00710\ \ \ \ \ \ \ idx\ +=\ 6;}
+\DoxyCodeLine{00711\ \ \ \ \ \}}
+\DoxyCodeLine{00712\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00713\ \ \ \ \ \{}
+\DoxyCodeLine{00714\ \ \ \ \ \ \ idx\ +=\ 3;}
+\DoxyCodeLine{00715\ \ \ \ \ \}}
+\DoxyCodeLine{00716\ \ \ \}}
+\DoxyCodeLine{00717\ }
+\DoxyCodeLine{00718\ \ \ \textcolor{keywordflow}{if}\ (pos[0]\ >=\ this-\/>FixedPointCroppingRegionPlanes[0])}
+\DoxyCodeLine{00719\ \ \ \{}
+\DoxyCodeLine{00720\ \ \ \ \ \textcolor{keywordflow}{if}\ (pos[0]\ >\ this-\/>FixedPointCroppingRegionPlanes[1])}
+\DoxyCodeLine{00721\ \ \ \ \ \{}
+\DoxyCodeLine{00722\ \ \ \ \ \ \ idx\ +=\ 2;}
+\DoxyCodeLine{00723\ \ \ \ \ \}}
+\DoxyCodeLine{00724\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00725\ \ \ \ \ \{}
+\DoxyCodeLine{00726\ \ \ \ \ \ \ idx\ +=\ 1;}
+\DoxyCodeLine{00727\ \ \ \ \ \}}
+\DoxyCodeLine{00728\ \ \ \}}
+\DoxyCodeLine{00729\ }
+\DoxyCodeLine{00730\ \ \ \textcolor{keywordflow}{return}\ !(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(this-\/>CroppingRegionFlags)\ \&\ this-\/>CroppingRegionMask[idx]);}
+\DoxyCodeLine{00731\ \}}
+\DoxyCodeLine{00732\ }
+\DoxyCodeLine{00733\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00734\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

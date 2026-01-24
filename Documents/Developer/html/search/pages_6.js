@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['6_0',['🔍 OBSERVATION: ConnectionSetupDelegate.cpp:1-6',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md100',1,'']]],
+  ['6_20✅_20mainwindowdelegate_20integration_1',['6. ✅ MainWindowDelegate Integration',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_208-_examination-_implementation-_progress.html#autotoc_md552',1,'']]],
+  ['6_201_20source_20code_20organization_2',['6.1 Source Code Organization',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_201-_architecture-_overview.html#autotoc_md259',1,'']]],
+  ['6_201_20vtkviewportrenderer_3',['6.1 VtkViewportRenderer',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation.html#autotoc_md644',1,'']]],
+  ['6_202_20build_20outputs_4',['6.2 Build Outputs',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_201-_architecture-_overview.html#autotoc_md260',1,'']]],
+  ['6_202_20multiviewportmanager_5',['6.2 MultiViewportManager',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation.html#autotoc_md645',1,'']]],
+  ['6_20angletool_6',['5.6 AngleTool',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation.html#autotoc_md640',1,'']]],
+  ['6_20api_20safety_20correctness_7',['6. API Safety &amp;amp; Correctness',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md65',1,'']]],
+  ['6_20builders_8',['Device Module (6 builders)',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern.html#autotoc_md404',1,'']]],
+  ['6_20context_20injection_9',['6. Context Injection',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern.html#autotoc_md394',1,'']]],
+  ['6_20demo_20mode_10',['4.6 Demo Mode',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_201-_architecture-_overview.html#autotoc_md249',1,'']]],
+  ['6_20development_20view_11',['6. Development View',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_201-_architecture-_overview.html#autotoc_md258',1,'']]],
+  ['6_20examination_20workflow_12',['6. Examination Workflow',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows.html#autotoc_md507',1,'']]],
+  ['6_20json_20for_20flexible_20data_13',['6. JSON for Flexible Data',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema.html#autotoc_md347',1,'']]],
+  ['6_20medium_204_20low_20priority_20issues_14',['Critical Findings: 2 HIGH, 6 MEDIUM, 4 LOW priority issues',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md95',1,'']]],
+  ['6_20namespace_20documentation_15',['6. Namespace Documentation',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_212-_doxygen-_documentation-_standards.html#autotoc_md766',1,'']]],
+  ['6_20pacs_20mpps_16',['6. PACS &amp;amp; MPPS',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema.html#autotoc_md334',1,'']]],
+  ['6_20rendering_20layer_20vtk_17',['6. Rendering Layer (VTK)',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation.html#autotoc_md643',1,'']]],
+  ['6_20threading_20signal_20slot_20safety_18',['6. Threading &amp;amp; Signal/Slot Safety',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md124',1,'']]],
+  ['6_3a_20context_20flow_19',['Phase 6: Context Flow',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_207-_examination-_workflow-_design.html#autotoc_md540',1,'']]],
+  ['6_3a_20runtime_20parameter_20persistence_20infrastructure_20',['Epic 6: Runtime Parameter Persistence Infrastructure',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2docs_2_e_p_i_c___s_t_a_t_u_s___s_u_m_m_a_r_y.html#autotoc_md197',1,'']]],
+  ['6_3a_20tooling_20verification_21',['Phase 6: Tooling &amp;amp; Verification',['../md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_device_2_a_u_d_i_t___r_e_p_o_r_t.html#autotoc_md150',1,'']]]
+];

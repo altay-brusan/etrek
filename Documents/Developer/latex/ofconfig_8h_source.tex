@@ -1,0 +1,304 @@
+\doxysection{ofconfig.\+h}
+\hypertarget{ofconfig_8h_source}{}\label{ofconfig_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofconfig.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofconfig.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 1997-\/2022,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ ofstd}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ Marco\ Eichelberg}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ \ \ \ classes:\ OFConfigFile}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#ifndef\ OFCONFIG\_H}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ OFCONFIG\_H}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}\ \ \ \ \textcolor{comment}{/*\ make\ sure\ OS\ specific\ configuration\ is\ included\ first\ */}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofstring.h"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofstack.h"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofstream.h"{}}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ \ Short\ description\ of\ configuration\ file\ structure:}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *\ \ \ \ -\/\ The\ data\ in\ a\ configuration\ file\ have\ a\ tree\ structure.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ \ \ \ \ \ The\ tree\ has\ a\ depth\ defined\ at\ instantiation\ time\ (by\ default,\ OFConfigFile\_MaxLevel),}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ \ \ \ \ \ not\ including\ the\ (imaginary)\ root\ node.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ \ \ \ -\/\ A\ level\ 0\ entry\ (a\ leaf)\ has\ the\ form:\ KEYWORD\ =\ VALUE,}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *\ \ \ \ \ \ where\ the\ keyword\ starts\ on\ row\ one\ of\ a\ line.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *\ \ \ \ -\/\ A\ level\ 1\ entry\ has\ the\ form\ [KEYWORD]}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ \ \ \ -\/\ A\ level\ 2\ entry\ has\ the\ form\ [[KEYWORD]]\ (and\ so\ on).}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ \ \ \ -\/\ Keywords\ may\ consist\ of:}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ A..Z,\ a..z\ (which\ are\ converted\ to\ uppercase),}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ 0..9,}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ '-\/'}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ \ \ \ -\/\ Values\ can\ be\ any\ kind\ of\ ASCII\ text.\ Values\ may\ span\ multiple\ lines.}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ \ \ \ \ \ To\ continue\ a\ value\ in\ the\ next\ line,\ the\ next\ line\ MUST\ start\ with}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ \ \ \ \ \ (any\ amount\ of)\ whitespace,\ which\ is\ discarded\ when\ reading\ the\ value.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ \ \ \ \ \ linefeeds\ (converted\ to\ ASCII\ 10\ if\ necessary)\ are\ kept\ in\ the}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ \ \ \ \ \ value\ string.\ Empty\ lines\ are\ discarded\ (and\ also\ their\ linefeed).}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ \ \ \ -\/\ The\ data\ must\ have\ a\ "{}clean"{}\ tree\ structure.\ This\ means\ that\ there}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ \ \ \ \ \ MUST\ be\ a\ level\ 2\ keyword\ before\ any\ level\ 1\ keyword\ etc.}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *\ \ \ \ -\/\ lines\ starting\ with\ the\ comment\ char\ (default\ \ is\ "{}\#"{})\ are\ interpreted}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ \ \ \ \ \ as\ comment\ lines.}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#define\ OFConfigFile\_MaxLevel\ 2}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#define\ OFConfigFile\_CommentChar\ '\#'}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_o_f_config_file}{OFConfigFile}};}
+\DoxyCodeLine{00060\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}};}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}}\ *OFPConfigFileNode;}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00069\ \textcolor{keyword}{class\ }DCMTK\_OFSTD\_EXPORT\ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}}
+\DoxyCodeLine{00070\ \{}
+\DoxyCodeLine{00071\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00075\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *keyword);}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00078\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node_a420b66fb76cb932bb6838b18dfa36c20}{\string~OFConfigFileNode}}();}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{class_o_f_config_file_node_a52c9443e52b357e5bd228bebbf5a2985}{getKeyword}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00083\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{return}\ keyword\_.c\_str();}
+\DoxyCodeLine{00085\ \ \ \}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{class_o_f_config_file_node_ae7cf71d4b3634fc8412e8ee46f3a0dc3}{getValue}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00090\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{keywordflow}{return}\ value\_.c\_str();}
+\DoxyCodeLine{00092\ \ \ \}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_node_ad44fb2f571b922e184b82a335aea2117}{setValue}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *c)}
+\DoxyCodeLine{00098\ \ \ \{}
+\DoxyCodeLine{00099\ \ \ \ \ value\_\ =\ c;}
+\DoxyCodeLine{00100\ \ \ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00106\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_config_file_node_a1473326b0025ea84b183549c5daa57f0}{match}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *c)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00107\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordflow}{return}\ (keyword\_\ ==\ c);}
+\DoxyCodeLine{00109\ \ \ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00115\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_config_file_node_a9b60bb102ebd9c8b58b68bb4e3015186}{less}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *c)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00116\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keywordflow}{return}\ (keyword\_\ <\ c);}
+\DoxyCodeLine{00118\ \ \ \}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00123\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}\ *\doxymbox{\hyperlink{class_o_f_config_file_node_a69f603bd6537aae71ede5d3dee379688}{getBrother}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00124\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordflow}{return}\ brother\_;}
+\DoxyCodeLine{00126\ \ \ \}}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}\ *\doxymbox{\hyperlink{class_o_f_config_file_node_a42866d7d3924bcab78a7211bc436dcb8}{getSon}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00132\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordflow}{return}\ son\_;}
+\DoxyCodeLine{00134\ \ \ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00139\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_node_a088493460b523fbb440a1c45bbb4397a}{setBrother}}(\doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}\ *brother)}
+\DoxyCodeLine{00140\ \ \ \{}
+\DoxyCodeLine{00141\ \ \ \ \ brother\_\ =\ brother;}
+\DoxyCodeLine{00142\ \ \ \}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_node_aef298ff6b3efccb157ed67d4bb72cc09}{setSon}}(\doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}\ *son)}
+\DoxyCodeLine{00148\ \ \ \{}
+\DoxyCodeLine{00149\ \ \ \ \ son\_\ =\ son;}
+\DoxyCodeLine{00150\ \ \ \}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00156\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_node_a3f23d4e7b991645650e1bd09b014e9ae}{print}}(STD\_NAMESPACE\ ostream\&\ out,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level);}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00160\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}\&\ arg);}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00163\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}\ \&operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}\&\ arg);}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00166\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}\ *brother\_;}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00169\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node_abd39bc21fbf4cea680171c680cf45caf}{OFConfigFileNode}}\ *son\_;}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00172\ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ keyword\_;}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00175\ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ value\_;}
+\DoxyCodeLine{00176\ \};}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00179\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}}\ *OFConfigFileNodePtr;}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00184\ \textcolor{keyword}{class\ }DCMTK\_OFSTD\_EXPORT\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_aa21ede7b63adc8b89c70d0f6b3f67045}{OFConfigFileCursor}}}
+\DoxyCodeLine{00185\ \{}
+\DoxyCodeLine{00186\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00189\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_cursor_aa21ede7b63adc8b89c70d0f6b3f67045}{OFConfigFileCursor}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ maxLevel)}
+\DoxyCodeLine{00190\ \ \ :\ array\_(NULL)}
+\DoxyCodeLine{00191\ \ \ ,\ maxLevel\_(maxLevel)}
+\DoxyCodeLine{00192\ \ \ \{}
+\DoxyCodeLine{00193\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_config_file_cursor_ad2c032f265c030db27175f1672df8e22}{clear}}();}
+\DoxyCodeLine{00194\ \ \ \}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00198\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_cursor_a8537e9a7de37ac8aae5173f363fe365a}{OFConfigFileCursor}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_aa21ede7b63adc8b89c70d0f6b3f67045}{OFConfigFileCursor}}\&\ source);}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00202\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_cursor_a7531abf287403e33488a4d5e34a18887}{\string~OFConfigFileCursor}}()}
+\DoxyCodeLine{00203\ \ \ \{}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keyword}{delete}[]\ array\_;}
+\DoxyCodeLine{00205\ \ \ \}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00209\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_cursor_aa21ede7b63adc8b89c70d0f6b3f67045}{OFConfigFileCursor}}\&\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_abd492a909e862d81315352ab1bf3945c}{operator=}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_aa21ede7b63adc8b89c70d0f6b3f67045}{OFConfigFileCursor}}\&\ source);}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_ad2c032f265c030db27175f1672df8e22}{clear}}();}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00218\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{class_o_f_config_file_cursor_a0916ba0525c6f92c73f0a683bdab2223}{getKeyword}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00219\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{keywordflow}{if}\ ((level\ <=\ maxLevel\_)\ \&\&\ array\_\ \&\&\ array\_[level])\ \textcolor{keywordflow}{return}\ array\_[level]-\/>getKeyword();\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{return}\ NULL;}
+\DoxyCodeLine{00221\ \ \ \}}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{class_o_f_config_file_cursor_a55829750070da5d850353fd67665a15d}{getValue}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00228\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{keywordflow}{if}\ ((level\ <=\ maxLevel\_)\ \&\&\ array\_\ \&\&\ array\_[level])\ \textcolor{keywordflow}{return}\ array\_[level]-\/>getValue();\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{return}\ NULL;}
+\DoxyCodeLine{00230\ \ \ \}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00237\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_acabc7d929f273d80d865faef6f748a70}{section\_valid}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00249\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_a14255ca0c01854e15d688bc83d135fc4}{set\_section}}(}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level,}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key,}
+\DoxyCodeLine{00252\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}}\ *anchor);}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00263\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_a9c8be0315ff001921a2a2e2eb2d59d14}{first\_section}}(}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level,}
+\DoxyCodeLine{00265\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}}\ *anchor);}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00275\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_a6f7a873afc794bb209b8a9932ff0e8e9}{next\_section}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level);}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00284\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_aaea8130797c1e47c00e724ae3b3181c4}{insert}}(}
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level,}
+\DoxyCodeLine{00286\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}}\ *\&\ newnode,}
+\DoxyCodeLine{00287\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}}\ *\&\ anchor,}
+\DoxyCodeLine{00288\ \ \ \ \ OFBool\ orderedMode);}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00293\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_ae64fbaa242a1b3d639876ed02c6074ee}{operator<}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_aa21ede7b63adc8b89c70d0f6b3f67045}{OFConfigFileCursor}}\&\ \textcolor{comment}{/*\ arg\ */})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00294\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{keywordflow}{return}\ OFFalse;}
+\DoxyCodeLine{00296\ \ \ \}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00301\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_a51f5c716722a55944f963bf698961136}{operator==}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_config_file_cursor_aa21ede7b63adc8b89c70d0f6b3f67045}{OFConfigFileCursor}}\&\ \textcolor{comment}{/*\ arg\ */})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00302\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00303\ \ \ \ \ \textcolor{keywordflow}{return}\ OFTrue;}
+\DoxyCodeLine{00304\ \ \ \}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00315\ \ \ \textcolor{keywordtype}{void}\ orderedInsert(}
+\DoxyCodeLine{00316\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}}\ *parent,}
+\DoxyCodeLine{00317\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}}\ *\&newnode);}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00320\ \ \ OFConfigFileNodePtr\ *array\_;}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00323\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ maxLevel\_;}
+\DoxyCodeLine{00324\ \};}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00332\ \textcolor{keyword}{class\ }DCMTK\_OFSTD\_EXPORT\ \doxymbox{\hyperlink{class_o_f_config_file_a7b815350b2ea4da6f7753172a8ce0ed5}{OFConfigFile}}}
+\DoxyCodeLine{00333\ \{}
+\DoxyCodeLine{00334\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00343\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_a7b815350b2ea4da6f7753172a8ce0ed5}{OFConfigFile}}(}
+\DoxyCodeLine{00344\ \ \ \ \ FILE\ *infile,}
+\DoxyCodeLine{00345\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ maxLevel\ =\ OFConfigFile\_MaxLevel,}
+\DoxyCodeLine{00346\ \ \ \ \ \textcolor{keywordtype}{char}\ commentChar\ =\ OFConfigFile\_CommentChar,}
+\DoxyCodeLine{00347\ \ \ \ \ OFBool\ orderedMode\ =\ OFFalse);}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00351\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_config_file_ae31dd12133a2cd52f86d32a51f932dd1}{\string~OFConfigFile}}();}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00356\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_a226f67ec8840d6ed8927ac93c3f8332d}{loadFile}}(FILE\ *infile);}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00363\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{class_o_f_config_file_ab8ba3d7718666a21e2bd117847bbdd99}{get\_keyword}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level);}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00369\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{class_o_f_config_file_a3208f0d4e8883c64095d1a19893f790a}{get\_value}}();}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00381\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_config_file_ab106bc64597d3a0c7f2752524ee92f40}{get\_bool\_value}}(OFBool\ defaultvalue);}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00388\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_config_file_a9c53aefe9f15572dd05a98800f32dff7}{section\_valid}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00389\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keywordflow}{return}\ cursor\_.section\_valid(level);}
+\DoxyCodeLine{00391\ \ \ \}}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00402\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_a023c0ce21587b008247ef42fb3010c42}{set\_section}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key)}
+\DoxyCodeLine{00403\ \ \ \{}
+\DoxyCodeLine{00404\ \ \ \ \ cursor\_.set\_section(level,\ key,\ anchor\_);}
+\DoxyCodeLine{00405\ \ \ \}}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00415\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_adb759aa0551ed96179bbae57ccd95f73}{first\_section}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level)}
+\DoxyCodeLine{00416\ \ \ \{}
+\DoxyCodeLine{00417\ \ \ \ \ cursor\_.first\_section(level,\ anchor\_);}
+\DoxyCodeLine{00418\ \ \ \}}
+\DoxyCodeLine{00419\ }
+\DoxyCodeLine{00428\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_a8309eb80d06ca733faf33761205a0535}{next\_section}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ level)}
+\DoxyCodeLine{00429\ \ \ \{}
+\DoxyCodeLine{00430\ \ \ \ \ cursor\_.next\_section(level);}
+\DoxyCodeLine{00431\ \ \ \}}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00435\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_a3f577bd6231a1da0f0c0f11ed1232507}{save\_cursor}}();}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00439\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_a25f1df1f2e2296e47492dc55c2771a3d}{restore\_cursor}}();}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00449\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_a5c2b2f65894404bed6ec6bab7d0375ff}{select\_section}}(}
+\DoxyCodeLine{00450\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key1,}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key2=NULL,}
+\DoxyCodeLine{00452\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key3=NULL);}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00459\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{class_o_f_config_file_a7b8ae6fc3df26e636f487ce42f0dbccd}{get\_entry}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key0);}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00464\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_config_file_a1e38ab4d19939698e42d9932c996a38f}{print}}(STD\_NAMESPACE\ ostream\&\ out);}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00467\ }
+\DoxyCodeLine{00474\ \ \ \textcolor{keywordtype}{char}\ read\_char(FILE\ *infile);}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00481\ \ \ \textcolor{keywordtype}{char}\ read\_keywordchar(FILE\ *infile);}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00489\ \ \ \textcolor{keywordtype}{void}\ read\_entry(FILE\ *infile);}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00495\ \ \ \textcolor{keywordtype}{void}\ store\_char(\textcolor{keywordtype}{char}\ c);}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00499\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_a7b815350b2ea4da6f7753172a8ce0ed5}{OFConfigFile}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_config_file_a7b815350b2ea4da6f7753172a8ce0ed5}{OFConfigFile}}\&);}
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00503\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_a7b815350b2ea4da6f7753172a8ce0ed5}{OFConfigFile}}\&\ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_config_file_a7b815350b2ea4da6f7753172a8ce0ed5}{OFConfigFile}}\&);}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00507\ \ \ \doxymbox{\hyperlink{class_o_f_stack}{OFStack<OFConfigFileCursor>}}\ stack\_;}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00510\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_cursor}{OFConfigFileCursor}}\ cursor\_;}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00513\ \ \ \doxymbox{\hyperlink{class_o_f_config_file_node}{OFConfigFileNode}}\ *anchor\_;}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00516\ \ \ \textcolor{keywordtype}{int}\ isnewline\_;}
+\DoxyCodeLine{00517\ }
+\DoxyCodeLine{00519\ \ \ \textcolor{keywordtype}{int}\ crfound\_;}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00522\ \ \ \textcolor{keywordtype}{char}\ *buffer\_;}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00525\ \ \ \textcolor{keywordtype}{size\_t}\ bufptr\_;}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00528\ \ \ \textcolor{keywordtype}{long}\ bufsize\_;}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00531\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ maxLevel\_;}
+\DoxyCodeLine{00532\ }
+\DoxyCodeLine{00534\ \ \ \textcolor{keywordtype}{char}\ commentChar\_;}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00545\ \ \ OFBool\ orderedMode\_;}
+\DoxyCodeLine{00546\ \};}
+\DoxyCodeLine{00547\ }
+\DoxyCodeLine{00548\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

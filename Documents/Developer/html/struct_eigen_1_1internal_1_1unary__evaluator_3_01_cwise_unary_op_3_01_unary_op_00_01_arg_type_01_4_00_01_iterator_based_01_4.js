@@ -1,0 +1,4 @@
+var struct_eigen_1_1internal_1_1unary__evaluator_3_01_cwise_unary_op_3_01_unary_op_00_01_arg_type_01_4_00_01_iterator_based_01_4 =
+[
+    [ "InnerIterator", "class_eigen_1_1internal_1_1unary__evaluator_3_01_cwise_unary_op_3_01_unary_op_00_01_arg_type_01_629bdbe0b310981fdaf6bb6b6c73ef55.html", null ]
+];

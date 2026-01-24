@@ -1,0 +1,167 @@
+\doxysection{ofipc.\+h}
+\hypertarget{ofipc_8h_source}{}\label{ofipc_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofipc.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofipc.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2022-\/2023,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ ofstd}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Marco\ Eichelberg}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ Message\ based\ inter-\/process\ communication\ (IPC)}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ OFIPC\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ OFIPC\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofdefine.h"{}}\ \ \ \ \ \textcolor{comment}{/*\ for\ DCMTK\_OFSTD\_EXPORT\ */}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{oftypes_8h}{dcmtk/ofstd/oftypes.h}}"{}}\ \ \ \ \ \ \textcolor{comment}{/*\ for\ OFBool\ */}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ofcond_8h}{dcmtk/ofstd/ofcond.h}}"{}}\ \ \ \ \ \ \ \textcolor{comment}{/*\ for\ OFCondition\ */}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofstring.h"{}}\ \ \ \ \ \textcolor{comment}{/*\ for\ OFString\ */}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofthread.h"{}}\ \ \ \ \ \textcolor{comment}{/*\ for\ OFMutex\ */}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/oflist.h"{}}\ \ \ \ \ \ \ \textcolor{comment}{/*\ for\ OFList\ */}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{comment}{//\ in\ order\ to\ test\ or\ use\ the\ System\ V\ message\ queue\ implementation}}
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ on\ platforms\ such\ as\ Linux\ that\ support\ both\ Posix\ and\ System\ V,}}
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ uncomment\ the\ following\ line:}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//\ \#undef\ HAVE\_MQUEUE\_H}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ in\ order\ to\ test\ or\ use\ the\ message\ queue\ implementation\ based}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ on\ unix\ domain\ sockets\ and\ a\ separate\ queue\ handler\ thread,}}
+\DoxyCodeLine{00040\ \textcolor{comment}{//\ uncomment\ the\ following\ line:}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ \#define\ DCMTK\_USE\_UNIX\_SOCKET\_QUEUE}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ Android\ has\ <mqueue.h>\ and\ <sys/msg.h>\ but\ no\ implementation}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ of\ Posix\ or\ System\ V\ message\ queues}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#ifdef\ \_\_ANDROID\_\_}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#define\ DCMTK\_USE\_UNIX\_SOCKET\_QUEUE}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{comment}{//\ GNU\ Hurd\ has\ <mqueue.h>\ but\ no\ working\ implementation}}
+\DoxyCodeLine{00050\ \textcolor{comment}{//\ of\ Posix\ message\ queues}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#ifdef\ \_\_gnu\_hurd\_\_}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#define\ DCMTK\_USE\_UNIX\_SOCKET\_QUEUE}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{comment}{//\ There\ may\ be\ other\ platforms\ where\ we\ have\ threads\ and}}
+\DoxyCodeLine{00056\ \textcolor{comment}{//\ Unix\ domain\ sockets\ but\ neither\ Posix\ nor\ System\ V}}
+\DoxyCodeLine{00057\ \textcolor{comment}{//\ message\ queues.\ Use\ the\ Unix\ domain\ socket\ based\ implementation}}
+\DoxyCodeLine{00058\ \textcolor{comment}{//\ in\ this\ case.}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#if\ defined(WITH\_THREADS)\ \&\&\ defined(HAVE\_SYS\_UN\_H)\ \ \&\&\ !defined(\_WIN32)\ \&\&\ !defined(HAVE\_MQUEUE\_H)\ \&\&\ !defined(HAVE\_SYS\_MSG\_H)}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#define\ DCMTK\_USE\_UNIX\_SOCKET\_QUEUE}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{comment}{//\ Note:\ On\ FreeBSD,\ Posix\ message\ queues\ are\ available\ since\ FreeBSD\ 7,}}
+\DoxyCodeLine{00064\ \textcolor{comment}{//\ but\ must\ be\ explicitly\ enabled\ by\ loading\ the\ "{}mqueuefs"{}\ kernel\ module}}
+\DoxyCodeLine{00065\ \textcolor{comment}{//\ (i.e.\ by\ calling\ "{}kldload\ mqueuefs"{}\ as\ root\ user).}}
+\DoxyCodeLine{00066\ \textcolor{comment}{//\ System\ V\ message\ queues,\ however,\ are\ always\ available.\ Therefore,}}
+\DoxyCodeLine{00067\ \textcolor{comment}{//\ we\ prefer\ these\ when\ compiling\ on\ FreeBSD.}}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\#if\ defined(HAVE\_MQUEUE\_H)\ \&\&\ !defined(\_\_FreeBSD\_\_)}}
+\DoxyCodeLine{00070\ BEGIN\_EXTERN\_C}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\#include\ <mqueue.h>}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ for\ mqd\_t\ */}}
+\DoxyCodeLine{00072\ END\_EXTERN\_C}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00083\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{void}\ closeAllMessageQueues();}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00101\ \textcolor{keyword}{class\ }DCMTK\_OFSTD\_EXPORT\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_a1624f76a10e05fc55d4ec7c28589d137}{OFIPCMessageQueueServer}}}
+\DoxyCodeLine{00102\ \{}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00106\ \ \ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_a1624f76a10e05fc55d4ec7c28589d137}{OFIPCMessageQueueServer}}();}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00111\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_a69e1466a281960ecfd48cb81274af3a8}{\string~OFIPCMessageQueueServer}}();}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00123\ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_a5b4409a70199ba46a6327c29eb61983b}{createQueue}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name,\ Uint32\ port);}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00128\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_ae8617d7121ff203055bd43f00bd13881}{hasQueue}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00133\ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_a0e46fffb952d5b83666c5d9405c6ed9b}{deleteQueue}}();}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00140\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_ac93803ca785e476d2bbf5b96e0afd766}{detachQueue}}();}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00145\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_a6a796d98e4bc85d46c6218cd7f15638f}{messageWaiting}}();}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_aa220c473768575b00eb94d102b06eeb8}{numMessagesWaiting}}();}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00158\ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_a7ff448f1fce229e7d87ec22f7ad154e4}{receiveMessage}}(\doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ msg);}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_abd8d6165df72612334a4d7807c642e8d}{registerSignalHandler}}();}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00171\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_server_a505d9b85a94dff38152d5f1f5bcb48c4}{closeAllMessageQueues}}();}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00177\ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ deleteQueueInternal();}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\#ifdef\ DCMTK\_USE\_UNIX\_SOCKET\_QUEUE}}
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{\#ifndef\ WITH\_THREADS}}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#error\ Cannot\ use\ Unix\ Domain\ Sockets\ based\ message\ queues\ without\ threads}}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00183\ \ \ \doxymbox{\hyperlink{class_o_f_list}{OFList<\ OFString\ >}}\ queue\_;\ \textcolor{comment}{//\ locally\ stored\ list\ of\ string}}
+\DoxyCodeLine{00184\ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ queue\_name\_;\ \textcolor{comment}{//\ name\ of\ the\ unix\ domain\ socket}}
+\DoxyCodeLine{00185\ \ \ \doxymbox{\hyperlink{class_o_f_mutex}{OFMutex}}\ mutex\_;\ \textcolor{comment}{//\ mutex\ for\ accessing\ queue\_\ and\ shutdownRequested\_}}
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{class_o_f_thread}{OFThread}}\ *handler\_;\ \textcolor{comment}{//\ thread\ that\ handles\ the\ unix\ domain\ socket}}
+\DoxyCodeLine{00187\ \ \ OFBool\ shutdownRequested\_;\ \textcolor{comment}{//\ true\ of\ shutdown\ of\ handler\ thread\ is\ requested}}
+\DoxyCodeLine{00188\ \ \ \textcolor{keywordtype}{int}\ queue\_socket\_;\ \textcolor{comment}{//\ unix\ domain\ socket}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#elif\ defined(\_WIN32)}}
+\DoxyCodeLine{00190\ \ \ OFuintptr\_t\ queue\_;\ \textcolor{comment}{//\ Windows\ mailslot\ handle}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\#elif\ defined(HAVE\_MQUEUE\_H)\ \&\&\ !defined(\_\_FreeBSD\_\_)}}
+\DoxyCodeLine{00192\ \ \ mqd\_t\ queue\_;\ \ \ \ \ \ \ \textcolor{comment}{//\ Posix\ message\ queue\ ID}}
+\DoxyCodeLine{00193\ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ name\_;\ \ \ \ \ \textcolor{comment}{//\ name\ of\ the\ message\ queue}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#elif\ defined(HAVE\_SYS\_MSG\_H)}}
+\DoxyCodeLine{00195\ \ \ \textcolor{keywordtype}{int}\ queue\_;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ System\ V\ message\ queue\ ID}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#error\ Platform\ has\ neither\ WIN32,\ Posix\ nor\ System\ V\ IPC\ message\ queues.\ Try\ \#define\ DCMTK\_USE\_UNIX\_SOCKET\_QUEUE.}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \};}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00213\ \textcolor{keyword}{class\ }DCMTK\_OFSTD\_EXPORT\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_client_ae801cf9bc0091d77b439d0a1b8b0e532}{OFIPCMessageQueueClient}}}
+\DoxyCodeLine{00214\ \{}
+\DoxyCodeLine{00215\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00217\ \ \ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_client_ae801cf9bc0091d77b439d0a1b8b0e532}{OFIPCMessageQueueClient}}();}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00222\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_client_a5596c8717ef8858a3fb70bc77c74868c}{\string~OFIPCMessageQueueClient}}();}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00234\ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_client_a15708e882e27d5b1708480ddf5b65d7d}{openQueue}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name,\ Uint32\ port);}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00239\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_client_af39476f79b49dfe3faaca0b34c677812}{hasQueue}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00244\ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_client_af050616b51aa7b3f48a9dd27f43070fa}{closeQueue}}();}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00251\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_client_ae4b870f4315046e7ae1d8bbd37cbd22b}{detachQueue}}();}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00260\ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_o_f_i_p_c_message_queue_client_a2d88da71d352ceb2261e70e00d3111b8}{sendMessage}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ msg);}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \textcolor{preprocessor}{\#ifdef\ DCMTK\_USE\_UNIX\_SOCKET\_QUEUE}}
+\DoxyCodeLine{00265\ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ queue\_name\_;}
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\#elif\ defined(\_WIN32)}}
+\DoxyCodeLine{00267\ \ \ OFuintptr\_t\ queue\_;\ \textcolor{comment}{//\ Windows\ mailslot\ handle}}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#elif\ defined(HAVE\_MQUEUE\_H)\ \&\&\ !defined(\_\_FreeBSD\_\_)}}
+\DoxyCodeLine{00269\ \ \ mqd\_t\ queue\_;\ \ \ \ \ \ \ \textcolor{comment}{//\ Posix\ message\ queue\ ID}}
+\DoxyCodeLine{00270\ \textcolor{preprocessor}{\#elif\ defined(HAVE\_SYS\_MSG\_H)}}
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordtype}{int}\ queue\_;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ System\ V\ message\ queue\ ID}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \};}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

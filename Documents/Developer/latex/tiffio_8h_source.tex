@@ -1,0 +1,659 @@
+\doxysection{tiffio.\+h}
+\hypertarget{tiffio_8h_source}{}\label{tiffio_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtktiff/libtiff/tiffio.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtktiff/libtiff/tiffio.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Copyright\ (c)\ 1988-\/1997\ Sam\ Leffler}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ Copyright\ (c)\ 1991-\/1997\ Silicon\ Graphics,\ Inc.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ Permission\ to\ use,\ copy,\ modify,\ distribute,\ and\ sell\ this\ software\ and}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ its\ documentation\ for\ any\ purpose\ is\ hereby\ granted\ without\ fee,\ provided}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ that\ (i)\ the\ above\ copyright\ notices\ and\ this\ permission\ notice\ appear\ in}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ all\ copies\ of\ the\ software\ and\ related\ documentation,\ and\ (ii)\ the\ names\ of}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ Sam\ Leffler\ and\ Silicon\ Graphics\ may\ not\ be\ used\ in\ any\ advertising\ or}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ publicity\ relating\ to\ the\ software\ without\ the\ specific,\ prior\ written}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ permission\ of\ Sam\ Leffler\ and\ Silicon\ Graphics.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *\ THE\ SOFTWARE\ IS\ PROVIDED\ "{}AS-\/IS"{}\ AND\ WITHOUT\ WARRANTY\ OF\ ANY\ KIND,}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ EXPRESS,\ IMPLIED\ OR\ OTHERWISE,\ INCLUDING\ WITHOUT\ LIMITATION,\ ANY}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *\ WARRANTY\ OF\ MERCHANTABILITY\ OR\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *\ IN\ NO\ EVENT\ SHALL\ SAM\ LEFFLER\ OR\ SILICON\ GRAPHICS\ BE\ LIABLE\ FOR}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ ANY\ SPECIAL,\ INCIDENTAL,\ INDIRECT\ OR\ CONSEQUENTIAL\ DAMAGES\ OF\ ANY\ KIND,}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ OR\ ANY\ DAMAGES\ WHATSOEVER\ RESULTING\ FROM\ LOSS\ OF\ USE,\ DATA\ OR\ PROFITS,}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ WHETHER\ OR\ NOT\ ADVISED\ OF\ THE\ POSSIBILITY\ OF\ DAMAGE,\ AND\ ON\ ANY\ THEORY\ OF}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *\ LIABILITY,\ ARISING\ OUT\ OF\ OR\ IN\ CONNECTION\ WITH\ THE\ USE\ OR\ PERFORMANCE}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ OF\ THIS\ SOFTWARE.}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#ifndef\ \_TIFFIO\_}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#define\ \_TIFFIO\_}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ *\ TIFF\ I/O\ Library\ Definitions.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}tiff.h"{}}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ "{}tiffvers.h"{}}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ TIFF\ is\ defined\ as\ an\ incomplete\ type\ to\ hide\ the}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ library's\ internal\ data\ structures\ from\ clients.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00038\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }tiff\ TIFF;}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *\ The\ following\ typedefs\ define\ the\ intrinsic\ size\ of}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ data\ types\ used\ in\ the\ *exported*\ interfaces.\ \ These}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ definitions\ depend\ on\ the\ proper\ definition\ of\ types}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ in\ tiff.h.\ \ Note\ also\ that\ the\ varargs\ interface\ used}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ to\ pass\ tag\ types\ and\ values\ uses\ the\ types\ defined\ in}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ tiff.h\ directly.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ NB:\ ttag\_t\ is\ unsigned\ int\ and\ not\ unsigned\ short\ because}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ \ \ \ \ ANSI\ C\ requires\ that\ the\ type\ before\ the\ ellipsis\ be\ a}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ \ \ \ \ promoted\ type\ (i.e.\ one\ of\ int,\ unsigned\ int,\ pointer,}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *\ \ \ \ \ or\ double)\ and\ because\ we\ defined\ pseudo-\/tags\ that\ are}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ \ \ \ \ outside\ the\ range\ of\ legal\ Aldus-\/assigned\ tags.}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ NB:\ tsize\_t\ is\ signed\ and\ not\ unsigned\ because\ some\ functions}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *\ \ \ \ \ return\ -\/1.}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *\ NB:\ toff\_t\ is\ not\ off\_t\ for\ many\ reasons;\ TIFFs\ max\ out\ at}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ *\ \ \ \ \ 32-\/bit\ file\ offsets,\ and\ BigTIFF\ maxes\ out\ at\ 64-\/bit}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ *\ \ \ \ \ offsets\ being\ the\ most\ important,\ and\ to\ ensure\ use\ of}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *\ \ \ \ \ a\ consistently\ unsigned\ type\ across\ architectures.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ \ \ \ \ Prior\ to\ libtiff\ 4.0,\ this\ was\ an\ unsigned\ 32\ bit\ type.}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00061\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *\ this\ is\ the\ machine\ addressing\ size\ type,\ only\ it's\ signed,\ so\ make\ it}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ *\ int32\_t\ on\ 32bit\ machines,\ int64\_t\ on\ 64bit\ machines}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00065\ \textcolor{keyword}{typedef}\ TIFF\_SSIZE\_T\ tmsize\_t;}
+\DoxyCodeLine{00066\ \textcolor{preprocessor}{\#define\ TIFF\_TMSIZE\_T\_MAX\ (tmsize\_t)(SIZE\_MAX\ >>\ 1)}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{keyword}{typedef}\ uint64\_t\ toff\_t;\ \textcolor{comment}{/*\ file\ offset\ */}}
+\DoxyCodeLine{00069\ \textcolor{comment}{/*\ the\ following\ are\ deprecated\ and\ should\ be\ replaced\ by\ their\ defining}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ \ \ counterparts\ */}}
+\DoxyCodeLine{00071\ \textcolor{keyword}{typedef}\ uint32\_t\ ttag\_t;\ \ \ \ \textcolor{comment}{/*\ directory\ tag\ */}}
+\DoxyCodeLine{00072\ \textcolor{keyword}{typedef}\ uint32\_t\ tdir\_t;\ \ \ \ \textcolor{comment}{/*\ directory\ index\ */}}
+\DoxyCodeLine{00073\ \textcolor{keyword}{typedef}\ uint16\_t\ tsample\_t;\ \textcolor{comment}{/*\ sample\ number\ */}}
+\DoxyCodeLine{00074\ \textcolor{keyword}{typedef}\ uint32\_t\ tstrile\_t;\ \textcolor{comment}{/*\ strip\ or\ tile\ number\ */}}
+\DoxyCodeLine{00075\ \textcolor{keyword}{typedef}\ tstrile\_t\ tstrip\_t;\ \textcolor{comment}{/*\ strip\ number\ */}}
+\DoxyCodeLine{00076\ \textcolor{keyword}{typedef}\ tstrile\_t\ ttile\_t;\ \ \textcolor{comment}{/*\ tile\ number\ */}}
+\DoxyCodeLine{00077\ \textcolor{keyword}{typedef}\ tmsize\_t\ tsize\_t;\ \ \ \textcolor{comment}{/*\ i/o\ size\ in\ bytes\ */}}
+\DoxyCodeLine{00078\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}\ *tdata\_t;\ \ \ \ \ \ \textcolor{comment}{/*\ image\ data\ ref\ */}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ *\ On\ windows\ you\ should\ define\ USE\_WIN32\_FILEIO\ if\ you\ are\ using\ tif\_win32.c}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ *\ or\ AVOID\_WIN32\_FILEIO\ if\ you\ are\ using\ something\ else\ (like\ tif\_unix.c).}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *\ By\ default\ tif\_unix.c\ is\ assumed.}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#if\ !defined(\_\_CYGWIN)\ \&\&\ !defined(AVOID\_WIN32\_FILEIO)\ \&\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\ \ \ \ !defined(USE\_WIN32\_FILEIO)}}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#define\ AVOID\_WIN32\_FILEIO}}
+\DoxyCodeLine{00091\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#if\ defined(USE\_WIN32\_FILEIO)}}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#define\ VC\_EXTRALEAN}}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#include\ <windows.h>}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#ifdef\ \_WIN32}}
+\DoxyCodeLine{00098\ DECLARE\_HANDLE(thandle\_t);\ \textcolor{comment}{/*\ Win32\ file\ handle\ */}}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00100\ \textcolor{keyword}{typedef}\ HFILE\ thandle\_t;\ \textcolor{comment}{/*\ client\ data\ handle\ */}}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_WIN32\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00103\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}\ *thandle\_t;\ \textcolor{comment}{/*\ client\ data\ handle\ */}}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ USE\_WIN32\_FILEIO\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ *\ Flags\ to\ pass\ to\ TIFFPrintDirectory\ to\ control}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ *\ printing\ of\ data\ structures\ that\ are\ potentially}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ *\ very\ large.\ \ \ Bit-\/or\ these\ flags\ to\ enable\ printing}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ *\ multiple\ items.}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#define\ TIFFPRINT\_NONE\ 0x0\ \ \ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ no\ extra\ info\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{\#define\ TIFFPRINT\_STRIPS\ 0x1\ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ strips/tiles\ info\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#define\ TIFFPRINT\_CURVES\ 0x2\ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ color/gray\ response\ curves\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{\#define\ TIFFPRINT\_COLORMAP\ 0x4\ \ \ \ \ \ \ }\textcolor{comment}{/*\ colormap\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\#define\ TIFFPRINT\_JPEGQTABLES\ 0x100\ \ }\textcolor{comment}{/*\ JPEG\ Q\ matrices\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#define\ TIFFPRINT\_JPEGACTABLES\ 0x200\ }\textcolor{comment}{/*\ JPEG\ AC\ tables\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#define\ TIFFPRINT\_JPEGDCTABLES\ 0x200\ }\textcolor{comment}{/*\ JPEG\ DC\ tables\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00121\ \textcolor{comment}{\ *\ Colour\ conversion\ stuff}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \textcolor{comment}{/*\ reference\ white\ */}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#define\ D65\_X0\ (95.0470F)}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#define\ D65\_Y0\ (100.0F)}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#define\ D65\_Z0\ (108.8827F)}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#define\ D50\_X0\ (96.4250F)}}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#define\ D50\_Y0\ (100.0F)}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#define\ D50\_Z0\ (82.4680F)}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{comment}{/*\ Structure\ for\ holding\ information\ about\ a\ display\ device.\ */}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ TIFFRGBValue;\ \textcolor{comment}{/*\ 8-\/bit\ samples\ */}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00138\ \{}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_mat[3][3];\ \textcolor{comment}{/*\ XYZ\ -\/>\ luminance\ matrix\ */}}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_YCR;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Light\ o/p\ for\ reference\ white\ */}}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_YCG;}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_YCB;}
+\DoxyCodeLine{00143\ \ \ \ \ uint32\_t\ d\_Vrwr;\ \textcolor{comment}{/*\ Pixel\ values\ for\ ref.\ white\ */}}
+\DoxyCodeLine{00144\ \ \ \ \ uint32\_t\ d\_Vrwg;}
+\DoxyCodeLine{00145\ \ \ \ \ uint32\_t\ d\_Vrwb;}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_Y0R;\ \textcolor{comment}{/*\ Residual\ light\ for\ black\ pixel\ */}}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_Y0G;}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_Y0B;}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_gammaR;\ \textcolor{comment}{/*\ Gamma\ values\ for\ the\ three\ guns\ */}}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_gammaG;}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordtype}{float}\ d\_gammaB;}
+\DoxyCodeLine{00152\ \}\ \doxymbox{\hyperlink{struct_t_i_f_f_display}{TIFFDisplay}};}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00155\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ YCbCr-\/>RGB\ support\ */}}
+\DoxyCodeLine{00156\ \ \ \ \ TIFFRGBValue\ *clamptab;\ \textcolor{comment}{/*\ range\ clamping\ table\ */}}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordtype}{int}\ *Cr\_r\_tab;}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordtype}{int}\ *Cb\_b\_tab;}
+\DoxyCodeLine{00159\ \ \ \ \ int32\_t\ *Cr\_g\_tab;}
+\DoxyCodeLine{00160\ \ \ \ \ int32\_t\ *Cb\_g\_tab;}
+\DoxyCodeLine{00161\ \ \ \ \ int32\_t\ *Y\_tab;}
+\DoxyCodeLine{00162\ \}\ \doxymbox{\hyperlink{struct_t_i_f_f_y_cb_cr_to_r_g_b}{TIFFYCbCrToRGB}};}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00165\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ CIE\ Lab\ 1976-\/>RGB\ support\ */}}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keywordtype}{int}\ range;\ \textcolor{comment}{/*\ Size\ of\ conversion\ table\ */}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#define\ CIELABTORGB\_TABLE\_RANGE\ 1500}}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keywordtype}{float}\ rstep,\ gstep,\ bstep;}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{keywordtype}{float}\ X0,\ Y0,\ Z0;\ \textcolor{comment}{/*\ Reference\ white\ point\ */}}
+\DoxyCodeLine{00170\ \ \ \ \ \doxymbox{\hyperlink{struct_t_i_f_f_display}{TIFFDisplay}}\ display;}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{keywordtype}{float}\ Yr2r[CIELABTORGB\_TABLE\_RANGE\ +\ 1];\ \textcolor{comment}{/*\ Conversion\ of\ Yr\ to\ r\ */}}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keywordtype}{float}\ Yg2g[CIELABTORGB\_TABLE\_RANGE\ +\ 1];\ \textcolor{comment}{/*\ Conversion\ of\ Yg\ to\ g\ */}}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keywordtype}{float}\ Yb2b[CIELABTORGB\_TABLE\_RANGE\ +\ 1];\ \textcolor{comment}{/*\ Conversion\ of\ Yb\ to\ b\ */}}
+\DoxyCodeLine{00174\ \}\ \doxymbox{\hyperlink{struct_t_i_f_f_c_i_e_lab_to_r_g_b}{TIFFCIELabToRGB}};}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ *\ RGBA-\/style\ image\ support.}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00179\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct___t_i_f_f_r_g_b_a_image}{\_TIFFRGBAImage}}\ TIFFRGBAImage;}
+\DoxyCodeLine{00180\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ *\ The\ image\ reading\ and\ conversion\ routines\ invoke}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ *\ \`{}\`{}put\ routines''\ to\ copy/image/whatever\ tiles\ of}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ *\ raw\ image\ data.\ \ A\ default\ set\ of\ routines\ are}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ *\ provided\ to\ convert/copy\ raw\ image\ data\ to\ 8-\/bit}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ *\ packed\ ABGR\ format\ rasters.\ \ Applications\ can\ supply}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ *\ alternate\ routines\ that\ unpack\ the\ data\ into\ a}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ *\ different\ format\ or,\ for\ example,\ unpack\ the\ data}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ *\ and\ draw\ the\ unpacked\ raster\ on\ the\ display.}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00190\ \textcolor{keyword}{typedef}\ void\ (*tileContigRoutine)(TIFFRGBAImage\ *,\ uint32\_t\ *,\ uint32\_t,}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t,\ uint32\_t,\ uint32\_t,\ int32\_t,}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int32\_t,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00193\ \textcolor{keyword}{typedef}\ void\ (*tileSeparateRoutine)(TIFFRGBAImage\ *,\ uint32\_t\ *,\ uint32\_t,}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t,\ uint32\_t,\ uint32\_t,\ int32\_t,}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int32\_t,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00197\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00198\ \textcolor{comment}{\ *\ RGBA-\/reader\ state.}}
+\DoxyCodeLine{00199\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00200\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct___t_i_f_f_r_g_b_a_image}{\_TIFFRGBAImage}}}
+\DoxyCodeLine{00201\ \{}
+\DoxyCodeLine{00202\ \ \ \ \ TIFF\ *tif;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ image\ handle\ */}}
+\DoxyCodeLine{00203\ \ \ \ \ \textcolor{keywordtype}{int}\ stoponerr;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ stop\ on\ read\ error\ */}}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordtype}{int}\ isContig;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ data\ is\ packed/separate\ */}}
+\DoxyCodeLine{00205\ \ \ \ \ \textcolor{keywordtype}{int}\ alpha;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ type\ of\ alpha\ data\ present\ */}}
+\DoxyCodeLine{00206\ \ \ \ \ uint32\_t\ width;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ image\ width\ */}}
+\DoxyCodeLine{00207\ \ \ \ \ uint32\_t\ height;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ image\ height\ */}}
+\DoxyCodeLine{00208\ \ \ \ \ uint16\_t\ bitspersample;\ \ \ \textcolor{comment}{/*\ image\ bits/sample\ */}}
+\DoxyCodeLine{00209\ \ \ \ \ uint16\_t\ samplesperpixel;\ \textcolor{comment}{/*\ image\ samples/pixel\ */}}
+\DoxyCodeLine{00210\ \ \ \ \ uint16\_t\ orientation;\ \ \ \ \ \textcolor{comment}{/*\ image\ orientation\ */}}
+\DoxyCodeLine{00211\ \ \ \ \ uint16\_t\ req\_orientation;\ \textcolor{comment}{/*\ requested\ orientation\ */}}
+\DoxyCodeLine{00212\ \ \ \ \ uint16\_t\ photometric;\ \ \ \ \ \textcolor{comment}{/*\ image\ photometric\ interp\ */}}
+\DoxyCodeLine{00213\ \ \ \ \ uint16\_t\ *redcmap;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ colormap\ palette\ */}}
+\DoxyCodeLine{00214\ \ \ \ \ uint16\_t\ *greencmap;}
+\DoxyCodeLine{00215\ \ \ \ \ uint16\_t\ *bluecmap;}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{comment}{/*\ get\ image\ data\ routine\ */}}
+\DoxyCodeLine{00217\ \ \ \ \ int\ (*get)(TIFFRGBAImage\ *,\ uint32\_t\ *,\ uint32\_t,\ uint32\_t);}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{comment}{/*\ put\ decoded\ strip/tile\ */}}
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{keyword}{union}}
+\DoxyCodeLine{00220\ \ \ \ \ \{}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ void\ (*any)(TIFFRGBAImage\ *);}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ tileContigRoutine\ contig;}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ tileSeparateRoutine\ separate;}
+\DoxyCodeLine{00224\ \ \ \ \ \}\ put;}
+\DoxyCodeLine{00225\ \ \ \ \ TIFFRGBValue\ *Map;\ \ \ \ \ \ \ \textcolor{comment}{/*\ sample\ mapping\ array\ */}}
+\DoxyCodeLine{00226\ \ \ \ \ uint32\_t\ **BWmap;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ black\&white\ map\ */}}
+\DoxyCodeLine{00227\ \ \ \ \ uint32\_t\ **PALmap;\ \ \ \ \ \ \ \textcolor{comment}{/*\ palette\ image\ map\ */}}
+\DoxyCodeLine{00228\ \ \ \ \ \doxymbox{\hyperlink{struct_t_i_f_f_y_cb_cr_to_r_g_b}{TIFFYCbCrToRGB}}\ *ycbcr;\ \ \ \textcolor{comment}{/*\ YCbCr\ conversion\ state\ */}}
+\DoxyCodeLine{00229\ \ \ \ \ \doxymbox{\hyperlink{struct_t_i_f_f_c_i_e_lab_to_r_g_b}{TIFFCIELabToRGB}}\ *cielab;\ \textcolor{comment}{/*\ CIE\ L*a*b\ conversion\ state\ */}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \ \ uint8\_t\ *UaToAa;\ \textcolor{comment}{/*\ Unassociated\ alpha\ to\ associated\ alpha\ conversion\ LUT\ */}}
+\DoxyCodeLine{00232\ \ \ \ \ uint8\_t\ *Bitdepth16To8;\ \textcolor{comment}{/*\ LUT\ for\ conversion\ from\ 16bit\ to\ 8bit\ values\ */}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{keywordtype}{int}\ row\_offset;}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordtype}{int}\ col\_offset;}
+\DoxyCodeLine{00236\ \};}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ *\ Macros\ for\ extracting\ components\ from\ the}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ *\ packed\ ABGR\ form\ returned\ by\ TIFFReadRGBAImage.}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\#define\ TIFFGetR(abgr)\ ((abgr)\&0xff)}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#define\ TIFFGetG(abgr)\ (((abgr)\ >>\ 8)\ \&\ 0xff)}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\#define\ TIFFGetB(abgr)\ (((abgr)\ >>\ 16)\ \&\ 0xff)}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\#define\ TIFFGetA(abgr)\ (((abgr)\ >>\ 24)\ \&\ 0xff)}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00248\ \textcolor{comment}{\ *\ A\ CODEC\ is\ a\ software\ package\ that\ implements\ decoding,}}
+\DoxyCodeLine{00249\ \textcolor{comment}{\ *\ encoding,\ or\ decoding+encoding\ of\ a\ compression\ algorithm.}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ *\ The\ library\ provides\ a\ collection\ of\ builtin\ codecs.}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ *\ More\ codecs\ may\ be\ registered\ through\ calls\ to\ the\ library}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ *\ and/or\ the\ builtin\ implementations\ may\ be\ overridden.}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00254\ \textcolor{keyword}{typedef}\ int\ (*TIFFInitMethod)(TIFF\ *,\ int);}
+\DoxyCodeLine{00255\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00256\ \{}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keywordtype}{char}\ *name;}
+\DoxyCodeLine{00258\ \ \ \ \ uint16\_t\ scheme;}
+\DoxyCodeLine{00259\ \ \ \ \ TIFFInitMethod\ init;}
+\DoxyCodeLine{00260\ \}\ \doxymbox{\hyperlink{struct_t_i_f_f_codec}{TIFFCodec}};}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00263\ \{}
+\DoxyCodeLine{00264\ \ \ \ \ uint32\_t\ uNum;}
+\DoxyCodeLine{00265\ \ \ \ \ uint32\_t\ uDenom;}
+\DoxyCodeLine{00266\ \}\ \doxymbox{\hyperlink{struct_t_i_f_f_rational__t}{TIFFRational\_t}};}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#include\ <stdarg.h>}}
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{\#include\ <stdio.h>}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{comment}{/*\ share\ internal\ LogLuv\ conversion\ routines?\ */}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\#ifndef\ LOGLUV\_PUBLIC}}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#define\ LOGLUV\_PUBLIC\ 1}}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#if\ defined(\_\_GNUC\_\_)\ ||\ defined(\_\_clang\_\_)\ ||\ defined(\_\_attribute\_\_)}}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\#define\ TIFF\_ATTRIBUTE(x)\ \_\_attribute\_\_(x)}}
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\#define\ TIFF\_ATTRIBUTE(x)\ }\textcolor{comment}{/*nothing*/}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00280\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{preprocessor}{\#if\ defined(c\_plusplus)\ ||\ defined(\_\_cplusplus)}}
+\DoxyCodeLine{00283\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}}
+\DoxyCodeLine{00284\ \{}
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{keyword}{typedef}\ void\ (*TIFFErrorHandler)(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ va\_list);}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{keyword}{typedef}\ void\ (*TIFFErrorHandlerExt)(thandle\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ va\_list);}
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{keyword}{typedef}\ int\ (*TIFFErrorHandlerExtR)(TIFF\ *,\ \textcolor{keywordtype}{void}\ *user\_data,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ va\_list);}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keyword}{typedef}\ tmsize\_t\ (*TIFFReadWriteProc)(thandle\_t,\ \textcolor{keywordtype}{void}\ *,\ tmsize\_t);}
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{keyword}{typedef}\ toff\_t\ (*TIFFSeekProc)(thandle\_t,\ toff\_t,\ int);}
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{keyword}{typedef}\ int\ (*TIFFCloseProc)(thandle\_t);}
+\DoxyCodeLine{00294\ \ \ \ \ \textcolor{keyword}{typedef}\ toff\_t\ (*TIFFSizeProc)(thandle\_t);}
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{keyword}{typedef}\ int\ (*TIFFMapFileProc)(thandle\_t,\ \textcolor{keywordtype}{void}\ **base,\ toff\_t\ *size);}
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{keyword}{typedef}\ void\ (*TIFFUnmapFileProc)(thandle\_t,\ \textcolor{keywordtype}{void}\ *base,\ toff\_t\ size);}
+\DoxyCodeLine{00297\ \ \ \ \ \textcolor{keyword}{typedef}\ void\ (*TIFFExtendProc)(TIFF\ *);}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *TIFFGetVersion(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_t_i_f_f_codec}{TIFFCodec}}\ *TIFFFindCODEC(uint16\_t);}
+\DoxyCodeLine{00302\ \ \ \ \ vtktiff\_EXPORT\ \doxymbox{\hyperlink{struct_t_i_f_f_codec}{TIFFCodec}}\ *TIFFRegisterCODEC(uint16\_t,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ TIFFInitMethod);}
+\DoxyCodeLine{00303\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFUnRegisterCODEC(\doxymbox{\hyperlink{struct_t_i_f_f_codec}{TIFFCodec}}\ *);}
+\DoxyCodeLine{00304\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFIsCODECConfigured(uint16\_t);}
+\DoxyCodeLine{00305\ \ \ \ \ vtktiff\_EXPORT\ \doxymbox{\hyperlink{struct_t_i_f_f_codec}{TIFFCodec}}\ *TIFFGetConfiguredCODECs(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ \ \ \ \ *\ Auxiliary\ functions.}}
+\DoxyCodeLine{00309\ \textcolor{comment}{\ \ \ \ \ */}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\#ifndef\ TIFF\_DO\_NOT\_USE\_NON\_EXT\_ALLOC\_FUNCTIONS}}
+\DoxyCodeLine{00311\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ *\_TIFFmalloc(tmsize\_t\ s);}
+\DoxyCodeLine{00312\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ *\_TIFFcalloc(tmsize\_t\ nmemb,\ tmsize\_t\ siz);}
+\DoxyCodeLine{00313\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ *\_TIFFrealloc(\textcolor{keywordtype}{void}\ *p,\ tmsize\_t\ s);}
+\DoxyCodeLine{00314\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ \_TIFFfree(\textcolor{keywordtype}{void}\ *p);}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00316\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ \_TIFFmemset(\textcolor{keywordtype}{void}\ *p,\ \textcolor{keywordtype}{int}\ v,\ tmsize\_t\ c);}
+\DoxyCodeLine{00317\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ \_TIFFmemcpy(\textcolor{keywordtype}{void}\ *d,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *s,\ tmsize\_t\ c);}
+\DoxyCodeLine{00318\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ \_TIFFmemcmp(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *p1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *p2,\ tmsize\_t\ c);}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ \ \ \ **\ Stuff,\ related\ to\ tag\ handling\ and\ creating\ custom\ tags.}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00323\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFGetTagListCount(TIFF\ *);}
+\DoxyCodeLine{00324\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFGetTagListEntry(TIFF\ *,\ \textcolor{keywordtype}{int}\ tag\_index);}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\#define\ TIFF\_ANY\ TIFF\_NOTYPE\ }\textcolor{comment}{/*\ for\ field\ descriptor\ searching\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#define\ TIFF\_VARIABLE\ -\/1\ \ \ \ \ }\textcolor{comment}{/*\ marker\ for\ variable\ length\ tags\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00328\ \textcolor{preprocessor}{\#define\ TIFF\_SPP\ -\/2\ \ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ marker\ for\ SamplesPerPixel\ tags\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\#define\ TIFF\_VARIABLE2\ -\/3\ \ \ \ }\textcolor{comment}{/*\ marker\ for\ uint32\_t\ var-\/length\ tags\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\#define\ FIELD\_CUSTOM\ 65}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_TIFFField\ TIFFField;}
+\DoxyCodeLine{00334\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_TIFFFieldArray\ TIFFFieldArray;}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keyword}{const}\ TIFFField\ *TIFFFindField(TIFF\ *,\ uint32\_t,\ TIFFDataType);}
+\DoxyCodeLine{00337\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keyword}{const}\ TIFFField\ *TIFFFieldWithTag(TIFF\ *,\ uint32\_t);}
+\DoxyCodeLine{00338\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keyword}{const}\ TIFFField\ *TIFFFieldWithName(TIFF\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFFieldTag(\textcolor{keyword}{const}\ TIFFField\ *);}
+\DoxyCodeLine{00341\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *TIFFFieldName(\textcolor{keyword}{const}\ TIFFField\ *);}
+\DoxyCodeLine{00342\ \ \ \ \ vtktiff\_EXPORT\ TIFFDataType\ TIFFFieldDataType(\textcolor{keyword}{const}\ TIFFField\ *);}
+\DoxyCodeLine{00343\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFFieldPassCount(\textcolor{keyword}{const}\ TIFFField\ *);}
+\DoxyCodeLine{00344\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFFieldReadCount(\textcolor{keyword}{const}\ TIFFField\ *);}
+\DoxyCodeLine{00345\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFFieldWriteCount(\textcolor{keyword}{const}\ TIFFField\ *);}
+\DoxyCodeLine{00346\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00347\ \ \ \ \ TIFFFieldSetGetSize(\textcolor{keyword}{const}\ TIFFField\ *);\ \textcolor{comment}{/*\ returns\ internal\ storage\ size\ of}}
+\DoxyCodeLine{00348\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFSetGetFieldType\ in\ bytes.\ */}}
+\DoxyCodeLine{00349\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFFieldSetGetCountSize(}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ TIFFField\ *);\ \textcolor{comment}{/*\ returns\ size\ of\ count\ parameter\ 0=none,}}
+\DoxyCodeLine{00351\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2=uint16\_t,\ 4=uint32\_t\ */}}
+\DoxyCodeLine{00352\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFFieldIsAnonymous(\textcolor{keyword}{const}\ TIFFField\ *);}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \ \ \ \ \textcolor{keyword}{typedef}\ int\ (*TIFFVSetMethod)(TIFF\ *,\ uint32\_t,\ va\_list);}
+\DoxyCodeLine{00355\ \ \ \ \ \textcolor{keyword}{typedef}\ int\ (*TIFFVGetMethod)(TIFF\ *,\ uint32\_t,\ va\_list);}
+\DoxyCodeLine{00356\ \ \ \ \ \textcolor{keyword}{typedef}\ void\ (*TIFFPrintMethod)(TIFF\ *,\ FILE\ *,\ long);}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00359\ \ \ \ \ \{}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ TIFFVSetMethod\ vsetfield;\ \textcolor{comment}{/*\ tag\ set\ routine\ */}}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ TIFFVGetMethod\ vgetfield;\ \textcolor{comment}{/*\ tag\ get\ routine\ */}}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ TIFFPrintMethod\ printdir;\ \textcolor{comment}{/*\ directory\ print\ routine\ */}}
+\DoxyCodeLine{00363\ \ \ \ \ \}\ \doxymbox{\hyperlink{struct_t_i_f_f_tag_methods}{TIFFTagMethods}};}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \ \ \ \ vtktiff\_EXPORT\ \doxymbox{\hyperlink{struct_t_i_f_f_tag_methods}{TIFFTagMethods}}\ *TIFFAccessTagMethods(TIFF\ *);}
+\DoxyCodeLine{00366\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ *TIFFGetClientInfo(TIFF\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00367\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSetClientInfo(TIFF\ *,\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00369\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFCleanup(TIFF\ *tif);}
+\DoxyCodeLine{00370\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFClose(TIFF\ *tif);}
+\DoxyCodeLine{00371\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFFlush(TIFF\ *tif);}
+\DoxyCodeLine{00372\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFFlushData(TIFF\ *tif);}
+\DoxyCodeLine{00373\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFGetField(TIFF\ *tif,\ uint32\_t\ tag,\ ...);}
+\DoxyCodeLine{00374\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFVGetField(TIFF\ *tif,\ uint32\_t\ tag,\ va\_list\ ap);}
+\DoxyCodeLine{00375\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFGetFieldDefaulted(TIFF\ *tif,\ uint32\_t\ tag,\ ...);}
+\DoxyCodeLine{00376\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFVGetFieldDefaulted(TIFF\ *tif,\ uint32\_t\ tag,\ va\_list\ ap);}
+\DoxyCodeLine{00377\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadDirectory(TIFF\ *tif);}
+\DoxyCodeLine{00378\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadCustomDirectory(TIFF\ *tif,\ toff\_t\ diroff,}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ TIFFFieldArray\ *infoarray);}
+\DoxyCodeLine{00380\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadEXIFDirectory(TIFF\ *tif,\ toff\_t\ diroff);}
+\DoxyCodeLine{00381\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadGPSDirectory(TIFF\ *tif,\ toff\_t\ diroff);}
+\DoxyCodeLine{00382\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFScanlineSize64(TIFF\ *tif);}
+\DoxyCodeLine{00383\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFScanlineSize(TIFF\ *tif);}
+\DoxyCodeLine{00384\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFRasterScanlineSize64(TIFF\ *tif);}
+\DoxyCodeLine{00385\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFRasterScanlineSize(TIFF\ *tif);}
+\DoxyCodeLine{00386\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFStripSize64(TIFF\ *tif);}
+\DoxyCodeLine{00387\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFStripSize(TIFF\ *tif);}
+\DoxyCodeLine{00388\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFRawStripSize64(TIFF\ *tif,\ uint32\_t\ strip);}
+\DoxyCodeLine{00389\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFRawStripSize(TIFF\ *tif,\ uint32\_t\ strip);}
+\DoxyCodeLine{00390\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFVStripSize64(TIFF\ *tif,\ uint32\_t\ nrows);}
+\DoxyCodeLine{00391\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFVStripSize(TIFF\ *tif,\ uint32\_t\ nrows);}
+\DoxyCodeLine{00392\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFTileRowSize64(TIFF\ *tif);}
+\DoxyCodeLine{00393\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFTileRowSize(TIFF\ *tif);}
+\DoxyCodeLine{00394\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFTileSize64(TIFF\ *tif);}
+\DoxyCodeLine{00395\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFTileSize(TIFF\ *tif);}
+\DoxyCodeLine{00396\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFVTileSize64(TIFF\ *tif,\ uint32\_t\ nrows);}
+\DoxyCodeLine{00397\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFVTileSize(TIFF\ *tif,\ uint32\_t\ nrows);}
+\DoxyCodeLine{00398\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFDefaultStripSize(TIFF\ *tif,\ uint32\_t\ request);}
+\DoxyCodeLine{00399\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFDefaultTileSize(TIFF\ *,\ uint32\_t\ *,\ uint32\_t\ *);}
+\DoxyCodeLine{00400\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFFileno(TIFF\ *);}
+\DoxyCodeLine{00401\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFSetFileno(TIFF\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00402\ \ \ \ \ vtktiff\_EXPORT\ thandle\_t\ TIFFClientdata(TIFF\ *);}
+\DoxyCodeLine{00403\ \ \ \ \ vtktiff\_EXPORT\ thandle\_t\ TIFFSetClientdata(TIFF\ *,\ thandle\_t);}
+\DoxyCodeLine{00404\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFGetMode(TIFF\ *);}
+\DoxyCodeLine{00405\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFSetMode(TIFF\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00406\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFIsTiled(TIFF\ *);}
+\DoxyCodeLine{00407\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFIsByteSwapped(TIFF\ *);}
+\DoxyCodeLine{00408\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFIsUpSampled(TIFF\ *);}
+\DoxyCodeLine{00409\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFIsMSB2LSB(TIFF\ *);}
+\DoxyCodeLine{00410\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFIsBigEndian(TIFF\ *);}
+\DoxyCodeLine{00411\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFIsBigTIFF(TIFF\ *);}
+\DoxyCodeLine{00412\ \ \ \ \ vtktiff\_EXPORT\ TIFFReadWriteProc\ TIFFGetReadProc(TIFF\ *);}
+\DoxyCodeLine{00413\ \ \ \ \ vtktiff\_EXPORT\ TIFFReadWriteProc\ TIFFGetWriteProc(TIFF\ *);}
+\DoxyCodeLine{00414\ \ \ \ \ vtktiff\_EXPORT\ TIFFSeekProc\ TIFFGetSeekProc(TIFF\ *);}
+\DoxyCodeLine{00415\ \ \ \ \ vtktiff\_EXPORT\ TIFFCloseProc\ TIFFGetCloseProc(TIFF\ *);}
+\DoxyCodeLine{00416\ \ \ \ \ vtktiff\_EXPORT\ TIFFSizeProc\ TIFFGetSizeProc(TIFF\ *);}
+\DoxyCodeLine{00417\ \ \ \ \ vtktiff\_EXPORT\ TIFFMapFileProc\ TIFFGetMapFileProc(TIFF\ *);}
+\DoxyCodeLine{00418\ \ \ \ \ vtktiff\_EXPORT\ TIFFUnmapFileProc\ TIFFGetUnmapFileProc(TIFF\ *);}
+\DoxyCodeLine{00419\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFCurrentRow(TIFF\ *);}
+\DoxyCodeLine{00420\ \ \ \ \ vtktiff\_EXPORT\ tdir\_t\ TIFFCurrentDirectory(TIFF\ *);}
+\DoxyCodeLine{00421\ \ \ \ \ vtktiff\_EXPORT\ tdir\_t\ TIFFNumberOfDirectories(TIFF\ *);}
+\DoxyCodeLine{00422\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFCurrentDirOffset(TIFF\ *);}
+\DoxyCodeLine{00423\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFCurrentStrip(TIFF\ *);}
+\DoxyCodeLine{00424\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFCurrentTile(TIFF\ *tif);}
+\DoxyCodeLine{00425\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadBufferSetup(TIFF\ *tif,\ \textcolor{keywordtype}{void}\ *bp,\ tmsize\_t\ size);}
+\DoxyCodeLine{00426\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFWriteBufferSetup(TIFF\ *tif,\ \textcolor{keywordtype}{void}\ *bp,\ tmsize\_t\ size);}
+\DoxyCodeLine{00427\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFSetupStrips(TIFF\ *);}
+\DoxyCodeLine{00428\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFWriteCheck(TIFF\ *,\ \textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00429\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFFreeDirectory(TIFF\ *);}
+\DoxyCodeLine{00430\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFCreateDirectory(TIFF\ *);}
+\DoxyCodeLine{00431\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFCreateCustomDirectory(TIFF\ *,\ \textcolor{keyword}{const}\ TIFFFieldArray\ *);}
+\DoxyCodeLine{00432\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFCreateEXIFDirectory(TIFF\ *);}
+\DoxyCodeLine{00433\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFCreateGPSDirectory(TIFF\ *);}
+\DoxyCodeLine{00434\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFLastDirectory(TIFF\ *);}
+\DoxyCodeLine{00435\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFSetDirectory(TIFF\ *,\ tdir\_t);}
+\DoxyCodeLine{00436\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFSetSubDirectory(TIFF\ *,\ uint64\_t);}
+\DoxyCodeLine{00437\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFUnlinkDirectory(TIFF\ *,\ tdir\_t);}
+\DoxyCodeLine{00438\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFSetField(TIFF\ *,\ uint32\_t,\ ...);}
+\DoxyCodeLine{00439\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFVSetField(TIFF\ *,\ uint32\_t,\ va\_list);}
+\DoxyCodeLine{00440\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFUnsetField(TIFF\ *,\ uint32\_t);}
+\DoxyCodeLine{00441\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFWriteDirectory(TIFF\ *);}
+\DoxyCodeLine{00442\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFWriteCustomDirectory(TIFF\ *,\ uint64\_t\ *);}
+\DoxyCodeLine{00443\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFCheckpointDirectory(TIFF\ *);}
+\DoxyCodeLine{00444\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFRewriteDirectory(TIFF\ *);}
+\DoxyCodeLine{00445\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFDeferStrileArrayWriting(TIFF\ *);}
+\DoxyCodeLine{00446\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFForceStrileArrayWriting(TIFF\ *);}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \textcolor{preprocessor}{\#if\ defined(c\_plusplus)\ ||\ defined(\_\_cplusplus)}}
+\DoxyCodeLine{00449\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFPrintDirectory(TIFF\ *,\ FILE\ *,\ \textcolor{keywordtype}{long}\ =\ 0);}
+\DoxyCodeLine{00450\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadScanline(TIFF\ *tif,\ \textcolor{keywordtype}{void}\ *buf,\ uint32\_t\ row,}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint16\_t\ sample\ =\ 0);}
+\DoxyCodeLine{00452\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFWriteScanline(TIFF\ *tif,\ \textcolor{keywordtype}{void}\ *buf,\ uint32\_t\ row,}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint16\_t\ sample\ =\ 0);}
+\DoxyCodeLine{00454\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadRGBAImage(TIFF\ *,\ uint32\_t,\ uint32\_t,\ uint32\_t\ *,}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ =\ 0);}
+\DoxyCodeLine{00456\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadRGBAImageOriented(TIFF\ *,\ uint32\_t,\ uint32\_t,\ uint32\_t\ *,}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ =\ ORIENTATION\_BOTLEFT,\ \textcolor{keywordtype}{int}\ =\ 0);}
+\DoxyCodeLine{00458\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00459\ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFPrintDirectory(TIFF\ *,\ FILE\ *,\ \textcolor{keywordtype}{long});}
+\DoxyCodeLine{00460\ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadScanline(TIFF\ *tif,\ \textcolor{keywordtype}{void}\ *buf,\ uint32\_t\ row,}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint16\_t\ sample);}
+\DoxyCodeLine{00462\ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFWriteScanline(TIFF\ *tif,\ \textcolor{keywordtype}{void}\ *buf,\ uint32\_t\ row,}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint16\_t\ sample);}
+\DoxyCodeLine{00464\ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadRGBAImage(TIFF\ *,\ uint32\_t,\ uint32\_t,\ uint32\_t\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00465\ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadRGBAImageOriented(TIFF\ *,\ uint32\_t,\ uint32\_t,\ uint32\_t\ *,}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00467\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00469\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadRGBAStrip(TIFF\ *,\ uint32\_t,\ uint32\_t\ *);}
+\DoxyCodeLine{00470\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadRGBATile(TIFF\ *,\ uint32\_t,\ uint32\_t,\ uint32\_t\ *);}
+\DoxyCodeLine{00471\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadRGBAStripExt(TIFF\ *,\ uint32\_t,\ uint32\_t\ *,}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ stop\_on\_error);}
+\DoxyCodeLine{00473\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadRGBATileExt(TIFF\ *,\ uint32\_t,\ uint32\_t,\ uint32\_t\ *,}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ stop\_on\_error);}
+\DoxyCodeLine{00475\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFRGBAImageOK(TIFF\ *,\ \textcolor{keywordtype}{char}[1024]);}
+\DoxyCodeLine{00476\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFRGBAImageBegin(TIFFRGBAImage\ *,\ TIFF\ *,\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{char}[1024]);}
+\DoxyCodeLine{00477\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFRGBAImageGet(TIFFRGBAImage\ *,\ uint32\_t\ *,\ uint32\_t,}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t);}
+\DoxyCodeLine{00479\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFRGBAImageEnd(TIFFRGBAImage\ *);}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00481\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *TIFFFileName(TIFF\ *);}
+\DoxyCodeLine{00482\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *TIFFSetFileName(TIFF\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00483\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFError(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ ...)}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ TIFF\_ATTRIBUTE((\_\_format\_\_(\_\_printf\_\_,\ 2,\ 3)));}
+\DoxyCodeLine{00485\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFErrorExt(thandle\_t,\ const\ \textcolor{keywordtype}{char}\ *,\ const\ \textcolor{keywordtype}{char}\ *,\ ...)}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ TIFF\_ATTRIBUTE((\_\_format\_\_(\_\_printf\_\_,\ 3,\ 4)));}
+\DoxyCodeLine{00487\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFWarning(const\ \textcolor{keywordtype}{char}\ *,\ const\ \textcolor{keywordtype}{char}\ *,\ ...)}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ TIFF\_ATTRIBUTE((\_\_format\_\_(\_\_printf\_\_,\ 2,\ 3)));}
+\DoxyCodeLine{00489\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFWarningExt(thandle\_t,\ const\ \textcolor{keywordtype}{char}\ *,\ const\ \textcolor{keywordtype}{char}\ *,\ ...)}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ TIFF\_ATTRIBUTE((\_\_format\_\_(\_\_printf\_\_,\ 3,\ 4)));}
+\DoxyCodeLine{00491\ \ \ \ \ vtktiff\_EXPORT\ TIFFErrorHandler\ TIFFSetErrorHandler(TIFFErrorHandler);}
+\DoxyCodeLine{00492\ \ \ \ \ vtktiff\_EXPORT\ TIFFErrorHandlerExt\ TIFFSetErrorHandlerExt(TIFFErrorHandlerExt);}
+\DoxyCodeLine{00493\ \ \ \ \ vtktiff\_EXPORT\ TIFFErrorHandler\ TIFFSetWarningHandler(TIFFErrorHandler);}
+\DoxyCodeLine{00494\ \ \ \ \ vtktiff\_EXPORT\ TIFFErrorHandlerExt\ TIFFSetWarningHandlerExt(TIFFErrorHandlerExt);}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00496\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFWarningExtR(TIFF\ *,\ const\ \textcolor{keywordtype}{char}\ *,\ const\ \textcolor{keywordtype}{char}\ *,\ ...)}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ TIFF\_ATTRIBUTE((\_\_format\_\_(\_\_printf\_\_,\ 3,\ 4)));}
+\DoxyCodeLine{00498\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFErrorExtR(TIFF\ *,\ const\ \textcolor{keywordtype}{char}\ *,\ const\ \textcolor{keywordtype}{char}\ *,\ ...)}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ TIFF\_ATTRIBUTE((\_\_format\_\_(\_\_printf\_\_,\ 3,\ 4)));}
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00501\ \ \ \ \ typedef\ struct\ TIFFOpenOptions\ TIFFOpenOptions;}
+\DoxyCodeLine{00502\ \ \ \ \ vtktiff\_EXPORT\ TIFFOpenOptions\ *TIFFOpenOptionsAlloc(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00503\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFOpenOptionsFree(TIFFOpenOptions\ *);}
+\DoxyCodeLine{00504\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00505\ \ \ \ \ TIFFOpenOptionsSetMaxSingleMemAlloc(TIFFOpenOptions\ *opts,}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ max\_single\_mem\_alloc);}
+\DoxyCodeLine{00507\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00508\ \ \ \ \ TIFFOpenOptionsSetMaxCumulatedMemAlloc(TIFFOpenOptions\ *opts,}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ max\_cumulated\_mem\_alloc);}
+\DoxyCodeLine{00510\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00511\ \ \ \ \ TIFFOpenOptionsSetErrorHandlerExtR(TIFFOpenOptions\ *opts,}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFErrorHandlerExtR\ handler,}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *errorhandler\_user\_data);}
+\DoxyCodeLine{00514\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00515\ \ \ \ \ TIFFOpenOptionsSetWarningHandlerExtR(TIFFOpenOptions\ *opts,}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFErrorHandlerExtR\ handler,}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *warnhandler\_user\_data);}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ \ \ \ \ vtktiff\_EXPORT\ TIFF\ *TIFFOpen(const\ \textcolor{keywordtype}{char}\ *,\ const\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00520\ \ \ \ \ vtktiff\_EXPORT\ TIFF\ *TIFFOpenExt(const\ \textcolor{keywordtype}{char}\ *,\ const\ \textcolor{keywordtype}{char}\ *,\ TIFFOpenOptions\ *opts);}
+\DoxyCodeLine{00521\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)\ ||\ defined(\_\_WIN32\_\_)\ ||\ defined(\_\_WINDOWS\_\_)}}
+\DoxyCodeLine{00522\ \ \ \ \ vtktiff\_EXPORT\ TIFF\ *TIFFOpenW(\textcolor{keyword}{const}\ \textcolor{keywordtype}{wchar\_t}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00523\ \ \ \ \ vtktiff\_EXPORT\ TIFF\ *TIFFOpenWExt(\textcolor{keyword}{const}\ \textcolor{keywordtype}{wchar\_t}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFOpenOptions\ *opts);}
+\DoxyCodeLine{00525\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ defined(\_WIN32)\ ||\ defined(\_\_WIN32\_\_)\ ||\ defined(\_\_WINDOWS\_\_)}}
+\DoxyCodeLine{00526\ \ \ \ \ vtktiff\_EXPORT\ TIFF\ *TIFFFdOpen(\textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00527\ \ \ \ \ vtktiff\_EXPORT\ TIFF\ *TIFFFdOpenExt(\textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFOpenOptions\ *opts);}
+\DoxyCodeLine{00529\ \ \ \ \ vtktiff\_EXPORT\ TIFF\ *TIFFClientOpen(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ thandle\_t,}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFReadWriteProc,\ TIFFReadWriteProc,}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFSeekProc,\ TIFFCloseProc,\ TIFFSizeProc,}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFMapFileProc,\ TIFFUnmapFileProc);}
+\DoxyCodeLine{00533\ \ \ \ \ vtktiff\_EXPORT\ TIFF\ *TIFFClientOpenExt(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ thandle\_t,}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFReadWriteProc,\ TIFFReadWriteProc,}
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFSeekProc,\ TIFFCloseProc,\ TIFFSizeProc,}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFMapFileProc,\ TIFFUnmapFileProc,}
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TIFFOpenOptions\ *opts);}
+\DoxyCodeLine{00538\ \ \ \ \ vtktiff\_EXPORT\ TIFFExtendProc\ TIFFSetTagExtender(TIFFExtendProc);}
+\DoxyCodeLine{00539\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFComputeTile(TIFF\ *tif,\ uint32\_t\ x,\ uint32\_t\ y,}
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t\ z,\ uint16\_t\ s);}
+\DoxyCodeLine{00541\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFCheckTile(TIFF\ *tif,\ uint32\_t\ x,\ uint32\_t\ y,\ uint32\_t\ z,}
+\DoxyCodeLine{00542\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint16\_t\ s);}
+\DoxyCodeLine{00543\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFNumberOfTiles(TIFF\ *);}
+\DoxyCodeLine{00544\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFReadTile(TIFF\ *tif,\ \textcolor{keywordtype}{void}\ *buf,\ uint32\_t\ x,\ uint32\_t\ y,}
+\DoxyCodeLine{00545\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t\ z,\ uint16\_t\ s);}
+\DoxyCodeLine{00546\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFWriteTile(TIFF\ *tif,\ \textcolor{keywordtype}{void}\ *buf,\ uint32\_t\ x,\ uint32\_t\ y,}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t\ z,\ uint16\_t\ s);}
+\DoxyCodeLine{00548\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFComputeStrip(TIFF\ *,\ uint32\_t,\ uint16\_t);}
+\DoxyCodeLine{00549\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ TIFFNumberOfStrips(TIFF\ *);}
+\DoxyCodeLine{00550\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFReadEncodedStrip(TIFF\ *tif,\ uint32\_t\ strip,\ \textcolor{keywordtype}{void}\ *buf,}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ size);}
+\DoxyCodeLine{00552\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFReadRawStrip(TIFF\ *tif,\ uint32\_t\ strip,\ \textcolor{keywordtype}{void}\ *buf,}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ size);}
+\DoxyCodeLine{00554\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFReadEncodedTile(TIFF\ *tif,\ uint32\_t\ tile,\ \textcolor{keywordtype}{void}\ *buf,}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ size);}
+\DoxyCodeLine{00556\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFReadRawTile(TIFF\ *tif,\ uint32\_t\ tile,\ \textcolor{keywordtype}{void}\ *buf,}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ size);}
+\DoxyCodeLine{00558\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFReadFromUserBuffer(TIFF\ *tif,\ uint32\_t\ strile,\ \textcolor{keywordtype}{void}\ *inbuf,}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ insize,\ \textcolor{keywordtype}{void}\ *outbuf,}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ outsize);}
+\DoxyCodeLine{00561\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFWriteEncodedStrip(TIFF\ *tif,\ uint32\_t\ strip,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ cc);}
+\DoxyCodeLine{00563\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFWriteRawStrip(TIFF\ *tif,\ uint32\_t\ strip,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ cc);}
+\DoxyCodeLine{00565\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFWriteEncodedTile(TIFF\ *tif,\ uint32\_t\ tile,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ cc);}
+\DoxyCodeLine{00567\ \ \ \ \ vtktiff\_EXPORT\ tmsize\_t\ TIFFWriteRawTile(TIFF\ *tif,\ uint32\_t\ tile,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmsize\_t\ cc);}
+\DoxyCodeLine{00569\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFDataWidth(}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ TIFFDataType);\ \textcolor{comment}{/*\ table\ of\ tag\ datatype\ widths\ within\ TIFF\ file.\ */}}
+\DoxyCodeLine{00571\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSetWriteOffset(TIFF\ *tif,\ toff\_t\ off);}
+\DoxyCodeLine{00572\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabShort(uint16\_t\ *);}
+\DoxyCodeLine{00573\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabLong(uint32\_t\ *);}
+\DoxyCodeLine{00574\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabLong8(uint64\_t\ *);}
+\DoxyCodeLine{00575\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabFloat(\textcolor{keywordtype}{float}\ *);}
+\DoxyCodeLine{00576\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabDouble(\textcolor{keywordtype}{double}\ *);}
+\DoxyCodeLine{00577\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabArrayOfShort(uint16\_t\ *wp,\ tmsize\_t\ n);}
+\DoxyCodeLine{00578\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabArrayOfTriples(uint8\_t\ *tp,\ tmsize\_t\ n);}
+\DoxyCodeLine{00579\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabArrayOfLong(uint32\_t\ *lp,\ tmsize\_t\ n);}
+\DoxyCodeLine{00580\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabArrayOfLong8(uint64\_t\ *lp,\ tmsize\_t\ n);}
+\DoxyCodeLine{00581\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabArrayOfFloat(\textcolor{keywordtype}{float}\ *fp,\ tmsize\_t\ n);}
+\DoxyCodeLine{00582\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFSwabArrayOfDouble(\textcolor{keywordtype}{double}\ *dp,\ tmsize\_t\ n);}
+\DoxyCodeLine{00583\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFReverseBits(uint8\_t\ *cp,\ tmsize\_t\ n);}
+\DoxyCodeLine{00584\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *TIFFGetBitRevTable(\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00585\ }
+\DoxyCodeLine{00586\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFGetStrileOffset(TIFF\ *tif,\ uint32\_t\ strile);}
+\DoxyCodeLine{00587\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFGetStrileByteCount(TIFF\ *tif,\ uint32\_t\ strile);}
+\DoxyCodeLine{00588\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFGetStrileOffsetWithErr(TIFF\ *tif,\ uint32\_t\ strile,}
+\DoxyCodeLine{00589\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *pbErr);}
+\DoxyCodeLine{00590\ \ \ \ \ vtktiff\_EXPORT\ uint64\_t\ TIFFGetStrileByteCountWithErr(TIFF\ *tif,\ uint32\_t\ strile,}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *pbErr);}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \textcolor{preprocessor}{\#ifdef\ LOGLUV\_PUBLIC}}
+\DoxyCodeLine{00594\ \textcolor{preprocessor}{\#define\ U\_NEU\ 0.210526316}}
+\DoxyCodeLine{00595\ \textcolor{preprocessor}{\#define\ V\_NEU\ 0.473684211}}
+\DoxyCodeLine{00596\ \textcolor{preprocessor}{\#define\ UVSCALE\ 410.}}
+\DoxyCodeLine{00597\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{double}\ LogL16toY(\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00598\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{double}\ LogL10toY(\textcolor{keywordtype}{int});}
+\DoxyCodeLine{00599\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ XYZtoRGB24(\textcolor{keywordtype}{float}\ *,\ uint8\_t\ *);}
+\DoxyCodeLine{00600\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ uv\_decode(\textcolor{keywordtype}{double}\ *,\ \textcolor{keywordtype}{double}\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00601\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ LogLuv24toXYZ(uint32\_t,\ \textcolor{keywordtype}{float}\ *);}
+\DoxyCodeLine{00602\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ LogLuv32toXYZ(uint32\_t,\ \textcolor{keywordtype}{float}\ *);}
+\DoxyCodeLine{00603\ \textcolor{preprocessor}{\#if\ defined(c\_plusplus)\ ||\ defined(\_\_cplusplus)}}
+\DoxyCodeLine{00604\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ LogL16fromY(\textcolor{keywordtype}{double},\ \textcolor{keywordtype}{int}\ =\ SGILOGENCODE\_NODITHER);}
+\DoxyCodeLine{00605\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ LogL10fromY(\textcolor{keywordtype}{double},\ \textcolor{keywordtype}{int}\ =\ SGILOGENCODE\_NODITHER);}
+\DoxyCodeLine{00606\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ uv\_encode(\textcolor{keywordtype}{double},\ \textcolor{keywordtype}{double},\ \textcolor{keywordtype}{int}\ =\ SGILOGENCODE\_NODITHER);}
+\DoxyCodeLine{00607\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ LogLuv24fromXYZ(\textcolor{keywordtype}{float}\ *,\ \textcolor{keywordtype}{int}\ =\ SGILOGENCODE\_NODITHER);}
+\DoxyCodeLine{00608\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ LogLuv32fromXYZ(\textcolor{keywordtype}{float}\ *,\ \textcolor{keywordtype}{int}\ =\ SGILOGENCODE\_NODITHER);}
+\DoxyCodeLine{00609\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00610\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ LogL16fromY(\textcolor{keywordtype}{double},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00611\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ LogL10fromY(\textcolor{keywordtype}{double},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00612\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ uv\_encode(\textcolor{keywordtype}{double},\ \textcolor{keywordtype}{double},\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00613\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ LogLuv24fromXYZ(\textcolor{keywordtype}{float}\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00614\ \ \ \ \ vtktiff\_EXPORT\ uint32\_t\ LogLuv32fromXYZ(\textcolor{keywordtype}{float}\ *,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00615\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00616\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ LOGLUV\_PUBLIC\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00617\ }
+\DoxyCodeLine{00618\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFCIELabToRGBInit(\doxymbox{\hyperlink{struct_t_i_f_f_c_i_e_lab_to_r_g_b}{TIFFCIELabToRGB}}\ *,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_t_i_f_f_display}{TIFFDisplay}}\ *,}
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ *);}
+\DoxyCodeLine{00620\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFCIELabToXYZ(\doxymbox{\hyperlink{struct_t_i_f_f_c_i_e_lab_to_r_g_b}{TIFFCIELabToRGB}}\ *,\ uint32\_t,\ int32\_t,\ int32\_t,}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ *,\ \textcolor{keywordtype}{float}\ *,\ \textcolor{keywordtype}{float}\ *);}
+\DoxyCodeLine{00622\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFXYZToRGB(\doxymbox{\hyperlink{struct_t_i_f_f_c_i_e_lab_to_r_g_b}{TIFFCIELabToRGB}}\ *,\ \textcolor{keywordtype}{float},\ \textcolor{keywordtype}{float},\ \textcolor{keywordtype}{float},\ uint32\_t\ *,}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t\ *,\ uint32\_t\ *);}
+\DoxyCodeLine{00624\ }
+\DoxyCodeLine{00625\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFYCbCrToRGBInit(\doxymbox{\hyperlink{struct_t_i_f_f_y_cb_cr_to_r_g_b}{TIFFYCbCrToRGB}}\ *,\ \textcolor{keywordtype}{float}\ *,\ \textcolor{keywordtype}{float}\ *);}
+\DoxyCodeLine{00626\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{void}\ TIFFYCbCrtoRGB(\doxymbox{\hyperlink{struct_t_i_f_f_y_cb_cr_to_r_g_b}{TIFFYCbCrToRGB}}\ *,\ uint32\_t,\ int32\_t,\ int32\_t,}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t\ *,\ uint32\_t\ *,\ uint32\_t\ *);}
+\DoxyCodeLine{00628\ }
+\DoxyCodeLine{00629\ \textcolor{comment}{\ \ \ \ /****************************************************************************}}
+\DoxyCodeLine{00630\ \textcolor{comment}{\ \ \ \ \ *\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ O\ B\ S\ O\ L\ E\ T\ E\ D\ \ \ \ I\ N\ T\ E\ R\ F\ A\ C\ E\ S}}
+\DoxyCodeLine{00631\ \textcolor{comment}{\ \ \ \ \ *}}
+\DoxyCodeLine{00632\ \textcolor{comment}{\ \ \ \ \ *\ Don't\ use\ this\ stuff\ in\ your\ applications,\ it\ may\ be\ removed\ in\ the}}
+\DoxyCodeLine{00633\ \textcolor{comment}{\ \ \ \ \ *future\ libtiff\ versions.}}
+\DoxyCodeLine{00634\ \textcolor{comment}{\ \ \ \ \ ****************************************************************************/}}
+\DoxyCodeLine{00635\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00636\ \ \ \ \ \{}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ ttag\_t\ field\_tag;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ field's\ tag\ */}}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{short}\ field\_readcount;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ read\ count/TIFF\_VARIABLE/TIFF\_SPP\ */}}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{short}\ field\_writecount;\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ write\ count/TIFF\_VARIABLE\ */}}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ \ \ TIFFDataType\ field\_type;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ type\ of\ associated\ data\ */}}
+\DoxyCodeLine{00641\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ field\_bit;\ \ \ \ \ \ \ \textcolor{comment}{/*\ bit\ in\ fieldsset\ bit\ vector\ */}}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ field\_oktochange;\ \textcolor{comment}{/*\ if\ true,\ can\ change\ while\ writing\ */}}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ field\_passcount;\ \ \textcolor{comment}{/*\ if\ true,\ pass\ dir\ count\ on\ set\ */}}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ *field\_name;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ ASCII\ name\ */}}
+\DoxyCodeLine{00645\ \ \ \ \ \}\ \doxymbox{\hyperlink{struct_t_i_f_f_field_info}{TIFFFieldInfo}};}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \ \ \ \ vtktiff\_EXPORT\ \textcolor{keywordtype}{int}\ TIFFMergeFieldInfo(TIFF\ *,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_t_i_f_f_field_info}{TIFFFieldInfo}}[],\ uint32\_t);}
+\DoxyCodeLine{00648\ }
+\DoxyCodeLine{00649\ \textcolor{preprocessor}{\#if\ defined(c\_plusplus)\ ||\ defined(\_\_cplusplus)}}
+\DoxyCodeLine{00650\ \}}
+\DoxyCodeLine{00651\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00653\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ \_TIFFIO\_\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

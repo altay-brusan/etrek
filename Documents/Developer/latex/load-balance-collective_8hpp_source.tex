@@ -1,0 +1,131 @@
+\doxysection{load-\/balance-\/collective.hpp}
+\hypertarget{load-balance-collective_8hpp_source}{}\label{load-balance-collective_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/algorithms/load-\/balance-\/collective.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/algorithms/load-\/balance-\/collective.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <queue>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}load-\/balance.hpp"{}}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00007\ \{}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00010\ \{}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ exchange\ work\ information\ among\ all\ processes\ using\ synchronous\ collective\ method}}
+\DoxyCodeLine{00013\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ exchange\_work\_info(diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ master,}
+\DoxyCodeLine{00014\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ WorkInfo\&\ \ \ \ \ \ \ \ \ my\_work\_info,\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ my\ process'\ work\ info}}
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<WorkInfo>\&\ \ all\_work\_info)\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ (output)\ global\ work\ info}}
+\DoxyCodeLine{00016\ \{}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keyword}{auto}\ nprocs\ =\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().size();\ \ \ \ \ \textcolor{comment}{//\ global\ number\ of\ procs}}
+\DoxyCodeLine{00018\ \ \ \ \ all\_work\_info.resize(nprocs);}
+\DoxyCodeLine{00019\ \ \ \ \ diy::mpi::detail::all\_gather(master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}(),\ \&my\_work\_info,\ \textcolor{keyword}{sizeof}(WorkInfo),\ MPI\_BYTE,\ \&all\_work\_info[0]);}
+\DoxyCodeLine{00020\ \}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ determine\ move\ info\ from\ work\ info}}
+\DoxyCodeLine{00023\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ decide\_move\_info(std::vector<WorkInfo>\&\ \ \ \ \ \ \ \ all\_work\_info,\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ global\ work\ info}}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<MoveInfo>\&\ \ \ \ \ \ \ \ all\_move\_info)\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ (output)\ move\ info\ for\ all\ moves}}
+\DoxyCodeLine{00025\ \{}
+\DoxyCodeLine{00026\ \ \ \ \ all\_move\_info.clear();}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{comment}{//\ move\ all\ blocks\ with\ an\ approximation\ to\ the\ longest\ processing\ time\ first\ (LPTF)\ scheduling\ algorithm}}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{comment}{//\ https://en.wikipedia.org/wiki/Longest-\/processing-\/time-\/first\_scheduling}}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{comment}{//\ we\ iteratively\ move\ the\ heaviest\ block\ to\ lightest\ proc}}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{comment}{//\ constrained\ by\ only\ recording\ the\ heaviest\ block\ for\ each\ proc,\ not\ all\ blocks}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ minimum\ proc\_work\ priority\ queue,\ top\ is\ min\ proc\_work}}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keyword}{auto}\ cmp\ =\ [\&](WorkInfo\&\ a,\ WorkInfo\&\ b)\ \{\ \textcolor{keywordflow}{return}\ a.proc\_work\ >\ b.proc\_work;\ \};}
+\DoxyCodeLine{00035\ \ \ \ \ std::priority\_queue<WorkInfo,\ std::vector<WorkInfo>,\ \textcolor{keyword}{decltype}(cmp)>\ min\_proc\_work\_q(cmp);}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ all\_work\_info.size();\ i++)}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ min\_proc\_work\_q.push(all\_work\_info[i]);}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{//\ sort\ all\_work\_info\ by\ descending\ top\_work}}
+\DoxyCodeLine{00040\ \ \ \ \ std::sort(all\_work\_info.begin(),\ all\_work\_info.end(),}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ [\&](WorkInfo\&\ a,\ WorkInfo\&\ b)\ \{\ return\ a.top\_work\ >\ b.top\_work;\ \});}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{comment}{//\ walk\ the\ all\_work\_info\ vector\ in\ descending\ top\_work\ order}}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ move\ the\ next\ heaviest\ block\ to\ the\ lightest\ proc}}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ all\_work\_info.size();\ i++)}
+\DoxyCodeLine{00046\ \ \ \ \ \{}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ src\_work\_info\ =\ all\_work\_info[i];\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ heaviest\ block}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ dst\_work\_info\ =\ min\_proc\_work\_q.top();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ lightest\ proc}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ sanity\ check\ that\ the\ move\ makes\ sense}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (src\_work\_info.proc\_work\ -\/\ dst\_work\_info.proc\_work\ >\ src\_work\_info.top\_work\ \&\&\ \ \ \textcolor{comment}{//\ improve\ load\ balance}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ src\_work\_info.proc\_rank\ !=\ dst\_work\_info.proc\_rank\ \&\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ not\ self}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ src\_work\_info.nlids\ >\ 1)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ don't\ leave\ a\ proc\ with\ no\ blocks}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ MoveInfo\ move\_info;}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ move\_info.src\_proc\ \ =\ src\_work\_info.proc\_rank;}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ move\_info.dst\_proc\ \ =\ dst\_work\_info.proc\_rank;}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ move\_info.move\_gid\ \ =\ src\_work\_info.top\_gid;}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ all\_move\_info.push\_back(move\_info);}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ update\ the\ min\_proc\_work\ priority\ queue}}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ work\_info\ =\ min\_proc\_work\_q.top();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ lightest\ proc}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ work\_info.proc\_work\ +=\ src\_work\_info.top\_work;}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (work\_info.top\_work\ <\ src\_work\_info.top\_work)}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ work\_info.top\_work\ =\ src\_work\_info.top\_work;}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ work\_info.top\_gid\ \ =\ src\_work\_info.top\_gid;}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ min\_proc\_work\_q.pop();}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ min\_proc\_work\_q.push(work\_info);}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00072\ \ \ \ \ \}}
+\DoxyCodeLine{00073\ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{comment}{//\ move\ one\ block\ from\ src\ to\ dst\ proc}}
+\DoxyCodeLine{00076\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ move\_block(diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ master,}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MoveInfo\&\ \ \ \ \ \ \ \ \ move\_info)}
+\DoxyCodeLine{00078\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{comment}{//\ sanity\ check\ that\ source\ and\ destination\ are\ different}}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordflow}{if}\ (move\_info.src\_proc\ ==\ move\_info.dst\_proc)}
+\DoxyCodeLine{00081\ \ \ \ \ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ fmt::print(stderr,\ \textcolor{stringliteral}{"{}Error:\ move\_block():\ source\ and\ destination\ are\ same.\ This\ should\ not\ happen.\(\backslash\)n"{}});}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ abort();}
+\DoxyCodeLine{00084\ \ \ \ \ \}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordflow}{if}\ (master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().rank()\ ==\ move\_info.src\_proc)}
+\DoxyCodeLine{00087\ \ \ \ \ \{}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ diy::MemoryBuffer\ bb;}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ move\ the\ block\ from\ src\ to\ dst\ proc}}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ send\_b\ =\ master.block(master.\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(move\_info.move\_gid));}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ master.saver()(send\_b,\ bb);}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().\doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator_a809b8d7b7e0c380ddbd05d6ac57e3db7}{send}}(move\_info.dst\_proc,\ 0,\ bb.buffer);}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ move\ the\ link\ for\ the\ moving\ block}}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ diy::Link*\ send\_link\ =\ master.link(master.\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(move\_info.move\_gid));}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ diy::LinkFactory::save(bb,\ send\_link);}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().\doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator_a809b8d7b7e0c380ddbd05d6ac57e3db7}{send}}(move\_info.dst\_proc,\ 0,\ bb.buffer);}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ remove\ the\ block\ from\ the\ master}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ move\_lid\ =\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(move\_info.move\_gid);}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ master.destroyer()(master.\doxymbox{\hyperlink{classdiy_1_1_master_a4e8f7b4f8af7041559385b54e82d0f1c}{release}}(move\_lid));}
+\DoxyCodeLine{00103\ \ \ \ \ \}}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().rank()\ ==\ move\_info.dst\_proc)}
+\DoxyCodeLine{00105\ \ \ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ diy::MemoryBuffer\ bb;}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ move\ the\ block\ from\ src\ to\ dst\ proc}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ recv\_b\ =\ master.creator()();}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().\doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator_a70d3e33953a0f8277a6ae746d8f9a9c4}{recv}}(move\_info.src\_proc,\ 0,\ bb.buffer);}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ master.loader()(recv\_b,\ bb);}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ move\ the\ link\ for\ the\ moving\ block}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ diy::Link*\ recv\_link;}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().\doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator_a70d3e33953a0f8277a6ae746d8f9a9c4}{recv}}(move\_info.src\_proc,\ 0,\ bb.buffer);}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ recv\_link\ =\ diy::LinkFactory::load(bb);}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ the\ block\ to\ the\ master}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ master.\doxymbox{\hyperlink{classdiy_1_1_master_aeab2723bb0ecd4f7316b4805c1b53a61}{add}}(move\_info.move\_gid,\ recv\_b,\ recv\_link);}
+\DoxyCodeLine{00120\ \ \ \ \ \}}
+\DoxyCodeLine{00121\ \}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \}\ \ \ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \}\ \ \ \textcolor{comment}{//\ namespace\ diy}}
+
+\end{DoxyCode}

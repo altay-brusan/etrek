@@ -1,0 +1,392 @@
+\doxysection{parse\+\_\+number.\+h}
+\hypertarget{parse__number_8h_source}{}\label{parse__number_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/parse\_number.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/parse\_number.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ FASTFLOAT\_PARSE\_NUMBER\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ FASTFLOAT\_PARSE\_NUMBER\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}ascii\_number.h"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}decimal\_to\_binary.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}digit\_comparison.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}float\_common.h"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <limits>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <system\_error>}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{keyword}{namespace\ }fast\_float\ \{}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }detail\ \{}
+\DoxyCodeLine{00022\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00023\ from\_chars\_result\_t<UC>}
+\DoxyCodeLine{00024\ \ \ \ \ FASTFLOAT\_CONSTEXPR14\ parse\_infnan(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T\ \&value,\ chars\_format\ fmt)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00026\ \ \ from\_chars\_result\_t<UC>\ answer\{\};}
+\DoxyCodeLine{00027\ \ \ answer.ptr\ =\ first;}
+\DoxyCodeLine{00028\ \ \ answer.ec\ =\ std::errc();\ \textcolor{comment}{//\ be\ optimistic}}
+\DoxyCodeLine{00029\ \ \ \textcolor{comment}{//\ assume\ first\ <\ last,\ so\ dereference\ without\ checks;}}
+\DoxyCodeLine{00030\ \ \ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ minusSign\ =\ (*first\ ==\ UC(\textcolor{charliteral}{'-\/'}));}
+\DoxyCodeLine{00031\ \ \ \textcolor{comment}{//\ C++17\ 20.19.3.(7.1)\ explicitly\ forbids\ '+'\ sign\ here}}
+\DoxyCodeLine{00032\ \ \ \textcolor{keywordflow}{if}\ ((*first\ ==\ UC(\textcolor{charliteral}{'-\/'}))\ ||}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ (uint64\_t(fmt\ \&\ chars\_format::allow\_leading\_plus)\ \&\&}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ (*first\ ==\ UC(\textcolor{charliteral}{'+'}))))\ \{}
+\DoxyCodeLine{00035\ \ \ \ \ ++first;}
+\DoxyCodeLine{00036\ \ \ \}}
+\DoxyCodeLine{00037\ \ \ \textcolor{keywordflow}{if}\ (last\ -\/\ first\ >=\ 3)\ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordflow}{if}\ (fastfloat\_strncasecmp(first,\ str\_const\_nan<UC>(),\ 3))\ \{}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ answer.ptr\ =\ (first\ +=\ 3);}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ value\ =\ minusSign\ ?\ -\/std::numeric\_limits<T>::quiet\_NaN()}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ std::numeric\_limits<T>::quiet\_NaN();}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \textcolor{comment}{//\ Check\ for\ possible\ nan(n-\/char-\/seq-\/opt),\ C++17\ 20.19.3.7,}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \textcolor{comment}{//\ C11\ 7.20.1.3.3.\ At\ least\ MSVC\ produces\ nan(ind)\ and\ nan(snan).}}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (first\ !=\ last\ \&\&\ *first\ ==\ UC(\textcolor{charliteral}{'('}))\ \{}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (UC\ \textcolor{keyword}{const}\ *ptr\ =\ first\ +\ 1;\ ptr\ !=\ last;\ ++ptr)\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*ptr\ ==\ UC(\textcolor{charliteral}{')'}))\ \{}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ answer.ptr\ =\ ptr\ +\ 1;\ \textcolor{comment}{//\ valid\ nan(n-\/char-\/seq-\/opt)}}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!((UC(\textcolor{charliteral}{'a'})\ <=\ *ptr\ \&\&\ *ptr\ <=\ UC(\textcolor{charliteral}{'z'}))\ ||}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (UC(\textcolor{charliteral}{'A'})\ <=\ *ptr\ \&\&\ *ptr\ <=\ UC(\textcolor{charliteral}{'Z'}))\ ||}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (UC(\textcolor{charliteral}{'0'})\ <=\ *ptr\ \&\&\ *ptr\ <=\ UC(\textcolor{charliteral}{'9'}))\ ||\ *ptr\ ==\ UC(\textcolor{charliteral}{'\_'})))}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};\ \textcolor{comment}{//\ forbidden\ char,\ not\ nan(n-\/char-\/seq-\/opt)}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00056\ \ \ \ \ \}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keywordflow}{if}\ (fastfloat\_strncasecmp(first,\ str\_const\_inf<UC>(),\ 3))\ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((last\ -\/\ first\ >=\ 8)\ \&\&}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ fastfloat\_strncasecmp(first\ +\ 3,\ str\_const\_inf<UC>()\ +\ 3,\ 5))\ \{}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ answer.ptr\ =\ first\ +\ 8;}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ answer.ptr\ =\ first\ +\ 3;}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ value\ =\ minusSign\ ?\ -\/std::numeric\_limits<T>::infinity()}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ std::numeric\_limits<T>::infinity();}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00067\ \ \ \ \ \}}
+\DoxyCodeLine{00068\ \ \ \}}
+\DoxyCodeLine{00069\ \ \ answer.ec\ =\ std::errc::invalid\_argument;}
+\DoxyCodeLine{00070\ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00071\ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00078\ fastfloat\_really\_inline\ \textcolor{keywordtype}{bool}\ rounds\_to\_nearest()\ noexcept\ \{}
+\DoxyCodeLine{00079\ \ \ \textcolor{comment}{//\ https://lemire.me/blog/2020/06/26/gcc-\/not-\/nearest/}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#if\ (FLT\_EVAL\_METHOD\ !=\ 1)\ \&\&\ (FLT\_EVAL\_METHOD\ !=\ 0)}}
+\DoxyCodeLine{00081\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00083\ \ \ \textcolor{comment}{//\ See}}
+\DoxyCodeLine{00084\ \ \ \textcolor{comment}{//\ A\ fast\ function\ to\ check\ your\ floating-\/point\ rounding\ mode}}
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{//\ https://lemire.me/blog/2022/11/16/a-\/fast-\/function-\/to-\/check-\/your-\/floating-\/point-\/rounding-\/mode/}}
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00087\ \ \ \textcolor{comment}{//\ This\ function\ is\ meant\ to\ be\ equivalent\ to\ :}}
+\DoxyCodeLine{00088\ \ \ \textcolor{comment}{//\ prior:\ \#include\ <cfenv>}}
+\DoxyCodeLine{00089\ \ \ \textcolor{comment}{//\ \ return\ fegetround()\ ==\ FE\_TONEAREST;}}
+\DoxyCodeLine{00090\ \ \ \textcolor{comment}{//\ However,\ it\ is\ expected\ to\ be\ much\ faster\ than\ the\ fegetround()}}
+\DoxyCodeLine{00091\ \ \ \textcolor{comment}{//\ function\ call.}}
+\DoxyCodeLine{00092\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00093\ \ \ \textcolor{comment}{//\ The\ volatile\ keyword\ prevents\ the\ compiler\ from\ computing\ the\ function}}
+\DoxyCodeLine{00094\ \ \ \textcolor{comment}{//\ at\ compile-\/time.}}
+\DoxyCodeLine{00095\ \ \ \textcolor{comment}{//\ There\ might\ be\ other\ ways\ to\ prevent\ compile-\/time\ optimizations\ (e.g.,}}
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{//\ asm).\ The\ value\ does\ not\ need\ to\ be\ std::numeric\_limits<float>::min(),\ any}}
+\DoxyCodeLine{00097\ \ \ \textcolor{comment}{//\ small\ value\ so\ that\ 1\ +\ x\ should\ round\ to\ 1\ would\ do\ (after\ accounting\ for}}
+\DoxyCodeLine{00098\ \ \ \textcolor{comment}{//\ excess\ precision,\ as\ in\ 387\ instructions).}}
+\DoxyCodeLine{00099\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ \textcolor{keyword}{volatile}\ fmin\ =\ std::numeric\_limits<float>::min();}
+\DoxyCodeLine{00100\ \ \ \textcolor{keywordtype}{float}\ fmini\ =\ fmin;\ \textcolor{comment}{//\ we\ copy\ it\ so\ that\ it\ gets\ loaded\ at\ most\ once.}}
+\DoxyCodeLine{00101\ \textcolor{comment}{//}}
+\DoxyCodeLine{00102\ \textcolor{comment}{//\ Explanation:}}
+\DoxyCodeLine{00103\ \textcolor{comment}{//\ Only\ when\ fegetround()\ ==\ FE\_TONEAREST\ do\ we\ have\ that}}
+\DoxyCodeLine{00104\ \textcolor{comment}{//\ fmin\ +\ 1.0f\ ==\ 1.0f\ -\/\ fmin.}}
+\DoxyCodeLine{00105\ \textcolor{comment}{//}}
+\DoxyCodeLine{00106\ \textcolor{comment}{//\ FE\_UPWARD:}}
+\DoxyCodeLine{00107\ \textcolor{comment}{//\ \ fmin\ +\ 1.0f\ >\ 1}}
+\DoxyCodeLine{00108\ \textcolor{comment}{//\ \ 1.0f\ -\/\ fmin\ ==\ 1}}
+\DoxyCodeLine{00109\ \textcolor{comment}{//}}
+\DoxyCodeLine{00110\ \textcolor{comment}{//\ FE\_DOWNWARD\ or\ \ FE\_TOWARDZERO:}}
+\DoxyCodeLine{00111\ \textcolor{comment}{//\ \ fmin\ +\ 1.0f\ ==\ 1}}
+\DoxyCodeLine{00112\ \textcolor{comment}{//\ \ 1.0f\ -\/\ fmin\ <\ 1}}
+\DoxyCodeLine{00113\ \textcolor{comment}{//}}
+\DoxyCodeLine{00114\ \textcolor{comment}{//\ Note:\ This\ may\ fail\ to\ be\ accurate\ if\ fast-\/math\ has\ been}}
+\DoxyCodeLine{00115\ \textcolor{comment}{//\ enabled,\ as\ rounding\ conventions\ may\ not\ apply.}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_VISUAL\_STUDIO}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#pragma\ warning(push)}}
+\DoxyCodeLine{00118\ \textcolor{comment}{//\ \ todo:\ is\ there\ a\ VS\ warning?}}
+\DoxyCodeLine{00119\ \textcolor{comment}{//\ \ see}}
+\DoxyCodeLine{00120\ \textcolor{comment}{//\ \ https://stackoverflow.com/questions/46079446/is-\/there-\/a-\/warning-\/for-\/floating-\/point-\/equality-\/checking-\/in-\/visual-\/studio-\/2013}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#elif\ defined(\_\_clang\_\_)}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#pragma\ clang\ diagnostic\ push}}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#pragma\ clang\ diagnostic\ ignored\ "{}-\/Wfloat-\/equal"{}}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#elif\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#pragma\ GCC\ diagnostic\ push}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#pragma\ GCC\ diagnostic\ ignored\ "{}-\/Wfloat-\/equal"{}}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00128\ \ \ \textcolor{keywordflow}{return}\ (fmini\ +\ 1.0f\ ==\ 1.0f\ -\/\ fmini);}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_VISUAL\_STUDIO}}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#pragma\ warning(pop)}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#elif\ defined(\_\_clang\_\_)}}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\#pragma\ clang\ diagnostic\ pop}}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#elif\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{\#pragma\ GCC\ diagnostic\ pop}}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00136\ \}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structfast__float_1_1from__chars__caller}{from\_chars\_caller}}\ \{}
+\DoxyCodeLine{00141\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00142\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structfast__float_1_1from__chars__result__t}{from\_chars\_result\_t<UC>}}}
+\DoxyCodeLine{00143\ \ \ call(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ T\ \&value,}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structfast__float_1_1parse__options__t}{parse\_options\_t<UC>}}\ options)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordflow}{return}\ from\_chars\_advanced(first,\ last,\ value,\ options);}
+\DoxyCodeLine{00146\ \ \ \}}
+\DoxyCodeLine{00147\ \};}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#ifdef\ \_\_STDCPP\_FLOAT32\_T\_\_}}
+\DoxyCodeLine{00150\ \textcolor{keyword}{template}\ <>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structfast__float_1_1from__chars__caller}{from\_chars\_caller}}<std::float32\_t>\ \{}
+\DoxyCodeLine{00151\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00152\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structfast__float_1_1from__chars__result__t}{from\_chars\_result\_t<UC>}}}
+\DoxyCodeLine{00153\ \ \ call(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ std::float32\_t\ \&value,}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structfast__float_1_1parse__options__t}{parse\_options\_t<UC>}}\ options)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{comment}{//\ if\ std::float32\_t\ is\ defined,\ and\ we\ are\ in\ C++23\ mode;\ macro\ set\ for}}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{comment}{//\ float32;\ set\ value\ to\ float\ due\ to\ equivalence\ between\ float\ and}}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{comment}{//\ float32\_t}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordtype}{float}\ val;}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keyword}{auto}\ ret\ =\ from\_chars\_advanced(first,\ last,\ val,\ options);}
+\DoxyCodeLine{00160\ \ \ \ \ value\ =\ val;}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00162\ \ \ \}}
+\DoxyCodeLine{00163\ \};}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#ifdef\ \_\_STDCPP\_FLOAT64\_T\_\_}}
+\DoxyCodeLine{00167\ \textcolor{keyword}{template}\ <>\ \textcolor{keyword}{struct\ }from\_chars\_caller<std::float64\_t>\ \{}
+\DoxyCodeLine{00168\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00169\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keyword}{static}\ from\_chars\_result\_t<UC>}
+\DoxyCodeLine{00170\ \ \ call(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ std::float64\_t\ \&value,}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ parse\_options\_t<UC>\ options)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{comment}{//\ if\ std::float64\_t\ is\ defined,\ and\ we\ are\ in\ C++23\ mode;\ macro\ set\ for}}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{comment}{//\ float64;\ set\ value\ as\ double\ due\ to\ equivalence\ between\ double\ and}}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{comment}{//\ float64\_t}}
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{keywordtype}{double}\ val;}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keyword}{auto}\ ret\ =\ from\_chars\_advanced(first,\ last,\ val,\ options);}
+\DoxyCodeLine{00177\ \ \ \ \ value\ =\ val;}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00179\ \ \ \}}
+\DoxyCodeLine{00180\ \};}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC,\ \textcolor{keyword}{typename}>}
+\DoxyCodeLine{00184\ FASTFLOAT\_CONSTEXPR20\ from\_chars\_result\_t<UC>}
+\DoxyCodeLine{00185\ from\_chars(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ T\ \&value,}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ chars\_format\ fmt\ \textcolor{comment}{/*=\ chars\_format::general*/})\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00187\ \ \ \textcolor{keywordflow}{return}\ from\_chars\_caller<T>::call(first,\ last,\ value,}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ parse\_options\_t<UC>(fmt));}
+\DoxyCodeLine{00189\ \}}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00196\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00197\ FASTFLOAT\_CONSTEXPR20\ from\_chars\_result\_t<UC>}
+\DoxyCodeLine{00198\ from\_chars\_advanced(parsed\_number\_string\_t<UC>\ \&pns,\ T\ \&value)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \textcolor{keyword}{static\_assert}(is\_supported\_float\_type<T>::value,}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}only\ some\ floating-\/point\ types\ are\ supported"{}});}
+\DoxyCodeLine{00202\ \ \ \textcolor{keyword}{static\_assert}(is\_supported\_char\_type<UC>::value,}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}only\ char,\ wchar\_t,\ char16\_t\ and\ char32\_t\ are\ supported"{}});}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ from\_chars\_result\_t<UC>\ answer;}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \ \ answer.ec\ =\ std::errc();\ \textcolor{comment}{//\ be\ optimistic}}
+\DoxyCodeLine{00208\ \ \ answer.ptr\ =\ pns.lastmatch;}
+\DoxyCodeLine{00209\ \ \ \textcolor{comment}{//\ The\ implementation\ of\ the\ Clinger's\ fast\ path\ is\ convoluted\ because}}
+\DoxyCodeLine{00210\ \ \ \textcolor{comment}{//\ we\ want\ round-\/to-\/nearest\ in\ all\ cases,\ irrespective\ of\ the\ rounding\ mode}}
+\DoxyCodeLine{00211\ \ \ \textcolor{comment}{//\ selected\ on\ the\ thread.}}
+\DoxyCodeLine{00212\ \ \ \textcolor{comment}{//\ We\ proceed\ optimistically,\ assuming\ that\ detail::rounds\_to\_nearest()}}
+\DoxyCodeLine{00213\ \ \ \textcolor{comment}{//\ returns\ true.}}
+\DoxyCodeLine{00214\ \ \ \textcolor{keywordflow}{if}\ (binary\_format<T>::min\_exponent\_fast\_path()\ <=\ pns.exponent\ \&\&}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ pns.exponent\ <=\ binary\_format<T>::max\_exponent\_fast\_path()\ \&\&}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ !pns.too\_many\_digits)\ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{comment}{//\ Unfortunately,\ the\ conventional\ Clinger's\ fast\ path\ is\ only\ possible}}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{comment}{//\ when\ the\ system\ rounds\ to\ the\ nearest\ float.}}
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{comment}{//\ We\ expect\ the\ next\ branch\ to\ almost\ always\ be\ selected.}}
+\DoxyCodeLine{00221\ \ \ \ \ \textcolor{comment}{//\ We\ could\ check\ it\ first\ (before\ the\ previous\ branch),\ but}}
+\DoxyCodeLine{00222\ \ \ \ \ \textcolor{comment}{//\ there\ might\ be\ performance\ advantages\ at\ having\ the\ check}}
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{comment}{//\ be\ last.}}
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{keywordflow}{if}\ (!cpp20\_and\_in\_constexpr()\ \&\&\ detail::rounds\_to\_nearest())\ \{}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \textcolor{comment}{//\ We\ have\ that\ fegetround()\ ==\ FE\_TONEAREST.}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \textcolor{comment}{//\ Next\ is\ Clinger's\ fast\ path.}}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (pns.mantissa\ <=\ binary\_format<T>::max\_mantissa\_fast\_path())\ \{}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ value\ =\ T(pns.mantissa);}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (pns.exponent\ <\ 0)\ \{}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ value\ =\ value\ /\ binary\_format<T>::exact\_power\_of\_ten(-\/pns.exponent);}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ value\ =\ value\ *\ binary\_format<T>::exact\_power\_of\_ten(pns.exponent);}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (pns.negative)\ \{}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ value\ =\ -\/value;}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00239\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \textcolor{comment}{//\ We\ do\ not\ have\ that\ fegetround()\ ==\ FE\_TONEAREST.}}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \textcolor{comment}{//\ Next\ is\ a\ modified\ Clinger's\ fast\ path,\ inspired\ by\ Jakub\ Jelínek's}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \textcolor{comment}{//\ proposal}}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (pns.exponent\ >=\ 0\ \&\&}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ pns.mantissa\ <=}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ binary\_format<T>::max\_mantissa\_fast\_path(pns.exponent))\ \{}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\#if\ defined(\_\_clang\_\_)\ ||\ defined(FASTFLOAT\_32BIT)}}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Clang\ may\ map\ 0\ to\ -\/0.0\ when\ fegetround()\ ==\ FE\_DOWNWARD}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (pns.mantissa\ ==\ 0)\ \{}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ value\ =\ pns.negative\ ?\ T(-\/0.)\ :\ T(0.);}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00252\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ value\ =\ T(pns.mantissa)\ *}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ binary\_format<T>::exact\_power\_of\_ten(pns.exponent);}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (pns.negative)\ \{}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ value\ =\ -\/value;}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00260\ \ \ \ \ \}}
+\DoxyCodeLine{00261\ \ \ \}}
+\DoxyCodeLine{00262\ \ \ adjusted\_mantissa\ am\ =}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ compute\_float<binary\_format<T>>(pns.exponent,\ pns.mantissa);}
+\DoxyCodeLine{00264\ \ \ \textcolor{keywordflow}{if}\ (pns.too\_many\_digits\ \&\&\ am.power2\ >=\ 0)\ \{}
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{keywordflow}{if}\ (am\ !=\ compute\_float<binary\_format<T>>(pns.exponent,\ pns.mantissa\ +\ 1))\ \{}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ am\ =\ compute\_error<binary\_format<T>>(pns.exponent,\ pns.mantissa);}
+\DoxyCodeLine{00267\ \ \ \ \ \}}
+\DoxyCodeLine{00268\ \ \ \}}
+\DoxyCodeLine{00269\ \ \ \textcolor{comment}{//\ If\ we\ called\ compute\_float<binary\_format<T>>(pns.exponent,\ pns.mantissa)}}
+\DoxyCodeLine{00270\ \ \ \textcolor{comment}{//\ and\ we\ have\ an\ invalid\ power\ (am.power2\ <\ 0),\ then\ we\ need\ to\ go\ the\ long}}
+\DoxyCodeLine{00271\ \ \ \textcolor{comment}{//\ way\ around\ again.\ This\ is\ very\ uncommon.}}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordflow}{if}\ (am.power2\ <\ 0)\ \{}
+\DoxyCodeLine{00273\ \ \ \ \ am\ =\ digit\_comp<T>(pns,\ am);}
+\DoxyCodeLine{00274\ \ \ \}}
+\DoxyCodeLine{00275\ \ \ to\_float(pns.negative,\ am,\ value);}
+\DoxyCodeLine{00276\ \ \ \textcolor{comment}{//\ Test\ for\ over/underflow.}}
+\DoxyCodeLine{00277\ \ \ \textcolor{keywordflow}{if}\ ((pns.mantissa\ !=\ 0\ \&\&\ am.mantissa\ ==\ 0\ \&\&\ am.power2\ ==\ 0)\ ||}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ am.power2\ ==\ binary\_format<T>::infinite\_power())\ \{}
+\DoxyCodeLine{00279\ \ \ \ \ answer.ec\ =\ std::errc::result\_out\_of\_range;}
+\DoxyCodeLine{00280\ \ \ \}}
+\DoxyCodeLine{00281\ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00282\ \}}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00285\ FASTFLOAT\_CONSTEXPR20\ from\_chars\_result\_t<UC>}
+\DoxyCodeLine{00286\ from\_chars\_float\_advanced(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ T\ \&value,}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ parse\_options\_t<UC>\ options)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \textcolor{keyword}{static\_assert}(is\_supported\_float\_type<T>::value,}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}only\ some\ floating-\/point\ types\ are\ supported"{}});}
+\DoxyCodeLine{00291\ \ \ \textcolor{keyword}{static\_assert}(is\_supported\_char\_type<UC>::value,}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}only\ char,\ wchar\_t,\ char16\_t\ and\ char32\_t\ are\ supported"{}});}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \ \ chars\_format\ \textcolor{keyword}{const}\ fmt\ =\ detail::adjust\_for\_feature\_macros(options.format);}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ from\_chars\_result\_t<UC>\ answer;}
+\DoxyCodeLine{00297\ \ \ \textcolor{keywordflow}{if}\ (uint64\_t(fmt\ \&\ chars\_format::skip\_white\_space))\ \{}
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{keywordflow}{while}\ ((first\ !=\ last)\ \&\&\ fast\_float::is\_space(*first))\ \{}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ first++;}
+\DoxyCodeLine{00300\ \ \ \ \ \}}
+\DoxyCodeLine{00301\ \ \ \}}
+\DoxyCodeLine{00302\ \ \ \textcolor{keywordflow}{if}\ (first\ ==\ last)\ \{}
+\DoxyCodeLine{00303\ \ \ \ \ answer.ec\ =\ std::errc::invalid\_argument;}
+\DoxyCodeLine{00304\ \ \ \ \ answer.ptr\ =\ first;}
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00306\ \ \ \}}
+\DoxyCodeLine{00307\ \ \ parsed\_number\_string\_t<UC>\ pns\ =}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ uint64\_t(fmt\ \&\ detail::basic\_json\_fmt)}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ ?\ parse\_number\_string<true,\ UC>(first,\ last,\ options)}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ :\ parse\_number\_string<false,\ UC>(first,\ last,\ options);}
+\DoxyCodeLine{00311\ \ \ \textcolor{keywordflow}{if}\ (!pns.valid)\ \{}
+\DoxyCodeLine{00312\ \ \ \ \ if\ (uint64\_t(fmt\ \&\ chars\_format::no\_infnan))\ \{}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ answer.ec\ =\ std::errc::invalid\_argument;}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ answer.ptr\ =\ first;}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ return\ answer;}
+\DoxyCodeLine{00316\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ return\ detail::parse\_infnan(first,\ last,\ value,\ fmt);}
+\DoxyCodeLine{00318\ \ \ \ \ \}}
+\DoxyCodeLine{00319\ \ \ \}}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \ \ \textcolor{comment}{//\ call\ overload\ that\ takes\ parsed\_number\_string\_t\ directly.}}
+\DoxyCodeLine{00322\ \ \ \textcolor{keywordflow}{return}\ from\_chars\_advanced(pns,\ value);}
+\DoxyCodeLine{00323\ \}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC,\ \textcolor{keyword}{typename}>}
+\DoxyCodeLine{00326\ FASTFLOAT\_CONSTEXPR20\ from\_chars\_result\_t<UC>}
+\DoxyCodeLine{00327\ from\_chars(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ T\ \&value,\ \textcolor{keywordtype}{int}\ base)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \ \ \textcolor{keyword}{static\_assert}(is\_supported\_integer\_type<T>::value,}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}only\ integer\ types\ are\ supported"{}});}
+\DoxyCodeLine{00331\ \ \ \textcolor{keyword}{static\_assert}(is\_supported\_char\_type<UC>::value,}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}only\ char,\ wchar\_t,\ char16\_t\ and\ char32\_t\ are\ supported"{}});}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \ \ parse\_options\_t<UC>\ options;}
+\DoxyCodeLine{00335\ \ \ options.base\ =\ base;}
+\DoxyCodeLine{00336\ \ \ \textcolor{keywordflow}{return}\ from\_chars\_advanced(first,\ last,\ value,\ options);}
+\DoxyCodeLine{00337\ \}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00340\ FASTFLOAT\_CONSTEXPR20\ from\_chars\_result\_t<UC>}
+\DoxyCodeLine{00341\ from\_chars\_int\_advanced(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ T\ \&value,}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ parse\_options\_t<UC>\ options)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \ \ \textcolor{keyword}{static\_assert}(is\_supported\_integer\_type<T>::value,}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}only\ integer\ types\ are\ supported"{}});}
+\DoxyCodeLine{00346\ \ \ \textcolor{keyword}{static\_assert}(is\_supported\_char\_type<UC>::value,}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}only\ char,\ wchar\_t,\ char16\_t\ and\ char32\_t\ are\ supported"{}});}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \ \ chars\_format\ \textcolor{keyword}{const}\ fmt\ =\ detail::adjust\_for\_feature\_macros(options.format);}
+\DoxyCodeLine{00350\ \ \ \textcolor{keywordtype}{int}\ \textcolor{keyword}{const}\ base\ =\ options.base;}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ \ \ from\_chars\_result\_t<UC>\ answer;}
+\DoxyCodeLine{00353\ \ \ \textcolor{keywordflow}{if}\ (uint64\_t(fmt\ \&\ chars\_format::skip\_white\_space))\ \{}
+\DoxyCodeLine{00354\ \ \ \ \ \textcolor{keywordflow}{while}\ ((first\ !=\ last)\ \&\&\ fast\_float::is\_space(*first))\ \{}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ first++;}
+\DoxyCodeLine{00356\ \ \ \ \ \}}
+\DoxyCodeLine{00357\ \ \ \}}
+\DoxyCodeLine{00358\ \ \ \textcolor{keywordflow}{if}\ (first\ ==\ last\ ||\ base\ <\ 2\ ||\ base\ >\ 36)\ \{}
+\DoxyCodeLine{00359\ \ \ \ \ answer.ec\ =\ std::errc::invalid\_argument;}
+\DoxyCodeLine{00360\ \ \ \ \ answer.ptr\ =\ first;}
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00362\ \ \ \}}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \ \ \textcolor{keywordflow}{return}\ parse\_int\_string(first,\ last,\ value,\ options);}
+\DoxyCodeLine{00365\ \}}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{size\_t}\ TypeIx>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structfast__float_1_1from__chars__advanced__caller}{from\_chars\_advanced\_caller}}\ \{}
+\DoxyCodeLine{00368\ \ \ \textcolor{keyword}{static\_assert}(TypeIx\ >\ 0,\ \textcolor{stringliteral}{"{}unsupported\ type"{}});}
+\DoxyCodeLine{00369\ \};}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \textcolor{keyword}{template}\ <>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structfast__float_1_1from__chars__advanced__caller}{from\_chars\_advanced\_caller}}<1>\ \{}
+\DoxyCodeLine{00372\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00373\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structfast__float_1_1from__chars__result__t}{from\_chars\_result\_t<UC>}}}
+\DoxyCodeLine{00374\ \ \ call(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ T\ \&value,}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structfast__float_1_1parse__options__t}{parse\_options\_t<UC>}}\ options)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00376\ \ \ \ \ \textcolor{keywordflow}{return}\ from\_chars\_float\_advanced(first,\ last,\ value,\ options);}
+\DoxyCodeLine{00377\ \ \ \}}
+\DoxyCodeLine{00378\ \};}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \textcolor{keyword}{template}\ <>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structfast__float_1_1from__chars__advanced__caller}{from\_chars\_advanced\_caller}}<2>\ \{}
+\DoxyCodeLine{00381\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00382\ \ \ FASTFLOAT\_CONSTEXPR20\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structfast__float_1_1from__chars__result__t}{from\_chars\_result\_t<UC>}}}
+\DoxyCodeLine{00383\ \ \ call(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ T\ \&value,}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structfast__float_1_1parse__options__t}{parse\_options\_t<UC>}}\ options)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00385\ \ \ \ \ \textcolor{keywordflow}{return}\ from\_chars\_int\_advanced(first,\ last,\ value,\ options);}
+\DoxyCodeLine{00386\ \ \ \}}
+\DoxyCodeLine{00387\ \};}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00390\ FASTFLOAT\_CONSTEXPR20\ \doxymbox{\hyperlink{structfast__float_1_1from__chars__result__t}{from\_chars\_result\_t<UC>}}}
+\DoxyCodeLine{00391\ from\_chars\_advanced(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last,\ T\ \&value,}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structfast__float_1_1parse__options__t}{parse\_options\_t<UC>}}\ options)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00393\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structfast__float_1_1from__chars__advanced__caller}{from\_chars\_advanced\_caller}}<}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ size\_t(\doxymbox{\hyperlink{structfast__float_1_1is__supported__float__type}{is\_supported\_float\_type<T>::value}})\ +}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ 2\ *\ size\_t(\doxymbox{\hyperlink{structfast__float_1_1is__supported__integer__type}{is\_supported\_integer\_type<T>::value}})>::call(first,\ last,\ value,}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ options);}
+\DoxyCodeLine{00397\ \}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \}\ \textcolor{comment}{//\ namespace\ fast\_float}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

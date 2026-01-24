@@ -1,0 +1,94 @@
+\doxysection{iexchange-\/collective.hpp}
+\hypertarget{iexchange-collective_8hpp_source}{}\label{iexchange-collective_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/master/iexchange-\/collective.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/master/iexchange-\/collective.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00004\ \{}
+\DoxyCodeLine{00005\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_i_exchange_info_collective}{Master::IExchangeInfoCollective}}:\ \textcolor{keyword}{public}\ IExchangeInfo}
+\DoxyCodeLine{00006\ \ \ \ \ \{}
+\DoxyCodeLine{00007\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IExchangeInfoCollective(\doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator}{mpi::communicator}}\ c,\ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_profiler}{stats::Profiler}}\&\ p):}
+\DoxyCodeLine{00008\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IExchangeInfo(c,\ p)}
+\DoxyCodeLine{00009\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00010\ \ \ \ \ \ \ \ \ \ \ local\_work\_\ =\ 0;}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ \ \ dirty\ =\ 0;}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \ \ state\ =\ 0;}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ all\_done()\ \textcolor{keyword}{override};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ get\ global\ all\ done\ status}}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ add\_work(\textcolor{keywordtype}{int}\ work)\ \textcolor{keyword}{override};\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ work\ to\ global\ work\ counter}}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ control()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \ \ \ \ \ \ std::atomic<int>\ \ local\_work\_;}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ std::atomic<int>\ \ dirty;}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ local\_dirty,\ all\_dirty;}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \ \ \ \ \ \ std::atomic<int>\ \ state;}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1mpi_1_1request}{mpi::request}}\ \ \ \ \ \ r;}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \textcolor{comment}{//\ debug}}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ first\_ibarrier\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \textcolor{keyword}{using\ }IExchangeInfo::prof;}
+\DoxyCodeLine{00030\ \ \ \ \ \};}
+\DoxyCodeLine{00031\ \}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00034\ diy::Master::IExchangeInfoCollective::}
+\DoxyCodeLine{00035\ all\_done()}
+\DoxyCodeLine{00036\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{return}\ state\ ==\ 3;}
+\DoxyCodeLine{00038\ \}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00041\ diy::Master::IExchangeInfoCollective::}
+\DoxyCodeLine{00042\ add\_work(\textcolor{keywordtype}{int}\ work)}
+\DoxyCodeLine{00043\ \{}
+\DoxyCodeLine{00044\ \ \ \ \ local\_work\_\ +=\ work;}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordflow}{if}\ (local\_work\_\ >\ 0)}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ dirty\ =\ 1;}
+\DoxyCodeLine{00047\ \}}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00050\ diy::Master::IExchangeInfoCollective::}
+\DoxyCodeLine{00051\ control()}
+\DoxyCodeLine{00052\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordflow}{if}\ (state\ ==\ 0\ \&\&\ local\_work\_\ ==\ 0)}
+\DoxyCodeLine{00054\ \ \ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ debug}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (first\_ibarrier)}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ prof\ >>\ \textcolor{stringliteral}{"{}iexchange-\/control"{}};\ \ \ \ \ \ \ \ \textcolor{comment}{//\ consensus-\/time\ cannot\ nest\ in\ iexchange-\/control}}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ prof\ <<\ \textcolor{stringliteral}{"{}consensus-\/time"{}};}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ prof\ <<\ \textcolor{stringliteral}{"{}iexchange-\/control"{}};}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ first\_ibarrier\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ r\ =\ \doxymbox{\hyperlink{group___m_p_i_gabc00f424b0477721fa0840f80f1667a4}{ibarrier}}(comm);}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ dirty\ =\ 0;}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ state\ =\ 1;}
+\DoxyCodeLine{00067\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (state\ ==\ 1)}
+\DoxyCodeLine{00068\ \ \ \ \ \{}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ mpi::optional<mpi::status>\ ostatus\ =\ r.test();}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ostatus)}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ local\_dirty\ =\ dirty;}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ r\ =\ mpi::iall\_reduce(comm,\ local\_dirty,\ all\_dirty,\ std::logical\_or<int>());}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ state\ =\ 2;}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00076\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (state\ ==\ 2)}
+\DoxyCodeLine{00077\ \ \ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ mpi::optional<mpi::status>\ ostatus\ =\ r.test();}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ostatus)}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (all\_dirty\ ==\ 0)\ \ \ \ \ \textcolor{comment}{//\ done}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ state\ =\ 3;}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ state\ =\ 0;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ reset}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00086\ \ \ \ \ \}}
+\DoxyCodeLine{00087\ \}}
+\DoxyCodeLine{00088\ }
+
+\end{DoxyCode}

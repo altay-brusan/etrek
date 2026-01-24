@@ -1,0 +1,383 @@
+\doxysection{store.\+h}
+\hypertarget{store_8h_source}{}\label{store_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/store.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/store.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Copyright\ 2016-\/2023\ The\ OpenSSL\ Project\ Authors.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Licensed\ under\ the\ Apache\ License\ 2.0\ (the\ "{}License"{}).\ \ You\ may\ not\ use}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ this\ file\ except\ in\ compliance\ with\ the\ License.\ \ You\ can\ obtain\ a\ copy}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ in\ the\ file\ LICENSE\ in\ the\ source\ distribution\ or\ at}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ https://www.openssl.org/source/license.html}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_STORE\_H}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#\ define\ OPENSSL\_STORE\_H}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#\ pragma\ once}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#\ include\ <openssl/macros.h>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#\ \ define\ HEADER\_OSSL\_STORE\_H}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#\ include\ <stdarg.h>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#\ include\ <openssl/types.h>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#\ include\ <openssl/pem.h>}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#\ include\ <openssl/storeerr.h>}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#\ ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00025\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ *\ \ The\ main\ OSSL\_STORE\ functions.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ \ These\ allow\ applications\ to\ open\ a\ channel\ to\ a\ resource\ with\ supported}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *\ \ data\ (keys,\ certs,\ crls,\ ...),\ read\ the\ data\ a\ piece\ at\ a\ time\ and\ decide}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ \ what\ to\ do\ with\ it,\ and\ finally\ close.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_store\_ctx\_st\ OSSL\_STORE\_CTX;}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ Typedef\ for\ the\ OSSL\_STORE\_INFO\ post\ processing\ callback.\ \ This\ can\ be\ used}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *\ to\ massage\ the\ given\ OSSL\_STORE\_INFO,\ or\ to\ drop\ it\ entirely\ (by\ returning}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ NULL).}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00044\ \textcolor{keyword}{typedef}\ OSSL\_STORE\_INFO\ *(*OSSL\_STORE\_post\_process\_info\_fn)(OSSL\_STORE\_INFO\ *,}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ Open\ a\ channel\ given\ a\ URI.\ \ The\ given\ UI\ method\ will\ be\ used\ any\ time\ the}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ loader\ needs\ extra\ input,\ for\ example\ when\ a\ password\ or\ pin\ is\ needed,\ and}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ will\ be\ passed\ the\ same\ user\ data\ every\ time\ it's\ needed\ in\ this\ context.}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ Returns\ a\ context\ reference\ which\ represents\ the\ channel\ to\ communicate}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ through.}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00055\ OSSL\_STORE\_CTX\ *}
+\DoxyCodeLine{00056\ OSSL\_STORE\_open(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *uri,\ \textcolor{keyword}{const}\ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *ui\_data,}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_post\_process\_info\_fn\ post\_process,}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *post\_process\_data);}
+\DoxyCodeLine{00059\ OSSL\_STORE\_CTX\ *}
+\DoxyCodeLine{00060\ OSSL\_STORE\_open\_ex(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *uri,\ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq,}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *ui\_data,}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[],}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_post\_process\_info\_fn\ post\_process,}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *post\_process\_data);}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ Control\ /\ fine\ tune\ the\ OSSL\_STORE\ channel.\ \ |cmd|\ determines\ what\ is\ to\ be}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *\ done,\ and\ depends\ on\ the\ underlying\ loader\ (use\ OSSL\_STORE\_get0\_scheme\ to}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ *\ determine\ which\ loader\ is\ used),\ except\ for\ common\ commands\ (see\ below).}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ *\ Each\ command\ takes\ different\ arguments.}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00073\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_ctrl(OSSL\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ cmd,}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ...\ \textcolor{comment}{/*\ args\ */});}
+\DoxyCodeLine{00075\ OSSL\_DEPRECATEDIN\_3\_0\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_vctrl(OSSL\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ cmd,}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ va\_list\ args);}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ *\ Common\ ctrl\ commands\ that\ different\ loaders\ may\ choose\ to\ support.}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00084\ \textcolor{comment}{/*\ int\ on\ =\ 0\ or\ 1;\ STORE\_ctrl(ctx,\ STORE\_C\_USE\_SECMEM,\ \&on);\ */}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_C\_USE\_SECMEM\ \ \ \ \ \ 1}}
+\DoxyCodeLine{00086\ \textcolor{comment}{/*\ Where\ custom\ commands\ start\ */}}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_C\_CUSTOM\_START\ \ \ \ 100}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ *\ Read\ one\ data\ item\ (a\ key,\ a\ cert,\ a\ CRL)\ that\ is\ supported\ by\ the\ OSSL\_STORE}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ *\ functionality,\ given\ a\ context.}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ *\ Returns\ a\ OSSL\_STORE\_INFO\ pointer,\ from\ which\ OpenSSL\ typed\ data\ can\ be}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ *\ extracted\ with\ OSSL\_STORE\_INFO\_get0\_PKEY(),\ OSSL\_STORE\_INFO\_get0\_CERT(),\ ...}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ *\ NULL\ is\ returned\ on\ error,\ which\ may\ include\ that\ the\ data\ found\ at\ the\ URI}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ *\ can't\ be\ figured\ out\ for\ certain\ or\ is\ ambiguous.}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00099\ OSSL\_STORE\_INFO\ *OSSL\_STORE\_load(OSSL\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ *\ Deletes\ the\ object\ in\ the\ store\ by\ URI.}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ *\ Returns\ 1\ on\ success,\ 0\ otherwise.}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00105\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_delete(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *uri,\ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq,}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *ui\_data,}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]);}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ *\ Check\ if\ end\ of\ data\ (end\ of\ file)\ is\ reached}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ *\ Returns\ 1\ on\ end,\ 0\ otherwise.}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00113\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_eof(OSSL\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ *\ Check\ if\ an\ error\ occurred}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ *\ Returns\ 1\ if\ it\ did,\ 0\ otherwise.}}
+\DoxyCodeLine{00118\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00119\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_error(OSSL\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00122\ \textcolor{comment}{\ *\ Close\ the\ channel}}
+\DoxyCodeLine{00123\ \textcolor{comment}{\ *\ Returns\ 1\ on\ success,\ 0\ on\ error.}}
+\DoxyCodeLine{00124\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00125\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_close(OSSL\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00128\ \textcolor{comment}{\ *\ Attach\ to\ a\ BIO.\ \ This\ works\ like\ OSSL\_STORE\_open()\ except\ it\ takes\ a}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ *\ BIO\ instead\ of\ a\ uri,\ along\ with\ a\ scheme\ to\ use\ when\ reading.}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ *\ The\ given\ UI\ method\ will\ be\ used\ any\ time\ the\ loader\ needs\ extra\ input,}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ *\ for\ example\ when\ a\ password\ or\ pin\ is\ needed,\ and\ will\ be\ passed\ the}}
+\DoxyCodeLine{00132\ \textcolor{comment}{\ *\ same\ user\ data\ every\ time\ it's\ needed\ in\ this\ context.}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ *\ Returns\ a\ context\ reference\ which\ represents\ the\ channel\ to\ communicate}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ *\ through.}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ *\ Note\ that\ this\ function\ is\ considered\ unsafe,\ all\ depending\ on\ what\ the}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ *\ BIO\ actually\ reads.}}
+\DoxyCodeLine{00139\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00140\ OSSL\_STORE\_CTX\ *OSSL\_STORE\_attach(BIO\ *bio,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *scheme,}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq,}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *ui\_data,}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[],}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_post\_process\_info\_fn\ post\_process,}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *post\_process\_data);}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00148\ \textcolor{comment}{\ *\ \ Extracting\ OpenSSL\ types\ from\ and\ creating\ new\ OSSL\_STORE\_INFOs}}
+\DoxyCodeLine{00149\ \textcolor{comment}{\ *\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00150\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ *\ Types\ of\ data\ that\ can\ be\ ossl\_stored\ in\ a\ OSSL\_STORE\_INFO.}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\ *\ OSSL\_STORE\_INFO\_NAME\ is\ typically\ found\ when\ getting\ a\ listing\ of}}
+\DoxyCodeLine{00155\ \textcolor{comment}{\ *\ available\ "{}files"{}\ /\ "{}tokens"{}\ /\ what\ have\ you.}}
+\DoxyCodeLine{00156\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_INFO\_NAME\ \ \ \ \ \ \ \ \ \ \ 1\ \ \ }\textcolor{comment}{/*\ char\ *\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_INFO\_PARAMS\ \ \ \ \ \ \ \ \ 2\ \ \ }\textcolor{comment}{/*\ EVP\_PKEY\ *\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_INFO\_PUBKEY\ \ \ \ \ \ \ \ \ 3\ \ \ }\textcolor{comment}{/*\ EVP\_PKEY\ *\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_INFO\_PKEY\ \ \ \ \ \ \ \ \ \ \ 4\ \ \ }\textcolor{comment}{/*\ EVP\_PKEY\ *\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_INFO\_CERT\ \ \ \ \ \ \ \ \ \ \ 5\ \ \ }\textcolor{comment}{/*\ X509\ *\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_INFO\_CRL\ \ \ \ \ \ \ \ \ \ \ \ 6\ \ \ }\textcolor{comment}{/*\ X509\_CRL\ *\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00165\ \textcolor{comment}{\ *\ Functions\ to\ generate\ OSSL\_STORE\_INFOs,\ one\ function\ for\ each\ type\ we}}
+\DoxyCodeLine{00166\ \textcolor{comment}{\ *\ support\ having\ in\ them,\ as\ well\ as\ a\ generic\ constructor.}}
+\DoxyCodeLine{00167\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ *\ In\ all\ cases,\ ownership\ of\ the\ object\ is\ transferred\ to\ the\ OSSL\_STORE\_INFO}}
+\DoxyCodeLine{00169\ \textcolor{comment}{\ *\ and\ will\ therefore\ be\ freed\ when\ the\ OSSL\_STORE\_INFO\ is\ freed.}}
+\DoxyCodeLine{00170\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00171\ OSSL\_STORE\_INFO\ *OSSL\_STORE\_INFO\_new(\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00172\ OSSL\_STORE\_INFO\ *OSSL\_STORE\_INFO\_new\_NAME(\textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00173\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_INFO\_set0\_NAME\_description(OSSL\_STORE\_INFO\ *info,\ \textcolor{keywordtype}{char}\ *desc);}
+\DoxyCodeLine{00174\ OSSL\_STORE\_INFO\ *OSSL\_STORE\_INFO\_new\_PARAMS(EVP\_PKEY\ *params);}
+\DoxyCodeLine{00175\ OSSL\_STORE\_INFO\ *OSSL\_STORE\_INFO\_new\_PUBKEY(EVP\_PKEY\ *pubkey);}
+\DoxyCodeLine{00176\ OSSL\_STORE\_INFO\ *OSSL\_STORE\_INFO\_new\_PKEY(EVP\_PKEY\ *pkey);}
+\DoxyCodeLine{00177\ OSSL\_STORE\_INFO\ *OSSL\_STORE\_INFO\_new\_CERT(X509\ *x509);}
+\DoxyCodeLine{00178\ OSSL\_STORE\_INFO\ *OSSL\_STORE\_INFO\_new\_CRL(X509\_CRL\ *crl);}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ *\ Functions\ to\ try\ to\ extract\ data\ from\ a\ OSSL\_STORE\_INFO.}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00183\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_INFO\_get\_type(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00184\ \textcolor{keywordtype}{void}\ *OSSL\_STORE\_INFO\_get0\_data(\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},\ \textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00185\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_INFO\_get0\_NAME(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00186\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_INFO\_get1\_NAME(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00187\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_INFO\_get0\_NAME\_description(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00188\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_INFO\_get1\_NAME\_description(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00189\ EVP\_PKEY\ *OSSL\_STORE\_INFO\_get0\_PARAMS(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00190\ EVP\_PKEY\ *OSSL\_STORE\_INFO\_get1\_PARAMS(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00191\ EVP\_PKEY\ *OSSL\_STORE\_INFO\_get0\_PUBKEY(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00192\ EVP\_PKEY\ *OSSL\_STORE\_INFO\_get1\_PUBKEY(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00193\ EVP\_PKEY\ *OSSL\_STORE\_INFO\_get0\_PKEY(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00194\ EVP\_PKEY\ *OSSL\_STORE\_INFO\_get1\_PKEY(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00195\ X509\ *OSSL\_STORE\_INFO\_get0\_CERT(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00196\ X509\ *OSSL\_STORE\_INFO\_get1\_CERT(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00197\ X509\_CRL\ *OSSL\_STORE\_INFO\_get0\_CRL(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00198\ X509\_CRL\ *OSSL\_STORE\_INFO\_get1\_CRL(\textcolor{keyword}{const}\ OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_INFO\_type\_string(\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ *\ Free\ the\ OSSL\_STORE\_INFO}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00205\ \textcolor{keywordtype}{void}\ OSSL\_STORE\_INFO\_free(OSSL\_STORE\_INFO\ *info);}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00209\ \textcolor{comment}{\ *\ \ Functions\ to\ construct\ a\ search\ URI\ from\ a\ base\ URI\ and\ search\ criteria}}
+\DoxyCodeLine{00210\ \textcolor{comment}{\ *\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \textcolor{comment}{/*\ OSSL\_STORE\ search\ types\ */}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_SEARCH\_BY\_NAME\ \ \ \ \ \ \ \ \ \ \ \ \ \ 1\ }\textcolor{comment}{/*\ subject\ in\ certs,\ issuer\ in\ CRLs\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_SEARCH\_BY\_ISSUER\_SERIAL\ \ \ \ \ 2}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_SEARCH\_BY\_KEY\_FINGERPRINT\ \ \ 3}}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{\#\ define\ OSSL\_STORE\_SEARCH\_BY\_ALIAS\ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \textcolor{comment}{/*\ To\ check\ what\ search\ types\ the\ scheme\ handler\ supports\ */}}
+\DoxyCodeLine{00220\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_supports\_search(OSSL\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ search\_type);}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \textcolor{comment}{/*\ Search\ term\ constructors\ */}}
+\DoxyCodeLine{00223\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00224\ \textcolor{comment}{\ *\ The\ input\ is\ considered\ to\ be\ owned\ by\ the\ caller,\ and\ must\ therefore}}
+\DoxyCodeLine{00225\ \textcolor{comment}{\ *\ remain\ present\ throughout\ the\ lifetime\ of\ the\ returned\ OSSL\_STORE\_SEARCH}}
+\DoxyCodeLine{00226\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00227\ OSSL\_STORE\_SEARCH\ *OSSL\_STORE\_SEARCH\_by\_name(X509\_NAME\ *name);}
+\DoxyCodeLine{00228\ OSSL\_STORE\_SEARCH\ *OSSL\_STORE\_SEARCH\_by\_issuer\_serial(X509\_NAME\ *name,}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_INTEGER}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *serial);}
+\DoxyCodeLine{00231\ OSSL\_STORE\_SEARCH\ *OSSL\_STORE\_SEARCH\_by\_key\_fingerprint(\textcolor{keyword}{const}\ EVP\_MD\ *digest,}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\doxymbox{\hyperlink{structbytes}{bytes}},\ \textcolor{keywordtype}{size\_t}\ len);}
+\DoxyCodeLine{00234\ OSSL\_STORE\_SEARCH\ *OSSL\_STORE\_SEARCH\_by\_alias(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *alias);}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \textcolor{comment}{/*\ Search\ term\ destructor\ */}}
+\DoxyCodeLine{00237\ \textcolor{keywordtype}{void}\ OSSL\_STORE\_SEARCH\_free(OSSL\_STORE\_SEARCH\ *search);}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \textcolor{comment}{/*\ Search\ term\ accessors\ */}}
+\DoxyCodeLine{00240\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_SEARCH\_get\_type(\textcolor{keyword}{const}\ OSSL\_STORE\_SEARCH\ *criterion);}
+\DoxyCodeLine{00241\ X509\_NAME\ *OSSL\_STORE\_SEARCH\_get0\_name(\textcolor{keyword}{const}\ OSSL\_STORE\_SEARCH\ *criterion);}
+\DoxyCodeLine{00242\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *OSSL\_STORE\_SEARCH\_get0\_serial(\textcolor{keyword}{const}\ OSSL\_STORE\_SEARCH}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *criterion);}
+\DoxyCodeLine{00244\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_SEARCH\_get0\_bytes(\textcolor{keyword}{const}\ OSSL\_STORE\_SEARCH}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *criterion,\ \textcolor{keywordtype}{size\_t}\ *length);}
+\DoxyCodeLine{00246\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_SEARCH\_get0\_string(\textcolor{keyword}{const}\ OSSL\_STORE\_SEARCH\ *criterion);}
+\DoxyCodeLine{00247\ \textcolor{keyword}{const}\ EVP\_MD\ *OSSL\_STORE\_SEARCH\_get0\_digest(\textcolor{keyword}{const}\ OSSL\_STORE\_SEARCH\ *criterion);}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00250\ \textcolor{comment}{\ *\ Add\ search\ criterion\ and\ expected\ return\ type\ (which\ can\ be\ unspecified)}}
+\DoxyCodeLine{00251\ \textcolor{comment}{\ *\ to\ the\ loading\ channel.\ \ This\ MUST\ happen\ before\ the\ first\ OSSL\_STORE\_load().}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00253\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_expect(OSSL\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ expected\_type);}
+\DoxyCodeLine{00254\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_find(OSSL\_STORE\_CTX\ *ctx,\ \textcolor{keyword}{const}\ OSSL\_STORE\_SEARCH\ *search);}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00258\ \textcolor{comment}{\ *\ \ Function\ to\ fetch\ a\ loader\ and\ extract\ data\ from\ it}}
+\DoxyCodeLine{00259\ \textcolor{comment}{\ *\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_store\_loader\_st\ OSSL\_STORE\_LOADER;}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ OSSL\_STORE\_LOADER\ *OSSL\_STORE\_LOADER\_fetch(OSSL\_LIB\_CTX\ *libctx,}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *scheme,}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *properties);}
+\DoxyCodeLine{00267\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_up\_ref(OSSL\_STORE\_LOADER\ *loader);}
+\DoxyCodeLine{00268\ \textcolor{keywordtype}{void}\ OSSL\_STORE\_LOADER\_free(OSSL\_STORE\_LOADER\ *loader);}
+\DoxyCodeLine{00269\ \textcolor{keyword}{const}\ OSSL\_PROVIDER\ *OSSL\_STORE\_LOADER\_get0\_provider(\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ loader);}
+\DoxyCodeLine{00271\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_LOADER\_get0\_properties(\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader);}
+\DoxyCodeLine{00272\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_LOADER\_get0\_description(\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader);}
+\DoxyCodeLine{00273\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_is\_a(\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *scheme);}
+\DoxyCodeLine{00275\ \textcolor{keywordtype}{void}\ OSSL\_STORE\_LOADER\_do\_all\_provided(OSSL\_LIB\_CTX\ *libctx,}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*fn)(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *arg),}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *arg);}
+\DoxyCodeLine{00279\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_names\_do\_all(\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*fn)(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name,\ \textcolor{keywordtype}{void}\ *data),}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00284\ \textcolor{comment}{\ *\ \ Function\ to\ register\ a\ loader\ for\ the\ given\ URI\ scheme.}}
+\DoxyCodeLine{00285\ \textcolor{comment}{\ *\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00286\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00287\ \textcolor{comment}{\ *\ \ The\ loader\ receives\ all\ the\ main\ components\ of\ an\ URI\ except\ for\ the}}
+\DoxyCodeLine{00288\ \textcolor{comment}{\ *\ \ scheme.}}
+\DoxyCodeLine{00289\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \textcolor{comment}{/*\ struct\ ossl\_store\_loader\_ctx\_st\ is\ defined\ differently\ by\ each\ loader\ */}}
+\DoxyCodeLine{00294\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }ossl\_store\_loader\_ctx\_st\ OSSL\_STORE\_LOADER\_CTX;}
+\DoxyCodeLine{00295\ \textcolor{keyword}{typedef}\ OSSL\_STORE\_LOADER\_CTX\ *(*OSSL\_STORE\_open\_fn)}
+\DoxyCodeLine{00296\ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *uri,}
+\DoxyCodeLine{00297\ \ \ \ \ \ \textcolor{keyword}{const}\ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *ui\_data);}
+\DoxyCodeLine{00298\ \textcolor{keyword}{typedef}\ OSSL\_STORE\_LOADER\_CTX\ *(*OSSL\_STORE\_open\_ex\_fn)}
+\DoxyCodeLine{00299\ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00300\ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *uri,\ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq,}
+\DoxyCodeLine{00301\ \ \ \ \ \ \textcolor{keyword}{const}\ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *ui\_data);}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{keyword}{typedef}\ OSSL\_STORE\_LOADER\_CTX\ *(*OSSL\_STORE\_attach\_fn)}
+\DoxyCodeLine{00304\ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader,\ BIO\ *bio,}
+\DoxyCodeLine{00305\ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq,}
+\DoxyCodeLine{00306\ \ \ \ \ \ \textcolor{keyword}{const}\ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *ui\_data);}
+\DoxyCodeLine{00307\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_STORE\_ctrl\_fn)}
+\DoxyCodeLine{00308\ \ \ \ \ (OSSL\_STORE\_LOADER\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ cmd,\ va\_list\ args);}
+\DoxyCodeLine{00309\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_STORE\_expect\_fn)}
+\DoxyCodeLine{00310\ \ \ \ \ (OSSL\_STORE\_LOADER\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ expected);}
+\DoxyCodeLine{00311\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_STORE\_find\_fn)}
+\DoxyCodeLine{00312\ \ \ \ \ (OSSL\_STORE\_LOADER\_CTX\ *ctx,\ \textcolor{keyword}{const}\ OSSL\_STORE\_SEARCH\ *criteria);}
+\DoxyCodeLine{00313\ \textcolor{keyword}{typedef}\ OSSL\_STORE\_INFO\ *(*OSSL\_STORE\_load\_fn)}
+\DoxyCodeLine{00314\ \ \ \ \ (OSSL\_STORE\_LOADER\_CTX\ *ctx,\ \textcolor{keyword}{const}\ UI\_METHOD\ *ui\_method,\ \textcolor{keywordtype}{void}\ *ui\_data);}
+\DoxyCodeLine{00315\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_STORE\_eof\_fn)(OSSL\_STORE\_LOADER\_CTX\ *ctx);}
+\DoxyCodeLine{00316\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_STORE\_error\_fn)(OSSL\_STORE\_LOADER\_CTX\ *ctx);}
+\DoxyCodeLine{00317\ \textcolor{keyword}{typedef}\ int\ (*OSSL\_STORE\_close\_fn)(OSSL\_STORE\_LOADER\_CTX\ *ctx);}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00321\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00322\ OSSL\_STORE\_LOADER\ *OSSL\_STORE\_LOADER\_new(ENGINE\ *e,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *scheme);}
+\DoxyCodeLine{00323\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00324\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_open(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_open\_fn\ open\_function);}
+\DoxyCodeLine{00326\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00327\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_open\_ex(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_open\_ex\_fn\ open\_ex\_function);}
+\DoxyCodeLine{00329\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00330\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_attach(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_attach\_fn\ attach\_function);}
+\DoxyCodeLine{00332\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00333\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_ctrl(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_ctrl\_fn\ ctrl\_function);}
+\DoxyCodeLine{00335\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00336\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_expect(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_expect\_fn\ expect\_function);}
+\DoxyCodeLine{00338\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00339\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_find(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_find\_fn\ find\_function);}
+\DoxyCodeLine{00341\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00342\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_load(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_load\_fn\ load\_function);}
+\DoxyCodeLine{00344\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00345\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_eof(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_eof\_fn\ eof\_function);}
+\DoxyCodeLine{00347\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00348\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_error(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_error\_fn\ error\_function);}
+\DoxyCodeLine{00350\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00351\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_LOADER\_set\_close(OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_STORE\_close\_fn\ close\_function);}
+\DoxyCodeLine{00353\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00354\ \textcolor{keyword}{const}\ ENGINE\ *OSSL\_STORE\_LOADER\_get0\_engine(\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader);}
+\DoxyCodeLine{00355\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00356\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *OSSL\_STORE\_LOADER\_get0\_scheme(\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader);}
+\DoxyCodeLine{00357\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00358\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_register\_loader(OSSL\_STORE\_LOADER\ *loader);}
+\DoxyCodeLine{00359\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00360\ OSSL\_STORE\_LOADER\ *OSSL\_STORE\_unregister\_loader(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *scheme);}
+\DoxyCodeLine{00361\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00364\ \textcolor{comment}{\ *\ \ Functions\ to\ list\ STORE\ loaders}}
+\DoxyCodeLine{00365\ \textcolor{comment}{\ *\ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00366\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00367\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00368\ OSSL\_DEPRECATEDIN\_3\_0}
+\DoxyCodeLine{00369\ \textcolor{keywordtype}{int}\ OSSL\_STORE\_do\_all\_loaders(\textcolor{keywordtype}{void}\ (*do\_function)(\textcolor{keyword}{const}\ OSSL\_STORE\_LOADER\ *loader,}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *do\_arg),}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *do\_arg);}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \textcolor{preprocessor}{\#\ ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00375\ \}}
+\DoxyCodeLine{00376\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,423 @@
+\doxysection{scp.\+h}
+\hypertarget{scp_8h_source}{}\label{scp_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmnet/scp.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmnet/scp.h}}
+\doxymbox{\hyperlink{scp_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2009-\/2023,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ dcmnet}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Michael\ Onken}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ General\ SCP\ class\ that\ can\ be\ used\ to\ implement\ derived\ SCP}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ applications.}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#ifndef\ SCP\_H}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ SCP\_H}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}\ \textcolor{comment}{/*\ make\ sure\ OS\ specific\ configuration\ is\ included\ first\ */}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmdata/dctk.h"{}}\ \textcolor{comment}{/*\ Covers\ most\ common\ dcmdata\ classes\ */}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmnet/assoc.h"{}}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{dimse_8h}{dcmtk/dcmnet/dimse.h}}"{}}\ \ \textcolor{comment}{/*\ DIMSE\ network\ layer\ */}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmnet/diutil.h"{}}\ \textcolor{comment}{/*\ for\ DCMNET\_WARN()\ */}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmnet/scpcfg.h"{}}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ "{}dcmtk/oflog/oflog.h"{}}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ include\ this\ file\ in\ doxygen\ documentation}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00043\ \textcolor{keyword}{struct\ }DCMTK\_DCMNET\_EXPORT\ \doxymbox{\hyperlink{struct_dcm_process_slot_type}{DcmProcessSlotType}}}
+\DoxyCodeLine{00044\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ DIC\_NODENAME\ \doxymbox{\hyperlink{struct_dcm_process_slot_type_adbfb2ea337d719b352a45ee3d2aa1ecb}{peerName}};}
+\DoxyCodeLine{00048\ \ \ \ \ DIC\_AE\ \doxymbox{\hyperlink{struct_dcm_process_slot_type_ac788c5e944b2fde5643fca4a1f6059c2}{callingAETitle}};}
+\DoxyCodeLine{00050\ \ \ \ \ DIC\_AE\ \doxymbox{\hyperlink{struct_dcm_process_slot_type_a82553114a5c593a8421fc8609320e339}{calledAETitle}};}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_dcm_process_slot_type_a0500ab6edc1dee9cb72def2285293dc6}{processId}};}
+\DoxyCodeLine{00054\ \ \ \ \ time\_t\ \doxymbox{\hyperlink{struct_dcm_process_slot_type_a1f021993ebd950c595f4f5d1a94cc9f6}{startTime}};}
+\DoxyCodeLine{00056\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{struct_dcm_process_slot_type_aec0800cc4830ab2414a2626770728fc0}{hasStorageAbility}};}
+\DoxyCodeLine{00057\ \};}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00062\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{scp_8h_ad5276f98df2e8614020817b85fffec97}{DcmSCPActionType}}}
+\DoxyCodeLine{00063\ \{}
+\DoxyCodeLine{00065\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_ad5276f98df2e8614020817b85fffec97a23289cf085ef0e514a3137dd4d404b86}{DCMSCP\_ACTION\_UNDEFINED}},}
+\DoxyCodeLine{00067\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_ad5276f98df2e8614020817b85fffec97af49f1f494c7f63ab843a4de841585c37}{DCMSCP\_ACTION\_REFUSE\_ASSOCIATION}}}
+\DoxyCodeLine{00068\ \};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00072\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227a}{DcmRefuseReasonType}}}
+\DoxyCodeLine{00073\ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aa903c5554e46152d85c153c724a22ff3e}{DCMSCP\_TOO\_MANY\_ASSOCIATIONS}},}
+\DoxyCodeLine{00077\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aa65525faa4074844d4185d89d5e677936}{DCMSCP\_CANNOT\_FORK}},}
+\DoxyCodeLine{00079\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aa9a26bed7a030cd99ea40ab99d822889a}{DCMSCP\_BAD\_APPLICATION\_CONTEXT\_NAME}},}
+\DoxyCodeLine{00081\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aafaf545c1da9dea7ec95dc71435cdee39}{DCMSCP\_CALLING\_HOST\_NOT\_ALLOWED}},}
+\DoxyCodeLine{00083\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aab505cf492700e09812612204df7de9f2}{DCMSCP\_CALLED\_AE\_TITLE\_NOT\_RECOGNIZED}},}
+\DoxyCodeLine{00085\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aa821b355be7fea3cfacc7e27aad84ee89}{DCMSCP\_CALLING\_AE\_TITLE\_NOT\_RECOGNIZED}},}
+\DoxyCodeLine{00087\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aa1eaa2b4b70b1b8f735cfd6e3b6533a23}{DCMSCP\_FORCED}},}
+\DoxyCodeLine{00089\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aaa7e95138f71069889792451a6e005e30}{DCMSCP\_NO\_IMPLEMENTATION\_CLASS\_UID}},}
+\DoxyCodeLine{00091\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aa0b5980e2290beedd5ddfde6c25f807e2}{DCMSCP\_NO\_PRESENTATION\_CONTEXTS}},}
+\DoxyCodeLine{00093\ \ \ \ \ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227aad1c913c25e36ba2a534e81e14e55cbf7}{DCMSCP\_INTERNAL\_ERROR}}}
+\DoxyCodeLine{00094\ \};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00100\ \textcolor{keyword}{struct\ }DCMTK\_DCMNET\_EXPORT\ DcmPresentationContextInfo}
+\DoxyCodeLine{00101\ \{}
+\DoxyCodeLine{00102\ \ \ \ \ DcmPresentationContextInfo()}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ :\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_ab8d625db155612e2eedd171dca9023f6}{presentationContextID}}(0)}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ ,\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_a10402208a4ea4e1e8e92eb3c6860727a}{abstractSyntax}}()}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ ,\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_af5c56545609758df03b1ececf0b207bc}{proposedSCRole}}(DUL\_SC\_ROLE\_NONE)}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ ,\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_aa003e225972cbab4e9bf7804c4a88718}{acceptedSCRole}}(DUL\_SC\_ROLE\_NONE)}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ ,\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_a3f0261c3238021520bd0e257801c3c01}{acceptedTransferSyntax}}()}
+\DoxyCodeLine{00108\ \ \ \ \ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00112\ \ \ \ \ Uint8\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_ab8d625db155612e2eedd171dca9023f6}{presentationContextID}};}
+\DoxyCodeLine{00114\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_a10402208a4ea4e1e8e92eb3c6860727a}{abstractSyntax}};}
+\DoxyCodeLine{00116\ \ \ \ \ \doxymbox{\hyperlink{dul_8h_afebf1397b5af9a6854a74f9e0e3d91d7}{DUL\_SC\_ROLE}}\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_af5c56545609758df03b1ececf0b207bc}{proposedSCRole}};}
+\DoxyCodeLine{00118\ \ \ \ \ \doxymbox{\hyperlink{dul_8h_afebf1397b5af9a6854a74f9e0e3d91d7}{DUL\_SC\_ROLE}}\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_aa003e225972cbab4e9bf7804c4a88718}{acceptedSCRole}};}
+\DoxyCodeLine{00120\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info_a3f0261c3238021520bd0e257801c3c01}{acceptedTransferSyntax}};}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{comment}{//\ Fields\ "{}reserved"{}\ and\ "{}result"{}\ not\ included\ from\ DUL\_PRESENTATIONCONTEXT}}
+\DoxyCodeLine{00122\ \};}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00136\ \textcolor{keyword}{class\ }DCMTK\_DCMNET\_EXPORT\ \doxymbox{\hyperlink{class_dcm_s_c_p_ae2bc6cdc40949297c442cf8039b74e6d}{DcmSCP}}}
+\DoxyCodeLine{00137\ \{}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00142\ \ \ \ \ \doxymbox{\hyperlink{class_dcm_s_c_p_ae2bc6cdc40949297c442cf8039b74e6d}{DcmSCP}}();}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a2a71c76dbeecb230a598a74653a1d920}{\string~DcmSCP}}();}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a2ae3e4fb0600085bec21b7cf8e9e70de}{listen}}();}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a6de86db460af03baea6d27d382431315}{openListenPort}}();}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ac5fc133544d3aa85c56c969742c7e66e}{acceptAssociations}}();}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{comment}{/*\ *************************************************************\ */}}
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{comment}{/*\ \ \ \ \ \ \ \ \ \ \ \ \ Set\ methods\ for\ configuring\ SCP\ behavior\ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{comment}{/*\ *************************************************************\ */}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00212\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a16987eaf35df700e62f2583fd389633c}{setEnableVerification}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ profile\ =\ \textcolor{stringliteral}{"{}DEFAULT"{}});}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a8fbd726c7efa565120c8660ae0138fd3}{addPresentationContext}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ abstractSyntax,}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_list}{OFList<OFString>}}\&\ xferSyntaxes,}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_SC\_ROLE\ requestorRole\ =\ ASC\_SC\_ROLE\_DEFAULT,}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ profile\ \ \ \ \ \ \ \ \ \ \ =\ \textcolor{stringliteral}{"{}DEFAULT"{}});}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00245\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a4a4d6d6eb50b4a43f14b9677855c5e5e}{setPort}}(\textcolor{keyword}{const}\ Uint16\ port);}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a3bb5b3901a6d82f67799ac4ae10a2b0c}{setAETitle}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ aetitle);}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a74aa57a002955a07ffb3645c24bd843f}{setRespondWithCalledAETitle}}(\textcolor{keyword}{const}\ OFBool\ useCalled);}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00267\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ac3e6bd1156fd81d06d09af5f1f2f48f4}{loadAssociationCfgFile}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ assocFile);}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a04c659877b30231b142beb827148fd42}{setAndCheckAssociationProfile}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ profileName);}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a811f600751593d673843699169acd76e}{forceAssociationRefuse}}(\textcolor{keyword}{const}\ OFBool\ doRefuse);}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a50b2bab22c042a71081c75fb6ad4c148}{setMaxReceivePDULength}}(\textcolor{keyword}{const}\ Uint32\ maxRecPDU);}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a3e595cdc769d6fc9222b4c2279557168}{setConnectionBlockingMode}}(\textcolor{keyword}{const}\ DUL\_BLOCKOPTIONS\ blockingMode);}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a891661fd4e0da53589ff826fb5a1439a}{setDIMSEBlockingMode}}(\textcolor{keyword}{const}\ T\_DIMSE\_BlockingMode\ blockingMode);}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00317\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a49ab831da25e4c4b6cf42ca28a37f8e7}{setDIMSETimeout}}(\textcolor{keyword}{const}\ Uint32\ dimseTimeout);}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00322\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_af3f60ef6310bc2f3fa7c5ec49f36cded}{setACSETimeout}}(\textcolor{keyword}{const}\ Uint32\ acseTimeout);}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_aafc674c58617c9dd39930b9c2fbc2a39}{setConnectionTimeout}}(\textcolor{keyword}{const}\ Uint32\ timeout);}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00334\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ad8faa4d1016c7a5c531fe3e3956a0b35}{setVerbosePCMode}}(\textcolor{keyword}{const}\ OFBool\ mode);}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00341\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_af14e49b461e8f2494bf2515589ff998a}{setHostLookupEnabled}}(\textcolor{keyword}{const}\ OFBool\ mode);}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a78090a123cd260dfe3299932ca0c423a}{setProgressNotificationMode}}(\textcolor{keyword}{const}\ OFBool\ mode);}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a25590a9735310cc5eca8c3beb9ddd45c}{setAlwaysAcceptDefaultRole}}(\textcolor{keyword}{const}\ OFBool\ enabled);}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \ \ \ \textcolor{comment}{/*\ Get\ methods\ for\ SCP\ settings\ */}}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00368\ \ \ \ \ Uint16\ \doxymbox{\hyperlink{class_dcm_s_c_p_a2425c1fb7f163be28c188c726a4c2027}{getPort}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00374\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ \doxymbox{\hyperlink{class_dcm_s_c_p_ae843281d7b6dfb8cc772551fd360ddba}{getAETitle}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00380\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_aa0b50a1b420d36716fd4f11256dda68f}{getRespondWithCalledAETitle}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00385\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_a279395ee1d4daa8e28adb0aa8161de7e}{getRefuseAssociation}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00390\ \ \ \ \ Uint32\ \doxymbox{\hyperlink{class_dcm_s_c_p_ab7f8c557d46bc5bd05b2d9fb3d79a635}{getMaxReceivePDULength}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00396\ \ \ \ \ DUL\_BLOCKOPTIONS\ \doxymbox{\hyperlink{class_dcm_s_c_p_ab0f4b24994b475c1894114c9dcd57826}{getConnectionBlockingMode}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00401\ \ \ \ \ T\_DIMSE\_BlockingMode\ \doxymbox{\hyperlink{class_dcm_s_c_p_a231ae4e6b2db77ff6f1299821f328f3b}{getDIMSEBlockingMode}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00406\ \ \ \ \ Uint32\ \doxymbox{\hyperlink{class_dcm_s_c_p_add02a0f92fda8f9fdc2f7a7c35d8f048}{getDIMSETimeout}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00411\ \ \ \ \ Uint32\ \doxymbox{\hyperlink{class_dcm_s_c_p_a08f59c6a024e6d828dba2d8a65034e83}{getACSETimeout}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00416\ \ \ \ \ Uint32\ \doxymbox{\hyperlink{class_dcm_s_c_p_a80e8e0bb30710c373b3c9f38760ffd1e}{getConnectionTimeout}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00423\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_ad386e11cdb9de776d14b6e4a61520691}{getVerbosePCMode}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00428\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_a0b3a1343a5662dabc6035ff432f90919}{getHostLookupEnabled}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00435\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_ab9765f54b41650eec1405d104e8f42fa}{getProgressNotificationMode}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00443\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_dcm_s_c_p_config}{DcmSCPConfig}}\&\ \doxymbox{\hyperlink{class_dcm_s_c_p_a118d40efe56a4e3f8ed9c8f8772802f2}{getConfig}}();}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00453\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_aa1de742ca8992f7a3b268a0fca463f90}{setConfig}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_dcm_s_c_p_config}{DcmSCPConfig}}\&\ config);}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \ \ \ \ \textcolor{comment}{/*\ *************************************************************\ */}}
+\DoxyCodeLine{00456\ \ \ \ \ \textcolor{comment}{/*\ \ Methods\ for\ receiving\ runtime\ (i.e.\ connection\ time)\ infos\ \ \ */}}
+\DoxyCodeLine{00457\ \ \ \ \ \textcolor{comment}{/*\ *************************************************************\ */}}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00464\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_aad68bef3e22cd2b005cbb8bcc49e2408}{isConnected}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00470\ \ \ \ \ Uint16\ \doxymbox{\hyperlink{class_dcm_s_c_p_a38b0821cd090f65457a8ae6ef9e7d8c7}{numAssociations}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00471\ }
+\DoxyCodeLine{00476\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_adc6c982754a67b8cd4660321d0e2a546}{getCalledAETitle}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00481\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_aa523a0e779f05c9d42c805da6f725f1f}{getPeerAETitle}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00486\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ad3a2ca95cd030e4c3cceb29baf3a9d76}{getPeerIP}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00492\ \ \ \ \ Uint32\ \doxymbox{\hyperlink{class_dcm_s_c_p_ad153afbf856176c3212ccbab437dbd60}{getPeerMaxPDULength}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00495\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_dcm_s_c_p_a6c1a6e27fb15c2b59f93c06fab66b006}{DcmThreadSCP}};}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00498\ \ \ \ \ \textcolor{comment}{/*\ *********************************************\ */}}
+\DoxyCodeLine{00499\ \ \ \ \ \textcolor{comment}{/*\ \ Functions\ available\ to\ derived\ classes\ only\ \ */}}
+\DoxyCodeLine{00500\ \ \ \ \ \textcolor{comment}{/*\ *********************************************\ */}}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00510\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_af857017bed63ed215fa047ad837f81f7}{findPresentationContext}}(\textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ abstractSyntax,}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ transferSyntax);}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00518\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a8b3e25fc587b3fcc8f9030ae6d8e50cc}{abortAssociation}}();}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \ \ \ \ \textcolor{comment}{/*\ ***********************************************************************\ */}}
+\DoxyCodeLine{00521\ \ \ \ \ \textcolor{comment}{/*\ \ Functions\ particularly\ interesting\ for\ overwriting\ in\ derived\ classes\ \ */}}
+\DoxyCodeLine{00522\ \ \ \ \ \textcolor{comment}{/*\ ***********************************************************************\ */}}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00538\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a8e9b374f277e4f1f7e5d3ef9f93ff1ea}{handleIncomingCommand}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___message}{T\_DIMSE\_Message}}*\ incomingMsg,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_dcm_presentation_context_info}{DcmPresentationContextInfo}}\&\ presInfo);}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00545\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ad19801f4012b885591e0fe6ab5ec6afa}{notifyAssociationRequest}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_t___a_s_c___parameters}{T\_ASC\_Parameters}}\&\ params,\ \doxymbox{\hyperlink{scp_8h_ad5276f98df2e8614020817b85fffec97}{DcmSCPActionType}}\&\ desiredAction);}
+\DoxyCodeLine{00546\ }
+\DoxyCodeLine{00563\ \ \ \ \ \textcolor{keyword}{virtual}\ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_ad94681e360fe3742ec3d3d75224265f9}{checkCalledAETitleAccepted}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ calledAE);}
+\DoxyCodeLine{00564\ }
+\DoxyCodeLine{00573\ \ \ \ \ \textcolor{keyword}{virtual}\ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_a916e01232cd6adc07850d1ffbda3c18a}{checkCallingAETitleAccepted}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ callingAE);}
+\DoxyCodeLine{00574\ }
+\DoxyCodeLine{00582\ \ \ \ \ \textcolor{keyword}{virtual}\ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_abc57c8f66a329a67ed86aebcd1d6f1ad}{checkCallingHostAccepted}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ hostOrIP);}
+\DoxyCodeLine{00583\ }
+\DoxyCodeLine{00587\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a6f81c99bbc9f4408dd8cf391f5f339e5}{notifyAssociationAcknowledge}}();}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00592\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a3af708bfa2635c961d480facd4bdb063}{notifyReleaseRequest}}();}
+\DoxyCodeLine{00593\ }
+\DoxyCodeLine{00597\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_affd532f3a005a059b1cbe12284f3feec}{notifyAbortRequest}}();}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00602\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ab8beea615ee0df9dfa929a854aaa784a}{notifyAssociationTermination}}();}
+\DoxyCodeLine{00603\ }
+\DoxyCodeLine{00609\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ad9c26bec1050ee6be9e77eb2676f1d3a}{notifyConnectionTimeout}}();}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00615\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_af8437cdc1bc5bb9addd03532947c319b}{notifyDIMSEError}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\&\ cond);}
+\DoxyCodeLine{00616\ }
+\DoxyCodeLine{00624\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a963f8b7d7819b1b7d812a4bb259bc4bd}{notifySENDProgress}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ byteCount);}
+\DoxyCodeLine{00625\ }
+\DoxyCodeLine{00633\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a4ac9f194249533616d2aac883daaf9b2}{notifyRECEIVEProgress}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ byteCount);}
+\DoxyCodeLine{00634\ }
+\DoxyCodeLine{00641\ \ \ \ \ \textcolor{keyword}{virtual}\ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_a296ba39782d99c73015596fee8dc0ba5}{stopAfterCurrentAssociation}}();}
+\DoxyCodeLine{00642\ }
+\DoxyCodeLine{00653\ \ \ \ \ \textcolor{keyword}{virtual}\ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_a5204e8e23e0374e4b66461a416ed01e1}{stopAfterConnectionTimeout}}();}
+\DoxyCodeLine{00654\ }
+\DoxyCodeLine{00655\ \ \ \ \ \textcolor{comment}{//\ -\/-\/\ C-\/ECHO\ -\/-\/}}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00664\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a666dd82e7530e83382a654bb3621198f}{handleECHORequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___echo_r_q}{T\_DIMSE\_C\_EchoRQ}}\&\ reqMessage,\ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID);}
+\DoxyCodeLine{00665\ }
+\DoxyCodeLine{00666\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/\ C-\/STORE\ -\/-\/}}
+\DoxyCodeLine{00667\ }
+\DoxyCodeLine{00683\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_adadcb1f794c95f0ae0b3fe7d0f91e7d0}{handleSTORERequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___store_r_q}{T\_DIMSE\_C\_StoreRQ}}\&\ reqMessage,}
+\DoxyCodeLine{00684\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00685\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\&\ reqDataset);}
+\DoxyCodeLine{00686\ }
+\DoxyCodeLine{00698\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a90d62867cb976f060e99e8430adb2df8}{receiveSTORERequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___store_r_q}{T\_DIMSE\_C\_StoreRQ}}\&\ reqMessage,}
+\DoxyCodeLine{00699\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00700\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\&\ reqDataset);}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00710\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a5d6a86e5c42e4d0dc2e1894a0ff350b0}{receiveSTORERequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___store_r_q}{T\_DIMSE\_C\_StoreRQ}}\&\ reqMessage,}
+\DoxyCodeLine{00711\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00712\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ filename);}
+\DoxyCodeLine{00713\ }
+\DoxyCodeLine{00721\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a2cb7c12cef0c1a4ac5e8ccb372ed5014}{sendSTOREResponse}}(\textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00722\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___store_r_q}{T\_DIMSE\_C\_StoreRQ}}\&\ reqMessage,}
+\DoxyCodeLine{00723\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ rspStatusCode);}
+\DoxyCodeLine{00724\ }
+\DoxyCodeLine{00735\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ac60575e0cf0911e64d3cb297573f2946}{sendSTOREResponse}}(\textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00736\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ messageID,}
+\DoxyCodeLine{00737\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ sopClassUID,}
+\DoxyCodeLine{00738\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ sopInstanceUID,}
+\DoxyCodeLine{00739\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ rspStatusCode,}
+\DoxyCodeLine{00740\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ statusDetail\ =\ NULL);}
+\DoxyCodeLine{00741\ }
+\DoxyCodeLine{00752\ \ \ \ \ \textcolor{keyword}{virtual}\ Uint16\ \doxymbox{\hyperlink{class_dcm_s_c_p_a3cee685f3a114c1b1f415e7f661096a1}{checkSTORERequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___store_r_q}{T\_DIMSE\_C\_StoreRQ}}\&\ reqMessage,\ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ reqDataset);}
+\DoxyCodeLine{00753\ }
+\DoxyCodeLine{00754\ \ \ \ \ \textcolor{comment}{//\ -\/-\/\ C-\/FIND\ -\/-\/}}
+\DoxyCodeLine{00755\ }
+\DoxyCodeLine{00763\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}}
+\DoxyCodeLine{00764\ \ \ \ \ \doxymbox{\hyperlink{class_dcm_s_c_p_a040a75cc5778c853249db75ec9506a9e}{receiveFINDRequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___find_r_q}{T\_DIMSE\_C\_FindRQ}}\&\ reqMessage,\ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,\ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\&\ reqDataset);}
+\DoxyCodeLine{00765\ }
+\DoxyCodeLine{00775\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}}
+\DoxyCodeLine{00776\ \ \ \ \ \doxymbox{\hyperlink{class_dcm_s_c_p_af82fafe5ffe4f4511413d7492e5923c9}{handleFINDRequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___find_r_q}{T\_DIMSE\_C\_FindRQ}}\&\ reqMessage,\ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,\ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\&\ reqDataset)}
+\DoxyCodeLine{00777\ \ \ \ \ \{}
+\DoxyCodeLine{00778\ \ \ \ \ \ \ \ \ DCMNET\_WARN(\textcolor{stringliteral}{"{}handleFINDRequest()\ is\ deprecated,\ use\ receiveFINDRequest()\ instead"{}});}
+\DoxyCodeLine{00779\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a040a75cc5778c853249db75ec9506a9e}{receiveFINDRequest}}(reqMessage,\ presID,\ reqDataset);}
+\DoxyCodeLine{00780\ \ \ \ \ \}}
+\DoxyCodeLine{00781\ }
+\DoxyCodeLine{00792\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_aeacaee4e2debe3f11a42f744c983e57e}{sendFINDResponse}}(\textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00793\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ messageID,}
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ sopClassUID,}
+\DoxyCodeLine{00795\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ rspDataset,}
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ rspStatusCode,}
+\DoxyCodeLine{00797\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ statusDetail\ =\ NULL);}
+\DoxyCodeLine{00798\ }
+\DoxyCodeLine{00818\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_add8f51bb3c5f827a90ae6feec99dd1f9}{checkForCANCEL}}(T\_ASC\_PresentationContextID\ presID,\ \textcolor{keyword}{const}\ Uint16\ messageID);}
+\DoxyCodeLine{00819\ }
+\DoxyCodeLine{00820\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/\ C-\/MOVE\ -\/-\/}}
+\DoxyCodeLine{00821\ }
+\DoxyCodeLine{00830\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a35b8283235477d64cdd8128c438e9c72}{receiveMOVERequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___move_r_q}{T\_DIMSE\_C\_MoveRQ}}\&\ reqMessage,}
+\DoxyCodeLine{00831\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00832\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\&\ reqDataset,}
+\DoxyCodeLine{00833\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ moveDest);}
+\DoxyCodeLine{00834\ }
+\DoxyCodeLine{00845\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a905f0605f341e9cc10b519acb0176514}{handleMOVERequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___move_r_q}{T\_DIMSE\_C\_MoveRQ}}\&\ reqMessage,}
+\DoxyCodeLine{00846\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00847\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\&\ reqDataset,}
+\DoxyCodeLine{00848\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ moveDest)}
+\DoxyCodeLine{00849\ \ \ \ \ \{}
+\DoxyCodeLine{00850\ \ \ \ \ \ \ \ \ DCMNET\_WARN(\textcolor{stringliteral}{"{}handleMOVERequest()\ is\ deprecated,\ use\ receiveMOVERequest()\ instead"{}});}
+\DoxyCodeLine{00851\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a35b8283235477d64cdd8128c438e9c72}{receiveMOVERequest}}(reqMessage,\ presID,\ reqDataset,\ moveDest);}
+\DoxyCodeLine{00852\ \ \ \ \ \}}
+\DoxyCodeLine{00853\ }
+\DoxyCodeLine{00876\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a7384cca54d6c153e7d3735efe108161b}{sendMOVEResponse}}(\textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00877\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ messageID,}
+\DoxyCodeLine{00878\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ sopClassUID,}
+\DoxyCodeLine{00879\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ rspDataset,}
+\DoxyCodeLine{00880\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ rspStatusCode,}
+\DoxyCodeLine{00881\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ statusDetail\ =\ NULL,}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ numRemain\ \ \ =\ 0,}
+\DoxyCodeLine{00883\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ numComplete\ =\ 0,}
+\DoxyCodeLine{00884\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ numFail\ \ \ \ \ =\ 0,}
+\DoxyCodeLine{00885\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ numWarn\ \ \ \ \ =\ 0);}
+\DoxyCodeLine{00886\ }
+\DoxyCodeLine{00887\ \ \ \ \ \textcolor{comment}{//\ -\/-\/\ N-\/ACTION\ -\/-\/}}
+\DoxyCodeLine{00888\ }
+\DoxyCodeLine{00897\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ac8fb08376f76206f040e5847875d6137}{receiveACTIONRequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___n___action_r_q}{T\_DIMSE\_N\_ActionRQ}}\&\ reqMessage,}
+\DoxyCodeLine{00898\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00899\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\&\ reqDataset,}
+\DoxyCodeLine{00900\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ actionTypeID);}
+\DoxyCodeLine{00901\ }
+\DoxyCodeLine{00912\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_aaa642a80961e2c47ce051f91524d69e9}{handleACTIONRequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___n___action_r_q}{T\_DIMSE\_N\_ActionRQ}}\&\ reqMessage,}
+\DoxyCodeLine{00913\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00914\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\&\ reqDataset,}
+\DoxyCodeLine{00915\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ actionTypeID)}
+\DoxyCodeLine{00916\ \ \ \ \ \{}
+\DoxyCodeLine{00917\ \ \ \ \ \ \ \ \ DCMNET\_WARN(\textcolor{stringliteral}{"{}handleACTIONRequest()\ is\ deprecated,\ use\ receiveACTIONRequest()\ instead"{}});}
+\DoxyCodeLine{00918\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ac8fb08376f76206f040e5847875d6137}{receiveACTIONRequest}}(reqMessage,\ presID,\ reqDataset,\ actionTypeID);}
+\DoxyCodeLine{00919\ \ \ \ \ \}}
+\DoxyCodeLine{00920\ }
+\DoxyCodeLine{00930\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a3ccdad57171285255b43c99e55144071}{sendACTIONResponse}}(\textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00931\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ messageID,}
+\DoxyCodeLine{00932\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ sopClassUID,}
+\DoxyCodeLine{00933\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ sopInstanceUID,}
+\DoxyCodeLine{00934\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ rspStatusCode);}
+\DoxyCodeLine{00935\ }
+\DoxyCodeLine{00936\ \ \ \ \ \textcolor{comment}{//\ -\/-\/\ N-\/EVENT-\/REPORT\ -\/-\/}}
+\DoxyCodeLine{00937\ }
+\DoxyCodeLine{00948\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a39c7a1dd2c0fad416a8b3245d4b026ff}{handleEVENTREPORTRequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___n___event_report_r_q}{T\_DIMSE\_N\_EventReportRQ}}\&\ reqMessage,}
+\DoxyCodeLine{00949\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00950\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\&\ reqDataset,}
+\DoxyCodeLine{00951\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ eventTypeID);}
+\DoxyCodeLine{00952\ }
+\DoxyCodeLine{00966\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a13d568771b991b8bd0b60ff976a790da}{sendEVENTREPORTRequest}}(\textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{00967\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ sopInstanceUID,}
+\DoxyCodeLine{00968\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ messageID,}
+\DoxyCodeLine{00969\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint16\ eventTypeID,}
+\DoxyCodeLine{00970\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ reqDataset,}
+\DoxyCodeLine{00971\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ rspStatusCode);}
+\DoxyCodeLine{00972\ }
+\DoxyCodeLine{00983\ \ \ \ \ \textcolor{keyword}{virtual}\ Uint16\ \doxymbox{\hyperlink{class_dcm_s_c_p_ad35d2096991879048058f849b9a687ad}{checkEVENTREPORTRequest}}(\doxymbox{\hyperlink{struct_t___d_i_m_s_e___n___event_report_r_q}{T\_DIMSE\_N\_EventReportRQ}}\&\ reqMessage,\ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ reqDataset);}
+\DoxyCodeLine{00984\ }
+\DoxyCodeLine{00985\ \ \ \ \ \textcolor{comment}{/*\ *********************************************************************\ */}}
+\DoxyCodeLine{00986\ \ \ \ \ \textcolor{comment}{/*\ \ Further\ functions\ and\ member\ variables\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00987\ \ \ \ \ \textcolor{comment}{/*\ *********************************************************************\ */}}
+\DoxyCodeLine{00988\ }
+\DoxyCodeLine{00995\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{struct_d_u_l___p_r_e_s_e_n_t_a_t_i_o_n_c_o_n_t_e_x_t}{DUL\_PRESENTATIONCONTEXT}}*\ \doxymbox{\hyperlink{class_dcm_s_c_p_a562368da0f36ed1eb28514c4fee38928}{findPresentationContextID}}(\doxymbox{\hyperlink{class_l_s_t___h_e_a_d}{LST\_HEAD}}*\ head,}
+\DoxyCodeLine{00996\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ T\_ASC\_PresentationContextID\ presentationContextID);}
+\DoxyCodeLine{00997\ }
+\DoxyCodeLine{01006\ \ \ \ \ \textcolor{keyword}{static}\ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_ac67411646ccf42ba71289af5203e8a51}{getPresentationContextInfo}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_t___a_s_c___association}{T\_ASC\_Association}}*\ assoc,}
+\DoxyCodeLine{01007\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint8\ presID,}
+\DoxyCodeLine{01008\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_dcm_presentation_context_info}{DcmPresentationContextInfo}}\&\ presInfo);}
+\DoxyCodeLine{01009\ }
+\DoxyCodeLine{01020\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a07b43131c8dbfbb0d5af8e7cfc379344}{waitForAssociationRQ}}(\doxymbox{\hyperlink{struct_t___a_s_c___network}{T\_ASC\_Network}}*\ network);}
+\DoxyCodeLine{01021\ }
+\DoxyCodeLine{01026\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a25f8af91c422d5c1b82611c8a265753d}{processAssociationRQ}}();}
+\DoxyCodeLine{01027\ }
+\DoxyCodeLine{01035\ \ \ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a333ea443e1ce9078c3196e56a89dc51f}{negotiateAssociation}}();}
+\DoxyCodeLine{01036\ }
+\DoxyCodeLine{01041\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a59752f2044b904fbdb741b5723287bdf}{refuseAssociation}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{scp_8h_acaddd8bb98bb6a4cbd8f780f2001227a}{DcmRefuseReasonType}}\ reason);}
+\DoxyCodeLine{01042\ }
+\DoxyCodeLine{01046\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ae444afd91ca10d1271652a02daf4454d}{handleAssociation}}();}
+\DoxyCodeLine{01047\ }
+\DoxyCodeLine{01060\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a7396406b555a635ce0452e07ce669ae2}{sendDIMSEMessage}}(\textcolor{keyword}{const}\ T\_ASC\_PresentationContextID\ presID,}
+\DoxyCodeLine{01061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_t___d_i_m_s_e___message}{T\_DIMSE\_Message}}*\ message,}
+\DoxyCodeLine{01062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ dataObject,}
+\DoxyCodeLine{01063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}*\ statusDetail\ =\ NULL,}
+\DoxyCodeLine{01064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}**\ commandSet\ \ =\ NULL);}
+\DoxyCodeLine{01065\ }
+\DoxyCodeLine{01087\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a07d334217857b095b2acb36d3eb338ab}{receiveDIMSECommand}}(T\_ASC\_PresentationContextID*\ presID,}
+\DoxyCodeLine{01088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_t___d_i_m_s_e___message}{T\_DIMSE\_Message}}*\ message,}
+\DoxyCodeLine{01089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}**\ statusDetail,}
+\DoxyCodeLine{01090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}**\ commandSet\ =\ NULL,}
+\DoxyCodeLine{01091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Uint32\ timeout\ \ \ \ =\ 0);}
+\DoxyCodeLine{01092\ }
+\DoxyCodeLine{01104\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a59dd65e9dc7c7407f358cdbfd45e4bdd}{receiveDIMSEDataset}}(T\_ASC\_PresentationContextID*\ presID,\ \doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}**\ dataObject);}
+\DoxyCodeLine{01105\ }
+\DoxyCodeLine{01117\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dcm_s_c_p_a35303fbe3188fe5a2501d7142b378229}{receiveSTORERequestDataset}}(T\_ASC\_PresentationContextID*\ presID,}
+\DoxyCodeLine{01118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_t___d_i_m_s_e___c___store_r_q}{T\_DIMSE\_C\_StoreRQ}}\&\ reqMessage,}
+\DoxyCodeLine{01119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ filename);}
+\DoxyCodeLine{01120\ }
+\DoxyCodeLine{01132\ \ \ \ \ \textcolor{keyword}{static}\ OFBool\ \doxymbox{\hyperlink{class_dcm_s_c_p_ace62a6349124177ca8ddac0c596b4b82}{addStatusDetail}}(\doxymbox{\hyperlink{class_dcm_dataset}{DcmDataset}}**\ statusDetail,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_dcm_element}{DcmElement}}*\ elem);}
+\DoxyCodeLine{01133\ }
+\DoxyCodeLine{01134\ \ \ \ \ \textcolor{comment}{/*\ Callback\ functions\ (static)\ */}}
+\DoxyCodeLine{01135\ }
+\DoxyCodeLine{01140\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_acf947ca51fe018c6ee34757adad4d971}{callbackSENDProgress}}(\textcolor{keywordtype}{void}*\ callbackContext,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ byteCount);}
+\DoxyCodeLine{01141\ }
+\DoxyCodeLine{01146\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ad8d685646b2eaf3fef682d817a730d29}{callbackRECEIVEProgress}}(\textcolor{keywordtype}{void}*\ callbackContext,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ byteCount);}
+\DoxyCodeLine{01147\ }
+\DoxyCodeLine{01148\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01150\ \ \ \ \ \doxymbox{\hyperlink{struct_t___a_s_c___network}{T\_ASC\_Network}}*\ m\_network;}
+\DoxyCodeLine{01151\ }
+\DoxyCodeLine{01153\ \ \ \ \ \doxymbox{\hyperlink{struct_t___a_s_c___association}{T\_ASC\_Association}}*\ m\_assoc;}
+\DoxyCodeLine{01154\ }
+\DoxyCodeLine{01158\ \ \ \ \ \doxymbox{\hyperlink{struct_dcm_shared_s_c_p_config}{DcmSharedSCPConfig}}\ m\_cfg;}
+\DoxyCodeLine{01159\ }
+\DoxyCodeLine{01162\ \ \ \ \ \textcolor{keywordtype}{void}\ dropAndDestroyAssociation();}
+\DoxyCodeLine{01163\ }
+\DoxyCodeLine{01167\ \ \ \ \ \doxymbox{\hyperlink{class_dcm_s_c_p_ae2bc6cdc40949297c442cf8039b74e6d}{DcmSCP}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ae2bc6cdc40949297c442cf8039b74e6d}{DcmSCP}}\&\ src);}
+\DoxyCodeLine{01168\ }
+\DoxyCodeLine{01173\ \ \ \ \ \doxymbox{\hyperlink{class_dcm_s_c_p_ae2bc6cdc40949297c442cf8039b74e6d}{DcmSCP}}\&\ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_dcm_s_c_p_ae2bc6cdc40949297c442cf8039b74e6d}{DcmSCP}}\&\ src);}
+\DoxyCodeLine{01174\ \};}
+\DoxyCodeLine{01175\ }
+\DoxyCodeLine{01176\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ SCP\_H}}
+
+\end{DoxyCode}

@@ -1,0 +1,313 @@
+\doxysection{lzma.\+h}
+\hypertarget{lzma_8h_source}{}\label{lzma_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklzma/src/liblzma/api/lzma.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklzma/src/liblzma/api/lzma.h}}
+\doxymbox{\hyperlink{lzma_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ SPDX-\/License-\/Identifier:\ 0BSD\ */}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ *\ Author:\ Lasse\ Collin}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#ifndef\ LZMA\_H}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#define\ LZMA\_H}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{comment}{/*****************************}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ Required\ standard\ headers\ *}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *****************************/}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *\ liblzma\ API\ headers\ need\ some\ standard\ types\ and\ macros.\ To\ allow}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ including\ lzma.h\ without\ requiring\ the\ application\ to\ include\ other}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ headers\ first,\ lzma.h\ includes\ the\ required\ standard\ headers\ unless}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *\ they\ already\ seem\ to\ be\ included\ already\ or\ if\ LZMA\_MANUAL\_HEADERS}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ has\ been\ defined.}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ Here's\ what\ types\ and\ macros\ are\ needed\ and\ from\ which\ headers:}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ \ -\/\ stddef.h:\ size\_t,\ NULL}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ \ -\/\ stdint.h:\ uint8\_t,\ uint32\_t,\ uint64\_t,\ UINT32\_C(n),\ uint64\_C(n),}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ \ \ \ UINT32\_MAX,\ UINT64\_MAX}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ However,\ inttypes.h\ is\ a\ little\ more\ portable\ than\ stdint.h,\ although}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ inttypes.h\ declares\ some\ unneeded\ things\ compared\ to\ plain\ stdint.h.}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ The\ hacks\ below\ aren't\ perfect,\ specifically\ they\ assume\ that\ inttypes.h}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ exists\ and\ that\ it\ typedefs\ at\ least\ uint8\_t,\ uint32\_t,\ and\ uint64\_t,}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *\ and\ that,\ in\ case\ of\ incomplete\ inttypes.h,\ unsigned\ int\ is\ 32-\/bit.}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *\ If\ the\ application\ already\ takes\ care\ of\ setting\ up\ all\ the\ types\ and}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ *\ macros\ properly\ (for\ example\ by\ using\ gnulib's\ stdint.h\ or\ inttypes.h),}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ *\ we\ try\ to\ detect\ that\ the\ macros\ are\ already\ defined\ and\ don't\ include}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *\ inttypes.h\ here\ again.\ However,\ you\ may\ define\ LZMA\_MANUAL\_HEADERS\ to}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ force\ this\ file\ to\ never\ include\ any\ system\ headers.}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ *\ Some\ could\ argue\ that\ liblzma\ API\ should\ provide\ all\ the\ required\ types,}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *\ for\ example\ lzma\_uint64,\ LZMA\_UINT64\_C(n),\ and\ LZMA\_UINT64\_MAX.\ This\ was}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ *\ seen\ as\ an\ unnecessary\ mess,\ since\ most\ systems\ already\ provide\ all\ the}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ *\ necessary\ types\ and\ macros\ in\ the\ standard\ headers.}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *\ Note\ that\ liblzma\ API\ still\ has\ lzma\_bool,\ because\ using\ stdbool.h\ would}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ break\ C89\ and\ C++\ programs\ on\ many\ systems.\ sizeof(bool)\ in\ C99\ isn't}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *\ necessarily\ the\ same\ as\ sizeof(bool)\ in\ C++.}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\#include\ "{}vtk\_lzma\_mangle.h"{}}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#ifndef\ LZMA\_MANUAL\_HEADERS}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ *\ I\ suppose\ this\ works\ portably\ also\ in\ C++.\ Note\ that\ in\ C++,}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ \ \ \ \ *\ we\ need\ to\ get\ size\_t\ into\ the\ global\ namespace.}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ */}}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#\ \ \ include\ <stddef.h>}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ \ \ \ \ *\ Skip\ inttypes.h\ if\ we\ already\ have\ all\ the\ required\ macros.\ If\ we}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ \ \ \ \ *\ have\ the\ macros,\ we\ assume\ that\ we\ have\ the\ matching\ typedefs\ too.}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ \ \ \ \ */}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#\ \ \ if\ !defined(UINT32\_C)\ ||\ !defined(UINT64\_C)\ \(\backslash\)}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ ||\ !defined(UINT32\_MAX)\ ||\ !defined(UINT64\_MAX)}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ MSVC\ versions\ older\ than\ 2013\ have\ no\ C99\ support,\ and}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ thus\ they\ cannot\ be\ used\ to\ compile\ liblzma.\ Using\ an}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ existing\ liblzma.dll\ with\ old\ MSVC\ can\ work\ though(*),}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ but\ we\ need\ to\ define\ the\ required\ standard\ integer}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ types\ here\ in\ a\ MSVC-\/specific\ way.}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ (*)\ If\ you\ do\ this,\ the\ existing\ liblzma.dll\ probably\ uses}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ \ \ \ \ a\ different\ runtime\ library\ than\ your\ MSVC-\/built}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ \ \ \ \ application.\ Mixing\ runtimes\ is\ generally\ bad,\ but}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ \ \ \ \ in\ this\ case\ it\ should\ work\ as\ long\ as\ you\ avoid}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ \ \ \ \ the\ few\ rarely-\/needed\ liblzma\ functions\ that\ allocate}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ \ \ \ \ memory\ and\ expect\ the\ caller\ to\ free\ it\ using\ free().}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ if\ defined(\_WIN32)\ \&\&\ defined(\_MSC\_VER)\ \&\&\ \_MSC\_VER\ <\ 1800}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \_\_int8\ uint8\_t;}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \_\_int32\ uint32\_t;}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \_\_int64\ uint64\_t;}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Use\ the\ standard\ inttypes.h.\ */}}
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ C99\ sections\ 7.18.2\ and\ 7.18.4\ specify}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ that\ C++\ implementations\ define\ the\ limit}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ and\ constant\ macros\ only\ if\ specifically}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ requested.\ Note\ that\ if\ you\ want\ the}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ format\ macros\ (PRIu64\ etc.)\ too,\ you\ need}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ to\ define\ \_\_STDC\_FORMAT\_MACROS\ before}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ including\ lzma.h,\ since\ re-\/including}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ inttypes.h\ with\ \_\_STDC\_FORMAT\_MACROS}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *\ defined\ doesn't\ necessarily\ work.}}
+\DoxyCodeLine{00117\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ifndef\ \_\_STDC\_LIMIT\_MACROS}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ define\ \_\_STDC\_LIMIT\_MACROS\ 1}}
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ifndef\ \_\_STDC\_CONSTANT\_MACROS}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ define\ \_\_STDC\_CONSTANT\_MACROS\ 1}}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ include\ <inttypes.h>}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ Some\ old\ systems\ have\ only\ the\ typedefs\ in\ inttypes.h,\ and}}
+\DoxyCodeLine{00131\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ lack\ all\ the\ macros.\ For\ those\ systems,\ we\ need\ a\ few\ more}}
+\DoxyCodeLine{00132\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ hacks.\ We\ assume\ that\ unsigned\ int\ is\ 32-\/bit\ and\ unsigned}}
+\DoxyCodeLine{00133\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ long\ is\ either\ 32-\/bit\ or\ 64-\/bit.\ If\ these\ hacks\ aren't}}
+\DoxyCodeLine{00134\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ enough,\ the\ application\ has\ to\ setup\ the\ types\ manually}}
+\DoxyCodeLine{00135\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ *\ before\ including\ lzma.h.}}
+\DoxyCodeLine{00136\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ ifndef\ UINT32\_C}}
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ if\ defined(\_WIN32)\ \&\&\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ define\ UINT32\_C(n)\ n\ \#\#\ UI32}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ define\ UINT32\_C(n)\ n\ \#\#\ U}}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ ifndef\ UINT64\_C}}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ if\ defined(\_WIN32)\ \&\&\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ define\ UINT64\_C(n)\ n\ \#\#\ UI64}}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Get\ ULONG\_MAX.\ */}}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ include\ <limits.h>}}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ ULONG\_MAX\ ==\ 4294967295UL}}
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ define\ UINT64\_C(n)\ n\ \#\#\ ULL}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ define\ UINT64\_C(n)\ n\ \#\#\ UL}}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ ifndef\ UINT32\_MAX}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ define\ UINT32\_MAX\ (UINT32\_C(4294967295))}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ ifndef\ UINT64\_MAX}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ define\ UINT64\_MAX\ (UINT64\_C(18446744073709551615))}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ ifdef\ LZMA\_MANUAL\_HEADERS\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{comment}{/******************}}
+\DoxyCodeLine{00171\ \textcolor{comment}{\ *\ LZMA\_API\ macro\ *}}
+\DoxyCodeLine{00172\ \textcolor{comment}{\ ******************/}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ *\ Some\ systems\ require\ that\ the\ functions\ and\ function\ pointers\ are}}
+\DoxyCodeLine{00176\ \textcolor{comment}{\ *\ declared\ specially\ in\ the\ headers.\ LZMA\_API\_IMPORT\ is\ for\ importing}}
+\DoxyCodeLine{00177\ \textcolor{comment}{\ *\ symbols\ and\ LZMA\_API\_CALL\ is\ to\ specify\ the\ calling\ convention.}}
+\DoxyCodeLine{00178\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00179\ \textcolor{comment}{\ *\ By\ default\ it\ is\ assumed\ that\ the\ application\ will\ link\ dynamically}}
+\DoxyCodeLine{00180\ \textcolor{comment}{\ *\ against\ liblzma.\ \#define\ LZMA\_API\_STATIC\ in\ your\ application\ if\ you}}
+\DoxyCodeLine{00181\ \textcolor{comment}{\ *\ want\ to\ link\ against\ static\ liblzma.\ If\ you\ don't\ care\ about\ portability}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ *\ to\ operating\ systems\ like\ Windows,\ or\ at\ least\ don't\ care\ about\ linking}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ *\ against\ static\ liblzma\ on\ them,\ don't\ worry\ about\ LZMA\_API\_STATIC.\ That}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ *\ is,\ most\ developers\ will\ never\ need\ to\ use\ LZMA\_API\_STATIC.}}
+\DoxyCodeLine{00185\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00186\ \textcolor{comment}{\ *\ The\ GCC\ variants\ are\ a\ special\ case\ on\ Windows\ (Cygwin\ and\ MinGW-\/w64).}}
+\DoxyCodeLine{00187\ \textcolor{comment}{\ *\ We\ rely\ on\ GCC\ doing\ the\ right\ thing\ with\ its\ auto-\/import\ feature,}}
+\DoxyCodeLine{00188\ \textcolor{comment}{\ *\ and\ thus\ don't\ use\ \_\_declspec(dllimport).\ This\ way\ developers\ don't}}
+\DoxyCodeLine{00189\ \textcolor{comment}{\ *\ need\ to\ worry\ about\ LZMA\_API\_STATIC.\ Also\ the\ calling\ convention\ is}}
+\DoxyCodeLine{00190\ \textcolor{comment}{\ *\ omitted\ on\ Cygwin\ but\ not\ on\ MinGW-\/w64.}}
+\DoxyCodeLine{00191\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\#ifndef\ LZMA\_API\_IMPORT}}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\#\ \ \ if\ !defined(LZMA\_API\_STATIC)\ \&\&\ defined(\_WIN32)\ \&\&\ !defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ define\ LZMA\_API\_IMPORT\ \_\_declspec(dllimport)}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\#\ \ \ else}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ define\ LZMA\_API\_IMPORT}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00198\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\#ifndef\ LZMA\_API\_CALL}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#\ \ \ if\ defined(\_WIN32)\ \&\&\ !defined(\_\_CYGWIN\_\_)}}
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ define\ LZMA\_API\_CALL\ \_\_cdecl}}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#\ \ \ else}}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ define\ LZMA\_API\_CALL}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\#ifndef\ LZMA\_API}}
+\DoxyCodeLine{00209\ \textcolor{preprocessor}{\#\ \ \ define\ LZMA\_API(type)\ LZMA\_API\_IMPORT\ type\ LZMA\_API\_CALL}}
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \textcolor{comment}{/***********}}
+\DoxyCodeLine{00214\ \textcolor{comment}{\ *\ nothrow\ *}}
+\DoxyCodeLine{00215\ \textcolor{comment}{\ ***********/}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ *\ None\ of\ the\ functions\ in\ liblzma\ may\ throw\ an\ exception.\ Even}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ *\ the\ functions\ that\ use\ callback\ functions\ won't\ throw\ exceptions,}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ *\ because\ liblzma\ would\ break\ if\ a\ callback\ function\ threw\ an\ exception.}}
+\DoxyCodeLine{00221\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{\#ifndef\ lzma\_nothrow}}
+\DoxyCodeLine{00223\ \textcolor{preprocessor}{\#\ \ \ if\ defined(\_\_cplusplus)}}
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ if\ \_\_cplusplus\ >=\ 201103L\ ||\ (defined(\_MSVC\_LANG)\ \(\backslash\)}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ \_MSVC\_LANG\ >=\ 201103L)}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ define\ lzma\_nothrow\ noexcept}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ define\ lzma\_nothrow\ throw()}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\#\ \ \ elif\ defined(\_\_GNUC\_\_)\ \&\&\ (\_\_GNUC\_\_\ >\ 3\ \(\backslash\)}}
+\DoxyCodeLine{00231\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ ||\ (\_\_GNUC\_\_\ ==\ 3\ \&\&\ \_\_GNUC\_MINOR\_\_\ >=\ 3))}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ define\ lzma\_nothrow\ \_\_attribute\_\_((\_\_nothrow\_\_))}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\#\ \ \ else}}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ define\ lzma\_nothrow}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \textcolor{comment}{/********************}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ *\ GNU\ C\ extensions\ *}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ ********************/}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00244\ \textcolor{comment}{\ *\ GNU\ C\ extensions\ are\ used\ conditionally\ in\ the\ public\ API.\ It\ doesn't}}
+\DoxyCodeLine{00245\ \textcolor{comment}{\ *\ break\ anything\ if\ these\ are\ sometimes\ enabled\ and\ sometimes\ not,\ only}}
+\DoxyCodeLine{00246\ \textcolor{comment}{\ *\ affects\ warnings\ and\ optimizations.}}
+\DoxyCodeLine{00247\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{\#if\ defined(\_\_GNUC\_\_)\ \&\&\ \_\_GNUC\_\_\ >=\ 3}}
+\DoxyCodeLine{00249\ \textcolor{preprocessor}{\#\ \ \ ifndef\ lzma\_attribute}}
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ define\ lzma\_attribute(attr)\ \_\_attribute\_\_(attr)}}
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{comment}{/*\ warn\_unused\_result\ was\ added\ in\ GCC\ 3.4.\ */}}
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\#\ \ \ ifndef\ lzma\_attr\_warn\_unused\_result}}
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ if\ \_\_GNUC\_\_\ ==\ 3\ \&\&\ \_\_GNUC\_MINOR\_\_\ <\ 4}}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ \ \ \ \ define\ lzma\_attr\_warn\_unused\_result}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ endif}}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00261\ \textcolor{preprocessor}{\#\ \ \ ifndef\ lzma\_attribute}}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\#\ \ \ \ \ \ \ define\ lzma\_attribute(attr)}}
+\DoxyCodeLine{00263\ \textcolor{preprocessor}{\#\ \ \ endif}}
+\DoxyCodeLine{00264\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \textcolor{preprocessor}{\#ifndef\ lzma\_attr\_pure}}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#\ \ \ define\ lzma\_attr\_pure\ lzma\_attribute((\_\_pure\_\_))}}
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#ifndef\ lzma\_attr\_const}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\#\ \ \ define\ lzma\_attr\_const\ lzma\_attribute((\_\_const\_\_))}}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\#ifndef\ lzma\_attr\_warn\_unused\_result}}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#\ \ \ define\ lzma\_attr\_warn\_unused\_result\ \(\backslash\)}}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ lzma\_attribute((\_\_warn\_unused\_result\_\_))}}
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \textcolor{comment}{/**************}}
+\DoxyCodeLine{00282\ \textcolor{comment}{\ *\ Subheaders\ *}}
+\DoxyCodeLine{00283\ \textcolor{comment}{\ **************/}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00286\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00287\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00290\ \textcolor{comment}{\ *\ Subheaders\ check\ that\ this\ is\ defined.\ It\ is\ to\ prevent\ including}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ *\ them\ directly\ from\ applications.}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00293\ \textcolor{preprocessor}{\#define\ LZMA\_H\_INTERNAL\ 1}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \textcolor{comment}{/*\ Basic\ features\ */}}
+\DoxyCodeLine{00296\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_2include_2vtk-9_85_2vtklzma_2src_2liblzma_2api_2lzma_2version_8h}{lzma/version.h}}"{}}}
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_2include_2vtk-9_85_2vtklzma_2src_2liblzma_2api_2lzma_2base_8h}{lzma/base.h}}"{}}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vli_8h}{lzma/vli.h}}"{}}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{check_8h}{lzma/check.h}}"{}}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{comment}{/*\ Filters\ */}}
+\DoxyCodeLine{00302\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_2include_2vtk-9_85_2vtklzma_2src_2liblzma_2api_2lzma_2filter_8h}{lzma/filter.h}}"{}}}
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{bcj_8h}{lzma/bcj.h}}"{}}}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{delta_8h}{lzma/delta.h}}"{}}}
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{lzma12_8h}{lzma/lzma12.h}}"{}}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{comment}{/*\ Container\ formats\ */}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{container_8h}{lzma/container.h}}"{}}}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \textcolor{comment}{/*\ Advanced\ features\ */}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{stream__flags_8h}{lzma/stream\_flags.h}}"{}}}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtklzma_2src_2liblzma_2api_2lzma_2_block_8h}{lzma/block.h}}"{}}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{index_8h}{lzma/index.h}}"{}}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{index__hash_8h}{lzma/index\_hash.h}}"{}}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \textcolor{comment}{/*\ Hardware\ information\ */}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{hardware_8h}{lzma/hardware.h}}"{}}}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00320\ \textcolor{comment}{\ *\ All\ subheaders\ included.\ Undefine\ LZMA\_H\_INTERNAL\ to\ prevent\ applications}}
+\DoxyCodeLine{00321\ \textcolor{comment}{\ *\ re-\/including\ the\ subheaders.}}
+\DoxyCodeLine{00322\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\#undef\ LZMA\_H\_INTERNAL}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00326\ \}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ ifndef\ LZMA\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

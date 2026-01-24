@@ -1,0 +1,1431 @@
+\doxysection{loguru.\+hpp}
+\hypertarget{loguru_8hpp_source}{}\label{loguru_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkloguru/loguru.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkloguru/loguru.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{Loguru\ logging\ library\ for\ C++,\ by\ Emil\ Ernerfeldt.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{www.github.com/emilk/loguru}}
+\DoxyCodeLine{00004\ \textcolor{comment}{If\ you\ find\ Loguru\ useful,\ please\ let\ me\ know\ on\ twitter\ or\ in\ a\ mail!}}
+\DoxyCodeLine{00005\ \textcolor{comment}{Twitter:\ @ernerfeldt}}
+\DoxyCodeLine{00006\ \textcolor{comment}{Mail:\ \ \ \ emil.ernerfeldt@gmail.com}}
+\DoxyCodeLine{00007\ \textcolor{comment}{Website:\ www.ilikebigbits.com}}
+\DoxyCodeLine{00008\ \textcolor{comment}{}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\#\ License}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ \ \ \ This\ software\ is\ in\ the\ public\ domain.\ Where\ that\ dedication\ is\ not}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ \ \ \ recognized,\ you\ are\ granted\ a\ perpetual,\ irrevocable\ license\ to}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ \ \ \ copy,\ modify\ and\ distribute\ it\ as\ you\ see\ fit.}}
+\DoxyCodeLine{00013\ \textcolor{comment}{}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\#\ Inspiration}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ \ \ \ Much\ of\ Loguru\ was\ inspired\ by\ GLOG,\ https://code.google.com/p/google-\/glog/.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ \ \ \ The\ choice\ of\ public\ domain\ is\ fully\ due\ Sean\ T.\ Barrett}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ \ \ \ and\ his\ wonderful\ stb\ libraries\ at\ https://github.com/nothings/stb.}}
+\DoxyCodeLine{00018\ \textcolor{comment}{}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\#\ Version\ history}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ \ \ \ *\ Version\ 0.1.0\ -\/\ 2015-\/03-\/22\ -\/\ Works\ great\ on\ Mac.}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ \ \ \ *\ Version\ 0.2.0\ -\/\ 2015-\/09-\/17\ -\/\ Removed\ the\ only\ dependency.}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ \ \ \ *\ Version\ 0.3.0\ -\/\ 2015-\/10-\/02\ -\/\ Drop-\/in\ replacement\ for\ most\ of\ GLOG}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ \ \ \ *\ Version\ 0.4.0\ -\/\ 2015-\/10-\/07\ -\/\ Single-\/file!}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ \ \ \ *\ Version\ 0.5.0\ -\/\ 2015-\/10-\/17\ -\/\ Improved\ file\ logging}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ \ \ \ *\ Version\ 0.6.0\ -\/\ 2015-\/10-\/24\ -\/\ Add\ stack\ traces}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ \ \ \ *\ Version\ 0.7.0\ -\/\ 2015-\/10-\/27\ -\/\ Signals}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ \ \ \ *\ Version\ 0.8.0\ -\/\ 2015-\/10-\/30\ -\/\ Color\ logging.}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ \ \ \ *\ Version\ 0.9.0\ -\/\ 2015-\/11-\/26\ -\/\ ABORT\_S\ and\ proper\ handling\ of\ FATAL}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.0.0\ -\/\ 2016-\/02-\/14\ -\/\ ERROR\_CONTEXT}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.1.0\ -\/\ 2016-\/02-\/19\ -\/\ -\/v\ OFF,\ -\/v\ INFO\ etc}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.1.1\ -\/\ 2016-\/02-\/20\ -\/\ textprintf\ vs\ strprintf}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.1.2\ -\/\ 2016-\/02-\/22\ -\/\ Remove\ g\_alsologtostderr}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.1.3\ -\/\ 2016-\/02-\/29\ -\/\ ERROR\_CONTEXT\ as\ linked\ list}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.0\ -\/\ 2016-\/03-\/19\ -\/\ Add\ get\_thread\_name()}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.1\ -\/\ 2016-\/03-\/20\ -\/\ Minor\ fixes}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.2\ -\/\ 2016-\/03-\/29\ -\/\ Fix\ issues\ with\ set\_fatal\_handler\ throwing\ an\ exception}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.3\ -\/\ 2016-\/05-\/16\ -\/\ Log\ current\ working\ directory\ in\ loguru::init().}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.4\ -\/\ 2016-\/05-\/18\ -\/\ Custom\ replacement\ for\ -\/v\ in\ loguru::init()\ by\ bjoernpollex}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.5\ -\/\ 2016-\/05-\/18\ -\/\ Add\ ability\ to\ print\ ERROR\_CONTEXT\ of\ parent\ thread.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.6\ -\/\ 2016-\/05-\/19\ -\/\ Bug\ fix\ regarding\ VLOG\ verbosity\ argument\ lacking\ ().}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.7\ -\/\ 2016-\/05-\/23\ -\/\ Fix\ PATH\_MAX\ problem.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.8\ -\/\ 2016-\/05-\/26\ -\/\ Add\ shutdown()\ and\ remove\_all\_callbacks()}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.2.9\ -\/\ 2016-\/06-\/09\ -\/\ Use\ a\ monotonic\ clock\ for\ uptime.}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.3.0\ -\/\ 2016-\/07-\/20\ -\/\ Fix\ issues\ with\ callback\ flush/close\ not\ being\ called.}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.3.1\ -\/\ 2016-\/07-\/20\ -\/\ Add\ LOGURU\_UNSAFE\_SIGNAL\_HANDLER\ to\ toggle\ stacktrace\ on\ signals.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.3.2\ -\/\ 2016-\/07-\/20\ -\/\ Add\ loguru::arguments()}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.4.0\ -\/\ 2016-\/09-\/15\ -\/\ Semantic\ versioning\ +\ add\ loguru::create\_directories}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.4.1\ -\/\ 2016-\/09-\/29\ -\/\ Customize\ formating\ with\ LOGURU\_FILENAME\_WIDTH}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.5.0\ -\/\ 2016-\/12-\/22\ -\/\ LOGURU\_USE\_FMTLIB\ by\ kolis\ and\ LOGURU\_WITH\_FILEABS\ by\ scinart}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.5.1\ -\/\ 2017-\/08-\/08\ -\/\ Terminal\ colors\ on\ Windows\ 10\ thanks\ to\ looki}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.6.0\ -\/\ 2018-\/01-\/03\ -\/\ Add\ LOGURU\_RTTI\ and\ LOGURU\_STACKTRACES\ settings}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.7.0\ -\/\ 2018-\/01-\/03\ -\/\ Add\ ability\ to\ turn\ off\ the\ preamble\ with\ loguru::g\_preamble}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.7.1\ -\/\ 2018-\/04-\/05\ -\/\ Add\ function\ get\_fatal\_handler}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.7.2\ -\/\ 2018-\/04-\/22\ -\/\ Fix\ a\ bug\ where\ large\ file\ names\ could\ cause\ stack\ corruption\ (thanks\ @ccamporesi)}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.8.0\ -\/\ 2018-\/04-\/23\ -\/\ Shorten\ long\ file\ names\ to\ keep\ preamble\ fixed\ width}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ \ \ \ *\ Version\ 1.9.0\ -\/\ 2018-\/09-\/22\ -\/\ Adjust\ terminal\ colors,\ add\ LOGURU\_VERBOSE\_SCOPE\_ENDINGS,\ add\ LOGURU\_SCOPE\_TIME\_PRECISION,\ add\ named\ log\ levels}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ \ \ \ *\ Version\ 2.0.0\ -\/\ 2018-\/09-\/22\ -\/\ Split\ loguru.hpp\ into\ loguru.hpp\ and\ loguru.cpp}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ \ \ \ *\ Version\ 2.1.0\ -\/\ 2019-\/09-\/23\ -\/\ Update\ fmtlib\ +\ add\ option\ to\ loguru::init\ to\ NOT\ set\ main\ thread\ name.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ *\ Version\ 2.2.0\ -\/\ 2020-\/07-\/31\ -\/\ Replace\ LOGURU\_CATCH\_SIGABRT\ with\ struct\ SignalOptions}}
+\DoxyCodeLine{00060\ \textcolor{comment}{}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\#\ Compiling}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ Just\ include\ <loguru.hpp>\ where\ you\ want\ to\ use\ Loguru.}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ Then,\ in\ one\ .cpp\ file\ \#include\ <loguru.cpp>}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ \ \ \ Make\ sure\ you\ compile\ with\ -\/std=c++11\ -\/lstdc++\ -\/lpthread\ -\/ldl}}
+\DoxyCodeLine{00065\ \textcolor{comment}{}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\#\ Usage}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ \ \ \ For\ details,\ please\ see\ the\ official\ documentation\ at\ emilk.github.io/loguru}}
+\DoxyCodeLine{00068\ \textcolor{comment}{}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ \ \ \ \#include\ <loguru.hpp>}}
+\DoxyCodeLine{00070\ \textcolor{comment}{}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ \ \ \ int\ main(int\ argc,\ char*\ argv[])\ \{}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ \ \ \ \ \ \ \ loguru::init(argc,\ argv);}}
+\DoxyCodeLine{00073\ \textcolor{comment}{}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ \ \ \ \ \ \ \ //\ Put\ every\ log\ message\ in\ "{}everything.log"{}:}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ \ \ \ \ \ \ \ loguru::add\_file("{}everything.log"{},\ loguru::Append,\ loguru::Verbosity\_MAX);}}
+\DoxyCodeLine{00076\ \textcolor{comment}{}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ \ \ \ \ \ \ \ LOG\_F(INFO,\ "{}The\ magic\ number\ is\ \%d"{},\ 42);}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ \ \ \ \}}}
+\DoxyCodeLine{00079\ \textcolor{comment}{}}
+\DoxyCodeLine{00080\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \textcolor{comment}{//\ XXX(kitware):\ //\ include\ exports\ header}}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#include\ "{}vtkloguru\_export.h"{}}}
+\DoxyCodeLine{00084\ \textcolor{comment}{//\ XXX(kitware):\ //\ mangle}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#define\ loguru\ vtkloguru}}
+\DoxyCodeLine{00086\ \textcolor{comment}{//\ XXX(kitware):\ //\ vtk\ config\ defaults}}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#define\ LOGURU\_WITH\_STREAMS\ 1}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#if\ defined(LOGURU\_IMPLEMENTATION)}}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\ \ \ \ \#error\ "{}You\ are\ defining\ LOGURU\_IMPLEMENTATION.\ This\ is\ for\ older\ versions\ of\ Loguru.\ You\ should\ now\ instead\ include\ loguru.cpp\ (or\ build\ it\ and\ link\ with\ it)"{}}}
+\DoxyCodeLine{00091\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{comment}{//\ Disable\ all\ warnings\ from\ gcc/clang:}}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#if\ defined(\_\_clang\_\_)}}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\ \ \ \ \#pragma\ clang\ system\_header}}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#elif\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\ \ \ \ \#pragma\ GCC\ system\_header}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_HAS\_DECLARED\_FORMAT\_HEADER}}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{\#define\ LOGURU\_HAS\_DECLARED\_FORMAT\_HEADER}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{comment}{//\ Semantic\ versioning.\ Loguru\ version\ can\ be\ printed\ with\ printf("{}\%d.\%d.\%d"{},\ LOGURU\_VERSION\_MAJOR,\ LOGURU\_VERSION\_MINOR,\ LOGURU\_VERSION\_PATCH);}}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#define\ LOGURU\_VERSION\_MAJOR\ 2}}
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#define\ LOGURU\_VERSION\_MINOR\ 1}}
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\#define\ LOGURU\_VERSION\_PATCH\ 0}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{\#include\ <sal.h>}\ \ \ \ \textcolor{comment}{//\ Needed\ for\ \_In\_z\_\ etc\ annotations}}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_EXPORT}}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{comment}{//\ Define\ to\ your\ project's\ export\ declaration\ if\ needed\ for\ use\ in\ a\ shared\ library.}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_EXPORT}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_SCOPE\_TEXT\_SIZE}}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{comment}{//\ Maximum\ length\ of\ text\ that\ can\ be\ printed\ by\ a\ LOG\_SCOPE.}}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{comment}{//\ This\ should\ be\ long\ enough\ to\ get\ most\ things,\ but\ short\ enough\ not\ to\ clutter\ the\ stack.}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_SCOPE\_TEXT\_SIZE\ 196}}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_FILENAME\_WIDTH}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{comment}{//\ Width\ of\ the\ column\ containing\ the\ file\ name}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_FILENAME\_WIDTH\ 23}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_THREADNAME\_WIDTH}}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{comment}{//\ Width\ of\ the\ column\ containing\ the\ thread\ name}}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_THREADNAME\_WIDTH\ 16}}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_SCOPE\_TIME\_PRECISION}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{comment}{//\ Resolution\ of\ scope\ timers.\ 3=ms,\ 6=us,\ 9=ns}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_SCOPE\_TIME\_PRECISION\ 3}}
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#ifdef\ LOGURU\_CATCH\_SIGABRT}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\ \ \ \ \#error\ "{}You\ are\ defining\ LOGURU\_CATCH\_SIGABRT.\ his\ is\ for\ older\ versions\ of\ Loguru.\ You\ should\ now\ instead\ set\ the\ options\ passed\ to\ loguru::init"{}}}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_VERBOSE\_SCOPE\_ENDINGS}}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{comment}{//\ Show\ milliseconds\ and\ scope\ name\ at\ end\ of\ scope.}}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_VERBOSE\_SCOPE\_ENDINGS\ 1}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_REDEFINE\_ASSERT}}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_REDEFINE\_ASSERT\ 0}}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_WITH\_STREAMS}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_WITH\_STREAMS\ 0}}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_REPLACE\_GLOG}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_REPLACE\_GLOG\ 0}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#if\ LOGURU\_REPLACE\_GLOG}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\ \ \ \ \#undef\ LOGURU\_WITH\_STREAMS}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_WITH\_STREAMS\ 1}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#if\ defined(LOGURU\_UNSAFE\_SIGNAL\_HANDLER)}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\ \ \ \ \#error\ "{}You\ are\ defining\ LOGURU\_UNSAFE\_SIGNAL\_HANDLER.\ This\ is\ for\ older\ versions\ of\ Loguru.\ You\ should\ now\ instead\ set\ the\ unsafe\_signal\_handler\ option\ when\ you\ call\ loguru::init."{}}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\#if\ LOGURU\_IMPLEMENTATION}}
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\ \ \ \ \#undef\ LOGURU\_WITH\_STREAMS}}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_WITH\_STREAMS\ 1}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_USE\_FMTLIB}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_USE\_FMTLIB\ 0}}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_WITH\_FILEABS}}
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_WITH\_FILEABS\ 0}}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_RTTI}}
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\#if\ defined(\_\_clang\_\_)}}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\ \ \ \ \#if\ \_\_has\_feature(cxx\_rtti)}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#define\ LOGURU\_RTTI\ 1}}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\ \ \ \ \#endif}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\#elif\ defined(\_\_GNUG\_\_)}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\ \ \ \ \#if\ defined(\_\_GXX\_RTTI)}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#define\ LOGURU\_RTTI\ 1}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\ \ \ \ \#endif}}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\#elif\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\ \ \ \ \#if\ defined(\_CPPRTTI)}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#define\ LOGURU\_RTTI\ 1}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\ \ \ \ \#endif}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00200\ \textcolor{comment}{//\ Utility\ macros}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\#define\ LOGURU\_CONCATENATE\_IMPL(s1,\ s2)\ s1\ \#\#\ s2}}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#define\ LOGURU\_CONCATENATE(s1,\ s2)\ LOGURU\_CONCATENATE\_IMPL(s1,\ s2)}}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#ifdef\ \_\_COUNTER\_\_}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\#\ \ \ define\ LOGURU\_ANONYMOUS\_VARIABLE(str)\ LOGURU\_CONCATENATE(str,\ \_\_COUNTER\_\_)}}
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\#\ \ \ define\ LOGURU\_ANONYMOUS\_VARIABLE(str)\ LOGURU\_CONCATENATE(str,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{00209\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#if\ defined(\_\_clang\_\_)\ ||\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{comment}{//\ Helper\ macro\ for\ declaring\ functions\ as\ having\ similar\ signature\ to\ printf.}}
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{comment}{//\ This\ allows\ the\ compiler\ to\ catch\ format\ errors\ at\ compile-\/time.}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_PRINTF\_LIKE(fmtarg,\ firstvararg)\ \_\_attribute\_\_((\_\_format\_\_\ (\_\_printf\_\_,\ fmtarg,\ firstvararg)))}}
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_FORMAT\_STRING\_TYPE\ const\ char*}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\#elif\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_PRINTF\_LIKE(fmtarg,\ firstvararg)}}
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_FORMAT\_STRING\_TYPE\ \_In\_z\_\ \_Printf\_format\_string\_\ const\ char*}}
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_PRINTF\_LIKE(fmtarg,\ firstvararg)}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_FORMAT\_STRING\_TYPE\ const\ char*}}
+\DoxyCodeLine{00222\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{comment}{//\ Used\ to\ mark\ log\_and\_abort\ for\ the\ benefit\ of\ the\ static\ analyzer\ and\ optimizer.}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#define\ LOGURU\_NORETURN\ \_\_declspec(noreturn)}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\#define\ LOGURU\_NORETURN\ \_\_attribute\_\_((noreturn))}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\#define\ LOGURU\_PREDICT\_FALSE(x)\ (x)}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\#define\ LOGURU\_PREDICT\_TRUE(x)\ \ (x)}}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\#define\ LOGURU\_PREDICT\_FALSE(x)\ (\_\_builtin\_expect(x,\ \ \ \ \ 0))}}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#define\ LOGURU\_PREDICT\_TRUE(x)\ \ (\_\_builtin\_expect(!!(x),\ 1))}}
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\#if\ LOGURU\_USE\_FMTLIB}}
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\ \ \ \ \#include\ <fmt/format.h>}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_FMT(x)\ "{}\{:"{}\ \#x\ "{}\}"{}}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOGURU\_FMT(x)\ "{}\%"{}\ \#x}}
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\#ifdef\ \_WIN32}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\ \ \ \ \#define\ STRDUP(str)\ \_strdup(str)}}
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00249\ \textcolor{preprocessor}{\ \ \ \ \#define\ STRDUP(str)\ strdup(str)}}
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \textcolor{keyword}{namespace\ }loguru}
+\DoxyCodeLine{00255\ \{}
+\DoxyCodeLine{00256\ \ \ \ \ \textcolor{comment}{//\ Simple\ RAII\ ownership\ of\ a\ char*.}}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keyword}{class\ }LOGURU\_EXPORT\ Text}
+\DoxyCodeLine{00258\ \ \ \ \ \{}
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \textcolor{keyword}{explicit}\ Text(\textcolor{keywordtype}{char}*\ owned\_str)\ :\ \_str(owned\_str)\ \{\}}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \string~Text();}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ Text(Text\&\&\ t)}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \_str\ =\ t.\_str;}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ t.\_str\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ Text(Text\&\ t)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ Text\&\ operator=(Text\&\ t)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ operator=(Text\&\&\ t)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ c\_str()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_str;\ \}}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ empty()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_str\ ==\ \textcolor{keyword}{nullptr}\ ||\ *\_str\ ==\ \textcolor{charliteral}{'\(\backslash\)0'};\ \}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}*\ release()}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ result\ =\ \_str;}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \_str\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}*\ \_str;}
+\DoxyCodeLine{00283\ \ \ \ \ \};}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{comment}{//\ Like\ printf,\ but\ returns\ the\ formated\ text.}}
+\DoxyCodeLine{00286\ \textcolor{preprocessor}{\#if\ LOGURU\_USE\_FMTLIB}}
+\DoxyCodeLine{00287\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00288\ \ \ \ \ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ vtextprintf(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ format,\ fmt::format\_args\ args);}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00291\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00292\ \ \ \ \ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ textprintf(LOGURU\_FORMAT\_STRING\_TYPE\ format,\ \textcolor{keyword}{const}\ Args\&...\ args)\ \{}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ vtextprintf(format,\ fmt::make\_format\_args(args...));}
+\DoxyCodeLine{00294\ \ \ \ \ \}}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00296\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00297\ \ \ \ \ Text\ textprintf(LOGURU\_FORMAT\_STRING\_TYPE\ format,\ ...)\ LOGURU\_PRINTF\_LIKE(1,\ 2);}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{comment}{//\ Overloaded\ for\ variadic\ template\ matching.}}
+\DoxyCodeLine{00301\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00302\ \ \ \ \ Text\ textprintf();}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \ \ \textcolor{keyword}{using\ }Verbosity\ =\ int;}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\#undef\ FATAL}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\#undef\ ERROR}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\#undef\ WARNING}}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\#undef\ INFO}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\#undef\ MAX}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \ \ \ \ \textcolor{keyword}{enum}\ NamedVerbosity\ :\ Verbosity}
+\DoxyCodeLine{00313\ \ \ \ \ \{}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Used\ to\ mark\ an\ invalid\ verbosity.\ Do\ not\ log\ to\ this\ level.}}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ Verbosity\_INVALID\ =\ -\/10,\ \textcolor{comment}{//\ Never\ do\ LOG\_F(INVALID)}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ You\ may\ use\ Verbosity\_OFF\ on\ g\_stderr\_verbosity,\ but\ for\ nothing\ else!}}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ Verbosity\_OFF\ \ \ \ \ =\ -\/9,\ \textcolor{comment}{//\ Never\ do\ LOG\_F(OFF)}}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Prefer\ to\ use\ ABORT\_F\ or\ ABORT\_S\ over\ LOG\_F(FATAL)\ or\ LOG\_S(FATAL).}}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ Verbosity\_FATAL\ \ \ =\ -\/3,}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ Verbosity\_ERROR\ \ \ =\ -\/2,}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ Verbosity\_WARNING\ =\ -\/1,}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Normal\ messages.\ By\ default\ written\ to\ stderr.}}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ Verbosity\_INFO\ \ \ \ =\ \ 0,}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Same\ as\ Verbosity\_INFO\ in\ every\ way.}}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ Verbosity\_0\ \ \ \ \ \ \ =\ \ 0,}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Verbosity\ levels\ 1-\/9\ are\ generally\ not\ written\ to\ stderr,\ but\ are\ written\ to\ file.}}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ Verbosity\_1\ \ \ \ \ \ \ =\ +1,}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ Verbosity\_2\ \ \ \ \ \ \ =\ +2,}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ Verbosity\_3\ \ \ \ \ \ \ =\ +3,}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ Verbosity\_4\ \ \ \ \ \ \ =\ +4,}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ Verbosity\_5\ \ \ \ \ \ \ =\ +5,}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ Verbosity\_6\ \ \ \ \ \ \ =\ +6,}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ Verbosity\_7\ \ \ \ \ \ \ =\ +7,}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ Verbosity\_8\ \ \ \ \ \ \ =\ +8,}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ Verbosity\_9\ \ \ \ \ \ \ =\ +9,}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Don\ not\ use\ higher\ verbosity\ levels,\ as\ that\ will\ make\ grepping\ log\ files\ harder.}}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ Verbosity\_MAX\ \ \ \ \ =\ +9,}
+\DoxyCodeLine{00344\ \ \ \ \ \};}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structloguru_1_1_message}{Message}}}
+\DoxyCodeLine{00347\ \ \ \ \ \{}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ You\ would\ generally\ print\ a\ Message\ by\ just\ concating\ the\ buffers\ without\ spacing.}}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Optionally,\ ignore\ preamble\ and\ indentation.}}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ Verbosity\ \ \ verbosity;\ \ \ \textcolor{comment}{//\ Already\ part\ of\ preamble}}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename;\ \ \ \ \textcolor{comment}{//\ Already\ part\ of\ preamble}}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \ \ \ line;\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Already\ part\ of\ preamble}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ preamble;\ \ \ \ \textcolor{comment}{//\ Date,\ time,\ uptime,\ thread,\ file:line,\ verbosity.}}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ indentation;\ \textcolor{comment}{//\ Just\ a\ bunch\ of\ spacing.}}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ prefix;\ \ \ \ \ \ \textcolor{comment}{//\ Assertion\ failure\ info\ goes\ here\ (or\ "{}"{}).}}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ message;\ \ \ \ \ \textcolor{comment}{//\ User\ message\ goes\ here.}}
+\DoxyCodeLine{00357\ \ \ \ \ \};}
+\DoxyCodeLine{00358\ }
+\DoxyCodeLine{00359\ \ \ \ \ \textcolor{comment}{/*\ Everything\ with\ a\ verbosity\ equal\ or\ greater\ than\ g\_stderr\_verbosity\ will\ be}}
+\DoxyCodeLine{00360\ \textcolor{comment}{\ \ \ \ written\ to\ stderr.\ You\ can\ set\ this\ in\ code\ or\ via\ the\ -\/v\ argument.}}
+\DoxyCodeLine{00361\ \textcolor{comment}{\ \ \ \ Set\ to\ loguru::Verbosity\_OFF\ to\ write\ nothing\ to\ stderr.}}
+\DoxyCodeLine{00362\ \textcolor{comment}{\ \ \ \ Default\ is\ 0,\ i.e.\ only\ log\ ERROR,\ WARNING\ and\ INFO\ are\ written\ to\ stderr.}}
+\DoxyCodeLine{00363\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00364\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ Verbosity\ g\_stderr\_verbosity;}
+\DoxyCodeLine{00365\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ g\_colorlogtostderr;\ \textcolor{comment}{//\ True\ by\ default.}}
+\DoxyCodeLine{00366\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{unsigned}\ \ g\_flush\_interval\_ms;\ \textcolor{comment}{//\ 0\ (unbuffered)\ by\ default.}}
+\DoxyCodeLine{00367\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ g\_preamble;\ \textcolor{comment}{//\ Prefix\ each\ log\ line\ with\ date,\ time\ etc?\ True\ by\ default.}}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00369\ \ \ \ \ \textcolor{comment}{/*\ Specify\ the\ verbosity\ used\ by\ loguru\ to\ log\ its\ info\ messages\ including\ the\ header}}
+\DoxyCodeLine{00370\ \textcolor{comment}{\ \ \ \ logged\ when\ logged::init()\ is\ called\ or\ on\ exit.\ Default\ is\ 0\ (INFO).}}
+\DoxyCodeLine{00371\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00372\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ Verbosity\ g\_internal\_verbosity;}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \ \ \ \ \textcolor{comment}{//\ Turn\ off\ individual\ parts\ of\ the\ preamble}}
+\DoxyCodeLine{00375\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ g\_preamble\_date;\ \textcolor{comment}{//\ The\ date\ field}}
+\DoxyCodeLine{00376\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ g\_preamble\_time;\ \textcolor{comment}{//\ The\ time\ of\ the\ current\ day}}
+\DoxyCodeLine{00377\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ g\_preamble\_uptime;\ \textcolor{comment}{//\ The\ time\ since\ init\ call}}
+\DoxyCodeLine{00378\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ g\_preamble\_thread;\ \textcolor{comment}{//\ The\ logging\ thread}}
+\DoxyCodeLine{00379\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ g\_preamble\_file;\ \textcolor{comment}{//\ The\ file\ from\ which\ the\ log\ originates\ from}}
+\DoxyCodeLine{00380\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ g\_preamble\_verbose;\ \textcolor{comment}{//\ The\ verbosity\ field}}
+\DoxyCodeLine{00381\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ g\_preamble\_pipe;\ \textcolor{comment}{//\ The\ pipe\ symbol\ right\ before\ the\ message}}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{comment}{//\ May\ not\ throw!}}
+\DoxyCodeLine{00384\ \ \ \ \ \textcolor{keyword}{typedef}\ void\ (*log\_handler\_t)(\textcolor{keywordtype}{void}*\ user\_data,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structloguru_1_1_message}{Message}}\&\ message);}
+\DoxyCodeLine{00385\ \ \ \ \ \textcolor{keyword}{typedef}\ void\ (*close\_handler\_t)(\textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00386\ \ \ \ \ \textcolor{keyword}{typedef}\ void\ (*flush\_handler\_t)(\textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \ \ \textcolor{comment}{//\ May\ throw\ if\ that's\ how\ you'd\ like\ to\ handle\ your\ errors.}}
+\DoxyCodeLine{00389\ \ \ \ \ \textcolor{keyword}{typedef}\ void\ (*fatal\_handler\_t)(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structloguru_1_1_message}{Message}}\&\ message);}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \ \ \ \ \textcolor{comment}{//\ Given\ a\ verbosity\ level,\ return\ the\ level's\ name\ or\ nullptr.}}
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ (*verbosity\_to\_name\_t)(Verbosity\ verbosity);}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{comment}{//\ Given\ a\ verbosity\ level\ name,\ return\ the\ verbosity\ level\ or}}
+\DoxyCodeLine{00395\ \ \ \ \ \textcolor{comment}{//\ Verbosity\_INVALID\ if\ name\ is\ not\ recognized.}}
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keyword}{typedef}\ Verbosity\ (*name\_to\_verbosity\_t)(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name);}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structloguru_1_1_signal_options}{SignalOptions}}}
+\DoxyCodeLine{00399\ \ \ \ \ \{}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structloguru_1_1_signal_options_ac15ea849957901c6ede3a1ab69d43dd8}{unsafe\_signal\_handler}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structloguru_1_1_signal_options_a0f5ffaa75aa0b6ff60fe26fd17de8e41}{sigabrt}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structloguru_1_1_signal_options_afd71fa12ceb09f0cd16c7d3edbbcf2d2}{sigbus}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structloguru_1_1_signal_options_ad8e0b5c9a760baaa4aa651839f32b39a}{sigfpe}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structloguru_1_1_signal_options_a64f585553d3b682c69917cf84b0d222e}{sigill}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structloguru_1_1_signal_options_ac4a34b1999230af30ecade78b4d48bb7}{sigint}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00419\ }
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structloguru_1_1_signal_options_afc8339a398c04fec7b7a02b88ed5016d}{sigsegv}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structloguru_1_1_signal_options_a36575eed90aabe2434d608db3414d9b6}{sigterm}}\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{structloguru_1_1_signal_options}{SignalOptions}}\ none()}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structloguru_1_1_signal_options}{SignalOptions}}\ options;}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ options.\doxymbox{\hyperlink{structloguru_1_1_signal_options_ac15ea849957901c6ede3a1ab69d43dd8}{unsafe\_signal\_handler}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ options.\doxymbox{\hyperlink{structloguru_1_1_signal_options_a0f5ffaa75aa0b6ff60fe26fd17de8e41}{sigabrt}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ \ \ \ \ options.\doxymbox{\hyperlink{structloguru_1_1_signal_options_afd71fa12ceb09f0cd16c7d3edbbcf2d2}{sigbus}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \ \ \ \ options.\doxymbox{\hyperlink{structloguru_1_1_signal_options_ad8e0b5c9a760baaa4aa651839f32b39a}{sigfpe}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \ \ \ \ options.\doxymbox{\hyperlink{structloguru_1_1_signal_options_a64f585553d3b682c69917cf84b0d222e}{sigill}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ \ \ \ \ options.\doxymbox{\hyperlink{structloguru_1_1_signal_options_ac4a34b1999230af30ecade78b4d48bb7}{sigint}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \ \ \ \ options.\doxymbox{\hyperlink{structloguru_1_1_signal_options_afc8339a398c04fec7b7a02b88ed5016d}{sigsegv}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ \ \ \ \ options.\doxymbox{\hyperlink{structloguru_1_1_signal_options_a36575eed90aabe2434d608db3414d9b6}{sigterm}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ options;}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00439\ \ \ \ \ \};}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \ \ \ \ \textcolor{comment}{//\ Runtime\ options\ passed\ to\ loguru::init}}
+\DoxyCodeLine{00442\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structloguru_1_1_options}{Options}}}
+\DoxyCodeLine{00443\ \ \ \ \ \{}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ This\ allows\ you\ to\ use\ something\ else\ instead\ of\ "{}-\/v"{}\ via\ verbosity\_flag.}}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Set\ to\ nullptr\ to\ if\ you\ don't\ want\ Loguru\ to\ parse\ verbosity\ from\ the\ args.'}}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ verbosity\_flag\ =\ \textcolor{stringliteral}{"{}-\/v"{}};}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ loguru::init\ will\ set\ the\ name\ of\ the\ calling\ thread\ to\ this.}}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ If\ you\ don't\ want\ Loguru\ to\ set\ the\ name\ of\ the\ main\ thread,}}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ set\ this\ to\ nullptr.}}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NOTE:\ on\ SOME\ platforms\ loguru::init\ will\ only\ overwrite\ the\ thread\ name}}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ if\ a\ thread\ name\ has\ not\ already\ been\ set.}}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ To\ always\ set\ a\ thread\ name,\ use\ loguru::set\_thread\_name\ instead.}}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ main\_thread\_name\ =\ \textcolor{stringliteral}{"{}main\ thread"{}};}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structloguru_1_1_signal_options}{SignalOptions}}\ signal\_options;}
+\DoxyCodeLine{00457\ \ \ \ \ \};}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{comment}{/*\ \ Should\ be\ called\ from\ the\ main\ thread.}}
+\DoxyCodeLine{00460\ \textcolor{comment}{\ \ \ \ \ \ \ \ You\ don't\ *need*\ to\ call\ this,\ but\ if\ you\ do\ you\ get:}}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ *\ Signal\ handlers\ installed}}
+\DoxyCodeLine{00462\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ *\ Program\ arguments\ logged}}
+\DoxyCodeLine{00463\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ *\ Working\ dir\ logged}}
+\DoxyCodeLine{00464\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ *\ Optional\ -\/v\ verbosity\ flag\ parsed}}
+\DoxyCodeLine{00465\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ *\ Main\ thread\ name\ set\ to\ "{}main\ thread"{}}}
+\DoxyCodeLine{00466\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ *\ Explanation\ of\ the\ preamble\ (date,\ threanmae\ etc)\ logged}}
+\DoxyCodeLine{00467\ \textcolor{comment}{}}
+\DoxyCodeLine{00468\ \textcolor{comment}{\ \ \ \ \ \ \ \ loguru::init()\ will\ look\ for\ arguments\ meant\ for\ loguru\ and\ remove\ them.}}
+\DoxyCodeLine{00469\ \textcolor{comment}{\ \ \ \ \ \ \ \ Arguments\ meant\ for\ loguru\ are:}}
+\DoxyCodeLine{00470\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ -\/v\ n\ \ \ Set\ loguru::g\_stderr\_verbosity\ level.\ Examples:}}
+\DoxyCodeLine{00471\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/v\ 3\ \ \ \ \ \ \ \ Show\ verbosity\ level\ 3\ and\ lower.}}
+\DoxyCodeLine{00472\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/v\ 0\ \ \ \ \ \ \ \ Only\ show\ INFO,\ WARNING,\ ERROR,\ FATAL\ (default).}}
+\DoxyCodeLine{00473\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/v\ INFO\ \ \ \ \ Only\ show\ INFO,\ WARNING,\ ERROR,\ FATAL\ (default).}}
+\DoxyCodeLine{00474\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/v\ WARNING\ \ Only\ show\ WARNING,\ ERROR,\ FATAL.}}
+\DoxyCodeLine{00475\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/v\ ERROR\ \ \ \ Only\ show\ ERROR,\ FATAL.}}
+\DoxyCodeLine{00476\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/v\ FATAL\ \ \ \ Only\ show\ FATAL.}}
+\DoxyCodeLine{00477\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/v\ OFF\ \ \ \ \ \ Turn\ off\ logging\ to\ stderr.}}
+\DoxyCodeLine{00478\ \textcolor{comment}{}}
+\DoxyCodeLine{00479\ \textcolor{comment}{\ \ \ \ \ \ \ \ Tip:\ You\ can\ set\ g\_stderr\_verbosity\ before\ calling\ loguru::init.}}
+\DoxyCodeLine{00480\ \textcolor{comment}{\ \ \ \ \ \ \ \ That\ way\ you\ can\ set\ the\ default\ but\ have\ the\ user\ override\ it\ with\ the\ -\/v\ flag.}}
+\DoxyCodeLine{00481\ \textcolor{comment}{\ \ \ \ \ \ \ \ Note\ that\ -\/v\ does\ not\ affect\ file\ logging\ (see\ loguru::add\_file).}}
+\DoxyCodeLine{00482\ \textcolor{comment}{}}
+\DoxyCodeLine{00483\ \textcolor{comment}{\ \ \ \ \ \ \ \ You\ can\ you\ something\ other\ than\ the\ -\/v\ flag\ by\ setting\ the\ verbosity\_flag\ option.}}
+\DoxyCodeLine{00484\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00485\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00486\ \ \ \ \ \textcolor{keywordtype}{void}\ init(\textcolor{keywordtype}{int}\&\ argc,\ \textcolor{keywordtype}{char}*\ argv[],\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structloguru_1_1_options}{Options}}\&\ options\ =\ \{\});}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \ \ \ \ \textcolor{comment}{//\ Will\ call\ remove\_all\_callbacks().\ After\ calling\ this,\ logging\ will\ still\ go\ to\ stderr.}}
+\DoxyCodeLine{00489\ \ \ \ \ \textcolor{comment}{//\ You\ generally\ don't\ need\ to\ call\ this.}}
+\DoxyCodeLine{00490\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00491\ \ \ \ \ \textcolor{keywordtype}{void}\ shutdown();}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \ \ \ \ \textcolor{comment}{//\ What\ \string~\ will\ be\ replaced\ with,\ e.g.\ "{}/home/your\_user\_name/"{}}}
+\DoxyCodeLine{00494\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00495\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ home\_dir();}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \ \ \ \ \textcolor{comment}{/*\ Returns\ the\ name\ of\ the\ app\ as\ given\ in\ argv[0]\ but\ without\ leading\ path.}}
+\DoxyCodeLine{00498\ \textcolor{comment}{\ \ \ \ \ \ \ That\ is,\ if\ argv[0]\ is\ "{}../foo/app"{}\ this\ will\ return\ "{}app"{}.}}
+\DoxyCodeLine{00499\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00500\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00501\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ argv0\_filename();}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00503\ \ \ \ \ \textcolor{comment}{//\ Returns\ all\ arguments\ given\ to\ loguru::init(),\ but\ escaped\ with\ a\ single\ space\ as\ separator.}}
+\DoxyCodeLine{00504\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00505\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arguments();}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ \ \ \ \ \textcolor{comment}{//\ Returns\ the\ path\ to\ the\ current\ working\ dir\ when\ loguru::init()\ was\ called.}}
+\DoxyCodeLine{00508\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00509\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ current\_dir();}
+\DoxyCodeLine{00510\ }
+\DoxyCodeLine{00511\ \ \ \ \ \textcolor{comment}{//\ Returns\ the\ part\ of\ the\ path\ after\ the\ last\ /\ or\ \(\backslash\)\ (if\ any).}}
+\DoxyCodeLine{00512\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00513\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ path);}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00515\ \ \ \ \ \textcolor{comment}{//\ e.g.\ "{}foo/bar/baz.ext"{}\ will\ create\ the\ directories\ "{}foo/"{}\ and\ "{}foo/bar/"{}}}
+\DoxyCodeLine{00516\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00517\ \ \ \ \ \textcolor{keywordtype}{bool}\ create\_directories(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file\_path\_const);}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ \ \ \ \ \textcolor{comment}{//\ Writes\ date\ and\ time\ with\ millisecond\ precision,\ e.g.\ "{}20151017\_161503.123"{}}}
+\DoxyCodeLine{00520\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00521\ \ \ \ \ \textcolor{keywordtype}{void}\ write\_date\_time(\textcolor{keywordtype}{char}*\ buff,\ \textcolor{keywordtype}{unsigned}\ buff\_size);}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00523\ \ \ \ \ \textcolor{comment}{//\ Helper:\ thread-\/safe\ version\ strerror}}
+\DoxyCodeLine{00524\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00525\ \ \ \ \ Text\ errno\_as\_text();}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \ \ \ \ \textcolor{comment}{/*\ Given\ a\ prefix\ of\ e.g.\ "{}\string~/loguru/"{}\ this\ might\ return}}
+\DoxyCodeLine{00528\ \textcolor{comment}{\ \ \ \ \ \ \ "{}/home/your\_username/loguru/app\_name/20151017\_161503.123.log"{}}}
+\DoxyCodeLine{00529\ \textcolor{comment}{}}
+\DoxyCodeLine{00530\ \textcolor{comment}{\ \ \ \ \ \ \ where\ "{}app\_name"{}\ is\ a\ sanitized\ version\ of\ argv[0].}}
+\DoxyCodeLine{00531\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00532\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00533\ \ \ \ \ \textcolor{keywordtype}{void}\ suggest\_log\_path(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ prefix,\ \textcolor{keywordtype}{char}*\ buff,\ \textcolor{keywordtype}{unsigned}\ buff\_size);}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \ \ \ \ \textcolor{keyword}{enum}\ FileMode\ \{\ Truncate,\ Append\ \};}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \ \ \ \ \textcolor{comment}{/*\ \ Will\ log\ to\ a\ file\ at\ the\ given\ path.}}
+\DoxyCodeLine{00538\ \textcolor{comment}{\ \ \ \ \ \ \ \ Any\ logging\ message\ with\ a\ verbosity\ lower\ or\ equal\ to}}
+\DoxyCodeLine{00539\ \textcolor{comment}{\ \ \ \ \ \ \ \ the\ given\ verbosity\ will\ be\ included.}}
+\DoxyCodeLine{00540\ \textcolor{comment}{\ \ \ \ \ \ \ \ The\ function\ will\ create\ all\ directories\ in\ 'path'\ if\ needed.}}
+\DoxyCodeLine{00541\ \textcolor{comment}{\ \ \ \ \ \ \ \ If\ path\ starts\ with\ a\ \string~,\ it\ will\ be\ replaced\ with\ loguru::home\_dir()}}
+\DoxyCodeLine{00542\ \textcolor{comment}{\ \ \ \ \ \ \ \ To\ stop\ the\ file\ logging,\ just\ call\ loguru::remove\_callback(path)\ with\ the\ same\ path.}}
+\DoxyCodeLine{00543\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00544\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00545\ \ \ \ \ \textcolor{keywordtype}{bool}\ add\_file(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ path,\ FileMode\ mode,\ Verbosity\ verbosity);}
+\DoxyCodeLine{00546\ }
+\DoxyCodeLine{00547\ \ \ \ \ \textcolor{comment}{/*\ \ Will\ be\ called\ right\ before\ abort().}}
+\DoxyCodeLine{00548\ \textcolor{comment}{\ \ \ \ \ \ \ \ You\ can\ for\ instance\ use\ this\ to\ print\ custom\ error\ messages,\ or\ throw\ an\ exception.}}
+\DoxyCodeLine{00549\ \textcolor{comment}{\ \ \ \ \ \ \ \ Feel\ free\ to\ call\ LOG:ing\ function\ from\ this,\ but\ not\ FATAL\ ones!\ */}}
+\DoxyCodeLine{00550\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00551\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_fatal\_handler(fatal\_handler\_t\ handler);}
+\DoxyCodeLine{00552\ }
+\DoxyCodeLine{00553\ \ \ \ \ \textcolor{comment}{//\ Get\ the\ current\ fatal\ handler,\ if\ any.\ Default\ value\ is\ nullptr.}}
+\DoxyCodeLine{00554\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00555\ \ \ \ \ fatal\_handler\_t\ get\_fatal\_handler();}
+\DoxyCodeLine{00556\ }
+\DoxyCodeLine{00557\ \ \ \ \ \textcolor{comment}{/*\ \ Will\ be\ called\ on\ each\ log\ messages\ with\ a\ verbosity\ less\ or\ equal\ to\ the\ given\ one.}}
+\DoxyCodeLine{00558\ \textcolor{comment}{\ \ \ \ \ \ \ \ Useful\ for\ displaying\ messages\ on-\/screen\ in\ a\ game,\ for\ example.}}
+\DoxyCodeLine{00559\ \textcolor{comment}{\ \ \ \ \ \ \ \ The\ given\ on\_close\ is\ also\ expected\ to\ flush\ (if\ desired).}}
+\DoxyCodeLine{00560\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00561\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00562\ \ \ \ \ \textcolor{keywordtype}{void}\ add\_callback(}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \ \ \ \ \textcolor{keywordtype}{id},}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ log\_handler\_t\ \ \ callback,}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ \ \ \ \ \ \ \ \ \ \ user\_data,}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ Verbosity\ \ \ \ \ \ \ verbosity,}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ close\_handler\_t\ on\_close\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ flush\_handler\_t\ on\_flush\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ \ \ \ \ \textcolor{comment}{/*\ \ Set\ a\ callback\ that\ returns\ custom\ verbosity\ level\ names.\ If\ callback}}
+\DoxyCodeLine{00571\ \textcolor{comment}{\ \ \ \ \ \ \ \ is\ nullptr\ or\ returns\ nullptr,\ default\ log\ names\ will\ be\ used.}}
+\DoxyCodeLine{00572\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00573\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00574\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_verbosity\_to\_name\_callback(verbosity\_to\_name\_t\ callback);}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \ \ \ \ \textcolor{comment}{/*\ \ Set\ a\ callback\ that\ returns\ the\ verbosity\ level\ matching\ a\ name.\ The}}
+\DoxyCodeLine{00577\ \textcolor{comment}{\ \ \ \ \ \ \ \ callback\ should\ return\ Verbosity\_INVALID\ if\ the\ name\ is\ not}}
+\DoxyCodeLine{00578\ \textcolor{comment}{\ \ \ \ \ \ \ \ recognized.}}
+\DoxyCodeLine{00579\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00580\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00581\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_name\_to\_verbosity\_callback(name\_to\_verbosity\_t\ callback);}
+\DoxyCodeLine{00582\ }
+\DoxyCodeLine{00583\ \ \ \ \ \textcolor{comment}{/*\ \ Get\ a\ custom\ name\ for\ a\ specific\ verbosity,\ if\ one\ exists,\ or\ nullptr.\ */}}
+\DoxyCodeLine{00584\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00585\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ get\_verbosity\_name(Verbosity\ verbosity);}
+\DoxyCodeLine{00586\ }
+\DoxyCodeLine{00587\ \ \ \ \ \textcolor{comment}{/*\ \ Get\ the\ verbosity\ enum\ value\ from\ a\ custom\ 4-\/character\ level\ name,\ if\ one\ exists.}}
+\DoxyCodeLine{00588\ \textcolor{comment}{\ \ \ \ \ \ \ \ If\ the\ name\ does\ not\ match\ a\ custom\ level\ name,\ Verbosity\_INVALID\ is\ returned.}}
+\DoxyCodeLine{00589\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00590\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00591\ \ \ \ \ Verbosity\ get\_verbosity\_from\_name(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name);}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \ \ \ \ \textcolor{comment}{//\ Returns\ true\ iff\ the\ callback\ was\ found\ (and\ removed).}}
+\DoxyCodeLine{00594\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00595\ \ \ \ \ \textcolor{keywordtype}{bool}\ remove\_callback(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00596\ }
+\DoxyCodeLine{00597\ \ \ \ \ \textcolor{comment}{//\ Shut\ down\ all\ file\ logging\ and\ any\ other\ callback\ hooks\ installed.}}
+\DoxyCodeLine{00598\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00599\ \ \ \ \ \textcolor{keywordtype}{void}\ remove\_all\_callbacks();}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ \ \ \ \ \textcolor{comment}{//\ Returns\ the\ maximum\ of\ g\_stderr\_verbosity\ and\ all\ file/custom\ outputs.}}
+\DoxyCodeLine{00602\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00603\ \ \ \ \ Verbosity\ current\_verbosity\_cutoff();}
+\DoxyCodeLine{00604\ }
+\DoxyCodeLine{00605\ \textcolor{preprocessor}{\#if\ LOGURU\_USE\_FMTLIB}}
+\DoxyCodeLine{00606\ \ \ \ \ \textcolor{comment}{//\ Internal\ functions}}
+\DoxyCodeLine{00607\ \ \ \ \ \textcolor{keywordtype}{void}\ vlog(Verbosity\ verbosity,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ fmt::format\_args\ args);}
+\DoxyCodeLine{00608\ \ \ \ \ \textcolor{keywordtype}{void}\ raw\_vlog(Verbosity\ verbosity,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ fmt::format\_args\ args);}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00610\ \ \ \ \ \textcolor{comment}{//\ Actual\ logging\ function.\ Use\ the\ LOG\ macro\ instead\ of\ calling\ this\ directly.}}
+\DoxyCodeLine{00611\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00612\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00613\ \ \ \ \ \textcolor{keywordtype}{void}\ log(Verbosity\ verbosity,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ \textcolor{keyword}{const}\ Args\ \&...\ args)\ \{}
+\DoxyCodeLine{00614\ \ \ \ \ \ \ \ \ vlog(verbosity,\ file,\ line,\ format,\ fmt::make\_format\_args(args...));}
+\DoxyCodeLine{00615\ \ \ \ \ \}}
+\DoxyCodeLine{00616\ }
+\DoxyCodeLine{00617\ \ \ \ \ \textcolor{comment}{//\ Log\ without\ any\ preamble\ or\ indentation.}}
+\DoxyCodeLine{00618\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00619\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00620\ \ \ \ \ \textcolor{keywordtype}{void}\ raw\_log(Verbosity\ verbosity,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ \textcolor{keyword}{const}\ Args\ \&...\ args)\ \{}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ raw\_vlog(verbosity,\ file,\ line,\ format,\ fmt::make\_format\_args(args...));}
+\DoxyCodeLine{00622\ \ \ \ \ \}}
+\DoxyCodeLine{00623\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ LOGURU\_USE\_FMTLIB?}}
+\DoxyCodeLine{00624\ \ \ \ \ \textcolor{comment}{//\ Actual\ logging\ function.\ Use\ the\ LOG\ macro\ instead\ of\ calling\ this\ directly.}}
+\DoxyCodeLine{00625\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00626\ \ \ \ \ \textcolor{keywordtype}{void}\ log(Verbosity\ verbosity,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ ...)\ LOGURU\_PRINTF\_LIKE(4,\ 5);}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \ \ \ \ \textcolor{comment}{//\ Log\ without\ any\ preamble\ or\ indentation.}}
+\DoxyCodeLine{00629\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00630\ \ \ \ \ \textcolor{keywordtype}{void}\ raw\_log(Verbosity\ verbosity,\ const\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ ...)\ LOGURU\_PRINTF\_LIKE(4,\ 5);}
+\DoxyCodeLine{00631\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ !LOGURU\_USE\_FMTLIB}}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \ \ \ \ \textcolor{comment}{//\ Helper\ class\ for\ LOG\_SCOPE\_F}}
+\DoxyCodeLine{00634\ \ \ \ \ \textcolor{keyword}{class\ }LOGURU\_EXPORT\ LogScopeRAII}
+\DoxyCodeLine{00635\ \ \ \ \ \{}
+\DoxyCodeLine{00636\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ LogScopeRAII()\ :\ \_file(\textcolor{keyword}{nullptr})\ \{\}\ \textcolor{comment}{//\ No\ logging}}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ LogScopeRAII(Verbosity\ verbosity,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ ...)\ LOGURU\_PRINTF\_LIKE(5,\ 6);}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \string~LogScopeRAII();}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)\ \&\&\ \_MSC\_VER\ >\ 1800}}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ older\ MSVC\ default\ move\ ctors\ close\ the\ scope\ on\ move.\ See}}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ issue\ \#43}}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ \ LogScopeRAII(LogScopeRAII\&\&\ other)}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \ \ \ \ \ \ :\ \_verbosity(other.\_verbosity)}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ \_file(other.\_file)}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ \_line(other.\_line)}
+\DoxyCodeLine{00648\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ \_indent\_stderr(other.\_indent\_stderr)}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \ \ \ \ \ \ ,\ \_start\_time\_ns(other.\_start\_time\_ns)}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Make\ sure\ the\ tmp\ object's\ destruction\ doesn't\ close\ the\ scope:}}
+\DoxyCodeLine{00652\ \ \ \ \ \ \ \ \ \ \ \ \ other.\_file\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00653\ }
+\DoxyCodeLine{00654\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ LOGURU\_SCOPE\_TEXT\_SIZE;\ ++i)\ \{}
+\DoxyCodeLine{00655\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_name[i]\ =\ other.\_name[i];}
+\DoxyCodeLine{00656\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00657\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00658\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00659\ \ \ \ \ \ \ \ \ LogScopeRAII(LogScopeRAII\&\&)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00660\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00661\ }
+\DoxyCodeLine{00662\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \ \ LogScopeRAII(\textcolor{keyword}{const}\ LogScopeRAII\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00664\ \ \ \ \ \ \ \ \ LogScopeRAII\&\ operator=(\textcolor{keyword}{const}\ LogScopeRAII\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00665\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ operator=(LogScopeRAII\&\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00666\ }
+\DoxyCodeLine{00667\ \ \ \ \ \ \ \ \ Verbosity\ \ \ \_verbosity;}
+\DoxyCodeLine{00668\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \_file;\ \textcolor{comment}{//\ Set\ to\ null\ if\ we\ are\ disabled\ due\ to\ verbosity}}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \ \ \ \_line;}
+\DoxyCodeLine{00670\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \_indent\_stderr;\ \textcolor{comment}{//\ Did\ we?}}
+\DoxyCodeLine{00671\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ \ \ \_start\_time\_ns;}
+\DoxyCodeLine{00672\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ \_name[LOGURU\_SCOPE\_TEXT\_SIZE];}
+\DoxyCodeLine{00673\ \ \ \ \ \};}
+\DoxyCodeLine{00674\ }
+\DoxyCodeLine{00675\ \ \ \ \ \textcolor{comment}{//\ Marked\ as\ 'noreturn'\ for\ the\ benefit\ of\ the\ static\ analyzer\ and\ optimizer.}}
+\DoxyCodeLine{00676\ \ \ \ \ \textcolor{comment}{//\ stack\_trace\_skip\ is\ the\ number\ of\ extrace\ stack\ frames\ to\ skip\ above\ log\_and\_abort.}}
+\DoxyCodeLine{00677\ \textcolor{preprocessor}{\#if\ LOGURU\_USE\_FMTLIB}}
+\DoxyCodeLine{00678\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00679\ \ \ \ \ LOGURU\_NORETURN\ \textcolor{keywordtype}{void}\ vlog\_and\_abort(\textcolor{keywordtype}{int}\ stack\_trace\_skip,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ expr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ fmt::format\_args);}
+\DoxyCodeLine{00680\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00681\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00682\ \ \ \ \ LOGURU\_NORETURN\ \textcolor{keywordtype}{void}\ log\_and\_abort(\textcolor{keywordtype}{int}\ stack\_trace\_skip,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ expr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ \textcolor{keyword}{const}\ Args\&...\ args)\ \{}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ \ \ vlog\_and\_abort(stack\_trace\_skip,\ expr,\ file,\ line,\ format,\ fmt::make\_format\_args(args...));}
+\DoxyCodeLine{00684\ \ \ \ \ \}}
+\DoxyCodeLine{00685\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00686\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00687\ \ \ \ \ LOGURU\_NORETURN\ \textcolor{keywordtype}{void}\ log\_and\_abort(\textcolor{keywordtype}{int}\ stack\_trace\_skip,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ expr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ LOGURU\_FORMAT\_STRING\_TYPE\ format,\ ...)\ LOGURU\_PRINTF\_LIKE(5,\ 6);}
+\DoxyCodeLine{00688\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00689\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00690\ \ \ \ \ LOGURU\_NORETURN\ \textcolor{keywordtype}{void}\ log\_and\_abort(\textcolor{keywordtype}{int}\ stack\_trace\_skip,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ expr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line);}
+\DoxyCodeLine{00691\ }
+\DoxyCodeLine{00692\ \ \ \ \ \textcolor{comment}{//\ Flush\ output\ to\ stderr\ and\ files.}}
+\DoxyCodeLine{00693\ \ \ \ \ \textcolor{comment}{//\ If\ g\_flush\_interval\_ms\ is\ set\ to\ non-\/zero,\ this\ will\ be\ called\ automatically\ this\ often.}}
+\DoxyCodeLine{00694\ \ \ \ \ \textcolor{comment}{//\ If\ not\ set,\ you\ do\ not\ need\ to\ call\ this\ at\ all.}}
+\DoxyCodeLine{00695\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00696\ \ \ \ \ \textcolor{keywordtype}{void}\ flush();}
+\DoxyCodeLine{00697\ }
+\DoxyCodeLine{00698\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>\ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ T\&)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ textprintf(\textcolor{stringliteral}{"{}N/A"{}});\ \ \ \ \ \}}
+\DoxyCodeLine{00699\ \ \ \ \ \textcolor{keyword}{template}<>\ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\&\ v)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ textprintf(LOGURU\_FMT(c),\ \ \ v);\ \}}
+\DoxyCodeLine{00700\ \ \ \ \ \textcolor{keyword}{template}<>\ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\&\ v)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ textprintf(LOGURU\_FMT(d),\ \ \ v);\ \}}
+\DoxyCodeLine{00701\ \ \ \ \ \textcolor{keyword}{template}<>\ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\&\ v)\ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ textprintf(LOGURU\_FMT(u),\ \ \ v);\ \}}
+\DoxyCodeLine{00702\ \ \ \ \ \textcolor{keyword}{template}<>\ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\&\ v)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ textprintf(LOGURU\_FMT(lu),\ \ v);\ \}}
+\DoxyCodeLine{00703\ \ \ \ \ \textcolor{keyword}{template}<>\ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\&\ v)\ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ textprintf(LOGURU\_FMT(ld),\ \ v);\ \}}
+\DoxyCodeLine{00704\ \ \ \ \ \textcolor{keyword}{template}<>\ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\&\ v)\ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ textprintf(LOGURU\_FMT(llu),\ v);\ \}}
+\DoxyCodeLine{00705\ \ \ \ \ \textcolor{keyword}{template}<>\ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\&\ v)\ \{\ \textcolor{keywordflow}{return}\ textprintf(LOGURU\_FMT(lld),\ v);\ \}}
+\DoxyCodeLine{00706\ \ \ \ \ \textcolor{keyword}{template}<>\ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\&\ v)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ textprintf(LOGURU\_FMT(f),\ \ \ v);\ \}}
+\DoxyCodeLine{00707\ \ \ \ \ \textcolor{keyword}{template}<>\ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Text\ format\_value(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\&\ v)\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ textprintf(LOGURU\_FMT(f),\ \ \ v);\ \}}
+\DoxyCodeLine{00708\ }
+\DoxyCodeLine{00709\ \ \ \ \ \textcolor{comment}{/*\ Thread\ names\ can\ be\ set\ for\ the\ benefit\ of\ readable\ logs.}}
+\DoxyCodeLine{00710\ \textcolor{comment}{\ \ \ \ \ \ \ If\ you\ do\ not\ set\ the\ thread\ name,\ a\ hex\ id\ will\ be\ shown\ instead.}}
+\DoxyCodeLine{00711\ \textcolor{comment}{\ \ \ \ \ \ \ These\ thread\ names\ may\ or\ may\ not\ be\ the\ same\ as\ the\ system\ thread\ names,}}
+\DoxyCodeLine{00712\ \textcolor{comment}{\ \ \ \ \ \ \ depending\ on\ the\ system.}}
+\DoxyCodeLine{00713\ \textcolor{comment}{\ \ \ \ \ \ \ Try\ to\ limit\ the\ thread\ name\ to\ 15\ characters\ or\ less.\ */}}
+\DoxyCodeLine{00714\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00715\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_thread\_name(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name);}
+\DoxyCodeLine{00716\ }
+\DoxyCodeLine{00717\ \ \ \ \ \textcolor{comment}{/*\ Returns\ the\ thread\ name\ for\ this\ thread.}}
+\DoxyCodeLine{00718\ \textcolor{comment}{\ \ \ \ \ \ \ On\ most\ *nix\ systems\ this\ will\ return\ the\ system\ thread\ name\ (settable\ from\ both\ within\ and\ without\ Loguru).}}
+\DoxyCodeLine{00719\ \textcolor{comment}{\ \ \ \ \ \ \ On\ other\ systems\ it\ will\ return\ whatever\ you\ set\ in\ \`{}set\_thread\_name()`;}}
+\DoxyCodeLine{00720\ \textcolor{comment}{\ \ \ \ \ \ \ If\ no\ thread\ name\ is\ set,\ this\ will\ return\ a\ hexadecimal\ thread\ id.}}
+\DoxyCodeLine{00721\ \textcolor{comment}{\ \ \ \ \ \ \ \`{}length`\ should\ be\ the\ number\ of\ bytes\ available\ in\ the\ buffer.}}
+\DoxyCodeLine{00722\ \textcolor{comment}{\ \ \ \ \ \ \ 17\ is\ a\ good\ number\ for\ length.}}
+\DoxyCodeLine{00723\ \textcolor{comment}{\ \ \ \ \ \ \ \`{}right\_align\_hex\_id`\ means\ any\ hexadecimal\ thread\ id\ will\ be\ written\ to\ the\ end\ of\ buffer.}}
+\DoxyCodeLine{00724\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00725\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00726\ \ \ \ \ \textcolor{keywordtype}{void}\ get\_thread\_name(\textcolor{keywordtype}{char}*\ buffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ length,\ \textcolor{keywordtype}{bool}\ right\_align\_hex\_id);}
+\DoxyCodeLine{00727\ }
+\DoxyCodeLine{00728\ \ \ \ \ \textcolor{comment}{/*\ Generates\ a\ readable\ stacktrace\ as\ a\ string.}}
+\DoxyCodeLine{00729\ \textcolor{comment}{\ \ \ \ \ \ \ 'skip'\ specifies\ how\ many\ stack\ frames\ to\ skip.}}
+\DoxyCodeLine{00730\ \textcolor{comment}{\ \ \ \ \ \ \ For\ instance,\ the\ default\ skip\ (1)\ means:}}
+\DoxyCodeLine{00731\ \textcolor{comment}{\ \ \ \ \ \ \ don't\ include\ the\ call\ to\ loguru::stacktrace\ in\ the\ stack\ trace.\ */}}
+\DoxyCodeLine{00732\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00733\ \ \ \ \ Text\ stacktrace(\textcolor{keywordtype}{int}\ skip\ =\ 1);}
+\DoxyCodeLine{00734\ }
+\DoxyCodeLine{00735\ \ \ \ \ \textcolor{comment}{/*\ \ Add\ a\ string\ to\ be\ replaced\ with\ something\ else\ in\ the\ stack\ output.}}
+\DoxyCodeLine{00736\ \textcolor{comment}{}}
+\DoxyCodeLine{00737\ \textcolor{comment}{\ \ \ \ \ \ \ \ For\ instance,\ instead\ of\ having\ a\ stack\ trace\ look\ like\ this:}}
+\DoxyCodeLine{00738\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ 0x41f541\ some\_function(std::basic\_ofstream<char,\ std::char\_traits<char>\ >\&)}}
+\DoxyCodeLine{00739\ \textcolor{comment}{\ \ \ \ \ \ \ \ You\ can\ clean\ it\ up\ with:}}
+\DoxyCodeLine{00740\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ auto\ verbose\_type\_name\ =\ loguru::demangle(typeid(std::ofstream).name());}}
+\DoxyCodeLine{00741\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ loguru::add\_stack\_cleanup(verbose\_type\_name.c\_str();\ "{}std::ofstream"{});}}
+\DoxyCodeLine{00742\ \textcolor{comment}{\ \ \ \ \ \ \ \ So\ the\ next\ time\ you\ will\ instead\ see:}}
+\DoxyCodeLine{00743\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ 0x41f541\ some\_function(std::ofstream\&)}}
+\DoxyCodeLine{00744\ \textcolor{comment}{}}
+\DoxyCodeLine{00745\ \textcolor{comment}{\ \ \ \ \ \ \ \ \`{}replace\_with\_this`\ must\ be\ shorter\ than\ \`{}find\_this`.}}
+\DoxyCodeLine{00746\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00747\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00748\ \ \ \ \ \textcolor{keywordtype}{void}\ add\_stack\_cleanup(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ find\_this,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ replace\_with\_this);}
+\DoxyCodeLine{00749\ }
+\DoxyCodeLine{00750\ \ \ \ \ \textcolor{comment}{//\ Example:\ demangle(typeid(std::ofstream).name())\ -\/>\ "{}std::basic\_ofstream<char,\ std::char\_traits<char>\ >"{}}}
+\DoxyCodeLine{00751\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00752\ \ \ \ \ Text\ demangle(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name);}
+\DoxyCodeLine{00753\ }
+\DoxyCodeLine{00754\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00755\ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00756\ \textcolor{comment}{\ \ \ \ Not\ all\ terminals\ support\ colors,\ but\ if\ they\ do,\ and\ g\_colorlogtostderr}}
+\DoxyCodeLine{00757\ \textcolor{comment}{\ \ \ \ is\ set,\ Loguru\ will\ write\ them\ to\ stderr\ to\ make\ errors\ in\ red,\ etc.}}
+\DoxyCodeLine{00758\ \textcolor{comment}{}}
+\DoxyCodeLine{00759\ \textcolor{comment}{\ \ \ \ You\ also\ have\ the\ option\ to\ manually\ use\ them,\ via\ the\ function\ below.}}
+\DoxyCodeLine{00760\ \textcolor{comment}{}}
+\DoxyCodeLine{00761\ \textcolor{comment}{\ \ \ \ Note,\ however,\ that\ if\ you\ do,\ the\ color\ codes\ could\ end\ up\ in\ your\ logfile!}}
+\DoxyCodeLine{00762\ \textcolor{comment}{}}
+\DoxyCodeLine{00763\ \textcolor{comment}{\ \ \ \ This\ means\ if\ you\ intend\ to\ use\ them\ functions\ you\ should\ either:}}
+\DoxyCodeLine{00764\ \textcolor{comment}{\ \ \ \ \ \ \ \ *\ Use\ them\ on\ the\ stderr/stdout\ directly\ (bypass\ Loguru).}}
+\DoxyCodeLine{00765\ \textcolor{comment}{\ \ \ \ \ \ \ \ *\ Don't\ add\ file\ outputs\ to\ Loguru.}}
+\DoxyCodeLine{00766\ \textcolor{comment}{\ \ \ \ \ \ \ \ *\ Expect\ some\ \(\backslash\)e[1m\ things\ in\ your\ logfile.}}
+\DoxyCodeLine{00767\ \textcolor{comment}{}}
+\DoxyCodeLine{00768\ \textcolor{comment}{\ \ \ \ Usage:}}
+\DoxyCodeLine{00769\ \textcolor{comment}{\ \ \ \ \ \ \ \ printf("{}\%sRed\%sGreen\%sBold\ green\%sClear\ again\(\backslash\)n"{},}}
+\DoxyCodeLine{00770\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ loguru::terminal\_red(),\ loguru::terminal\_green(),}}
+\DoxyCodeLine{00771\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ loguru::terminal\_bold(),\ loguru::terminal\_reset());}}
+\DoxyCodeLine{00772\ \textcolor{comment}{}}
+\DoxyCodeLine{00773\ \textcolor{comment}{\ \ \ \ If\ the\ terminal\ at\ hand\ does\ not\ support\ colors\ the\ above\ output}}
+\DoxyCodeLine{00774\ \textcolor{comment}{\ \ \ \ will\ just\ not\ have\ funky\ \(\backslash\)e[1m\ things\ showing.}}
+\DoxyCodeLine{00775\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00776\ }
+\DoxyCodeLine{00777\ \ \ \ \ \textcolor{comment}{//\ Do\ the\ output\ terminal\ support\ colors?}}
+\DoxyCodeLine{00778\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00779\ \ \ \ \ \textcolor{keywordtype}{bool}\ terminal\_has\_color();}
+\DoxyCodeLine{00780\ }
+\DoxyCodeLine{00781\ \ \ \ \ \textcolor{comment}{//\ Colors}}
+\DoxyCodeLine{00782\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_black();}
+\DoxyCodeLine{00783\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_red();}
+\DoxyCodeLine{00784\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_green();}
+\DoxyCodeLine{00785\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_yellow();}
+\DoxyCodeLine{00786\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_blue();}
+\DoxyCodeLine{00787\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_purple();}
+\DoxyCodeLine{00788\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_cyan();}
+\DoxyCodeLine{00789\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_light\_gray();}
+\DoxyCodeLine{00790\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_light\_red();}
+\DoxyCodeLine{00791\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_white();}
+\DoxyCodeLine{00792\ }
+\DoxyCodeLine{00793\ \ \ \ \ \textcolor{comment}{//\ Formating}}
+\DoxyCodeLine{00794\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_bold();}
+\DoxyCodeLine{00795\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_underline();}
+\DoxyCodeLine{00796\ }
+\DoxyCodeLine{00797\ \ \ \ \ \textcolor{comment}{//\ You\ should\ end\ each\ line\ with\ this!}}
+\DoxyCodeLine{00798\ \ \ \ \ LOGURU\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ terminal\_reset();}
+\DoxyCodeLine{00799\ }
+\DoxyCodeLine{00800\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00801\ \ \ \ \ \textcolor{comment}{//\ Error\ context\ related:}}
+\DoxyCodeLine{00802\ }
+\DoxyCodeLine{00803\ \ \ \ \ \textcolor{keyword}{struct\ }StringStream;}
+\DoxyCodeLine{00804\ }
+\DoxyCodeLine{00805\ \ \ \ \ \textcolor{comment}{//\ Use\ this\ in\ your\ EcEntryBase::print\_value\ overload.}}
+\DoxyCodeLine{00806\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00807\ \ \ \ \ \textcolor{keywordtype}{void}\ stream\_print(StringStream\&\ out\_string\_stream,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ text);}
+\DoxyCodeLine{00808\ }
+\DoxyCodeLine{00809\ \ \ \ \ \textcolor{keyword}{class\ }LOGURU\_EXPORT\ EcEntryBase}
+\DoxyCodeLine{00810\ \ \ \ \ \{}
+\DoxyCodeLine{00811\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00812\ \ \ \ \ \ \ \ \ EcEntryBase(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ descr);}
+\DoxyCodeLine{00813\ \ \ \ \ \ \ \ \ \string~EcEntryBase();}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ \ \ EcEntryBase(\textcolor{keyword}{const}\ EcEntryBase\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00815\ \ \ \ \ \ \ \ \ EcEntryBase(EcEntryBase\&\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00816\ \ \ \ \ \ \ \ \ EcEntryBase\&\ operator=(\textcolor{keyword}{const}\ EcEntryBase\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00817\ \ \ \ \ \ \ \ \ EcEntryBase\&\ operator=(EcEntryBase\&\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00818\ }
+\DoxyCodeLine{00819\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ print\_value(StringStream\&\ out\_string\_stream)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00820\ }
+\DoxyCodeLine{00821\ \ \ \ \ \ \ \ \ EcEntryBase*\ previous()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \_previous;\ \}}
+\DoxyCodeLine{00822\ }
+\DoxyCodeLine{00823\ \ \ \ \ \textcolor{comment}{//\ private:}}
+\DoxyCodeLine{00824\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \ \_file;}
+\DoxyCodeLine{00825\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \ \ \ \ \_line;}
+\DoxyCodeLine{00826\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \ \_descr;}
+\DoxyCodeLine{00827\ \ \ \ \ \ \ \ \ EcEntryBase*\ \_previous;}
+\DoxyCodeLine{00828\ \ \ \ \ \};}
+\DoxyCodeLine{00829\ }
+\DoxyCodeLine{00830\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00831\ \ \ \ \ \textcolor{keyword}{class\ }EcEntryData\ :\ \textcolor{keyword}{public}\ EcEntryBase}
+\DoxyCodeLine{00832\ \ \ \ \ \{}
+\DoxyCodeLine{00833\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00834\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Printer\ =\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}(*)(T\ data);}
+\DoxyCodeLine{00835\ }
+\DoxyCodeLine{00836\ \ \ \ \ \ \ \ \ EcEntryData(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ descr,\ T\ data,\ Printer\&\&\ printer)}
+\DoxyCodeLine{00837\ \ \ \ \ \ \ \ \ \ \ \ \ :\ EcEntryBase(file,\ line,\ descr),\ \_data(data),\ \_printer(printer)\ \{\}}
+\DoxyCodeLine{00838\ }
+\DoxyCodeLine{00839\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ print\_value(StringStream\&\ out\_string\_stream)\textcolor{keyword}{\ const\ override}}
+\DoxyCodeLine{00840\ \textcolor{keyword}{\ \ \ \ \ \ \ \ }\{}
+\DoxyCodeLine{00841\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ str\ =\ \_printer(\_data);}
+\DoxyCodeLine{00842\ \ \ \ \ \ \ \ \ \ \ \ \ stream\_print(out\_string\_stream,\ str.c\_str());}
+\DoxyCodeLine{00843\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00844\ }
+\DoxyCodeLine{00845\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00846\ \ \ \ \ \ \ \ \ T\ \ \ \ \ \ \ \_data;}
+\DoxyCodeLine{00847\ \ \ \ \ \ \ \ \ Printer\ \_printer;}
+\DoxyCodeLine{00848\ \ \ \ \ \};}
+\DoxyCodeLine{00849\ }
+\DoxyCodeLine{00850\ \ \ \ \ \textcolor{comment}{//\ template<typename\ Printer>}}
+\DoxyCodeLine{00851\ \ \ \ \ \textcolor{comment}{//\ class\ EcEntryLambda\ :\ public\ EcEntryBase}}
+\DoxyCodeLine{00852\ \ \ \ \ \textcolor{comment}{//\ \{}}
+\DoxyCodeLine{00853\ \ \ \ \ \textcolor{comment}{//\ public:}}
+\DoxyCodeLine{00854\ \ \ \ \ \textcolor{comment}{//\ \ EcEntryLambda(const\ char*\ file,\ unsigned\ line,\ const\ char*\ descr,\ Printer\&\&\ printer)}}
+\DoxyCodeLine{00855\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ :\ EcEntryBase(file,\ line,\ descr),\ \_printer(std::move(printer))\ \{\}}}
+\DoxyCodeLine{00856\ }
+\DoxyCodeLine{00857\ \ \ \ \ \textcolor{comment}{//\ \ virtual\ void\ print\_value(StringStream\&\ out\_string\_stream)\ const\ override}}
+\DoxyCodeLine{00858\ \ \ \ \ \textcolor{comment}{//\ \ \{}}
+\DoxyCodeLine{00859\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ const\ auto\ str\ =\ \_printer();}}
+\DoxyCodeLine{00860\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ stream\_print(out\_string\_stream,\ str.c\_str());}}
+\DoxyCodeLine{00861\ \ \ \ \ \textcolor{comment}{//\ \ \}}}
+\DoxyCodeLine{00862\ }
+\DoxyCodeLine{00863\ \ \ \ \ \textcolor{comment}{//\ private:}}
+\DoxyCodeLine{00864\ \ \ \ \ \textcolor{comment}{//\ \ Printer\ \_printer;}}
+\DoxyCodeLine{00865\ \ \ \ \ \textcolor{comment}{//\ \};}}
+\DoxyCodeLine{00866\ }
+\DoxyCodeLine{00867\ \ \ \ \ \textcolor{comment}{//\ template<typename\ Printer>}}
+\DoxyCodeLine{00868\ \ \ \ \ \textcolor{comment}{//\ EcEntryLambda<Printer>\ make\_ec\_entry\_lambda(const\ char*\ file,\ unsigned\ line,\ const\ char*\ descr,\ Printer\&\&\ printer)}}
+\DoxyCodeLine{00869\ \ \ \ \ \textcolor{comment}{//\ \{}}
+\DoxyCodeLine{00870\ \ \ \ \ \textcolor{comment}{//\ \ return\ \{file,\ line,\ descr,\ std::move(printer)\};}}
+\DoxyCodeLine{00871\ \ \ \ \ \textcolor{comment}{//\ \}}}
+\DoxyCodeLine{00872\ }
+\DoxyCodeLine{00873\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00874\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structloguru_1_1decay__char__array}{decay\_char\_array}}\ \{\ \textcolor{keyword}{using\ }type\ =\ T;\ \};}
+\DoxyCodeLine{00875\ }
+\DoxyCodeLine{00876\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ \ N>}
+\DoxyCodeLine{00877\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structloguru_1_1decay__char__array}{decay\_char\_array}}<const\ char(\&)[N]>\ \{\ \textcolor{keyword}{using\ }type\ =\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*;\ \};}
+\DoxyCodeLine{00878\ }
+\DoxyCodeLine{00879\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00880\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structloguru_1_1make__const__ptr}{make\_const\_ptr}}\ \{\ \textcolor{keyword}{using\ }type\ =\ T;\ \};}
+\DoxyCodeLine{00881\ }
+\DoxyCodeLine{00882\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00883\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structloguru_1_1make__const__ptr}{make\_const\_ptr}}<T*>\ \{\ \textcolor{keyword}{using\ }type\ =\ \textcolor{keyword}{const}\ T*;\ \};}
+\DoxyCodeLine{00884\ }
+\DoxyCodeLine{00885\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00886\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structloguru_1_1make__ec__type}{make\_ec\_type}}\ \{\ \textcolor{keyword}{using\ }type\ =\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{structloguru_1_1make__const__ptr}{make\_const\_ptr<typename\ decay\_char\_array<T>::type}}>::type;\ \};}
+\DoxyCodeLine{00887\ }
+\DoxyCodeLine{00888\ \ \ \ \ \textcolor{comment}{/*\ \ A\ stack\ trace\ gives\ you\ the\ names\ of\ the\ function\ at\ the\ point\ of\ a\ crash.}}
+\DoxyCodeLine{00889\ \textcolor{comment}{\ \ \ \ \ \ \ \ With\ ERROR\_CONTEXT,\ you\ can\ also\ get\ the\ values\ of\ select\ local\ variables.}}
+\DoxyCodeLine{00890\ \textcolor{comment}{\ \ \ \ \ \ \ \ Usage:}}
+\DoxyCodeLine{00891\ \textcolor{comment}{}}
+\DoxyCodeLine{00892\ \textcolor{comment}{\ \ \ \ \ \ \ \ void\ process\_customers(const\ std::string\&\ filename)}}
+\DoxyCodeLine{00893\ \textcolor{comment}{\ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00894\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ ERROR\_CONTEXT("{}Processing\ file"{},\ filename.c\_str());}}
+\DoxyCodeLine{00895\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ for\ (int\ customer\_index\ :\ ...)}}
+\DoxyCodeLine{00896\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00897\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ERROR\_CONTEXT("{}Customer\ index"{},\ customer\_index);}}
+\DoxyCodeLine{00898\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ...}}
+\DoxyCodeLine{00899\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00900\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00901\ \textcolor{comment}{}}
+\DoxyCodeLine{00902\ \textcolor{comment}{\ \ \ \ \ \ \ \ The\ context\ is\ in\ effect\ during\ the\ scope\ of\ the\ ERROR\_CONTEXT.}}
+\DoxyCodeLine{00903\ \textcolor{comment}{\ \ \ \ \ \ \ \ Use\ loguru::get\_error\_context()\ to\ get\ the\ contents\ of\ the\ active\ error\ contexts.}}
+\DoxyCodeLine{00904\ \textcolor{comment}{}}
+\DoxyCodeLine{00905\ \textcolor{comment}{\ \ \ \ \ \ \ \ Example\ result:}}
+\DoxyCodeLine{00906\ \textcolor{comment}{}}
+\DoxyCodeLine{00907\ \textcolor{comment}{\ \ \ \ \ \ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00908\ \textcolor{comment}{\ \ \ \ \ \ \ \ [ErrorContext]\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ main.cpp:416\ \ \ Processing\ file:\ \ \ \ "{}customers.json"{}}}
+\DoxyCodeLine{00909\ \textcolor{comment}{\ \ \ \ \ \ \ \ [ErrorContext]\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ main.cpp:417\ \ \ Customer\ index:\ \ \ \ \ 42}}
+\DoxyCodeLine{00910\ \textcolor{comment}{\ \ \ \ \ \ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00911\ \textcolor{comment}{}}
+\DoxyCodeLine{00912\ \textcolor{comment}{\ \ \ \ \ \ \ \ Error\ contexts\ are\ printed\ automatically\ on\ crashes,\ and\ only\ on\ crashes.}}
+\DoxyCodeLine{00913\ \textcolor{comment}{\ \ \ \ \ \ \ \ This\ makes\ them\ much\ faster\ than\ logging\ the\ value\ of\ a\ variable.}}
+\DoxyCodeLine{00914\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00915\ \textcolor{preprocessor}{\ \ \ \ \#define\ ERROR\_CONTEXT(descr,\ data)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00916\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ const\ loguru::EcEntryData<loguru::make\_ec\_type<decltype(data)>::type>\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00917\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ LOGURU\_ANONYMOUS\_VARIABLE(error\_context\_scope\_)(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00918\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_\_FILE\_\_,\ \_\_LINE\_\_,\ descr,\ data,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00919\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ static\_cast<loguru::EcEntryData<loguru::make\_ec\_type<decltype(data)>::type>::Printer>(loguru::ec\_to\_text)\ )\ }\textcolor{comment}{//\ For\ better\ error\ messages}}
+\DoxyCodeLine{00920\ }
+\DoxyCodeLine{00921\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00922\ \textcolor{comment}{\ \ \ \ \#define\ ERROR\_CONTEXT(descr,\ data)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00923\ \textcolor{comment}{\ \ \ \ \ \ \ \ const\ auto\ LOGURU\_ANONYMOUS\_VARIABLE(error\_context\_scope\_)(\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00924\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ loguru::make\_ec\_entry\_lambda(\_\_FILE\_\_,\ \_\_LINE\_\_,\ descr,\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00925\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ [=]()\{\ return\ loguru::ec\_to\_text(data);\ \}))}}
+\DoxyCodeLine{00926\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00927\ }
+\DoxyCodeLine{00928\ \ \ \ \ \textcolor{keyword}{using\ }EcHandle\ =\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classloguru_1_1_ec_entry_base}{EcEntryBase}}*;}
+\DoxyCodeLine{00929\ }
+\DoxyCodeLine{00930\ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00931\ \textcolor{comment}{\ \ \ \ \ \ \ \ Get\ a\ light-\/weight\ handle\ to\ the\ error\ context\ stack\ on\ this\ thread.}}
+\DoxyCodeLine{00932\ \textcolor{comment}{\ \ \ \ \ \ \ \ The\ handle\ is\ valid\ as\ long\ as\ the\ current\ thread\ has\ no\ changes\ to\ its\ error\ context\ stack.}}
+\DoxyCodeLine{00933\ \textcolor{comment}{\ \ \ \ \ \ \ \ You\ can\ pass\ the\ handle\ to\ loguru::get\_error\_context\ on\ another\ thread.}}
+\DoxyCodeLine{00934\ \textcolor{comment}{\ \ \ \ \ \ \ \ This\ can\ be\ very\ useful\ for\ when\ you\ have\ a\ parent\ thread\ spawning\ several\ working\ threads,}}
+\DoxyCodeLine{00935\ \textcolor{comment}{\ \ \ \ \ \ \ \ and\ you\ want\ the\ error\ context\ of\ the\ parent\ thread\ to\ get\ printed\ (too)\ when\ there\ is\ an}}
+\DoxyCodeLine{00936\ \textcolor{comment}{\ \ \ \ \ \ \ \ error\ on\ the\ child\ thread.\ You\ can\ accomplish\ this\ thusly:}}
+\DoxyCodeLine{00937\ \textcolor{comment}{}}
+\DoxyCodeLine{00938\ \textcolor{comment}{\ \ \ \ \ \ \ \ void\ foo(const\ char*\ parameter)}}
+\DoxyCodeLine{00939\ \textcolor{comment}{\ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00940\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ ERROR\_CONTEXT("{}parameter"{},\ parameter)}}
+\DoxyCodeLine{00941\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ const\ auto\ parent\_ec\_handle\ =\ loguru::get\_thread\_ec\_handle();}}
+\DoxyCodeLine{00942\ \textcolor{comment}{}}
+\DoxyCodeLine{00943\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ std::thread([=]\{}}
+\DoxyCodeLine{00944\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ loguru::set\_thread\_name("{}child\ thread"{});}}
+\DoxyCodeLine{00945\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ERROR\_CONTEXT("{}parent\ context"{},\ parent\_ec\_handle);}}
+\DoxyCodeLine{00946\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dangerous\_code();}}
+\DoxyCodeLine{00947\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \}.join();}}
+\DoxyCodeLine{00948\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00949\ \textcolor{comment}{}}
+\DoxyCodeLine{00950\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{00951\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00952\ \ \ \ \ EcHandle\ get\_thread\_ec\_handle();}
+\DoxyCodeLine{00953\ }
+\DoxyCodeLine{00954\ \ \ \ \ \textcolor{comment}{//\ Get\ a\ string\ describing\ the\ current\ stack\ of\ error\ context.\ Empty\ string\ if\ there\ is\ none.}}
+\DoxyCodeLine{00955\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00956\ \ \ \ \ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ get\_error\_context();}
+\DoxyCodeLine{00957\ }
+\DoxyCodeLine{00958\ \ \ \ \ \textcolor{comment}{//\ Get\ a\ string\ describing\ the\ error\ context\ of\ the\ given\ thread\ handle.}}
+\DoxyCodeLine{00959\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{00960\ \ \ \ \ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ get\_error\_context\_for(EcHandle\ ec\_handle);}
+\DoxyCodeLine{00961\ }
+\DoxyCodeLine{00962\ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00963\ }
+\DoxyCodeLine{00964\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ data);}
+\DoxyCodeLine{00965\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{char}\ data);}
+\DoxyCodeLine{00966\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{int}\ data);}
+\DoxyCodeLine{00967\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ data);}
+\DoxyCodeLine{00968\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{long}\ data);}
+\DoxyCodeLine{00969\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ data);}
+\DoxyCodeLine{00970\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ data);}
+\DoxyCodeLine{00971\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ data);}
+\DoxyCodeLine{00972\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{float}\ data);}
+\DoxyCodeLine{00973\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{double}\ data);}
+\DoxyCodeLine{00974\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{double}\ data);}
+\DoxyCodeLine{00975\ \ \ \ \ LOGURU\_EXPORT\ \doxymbox{\hyperlink{classloguru_1_1_text}{Text}}\ ec\_to\_text(EcHandle);}
+\DoxyCodeLine{00976\ }
+\DoxyCodeLine{00977\ \ \ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00978\ \textcolor{comment}{\ \ \ \ You\ can\ add\ ERROR\_CONTEXT\ support\ for\ your\ own\ types\ by\ overloading\ ec\_to\_text.\ Here's\ how:}}
+\DoxyCodeLine{00979\ \textcolor{comment}{}}
+\DoxyCodeLine{00980\ \textcolor{comment}{\ \ \ \ some.hpp:}}
+\DoxyCodeLine{00981\ \textcolor{comment}{\ \ \ \ \ \ \ \ namespace\ loguru\ \{}}
+\DoxyCodeLine{00982\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ Text\ ec\_to\_text(MySmallType\ data)}}
+\DoxyCodeLine{00983\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ Text\ ec\_to\_text(const\ MyBigType*\ data)}}
+\DoxyCodeLine{00984\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}\ //\ namespace\ loguru}}
+\DoxyCodeLine{00985\ \textcolor{comment}{}}
+\DoxyCodeLine{00986\ \textcolor{comment}{\ \ \ \ some.cpp:}}
+\DoxyCodeLine{00987\ \textcolor{comment}{\ \ \ \ \ \ \ \ namespace\ loguru\ \{}}
+\DoxyCodeLine{00988\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ Text\ ec\_to\_text(MySmallType\ small\_value)}}
+\DoxyCodeLine{00989\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00990\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ //\ Called\ only\ when\ needed,\ i.e.\ on\ a\ crash.}}
+\DoxyCodeLine{00991\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ str\ =\ small\_value.as\_string();\ //\ Format\ 'small\_value'\ here\ somehow.}}
+\DoxyCodeLine{00992\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ Text\{STRDUP(str.c\_str())\};}}
+\DoxyCodeLine{00993\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00994\ \textcolor{comment}{}}
+\DoxyCodeLine{00995\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ Text\ ec\_to\_text(const\ MyBigType*\ big\_value)}}
+\DoxyCodeLine{00996\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00997\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ //\ Called\ only\ when\ needed,\ i.e.\ on\ a\ crash.}}
+\DoxyCodeLine{00998\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ str\ =\ big\_value-\/>as\_string();\ //\ Format\ 'big\_value'\ here\ somehow.}}
+\DoxyCodeLine{00999\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ Text\{STRDUP(str.c\_str())\};}}
+\DoxyCodeLine{01000\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{01001\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}\ //\ namespace\ loguru}}
+\DoxyCodeLine{01002\ \textcolor{comment}{}}
+\DoxyCodeLine{01003\ \textcolor{comment}{\ \ \ \ Any\ file\ that\ include\ some.hpp:}}
+\DoxyCodeLine{01004\ \textcolor{comment}{\ \ \ \ \ \ \ \ void\ foo(MySmallType\ small,\ const\ MyBigType\&\ big)}}
+\DoxyCodeLine{01005\ \textcolor{comment}{\ \ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{01006\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ ERROR\_CONTEXT("{}Small"{},\ small);\ //\ Copy\ ´small`\ by\ value.}}
+\DoxyCodeLine{01007\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ ERROR\_CONTEXT("{}Big"{},\ \ \ \&big);\ \ //\ \`{}big`\ should\ not\ change\ during\ this\ scope!}}
+\DoxyCodeLine{01008\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ ....}}
+\DoxyCodeLine{01009\ \textcolor{comment}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{01010\ \textcolor{comment}{\ \ \ \ */}}
+\DoxyCodeLine{01011\ \}\ \textcolor{comment}{//\ namespace\ loguru}}
+\DoxyCodeLine{01012\ }
+\DoxyCodeLine{01013\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01014\ \textcolor{comment}{//\ Logging\ macros}}
+\DoxyCodeLine{01015\ }
+\DoxyCodeLine{01016\ \textcolor{comment}{//\ LOG\_F(2,\ "{}Only\ logged\ if\ verbosity\ is\ 2\ or\ higher:\ \%d"{},\ some\_number);}}
+\DoxyCodeLine{01017\ \textcolor{preprocessor}{\#define\ VLOG\_F(verbosity,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01018\ \textcolor{preprocessor}{\ \ \ \ ((verbosity)\ >\ loguru::current\_verbosity\_cutoff())\ ?\ (void)0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01019\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ loguru::log(verbosity,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01020\ }
+\DoxyCodeLine{01021\ \textcolor{comment}{//\ LOG\_F(INFO,\ "{}Foo:\ \%d"{},\ some\_number);}}
+\DoxyCodeLine{01022\ \textcolor{preprocessor}{\#define\ LOG\_F(verbosity\_name,\ ...)\ VLOG\_F(loguru::Verbosity\_\ \#\#\ verbosity\_name,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01023\ }
+\DoxyCodeLine{01024\ \textcolor{preprocessor}{\#define\ VLOG\_IF\_F(verbosity,\ cond,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01025\ \textcolor{preprocessor}{\ \ \ \ ((verbosity)\ >\ loguru::current\_verbosity\_cutoff()\ ||\ (cond)\ ==\ false)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01026\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ ?\ (void)0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01027\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ :\ loguru::log(verbosity,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01028\ }
+\DoxyCodeLine{01029\ \textcolor{preprocessor}{\#define\ LOG\_IF\_F(verbosity\_name,\ cond,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01030\ \textcolor{preprocessor}{\ \ \ \ VLOG\_IF\_F(loguru::Verbosity\_\ \#\#\ verbosity\_name,\ cond,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01031\ }
+\DoxyCodeLine{01032\ \textcolor{preprocessor}{\#define\ VLOG\_SCOPE\_F(verbosity,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01033\ \textcolor{preprocessor}{\ \ \ \ loguru::LogScopeRAII\ LOGURU\_ANONYMOUS\_VARIABLE(error\_context\_RAII\_)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01034\ \textcolor{preprocessor}{\ \ \ \ ((verbosity)\ >\ loguru::current\_verbosity\_cutoff())\ ?\ loguru::LogScopeRAII()\ :\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01035\ \textcolor{preprocessor}{\ \ \ \ loguru::LogScopeRAII(verbosity,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01036\ }
+\DoxyCodeLine{01037\ \textcolor{comment}{//\ Raw\ logging\ -\/\ no\ preamble,\ no\ indentation.\ Slightly\ faster\ than\ full\ logging.}}
+\DoxyCodeLine{01038\ \textcolor{preprocessor}{\#define\ RAW\_VLOG\_F(verbosity,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01039\ \textcolor{preprocessor}{\ \ \ \ ((verbosity)\ >\ loguru::current\_verbosity\_cutoff())\ ?\ (void)0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01040\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ loguru::raw\_log(verbosity,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01041\ }
+\DoxyCodeLine{01042\ \textcolor{preprocessor}{\#define\ RAW\_LOG\_F(verbosity\_name,\ ...)\ RAW\_VLOG\_F(loguru::Verbosity\_\ \#\#\ verbosity\_name,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01043\ }
+\DoxyCodeLine{01044\ \textcolor{comment}{//\ Use\ to\ book-\/end\ a\ scope.\ Affects\ logging\ on\ all\ threads.}}
+\DoxyCodeLine{01045\ \textcolor{preprocessor}{\#define\ LOG\_SCOPE\_F(verbosity\_name,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01046\ \textcolor{preprocessor}{\ \ \ \ VLOG\_SCOPE\_F(loguru::Verbosity\_\ \#\#\ verbosity\_name,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01047\ }
+\DoxyCodeLine{01048\ \textcolor{preprocessor}{\#define\ LOG\_SCOPE\_FUNCTION(verbosity\_name)\ LOG\_SCOPE\_F(verbosity\_name,\ \_\_func\_\_)}}
+\DoxyCodeLine{01049\ }
+\DoxyCodeLine{01050\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01051\ \textcolor{comment}{//\ ABORT\_F\ macro.\ Usage:\ \ ABORT\_F("{}Cause\ of\ error:\ \%s"{},\ error\_str);}}
+\DoxyCodeLine{01052\ }
+\DoxyCodeLine{01053\ \textcolor{comment}{//\ Message\ is\ optional}}
+\DoxyCodeLine{01054\ \textcolor{preprocessor}{\#define\ ABORT\_F(...)\ loguru::log\_and\_abort(0,\ "{}ABORT:\ "{},\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01055\ }
+\DoxyCodeLine{01056\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01057\ \textcolor{comment}{//\ CHECK\_F\ macros:}}
+\DoxyCodeLine{01058\ }
+\DoxyCodeLine{01059\ \textcolor{preprocessor}{\#define\ CHECK\_WITH\_INFO\_F(test,\ info,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01060\ \textcolor{preprocessor}{\ \ \ \ LOGURU\_PREDICT\_TRUE((test)\ ==\ true)\ ?\ (void)0\ :\ loguru::log\_and\_abort(0,\ "{}CHECK\ FAILED:\ \ "{}\ info\ "{}\ \ "{},\ \_\_FILE\_\_,\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01061\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \_\_LINE\_\_,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01062\ }
+\DoxyCodeLine{01063\ \textcolor{comment}{/*\ Checked\ at\ runtime\ too.\ Will\ print\ error,\ then\ call\ fatal\_handler\ (if\ any),\ then\ 'abort'.}}
+\DoxyCodeLine{01064\ \textcolor{comment}{\ \ \ Note\ that\ the\ test\ must\ be\ boolean.}}
+\DoxyCodeLine{01065\ \textcolor{comment}{\ \ \ CHECK\_F(ptr);\ will\ not\ compile,\ but\ CHECK\_F(ptr\ !=\ nullptr);\ will.\ */}}
+\DoxyCodeLine{01066\ \textcolor{preprocessor}{\#define\ CHECK\_F(test,\ ...)\ CHECK\_WITH\_INFO\_F(test,\ \#test,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01067\ }
+\DoxyCodeLine{01068\ \textcolor{preprocessor}{\#define\ CHECK\_NOTNULL\_F(x,\ ...)\ CHECK\_WITH\_INFO\_F((x)\ !=\ nullptr,\ \#x\ "{}\ !=\ nullptr"{},\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01069\ }
+\DoxyCodeLine{01070\ \textcolor{preprocessor}{\#define\ CHECK\_OP\_F(expr\_left,\ expr\_right,\ op,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01071\ \textcolor{preprocessor}{\ \ \ \ do\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01072\ \textcolor{preprocessor}{\ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01073\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ auto\ val\_left\ =\ expr\_left;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01074\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ auto\ val\_right\ =\ expr\_right;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01075\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ if\ (!\ LOGURU\_PREDICT\_TRUE(val\_left\ op\ val\_right))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01076\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01077\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ auto\ str\_left\ =\ loguru::format\_value(val\_left);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01078\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ auto\ str\_right\ =\ loguru::format\_value(val\_right);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01079\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ auto\ fail\_info\ =\ loguru::textprintf("{}CHECK\ FAILED:\ \ "{}\ LOGURU\_FMT(s)\ "{}\ "{}\ LOGURU\_FMT(s)\ "{}\ "{}\ LOGURU\_FMT(s)\ "{}\ \ ("{}\ LOGURU\_FMT(s)\ "{}\ "{}\ LOGURU\_FMT(s)\ "{}\ "{}\ LOGURU\_FMT(s)\ "{})\ \ "{},\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01080\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#expr\_left,\ \#op,\ \#expr\_right,\ str\_left.c\_str(),\ \#op,\ str\_right.c\_str());\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01081\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ auto\ user\_msg\ =\ loguru::textprintf(\_\_VA\_ARGS\_\_);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01082\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ loguru::log\_and\_abort(0,\ fail\_info.c\_str(),\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01083\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ LOGURU\_FMT(s),\ user\_msg.c\_str());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01084\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01085\ \textcolor{preprocessor}{\ \ \ \ \}\ while\ (false)}}
+\DoxyCodeLine{01086\ }
+\DoxyCodeLine{01087\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_DEBUG\_LOGGING}}
+\DoxyCodeLine{01088\ \textcolor{preprocessor}{\ \ \ \ \#ifndef\ NDEBUG}}
+\DoxyCodeLine{01089\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#define\ LOGURU\_DEBUG\_LOGGING\ 1}}
+\DoxyCodeLine{01090\ \textcolor{preprocessor}{\ \ \ \ \#else}}
+\DoxyCodeLine{01091\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#define\ LOGURU\_DEBUG\_LOGGING\ 0}}
+\DoxyCodeLine{01092\ \textcolor{preprocessor}{\ \ \ \ \#endif}}
+\DoxyCodeLine{01093\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01094\ }
+\DoxyCodeLine{01095\ \textcolor{preprocessor}{\#if\ LOGURU\_DEBUG\_LOGGING}}
+\DoxyCodeLine{01096\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging\ enabled:}}
+\DoxyCodeLine{01097\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\_F(verbosity\_name,\ ...)\ \ \ \ \ LOG\_F(verbosity\_name,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01098\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\_F(verbosity,\ ...)\ \ \ \ \ \ \ \ \ VLOG\_F(verbosity,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01099\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\_IF\_F(verbosity\_name,\ ...)\ \ LOG\_IF\_F(verbosity\_name,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01100\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\_IF\_F(verbosity,\ ...)\ \ \ \ \ \ VLOG\_IF\_F(verbosity,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01101\ \textcolor{preprocessor}{\ \ \ \ \#define\ DRAW\_LOG\_F(verbosity\_name,\ ...)\ RAW\_LOG\_F(verbosity\_name,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01102\ \textcolor{preprocessor}{\ \ \ \ \#define\ DRAW\_VLOG\_F(verbosity,\ ...)\ \ \ \ \ RAW\_VLOG\_F(verbosity,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01103\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{01104\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging\ disabled:}}
+\DoxyCodeLine{01105\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\_F(verbosity\_name,\ ...)}}
+\DoxyCodeLine{01106\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\_F(verbosity,\ ...)}}
+\DoxyCodeLine{01107\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\_IF\_F(verbosity\_name,\ ...)}}
+\DoxyCodeLine{01108\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\_IF\_F(verbosity,\ ...)}}
+\DoxyCodeLine{01109\ \textcolor{preprocessor}{\ \ \ \ \#define\ DRAW\_LOG\_F(verbosity\_name,\ ...)}}
+\DoxyCodeLine{01110\ \textcolor{preprocessor}{\ \ \ \ \#define\ DRAW\_VLOG\_F(verbosity,\ ...)}}
+\DoxyCodeLine{01111\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01112\ }
+\DoxyCodeLine{01113\ \textcolor{preprocessor}{\#define\ CHECK\_EQ\_F(a,\ b,\ ...)\ CHECK\_OP\_F(a,\ b,\ ==,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01114\ \textcolor{preprocessor}{\#define\ CHECK\_NE\_F(a,\ b,\ ...)\ CHECK\_OP\_F(a,\ b,\ !=,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01115\ \textcolor{preprocessor}{\#define\ CHECK\_LT\_F(a,\ b,\ ...)\ CHECK\_OP\_F(a,\ b,\ <\ ,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01116\ \textcolor{preprocessor}{\#define\ CHECK\_GT\_F(a,\ b,\ ...)\ CHECK\_OP\_F(a,\ b,\ >\ ,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01117\ \textcolor{preprocessor}{\#define\ CHECK\_LE\_F(a,\ b,\ ...)\ CHECK\_OP\_F(a,\ b,\ <=,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01118\ \textcolor{preprocessor}{\#define\ CHECK\_GE\_F(a,\ b,\ ...)\ CHECK\_OP\_F(a,\ b,\ >=,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01119\ }
+\DoxyCodeLine{01120\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_DEBUG\_CHECKS}}
+\DoxyCodeLine{01121\ \textcolor{preprocessor}{\ \ \ \ \#ifndef\ NDEBUG}}
+\DoxyCodeLine{01122\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#define\ LOGURU\_DEBUG\_CHECKS\ 1}}
+\DoxyCodeLine{01123\ \textcolor{preprocessor}{\ \ \ \ \#else}}
+\DoxyCodeLine{01124\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#define\ LOGURU\_DEBUG\_CHECKS\ 0}}
+\DoxyCodeLine{01125\ \textcolor{preprocessor}{\ \ \ \ \#endif}}
+\DoxyCodeLine{01126\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01127\ }
+\DoxyCodeLine{01128\ \textcolor{preprocessor}{\#if\ LOGURU\_DEBUG\_CHECKS}}
+\DoxyCodeLine{01129\ \ \ \ \ \textcolor{comment}{//\ Debug\ checks\ enabled:}}
+\DoxyCodeLine{01130\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_F(test,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_F(test,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01131\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NOTNULL\_F(x,\ ...)\ \ \ \ \ \ \ \ CHECK\_NOTNULL\_F(x,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01132\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_EQ\_F(a,\ b,\ ...)\ \ \ \ \ \ \ \ \ \ CHECK\_EQ\_F(a,\ b,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01133\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NE\_F(a,\ b,\ ...)\ \ \ \ \ \ \ \ \ \ CHECK\_NE\_F(a,\ b,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01134\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LT\_F(a,\ b,\ ...)\ \ \ \ \ \ \ \ \ \ CHECK\_LT\_F(a,\ b,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01135\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LE\_F(a,\ b,\ ...)\ \ \ \ \ \ \ \ \ \ CHECK\_LE\_F(a,\ b,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01136\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GT\_F(a,\ b,\ ...)\ \ \ \ \ \ \ \ \ \ CHECK\_GT\_F(a,\ b,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01137\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GE\_F(a,\ b,\ ...)\ \ \ \ \ \ \ \ \ \ CHECK\_GE\_F(a,\ b,\ \#\#\_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{01138\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{01139\ \ \ \ \ \textcolor{comment}{//\ Debug\ checks\ disabled:}}
+\DoxyCodeLine{01140\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_F(test,\ ...)}}
+\DoxyCodeLine{01141\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NOTNULL\_F(x,\ ...)}}
+\DoxyCodeLine{01142\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_EQ\_F(a,\ b,\ ...)}}
+\DoxyCodeLine{01143\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NE\_F(a,\ b,\ ...)}}
+\DoxyCodeLine{01144\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LT\_F(a,\ b,\ ...)}}
+\DoxyCodeLine{01145\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LE\_F(a,\ b,\ ...)}}
+\DoxyCodeLine{01146\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GT\_F(a,\ b,\ ...)}}
+\DoxyCodeLine{01147\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GE\_F(a,\ b,\ ...)}}
+\DoxyCodeLine{01148\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ NDEBUG}}
+\DoxyCodeLine{01149\ }
+\DoxyCodeLine{01150\ }
+\DoxyCodeLine{01151\ \textcolor{preprocessor}{\#if\ LOGURU\_REDEFINE\_ASSERT}}
+\DoxyCodeLine{01152\ \textcolor{preprocessor}{\ \ \ \ \#undef\ assert}}
+\DoxyCodeLine{01153\ \textcolor{preprocessor}{\ \ \ \ \#ifndef\ NDEBUG}}
+\DoxyCodeLine{01154\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Debug:}}
+\DoxyCodeLine{01155\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#define\ assert(test)\ CHECK\_WITH\_INFO\_F(!!(test),\ \#test)\ }\textcolor{comment}{//\ HACK}}
+\DoxyCodeLine{01156\ \textcolor{preprocessor}{\ \ \ \ \#else}}
+\DoxyCodeLine{01157\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#define\ assert(test)}}
+\DoxyCodeLine{01158\ \textcolor{preprocessor}{\ \ \ \ \#endif}}
+\DoxyCodeLine{01159\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LOGURU\_REDEFINE\_ASSERT}}
+\DoxyCodeLine{01160\ }
+\DoxyCodeLine{01161\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LOGURU\_HAS\_DECLARED\_FORMAT\_HEADER}}
+\DoxyCodeLine{01162\ }
+\DoxyCodeLine{01163\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01164\ \textcolor{comment}{//\ .dP"{}Y8\ 888888\ 88"{}"{}Yb\ 888888\ \ \ \ db\ \ \ \ 8b\ \ \ \ d8\ .dP"{}Y8}}
+\DoxyCodeLine{01165\ \textcolor{comment}{//\ \`{}Ybo."{}\ \ \ 88\ \ \ 88\_\_dP\ 88\_\_\ \ \ \ \ dPYb\ \ \ 88b\ \ d88\ \`{}Ybo."{}}}
+\DoxyCodeLine{01166\ \textcolor{comment}{//\ o.`Y8b\ \ \ 88\ \ \ 88"{}Yb\ \ 88"{}"{}\ \ \ \ dP\_\_Yb\ \ 88YbdP88\ o.`Y8b}}
+\DoxyCodeLine{01167\ \textcolor{comment}{//\ 8bodP'\ \ \ 88\ \ \ 88\ \ Yb\ 888888\ dP"{}"{}"{}"{}Yb\ 88\ YY\ 88\ 8bodP'}}
+\DoxyCodeLine{01168\ }
+\DoxyCodeLine{01169\ \textcolor{preprocessor}{\#if\ LOGURU\_WITH\_STREAMS}}
+\DoxyCodeLine{01170\ \textcolor{preprocessor}{\#ifndef\ LOGURU\_HAS\_DECLARED\_STREAMS\_HEADER}}
+\DoxyCodeLine{01171\ \textcolor{preprocessor}{\#define\ LOGURU\_HAS\_DECLARED\_STREAMS\_HEADER}}
+\DoxyCodeLine{01172\ }
+\DoxyCodeLine{01173\ \textcolor{comment}{/*\ This\ file\ extends\ loguru\ to\ enable\ std::stream-\/style\ logging,\ a\ la\ Glog.}}
+\DoxyCodeLine{01174\ \textcolor{comment}{\ \ \ It's\ an\ optional\ feature\ behind\ the\ LOGURU\_WITH\_STREAMS\ settings}}
+\DoxyCodeLine{01175\ \textcolor{comment}{\ \ \ because\ including\ it\ everywhere\ will\ slow\ down\ compilation\ times.}}
+\DoxyCodeLine{01176\ \textcolor{comment}{*/}}
+\DoxyCodeLine{01177\ }
+\DoxyCodeLine{01178\ \textcolor{preprocessor}{\#include\ <cstdarg>}}
+\DoxyCodeLine{01179\ \textcolor{preprocessor}{\#include\ <sstream>}\ \textcolor{comment}{//\ Adds\ about\ 38\ kLoC\ on\ clang.}}
+\DoxyCodeLine{01180\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{01181\ }
+\DoxyCodeLine{01182\ \textcolor{keyword}{namespace\ }loguru}
+\DoxyCodeLine{01183\ \{}
+\DoxyCodeLine{01184\ \ \ \ \ \textcolor{comment}{//\ Like\ sprintf,\ but\ returns\ the\ formated\ text.}}
+\DoxyCodeLine{01185\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{01186\ \ \ \ \ std::string\ strprintf(LOGURU\_FORMAT\_STRING\_TYPE\ format,\ ...)\ LOGURU\_PRINTF\_LIKE(1,\ 2);}
+\DoxyCodeLine{01187\ }
+\DoxyCodeLine{01188\ \ \ \ \ \textcolor{comment}{//\ Like\ vsprintf,\ but\ returns\ the\ formated\ text.}}
+\DoxyCodeLine{01189\ \ \ \ \ LOGURU\_EXPORT}
+\DoxyCodeLine{01190\ \ \ \ \ std::\textcolor{keywordtype}{string}\ vstrprintf(LOGURU\_FORMAT\_STRING\_TYPE\ format,\ va\_list)\ LOGURU\_PRINTF\_LIKE(1,\ 0);}
+\DoxyCodeLine{01191\ }
+\DoxyCodeLine{01192\ \ \ \ \ class\ LOGURU\_EXPORT\ StreamLogger}
+\DoxyCodeLine{01193\ \ \ \ \ \{}
+\DoxyCodeLine{01194\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{01195\ \ \ \ \ \ \ \ \ StreamLogger(Verbosity\ verbosity,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line)\ :\ \_verbosity(verbosity),\ \_file(file),\ \_line(line)\ \{\}}
+\DoxyCodeLine{01196\ \ \ \ \ \ \ \ \ \string~StreamLogger()\ \textcolor{keyword}{noexcept}(\textcolor{keyword}{false});}
+\DoxyCodeLine{01197\ }
+\DoxyCodeLine{01198\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{01199\ \ \ \ \ \ \ \ \ StreamLogger\&\ operator<<(\textcolor{keyword}{const}\ T\&\ t)}
+\DoxyCodeLine{01200\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01201\ \ \ \ \ \ \ \ \ \ \ \ \ \_ss\ <<\ t;}
+\DoxyCodeLine{01202\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01203\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01204\ }
+\DoxyCodeLine{01205\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ std::endl\ and\ other\ iomanip:s.}}
+\DoxyCodeLine{01206\ \ \ \ \ \ \ \ \ StreamLogger\&\ operator<<(std::ostream\&(*f)(std::ostream\&))}
+\DoxyCodeLine{01207\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01208\ \ \ \ \ \ \ \ \ \ \ \ \ f(\_ss);}
+\DoxyCodeLine{01209\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01210\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01211\ }
+\DoxyCodeLine{01212\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01213\ \ \ \ \ \ \ \ \ Verbosity\ \ \ \_verbosity;}
+\DoxyCodeLine{01214\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \_file;}
+\DoxyCodeLine{01215\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \ \ \ \_line;}
+\DoxyCodeLine{01216\ \ \ \ \ \ \ \ \ std::ostringstream\ \_ss;}
+\DoxyCodeLine{01217\ \ \ \ \ \};}
+\DoxyCodeLine{01218\ }
+\DoxyCodeLine{01219\ \ \ \ \ \textcolor{keyword}{class\ }LOGURU\_EXPORT\ AbortLogger}
+\DoxyCodeLine{01220\ \ \ \ \ \{}
+\DoxyCodeLine{01221\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{01222\ \ \ \ \ \ \ \ \ AbortLogger(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ expr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ \textcolor{keywordtype}{unsigned}\ line)\ :\ \_expr(expr),\ \_file(file),\ \_line(line)\ \{\ \}}
+\DoxyCodeLine{01223\ \ \ \ \ \ \ \ \ LOGURU\_NORETURN\ \string~AbortLogger()\ \textcolor{keyword}{noexcept}(\textcolor{keyword}{false});}
+\DoxyCodeLine{01224\ }
+\DoxyCodeLine{01225\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{01226\ \ \ \ \ \ \ \ \ AbortLogger\&\ operator<<(\textcolor{keyword}{const}\ T\&\ t)}
+\DoxyCodeLine{01227\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01228\ \ \ \ \ \ \ \ \ \ \ \ \ \_ss\ <<\ t;}
+\DoxyCodeLine{01229\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01230\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01231\ }
+\DoxyCodeLine{01232\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ std::endl\ and\ other\ iomanip:s.}}
+\DoxyCodeLine{01233\ \ \ \ \ \ \ \ \ AbortLogger\&\ operator<<(std::ostream\&(*f)(std::ostream\&))}
+\DoxyCodeLine{01234\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01235\ \ \ \ \ \ \ \ \ \ \ \ \ f(\_ss);}
+\DoxyCodeLine{01236\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{01237\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01238\ }
+\DoxyCodeLine{01239\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01240\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \ \ \ \ \ \ \ \_expr;}
+\DoxyCodeLine{01241\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \ \ \ \ \ \ \ \_file;}
+\DoxyCodeLine{01242\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \ \ \ \ \ \ \ \ \ \ \_line;}
+\DoxyCodeLine{01243\ \ \ \ \ \ \ \ \ std::ostringstream\ \_ss;}
+\DoxyCodeLine{01244\ \ \ \ \ \};}
+\DoxyCodeLine{01245\ }
+\DoxyCodeLine{01246\ \ \ \ \ \textcolor{keyword}{class\ }LOGURU\_EXPORT\ Voidify}
+\DoxyCodeLine{01247\ \ \ \ \ \{}
+\DoxyCodeLine{01248\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{01249\ \ \ \ \ \ \ \ \ Voidify()\ \{\}}
+\DoxyCodeLine{01250\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ This\ has\ to\ be\ an\ operator\ with\ a\ precedence\ lower\ than\ <<\ but\ higher\ than\ ?:}}
+\DoxyCodeLine{01251\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ operator\&(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classloguru_1_1_stream_logger}{StreamLogger}}\&)\ \{\ \}}
+\DoxyCodeLine{01252\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ operator\&(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classloguru_1_1_abort_logger}{AbortLogger}}\&)\ \ \{\ \}}
+\DoxyCodeLine{01253\ \ \ \ \ \};}
+\DoxyCodeLine{01254\ }
+\DoxyCodeLine{01255\ \ \ \ \ \textcolor{comment}{/*\ \ Helper\ functions\ for\ CHECK\_OP\_S\ macro.}}
+\DoxyCodeLine{01256\ \textcolor{comment}{\ \ \ \ \ \ \ \ GLOG\ trick:\ The\ (int,\ int)\ specialization\ works\ around\ the\ issue\ that\ the\ compiler}}
+\DoxyCodeLine{01257\ \textcolor{comment}{\ \ \ \ \ \ \ \ will\ not\ instantiate\ the\ template\ version\ of\ the\ function\ on\ values\ of\ unnamed\ enum\ type.\ */}}
+\DoxyCodeLine{01258\ \textcolor{preprocessor}{\ \ \ \ \#define\ DEFINE\_CHECK\_OP\_IMPL(name,\ op)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01259\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ template\ <typename\ T1,\ typename\ T2>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01260\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ inline\ std::string*\ name(const\ char*\ expr,\ const\ T1\&\ v1,\ const\ char*\ op\_str,\ const\ T2\&\ v2)\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01261\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01262\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ if\ (LOGURU\_PREDICT\_TRUE(v1\ op\ v2))\ \{\ return\ NULL;\ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01263\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ std::ostringstream\ ss;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01264\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ ss\ <<\ "{}CHECK\ FAILED:\ \ "{}\ <<\ expr\ <<\ "{}\ \ ("{}\ <<\ v1\ <<\ "{}\ "{}\ <<\ op\_str\ <<\ "{}\ "{}\ <<\ v2\ <<\ "{})\ \ "{};\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01265\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ return\ new\ std::string(ss.str());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01266\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01267\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ inline\ std::string*\ name(const\ char*\ expr,\ int\ v1,\ const\ char*\ op\_str,\ int\ v2)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01268\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01269\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ return\ name<int,\ int>(expr,\ v1,\ op\_str,\ v2);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01270\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{01271\ }
+\DoxyCodeLine{01272\ \ \ \ \ DEFINE\_CHECK\_OP\_IMPL(check\_EQ\_impl,\ ==)}
+\DoxyCodeLine{01273\ \ \ \ \ DEFINE\_CHECK\_OP\_IMPL(check\_NE\_impl,\ !=)}
+\DoxyCodeLine{01274\ \ \ \ \ DEFINE\_CHECK\_OP\_IMPL(check\_LE\_impl,\ <=)}
+\DoxyCodeLine{01275\ \ \ \ \ DEFINE\_CHECK\_OP\_IMPL(check\_LT\_impl,\ <\ )}
+\DoxyCodeLine{01276\ \ \ \ \ DEFINE\_CHECK\_OP\_IMPL(check\_GE\_impl,\ >=)}
+\DoxyCodeLine{01277\ \ \ \ \ DEFINE\_CHECK\_OP\_IMPL(check\_GT\_impl,\ >\ )}
+\DoxyCodeLine{01278\ \ \ \ \ \textcolor{preprocessor}{\#undef\ DEFINE\_CHECK\_OP\_IMPL}}
+\DoxyCodeLine{01279\ }
+\DoxyCodeLine{01280\ \ \ \ \ \textcolor{comment}{/*\ \ GLOG\ trick:\ Function\ is\ overloaded\ for\ integral\ types\ to\ allow\ static\ const\ integrals}}
+\DoxyCodeLine{01281\ \textcolor{comment}{\ \ \ \ \ \ \ \ declared\ in\ classes\ and\ not\ defined\ to\ be\ used\ as\ arguments\ to\ CHECK*\ macros.\ */}}
+\DoxyCodeLine{01282\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{01283\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ T\&\ \ \ \ \ \ \ \ \ \ \ referenceable\_value(\textcolor{keyword}{const}\ T\&\ \ \ \ \ \ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01284\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01285\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01286\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01287\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{short}\ \ \ \ \ \ \ \ \ \ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{short}\ \ \ \ \ \ \ \ \ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01288\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01289\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01290\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01291\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{long}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{long}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01292\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01293\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ \ \ \ \ \ \ \ \ \ referenceable\_value(\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ \ \ \ \ \ \ \ \ \ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01294\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ referenceable\_value(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ t)\ \{\ \textcolor{keywordflow}{return}\ t;\ \}}
+\DoxyCodeLine{01295\ \}\ \textcolor{comment}{//\ namespace\ loguru}}
+\DoxyCodeLine{01296\ }
+\DoxyCodeLine{01297\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01298\ \textcolor{comment}{//\ Logging\ macros:}}
+\DoxyCodeLine{01299\ }
+\DoxyCodeLine{01300\ \textcolor{comment}{//\ usage:\ \ LOG\_STREAM(INFO)\ <<\ "{}Foo\ "{}\ <<\ std::setprecision(10)\ <<\ some\_value;}}
+\DoxyCodeLine{01301\ \textcolor{preprocessor}{\#define\ VLOG\_IF\_S(verbosity,\ cond)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01302\ \textcolor{preprocessor}{\ \ \ \ ((verbosity)\ >\ loguru::current\_verbosity\_cutoff()\ ||\ (cond)\ ==\ false)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01303\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ ?\ (void)0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01304\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ :\ loguru::Voidify()\ \&\ loguru::StreamLogger(verbosity,\ \_\_FILE\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{01305\ \textcolor{preprocessor}{\#define\ LOG\_IF\_S(verbosity\_name,\ cond)\ VLOG\_IF\_S(loguru::Verbosity\_\ \#\#\ verbosity\_name,\ cond)}}
+\DoxyCodeLine{01306\ \textcolor{preprocessor}{\#define\ VLOG\_S(verbosity)\ \ \ \ \ \ \ \ \ \ \ \ \ \ VLOG\_IF\_S(verbosity,\ true)}}
+\DoxyCodeLine{01307\ \textcolor{preprocessor}{\#define\ LOG\_S(verbosity\_name)\ \ \ \ \ \ \ \ \ \ VLOG\_S(loguru::Verbosity\_\ \#\#\ verbosity\_name)}}
+\DoxyCodeLine{01308\ }
+\DoxyCodeLine{01309\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01310\ \textcolor{comment}{//\ ABORT\_S\ macro.\ Usage:\ \ ABORT\_S()\ <<\ "{}Causo\ of\ error:\ "{}\ <<\ details;}}
+\DoxyCodeLine{01311\ }
+\DoxyCodeLine{01312\ \textcolor{preprocessor}{\#define\ ABORT\_S()\ loguru::Voidify()\ \&\ loguru::AbortLogger("{}ABORT:\ "{},\ \_\_FILE\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{01313\ }
+\DoxyCodeLine{01314\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01315\ \textcolor{comment}{//\ CHECK\_S\ macros:}}
+\DoxyCodeLine{01316\ }
+\DoxyCodeLine{01317\ \textcolor{preprocessor}{\#define\ CHECK\_WITH\_INFO\_S(cond,\ info)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01318\ \textcolor{preprocessor}{\ \ \ \ LOGURU\_PREDICT\_TRUE((cond)\ ==\ true)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01319\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ ?\ (void)0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01320\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ :\ loguru::Voidify()\ \&\ loguru::AbortLogger("{}CHECK\ FAILED:\ \ "{}\ info\ "{}\ \ "{},\ \_\_FILE\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{01321\ }
+\DoxyCodeLine{01322\ \textcolor{preprocessor}{\#define\ CHECK\_S(cond)\ CHECK\_WITH\_INFO\_S(cond,\ \#cond)}}
+\DoxyCodeLine{01323\ \textcolor{preprocessor}{\#define\ CHECK\_NOTNULL\_S(x)\ CHECK\_WITH\_INFO\_S((x)\ !=\ nullptr,\ \#x\ "{}\ !=\ nullptr"{})}}
+\DoxyCodeLine{01324\ }
+\DoxyCodeLine{01325\ \textcolor{preprocessor}{\#define\ CHECK\_OP\_S(function\_name,\ expr1,\ op,\ expr2)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01326\ \textcolor{preprocessor}{\ \ \ \ while\ (auto\ error\_string\ =\ loguru::function\_name(\#expr1\ "{}\ "{}\ \#op\ "{}\ "{}\ \#expr2,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01327\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ loguru::referenceable\_value(expr1),\ \#op,\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01328\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ loguru::referenceable\_value(expr2)))\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01329\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ loguru::AbortLogger(error\_string-\/>c\_str(),\ \_\_FILE\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{01330\ }
+\DoxyCodeLine{01331\ \textcolor{preprocessor}{\#define\ CHECK\_EQ\_S(expr1,\ expr2)\ CHECK\_OP\_S(check\_EQ\_impl,\ expr1,\ ==,\ expr2)}}
+\DoxyCodeLine{01332\ \textcolor{preprocessor}{\#define\ CHECK\_NE\_S(expr1,\ expr2)\ CHECK\_OP\_S(check\_NE\_impl,\ expr1,\ !=,\ expr2)}}
+\DoxyCodeLine{01333\ \textcolor{preprocessor}{\#define\ CHECK\_LE\_S(expr1,\ expr2)\ CHECK\_OP\_S(check\_LE\_impl,\ expr1,\ <=,\ expr2)}}
+\DoxyCodeLine{01334\ \textcolor{preprocessor}{\#define\ CHECK\_LT\_S(expr1,\ expr2)\ CHECK\_OP\_S(check\_LT\_impl,\ expr1,\ <\ ,\ expr2)}}
+\DoxyCodeLine{01335\ \textcolor{preprocessor}{\#define\ CHECK\_GE\_S(expr1,\ expr2)\ CHECK\_OP\_S(check\_GE\_impl,\ expr1,\ >=,\ expr2)}}
+\DoxyCodeLine{01336\ \textcolor{preprocessor}{\#define\ CHECK\_GT\_S(expr1,\ expr2)\ CHECK\_OP\_S(check\_GT\_impl,\ expr1,\ >\ ,\ expr2)}}
+\DoxyCodeLine{01337\ }
+\DoxyCodeLine{01338\ \textcolor{preprocessor}{\#if\ LOGURU\_DEBUG\_LOGGING}}
+\DoxyCodeLine{01339\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging\ enabled:}}
+\DoxyCodeLine{01340\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\_IF\_S(verbosity,\ cond)\ \ \ \ \ VLOG\_IF\_S(verbosity,\ cond)}}
+\DoxyCodeLine{01341\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\_IF\_S(verbosity\_name,\ cond)\ LOG\_IF\_S(verbosity\_name,\ cond)}}
+\DoxyCodeLine{01342\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\_S(verbosity)\ \ \ \ \ \ \ \ \ \ \ \ \ \ VLOG\_S(verbosity)}}
+\DoxyCodeLine{01343\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\_S(verbosity\_name)\ \ \ \ \ \ \ \ \ \ LOG\_S(verbosity\_name)}}
+\DoxyCodeLine{01344\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{01345\ \ \ \ \ \textcolor{comment}{//\ Debug\ logging\ disabled:}}
+\DoxyCodeLine{01346\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\_IF\_S(verbosity,\ cond)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01347\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (true\ ||\ (verbosity)\ >\ loguru::current\_verbosity\_cutoff()\ ||\ (cond)\ ==\ false)\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01348\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ ?\ (void)0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{01349\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ :\ loguru::Voidify()\ \&\ loguru::StreamLogger(verbosity,\ \_\_FILE\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{01350\ }
+\DoxyCodeLine{01351\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\_IF\_S(verbosity\_name,\ cond)\ DVLOG\_IF\_S(loguru::Verbosity\_\ \#\#\ verbosity\_name,\ cond)}}
+\DoxyCodeLine{01352\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\_S(verbosity)\ \ \ \ \ \ \ \ \ \ \ \ \ \ DVLOG\_IF\_S(verbosity,\ true)}}
+\DoxyCodeLine{01353\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\_S(verbosity\_name)\ \ \ \ \ \ \ \ \ \ DVLOG\_S(loguru::Verbosity\_\ \#\#\ verbosity\_name)}}
+\DoxyCodeLine{01354\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01355\ }
+\DoxyCodeLine{01356\ \textcolor{preprocessor}{\#if\ LOGURU\_DEBUG\_CHECKS}}
+\DoxyCodeLine{01357\ \ \ \ \ \textcolor{comment}{//\ Debug\ checks\ enabled:}}
+\DoxyCodeLine{01358\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_S(cond)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_S(cond)}}
+\DoxyCodeLine{01359\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NOTNULL\_S(x)\ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_NOTNULL\_S(x)}}
+\DoxyCodeLine{01360\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_EQ\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_EQ\_S(a,\ b)}}
+\DoxyCodeLine{01361\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NE\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_NE\_S(a,\ b)}}
+\DoxyCodeLine{01362\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LT\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_LT\_S(a,\ b)}}
+\DoxyCodeLine{01363\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LE\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_LE\_S(a,\ b)}}
+\DoxyCodeLine{01364\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GT\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_GT\_S(a,\ b)}}
+\DoxyCodeLine{01365\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GE\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_GE\_S(a,\ b)}}
+\DoxyCodeLine{01366\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{01367\ \textcolor{comment}{//\ Debug\ checks\ disabled:}}
+\DoxyCodeLine{01368\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_S(cond)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_S(true\ ||\ (cond))}}
+\DoxyCodeLine{01369\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NOTNULL\_S(x)\ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_S(true\ ||\ (x)\ !=\ nullptr)}}
+\DoxyCodeLine{01370\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_EQ\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_S(true\ ||\ (a)\ ==\ (b))}}
+\DoxyCodeLine{01371\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NE\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_S(true\ ||\ (a)\ !=\ (b))}}
+\DoxyCodeLine{01372\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LT\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_S(true\ ||\ (a)\ <\ \ (b))}}
+\DoxyCodeLine{01373\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LE\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_S(true\ ||\ (a)\ <=\ (b))}}
+\DoxyCodeLine{01374\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GT\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_S(true\ ||\ (a)\ >\ \ (b))}}
+\DoxyCodeLine{01375\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GE\_S(a,\ b)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CHECK\_S(true\ ||\ (a)\ >=\ (b))}}
+\DoxyCodeLine{01376\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01377\ }
+\DoxyCodeLine{01378\ \textcolor{preprocessor}{\#if\ LOGURU\_REPLACE\_GLOG}}
+\DoxyCodeLine{01379\ \textcolor{preprocessor}{\ \ \ \ \#undef\ LOG}}
+\DoxyCodeLine{01380\ \textcolor{preprocessor}{\ \ \ \ \#undef\ VLOG}}
+\DoxyCodeLine{01381\ \textcolor{preprocessor}{\ \ \ \ \#undef\ LOG\_IF}}
+\DoxyCodeLine{01382\ \textcolor{preprocessor}{\ \ \ \ \#undef\ VLOG\_IF}}
+\DoxyCodeLine{01383\ \textcolor{preprocessor}{\ \ \ \ \#undef\ CHECK}}
+\DoxyCodeLine{01384\ \textcolor{preprocessor}{\ \ \ \ \#undef\ CHECK\_NOTNULL}}
+\DoxyCodeLine{01385\ \textcolor{preprocessor}{\ \ \ \ \#undef\ CHECK\_EQ}}
+\DoxyCodeLine{01386\ \textcolor{preprocessor}{\ \ \ \ \#undef\ CHECK\_NE}}
+\DoxyCodeLine{01387\ \textcolor{preprocessor}{\ \ \ \ \#undef\ CHECK\_LT}}
+\DoxyCodeLine{01388\ \textcolor{preprocessor}{\ \ \ \ \#undef\ CHECK\_LE}}
+\DoxyCodeLine{01389\ \textcolor{preprocessor}{\ \ \ \ \#undef\ CHECK\_GT}}
+\DoxyCodeLine{01390\ \textcolor{preprocessor}{\ \ \ \ \#undef\ CHECK\_GE}}
+\DoxyCodeLine{01391\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DLOG}}
+\DoxyCodeLine{01392\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DVLOG}}
+\DoxyCodeLine{01393\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DLOG\_IF}}
+\DoxyCodeLine{01394\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DVLOG\_IF}}
+\DoxyCodeLine{01395\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DCHECK}}
+\DoxyCodeLine{01396\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DCHECK\_NOTNULL}}
+\DoxyCodeLine{01397\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DCHECK\_EQ}}
+\DoxyCodeLine{01398\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DCHECK\_NE}}
+\DoxyCodeLine{01399\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DCHECK\_LT}}
+\DoxyCodeLine{01400\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DCHECK\_LE}}
+\DoxyCodeLine{01401\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DCHECK\_GT}}
+\DoxyCodeLine{01402\ \textcolor{preprocessor}{\ \ \ \ \#undef\ DCHECK\_GE}}
+\DoxyCodeLine{01403\ \textcolor{preprocessor}{\ \ \ \ \#undef\ VLOG\_IS\_ON}}
+\DoxyCodeLine{01404\ }
+\DoxyCodeLine{01405\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOG\ \ \ \ \ \ \ \ \ \ \ \ LOG\_S}}
+\DoxyCodeLine{01406\ \textcolor{preprocessor}{\ \ \ \ \#define\ VLOG\ \ \ \ \ \ \ \ \ \ \ VLOG\_S}}
+\DoxyCodeLine{01407\ \textcolor{preprocessor}{\ \ \ \ \#define\ LOG\_IF\ \ \ \ \ \ \ \ \ LOG\_IF\_S}}
+\DoxyCodeLine{01408\ \textcolor{preprocessor}{\ \ \ \ \#define\ VLOG\_IF\ \ \ \ \ \ \ \ VLOG\_IF\_S}}
+\DoxyCodeLine{01409\ \textcolor{preprocessor}{\ \ \ \ \#define\ CHECK(cond)\ \ \ \ CHECK\_S(!!(cond))}}
+\DoxyCodeLine{01410\ \textcolor{preprocessor}{\ \ \ \ \#define\ CHECK\_NOTNULL\ \ CHECK\_NOTNULL\_S}}
+\DoxyCodeLine{01411\ \textcolor{preprocessor}{\ \ \ \ \#define\ CHECK\_EQ\ \ \ \ \ \ \ CHECK\_EQ\_S}}
+\DoxyCodeLine{01412\ \textcolor{preprocessor}{\ \ \ \ \#define\ CHECK\_NE\ \ \ \ \ \ \ CHECK\_NE\_S}}
+\DoxyCodeLine{01413\ \textcolor{preprocessor}{\ \ \ \ \#define\ CHECK\_LT\ \ \ \ \ \ \ CHECK\_LT\_S}}
+\DoxyCodeLine{01414\ \textcolor{preprocessor}{\ \ \ \ \#define\ CHECK\_LE\ \ \ \ \ \ \ CHECK\_LE\_S}}
+\DoxyCodeLine{01415\ \textcolor{preprocessor}{\ \ \ \ \#define\ CHECK\_GT\ \ \ \ \ \ \ CHECK\_GT\_S}}
+\DoxyCodeLine{01416\ \textcolor{preprocessor}{\ \ \ \ \#define\ CHECK\_GE\ \ \ \ \ \ \ CHECK\_GE\_S}}
+\DoxyCodeLine{01417\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\ \ \ \ \ \ \ \ \ \ \ DLOG\_S}}
+\DoxyCodeLine{01418\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\ \ \ \ \ \ \ \ \ \ DVLOG\_S}}
+\DoxyCodeLine{01419\ \textcolor{preprocessor}{\ \ \ \ \#define\ DLOG\_IF\ \ \ \ \ \ \ \ DLOG\_IF\_S}}
+\DoxyCodeLine{01420\ \textcolor{preprocessor}{\ \ \ \ \#define\ DVLOG\_IF\ \ \ \ \ \ \ DVLOG\_IF\_S}}
+\DoxyCodeLine{01421\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\ \ \ \ \ \ \ \ \ DCHECK\_S}}
+\DoxyCodeLine{01422\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NOTNULL\ DCHECK\_NOTNULL\_S}}
+\DoxyCodeLine{01423\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_EQ\ \ \ \ \ \ DCHECK\_EQ\_S}}
+\DoxyCodeLine{01424\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_NE\ \ \ \ \ \ DCHECK\_NE\_S}}
+\DoxyCodeLine{01425\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LT\ \ \ \ \ \ DCHECK\_LT\_S}}
+\DoxyCodeLine{01426\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_LE\ \ \ \ \ \ DCHECK\_LE\_S}}
+\DoxyCodeLine{01427\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GT\ \ \ \ \ \ DCHECK\_GT\_S}}
+\DoxyCodeLine{01428\ \textcolor{preprocessor}{\ \ \ \ \#define\ DCHECK\_GE\ \ \ \ \ \ DCHECK\_GE\_S}}
+\DoxyCodeLine{01429\ \textcolor{preprocessor}{\ \ \ \ \#define\ VLOG\_IS\_ON(verbosity)\ ((verbosity)\ <=\ loguru::current\_verbosity\_cutoff())}}
+\DoxyCodeLine{01430\ }
+\DoxyCodeLine{01431\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LOGURU\_REPLACE\_GLOG}}
+\DoxyCodeLine{01432\ }
+\DoxyCodeLine{01433\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LOGURU\_WITH\_STREAMS}}
+\DoxyCodeLine{01434\ }
+\DoxyCodeLine{01435\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ LOGURU\_HAS\_DECLARED\_STREAMS\_HEADER}}
+
+\end{DoxyCode}

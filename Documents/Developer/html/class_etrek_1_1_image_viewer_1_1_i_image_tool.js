@@ -1,0 +1,27 @@
+var class_etrek_1_1_image_viewer_1_1_i_image_tool =
+[
+    [ "activate", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#aa88aa666499c59330b0b50b3ded280c7", null ],
+    [ "cursorChanged", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a953c77a5e18d5ad0d1cffd560fd47fe5", null ],
+    [ "deactivate", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a87c20a1503af3b21c886ada412e09c8e", null ],
+    [ "icon", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#afc79b5522df2f395e1ef26265fb6651c", null ],
+    [ "isActive", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a1e682c4a6475c84c30ae3c05f6b5c2fb", null ],
+    [ "magnifierHideRequested", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#ad1bdd068e55b02f9c89f577d9a98b3e6", null ],
+    [ "magnifierRequested", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a1827307cb93fc63da5e96bc65575be44", null ],
+    [ "magnifierToggleRequested", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#acd6dcd566ae01b03a5bcc9061c9e0ce9", null ],
+    [ "measurementAngleCompleted", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a1d741f61c19c326987661e54ce52366b", null ],
+    [ "measurementAngleUpdated", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#affee2c460b6d7250c8b1821143cf94bd", null ],
+    [ "measurementLineCompleted", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a640407ef40f642ca727d8d0a331865f8", null ],
+    [ "measurementLineUpdated", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a86fcc26cb02d2ce66e2f7001c4ac7b43", null ],
+    [ "name", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a9944d0a6c8c1d2cf4bad600013a46ec0", null ],
+    [ "onMouseMove", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a2a1e395f7de5bcf5083b4b4134dc0a61", null ],
+    [ "onMousePress", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#aaf44e6438d8a8f930e95b15cc93c1f4e", null ],
+    [ "onMouseRelease", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#aad8e5351b120dfc683b3088f98cd153d", null ],
+    [ "onMouseWheel", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#ae59c3f5a157c241898261fbf32a0ee77", null ],
+    [ "panRequested", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a50b6cda703a141c35cf45c157a4105fd", null ],
+    [ "reset", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a01673c94a342b01acea4ae2ea5cb379b", null ],
+    [ "resetRequested", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#ad98eaad053e3b53bde30629fd7aca022", null ],
+    [ "tooltip", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#ab867b214809e543b3ddbd6037669ac8d", null ],
+    [ "type", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a39ae4657ca625906f69100e0f2ac6db3", null ],
+    [ "windowLevelChanged", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#a2f052dbf3d460a3c321ad4d1973e7904", null ],
+    [ "zoomRequested", "class_etrek_1_1_image_viewer_1_1_i_image_tool.html#acc3ff22b52717affdde5dd1021cf3528", null ]
+];

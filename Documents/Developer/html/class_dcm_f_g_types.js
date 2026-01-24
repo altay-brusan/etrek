@@ -1,0 +1,55 @@
+var class_dcm_f_g_types =
+[
+    [ "E_FGSharedType", "class_dcm_f_g_types.html#a2670f7c91018a730408e6f89502dd4bd", [
+      [ "EFGS_UNKNOWN", "class_dcm_f_g_types.html#a2670f7c91018a730408e6f89502dd4bda31d08330833d1709bcbf119499d03eb3", null ],
+      [ "EFGS_BOTH", "class_dcm_f_g_types.html#a2670f7c91018a730408e6f89502dd4bda9790b51a4620b620c76053c58dd4f1b7", null ],
+      [ "EFGS_ONLYSHARED", "class_dcm_f_g_types.html#a2670f7c91018a730408e6f89502dd4bda96ec45054c54843c1381abc3abbd4704", null ],
+      [ "EFGS_ONLYPERFRAME", "class_dcm_f_g_types.html#a2670f7c91018a730408e6f89502dd4bda782c717c35f35e2b42a5869da84d4750", null ]
+    ] ],
+    [ "E_FGType", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1e", [
+      [ "EFG_UNDEFINED", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea91700edda11b5d89896814b42f8bf17c", null ],
+      [ "EFG_UNKNOWN", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1eaaf0adc6e38ea1a36f1456beaf7453d0e", null ],
+      [ "EFG_CARDIACSYNC", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea0184440441973302464e5ecd447fdce4", null ],
+      [ "EFG_CONTRASTBOLUSUSAGE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea0fa7ea357f7c6ca4eb11634b689cb4a9", null ],
+      [ "EFG_CTACQUISITIONDETAILS", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1eaf795a072964b89ebbd75ba5d21d57902", null ],
+      [ "EFG_CTACQUISITIONTYPE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1eaa2a6e1efc7a62692fd703fe5943fc388", null ],
+      [ "EFG_CTADDITIONALXRAYSOURCE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1eafc05af70032df7916dc1e4df60055810", null ],
+      [ "EFG_CTEXPOSURE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea0b8798b2d4d2d6d4d752d2fae9f93d61", null ],
+      [ "EFG_CTGEOMETRY", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea3772c607338d199b7f2c6985f87d7752", null ],
+      [ "EFG_CTIMAGEFRAMETYPE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea4c8784bc5542f31513309e28816b3036", null ],
+      [ "EFG_CTPOSITION", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ead2ba1b19b1e3e2d6eeb90ef96b628b64", null ],
+      [ "EFG_CTRECONSTRUCTION", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea66a9506d5e3820a005121eb0de2684d2", null ],
+      [ "EFG_CTTABLEDYNAMICS", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea1e5d3fcff11d8c2568bebf3ffa9affb7", null ],
+      [ "EFG_CTXRAYDETAILS", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea3c23d15350fa6ee217430bb2e2e45b8b", null ],
+      [ "EFG_DERIVATIONIMAGE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea28dee73e629a2f197c4ad96b443ba32c", null ],
+      [ "EFG_FRAMEANATOMY", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea24834abc153029d33e5d793126d211a8", null ],
+      [ "EFG_FRAMECONTENT", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea7681993fdfc7cc103c78a7db480a58f9", null ],
+      [ "EFG_FRAMEDISPLAYSHUTTER", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea266243eae3aba39602ad048dc94a4df3", null ],
+      [ "EFG_FRAMEPIXELSHIFT", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea5be8e40e81ed262ea337b76192622814", null ],
+      [ "EFG_FRAMEVOILUTMETA", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea313ef951cee2eec48e6cef6ef1c94bb8", null ],
+      [ "EFG_IMAGEDATATYPE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea432cbf07720f33d7ccc3ebf737c07b45", null ],
+      [ "EFG_IRRADIATIONEVENTIDENT", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1eabb9a76f549b91153f3612556afeec4a7", null ],
+      [ "EFG_PARAMETRICMAPFRAMETYPE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ead351acb944b20f4cb573aa8cd4db6742", null ],
+      [ "EFG_PATIENTORIENTINFRAME", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea7b7ccadd17955417ff4ac8be0e7cd250", null ],
+      [ "EFG_PATIENTPHYSIOSTATE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea114ff5f3c254f2645fd524ffb48b158a", null ],
+      [ "EFG_PIXELINTENSITYRELLUT", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1eae624c6d70ad3c3a729fc3f36507e4bee", null ],
+      [ "EFG_PIXELMEASURES", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea8bbe3658b7cca1a5388761cba69fd92d", null ],
+      [ "EFG_PIXELVALUETRANSMETA", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea7d1605793675381b873f09aaeb02c86a", null ],
+      [ "EFG_PLANEORIENTVOLUME", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1eacddfd2204508faa736e67356c6a0836d", null ],
+      [ "EFG_PLANEPOSITIONVOLUME", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea3ce2e4cfeced3165b461cec1f7c1cadc", null ],
+      [ "EFG_PLANEPOSPATIENT", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1eafc287512544a4f5f8269fbb6fc98873c", null ],
+      [ "EFG_PLANEORIENTPATIENT", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ead93111c9687d422bc584bfa10c57d439", null ],
+      [ "EFG_RADIOPHARAMAUSAGE", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea32f0e853e63f8447a774e3664f6ab9e7", null ],
+      [ "EFG_REALWORLDVALUEMAPPING", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea7b3f1f0c763f183dadbaba4e186cafb1", null ],
+      [ "EFG_RESPIRATORYSYNC", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1eae87849dd45b263e9c98dbc88d260ae68", null ],
+      [ "EFG_SEGMENTATION", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea50d311251d5020d00395633c9e656818", null ],
+      [ "EFG_TEMPORALPOSITION", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea906f6deb16a97ca862ee3fa9082e5542", null ],
+      [ "EFG_UNASSIGNEDSHAREDCONVERTEDATTRIBUTES", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea2865febc0ca100d4c7980e3b3f164b14", null ],
+      [ "EFG_USIMAGEDESCRIPTION", "class_dcm_f_g_types.html#a14e2a3121d14ed9ebebef493e1645b1ea77ae2a2b09617de17848ae137608ebb6", null ]
+    ] ],
+    [ "E_FGUSFrameType", "class_dcm_f_g_types.html#a317f3e4a69d19f11bb0dc7d354d4e2e5", [
+      [ "EFGFT_UNKNOWN", "class_dcm_f_g_types.html#a317f3e4a69d19f11bb0dc7d354d4e2e5a0619fcbc78a183f08eaf514c88155f39", null ],
+      [ "EFGFT_ORIGINAL", "class_dcm_f_g_types.html#a317f3e4a69d19f11bb0dc7d354d4e2e5aa380269cec6b7932f871b6f069bd69b0", null ],
+      [ "EFGFT_DERIVED", "class_dcm_f_g_types.html#a317f3e4a69d19f11bb0dc7d354d4e2e5ab2f77ed7a76671533df99cfe421f6217", null ]
+    ] ]
+];

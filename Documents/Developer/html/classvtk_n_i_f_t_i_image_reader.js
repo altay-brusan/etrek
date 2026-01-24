@@ -1,0 +1,25 @@
+var classvtk_n_i_f_t_i_image_reader =
+[
+    [ "CanReadFile", "classvtk_n_i_f_t_i_image_reader.html#ad749a752c387c8c9f4659f4f9f7e7bbb", null ],
+    [ "GetDescriptiveName", "classvtk_n_i_f_t_i_image_reader.html#a31f5f8b82513224b6901cf0c1127b689", null ],
+    [ "GetFileExtensions", "classvtk_n_i_f_t_i_image_reader.html#af00dd938b0db8eb4d1fe99c36c0360c7", null ],
+    [ "GetNIFTIHeader", "classvtk_n_i_f_t_i_image_reader.html#ac8f0a7acdc0e35ed4948b71c5b635689", null ],
+    [ "GetQFac", "classvtk_n_i_f_t_i_image_reader.html#a40c595da2d5a3ccb6ba9f8e6ba6882bf", null ],
+    [ "GetQFormMatrix", "classvtk_n_i_f_t_i_image_reader.html#a457a51d9a0845427706249c2b8d3ff2a", null ],
+    [ "GetRescaleSlope", "classvtk_n_i_f_t_i_image_reader.html#a7f58eadac70b4245ad05a05e017fc376", null ],
+    [ "GetSFormMatrix", "classvtk_n_i_f_t_i_image_reader.html#a1514579c721ae3f6160f810bcc7858e2", null ],
+    [ "GetTimeDimension", "classvtk_n_i_f_t_i_image_reader.html#aef770040b5f7a424be60dbb2f7446e13", null ],
+    [ "PrintSelf", "classvtk_n_i_f_t_i_image_reader.html#a8f5bb57766c35c917ff98aaaa3e8f81a", null ],
+    [ "RequestData", "classvtk_n_i_f_t_i_image_reader.html#a9ab31bf8f416e475238e5d0c991ae22f", null ],
+    [ "RequestInformation", "classvtk_n_i_f_t_i_image_reader.html#ab9415323380a7b86a6ee25e244b97437", null ],
+    [ "vtkGetMacro", "classvtk_n_i_f_t_i_image_reader.html#a59788e3101b2e94a53e4cf059fb644fe", null ],
+    [ "vtkGetMacro", "classvtk_n_i_f_t_i_image_reader.html#a4f04b55bc25c078e048951db5399874c", null ],
+    [ "Dim", "classvtk_n_i_f_t_i_image_reader.html#ac23f327245dde4ab195183688f474f71", null ],
+    [ "NIFTIHeader", "classvtk_n_i_f_t_i_image_reader.html#af82907fa3743160391a9a39dd5d4410e", null ],
+    [ "PixDim", "classvtk_n_i_f_t_i_image_reader.html#abafac7b6a4325815fa62c55d08ae4a85", null ],
+    [ "PlanarRGB", "classvtk_n_i_f_t_i_image_reader.html#aa22d23865f005798d6c79fe83502edf9", null ],
+    [ "QFac", "classvtk_n_i_f_t_i_image_reader.html#a73db4794dc149b53f2402289dbbb5660", null ],
+    [ "QFormMatrix", "classvtk_n_i_f_t_i_image_reader.html#abb09deaeeaf30555b880376c6861b72f", null ],
+    [ "RescaleIntercept", "classvtk_n_i_f_t_i_image_reader.html#ab96f84ec7dbdda00649ce25286ff6d97", null ],
+    [ "TimeAsVector", "classvtk_n_i_f_t_i_image_reader.html#ae61ca3efc8e80d362a18c9d20453c602", null ]
+];

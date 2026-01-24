@@ -1,0 +1,202 @@
+\doxysection{vtk\+HDFUtilities.\+h}
+\hypertarget{vtk_h_d_f_utilities_8h_source}{}\label{vtk_h_d_f_utilities_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkHDFUtilities.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkHDFUtilities.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#ifndef\ vtkHDFUtilities\_h}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#define\ vtkHDFUtilities\_h}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}vtkDataArray.h"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}vtkHDF5ScopedHandle.h"{}}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}vtkIOHDFModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}vtkLogger.h"{}}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}vtkPolyData.h"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointer.h"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}vtkStringArray.h"{}}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}vtkType.h"{}}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <array>}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#if\ VTK\_ID\_TYPE\_IMPL\ ==\ VTK\_LONG\_LONG}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#define\ VTK\_ID\_H5T\ H5T\_NATIVE\_LLONG}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#elif\ VTK\_ID\_TYPE\_IMPL\ ==\ VTK\_LONG}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#define\ VTK\_ID\_H5T\ H5T\_NATIVE\_LONG}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#elif\ VTK\_ID\_TYPE\_IMPL\ ==\ VTK\_INT}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#define\ VTK\_ID\_H5T\ H5T\_NATIVE\_INT}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#error\ "{}No\ HDF5\ type\ available\ for\ vtkIdType"{}}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk_h_d_f_utilities}{vtkHDFUtilities}}}
+\DoxyCodeLine{00038\ \{}
+\DoxyCodeLine{00039\ \textcolor{keyword}{const}\ std::string\ VTKHDF\_ROOT\_PATH\ =\ \textcolor{stringliteral}{"{}/VTKHDF"{}};}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ The\ number\ of\ PolyData\ topologies\ saved\ in\ vtkHDF\ format}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00044\ \textcolor{keyword}{constexpr}\ std::size\_t\ NUM\_POLY\_DATA\_TOPOS\ =\ 4;}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ A\ vector\ of\ the\ topology\ names\ that\ are\ saved\ in\ vtkHDF}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ Can\ be\ used\ for\ the\ name\ of\ the\ HDF\ group\ only}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00050\ \textcolor{keyword}{const}\ std::vector<std::string>\ POLY\_DATA\_TOPOS\{\ \textcolor{stringliteral}{"{}Vertices"{}},\ \textcolor{stringliteral}{"{}Lines"{}},\ \textcolor{stringliteral}{"{}Polygons"{}},\ \textcolor{stringliteral}{"{}Strips"{}}\ \};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ Attribute\ tag\ used\ in\ the\ cache\ storage\ to\ indicate\ arrays\ related\ to\ the\ geometry\ of\ the\ data}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *\ set\ and\ not\ fields\ of\ the\ data\ set}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00056\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{int}\ GEOMETRY\_ATTRIBUTE\_TAG\ =\ -\/42;}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ How\ many\ attribute\ types\ we\ have.\ This\ returns\ 3:\ point,\ cell\ and\ field}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *\ attribute\ types.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00062\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ GetNumberOfAttributeTypes()}
+\DoxyCodeLine{00063\ \{}
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordflow}{return}\ 3;}
+\DoxyCodeLine{00065\ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *\ How\ many\ attribute\ types\ we\ have\ as\ data\ array.\ This\ returns\ 2:\ point\ and\ cell.}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00070\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ GetNumberOfDataArrayTypes()}
+\DoxyCodeLine{00071\ \{}
+\DoxyCodeLine{00072\ \ \ \textcolor{keywordflow}{return}\ 2;}
+\DoxyCodeLine{00073\ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00080\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a98d4d2afe2bee0f971ca03522a903102}{ReadDataSetType}}(hid\_t\ groupID,\ \textcolor{keywordtype}{int}\&\ dataSetType);}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ *\ Make\ sure\ we\ replace\ any\ illegal\ characters\ in\ the\ objectName\ (slash,\ dot)\ by\ an\ underscore,\ as}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *\ they\ would\ create\ a\ HDF5\ subgroup.}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00086\ VTKIOHDF\_EXPORT\ \textcolor{keywordtype}{void}\ MakeObjectNameValid(std::string\&\ objectName);}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ *\ Returns\ the\ id\ to\ a\ HDF\ datatype\ (H5T)\ from\ a\ VTK\ datatype}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ *\ Returns\ H5I\_INVALID\_HID\ if\ no\ corresponding\ type\ is\ found}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00092\ VTKIOHDF\_EXPORT\ hid\_t\ getH5TypeFromVtkType(\textcolor{keywordtype}{int}\ dataType);}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{keyword}{struct\ }VTK\_DEPRECATED\_IN\_9\_4\_0(}
+\DoxyCodeLine{00095\ \ \ \textcolor{stringliteral}{"{}Please\ use\ TemporalGeometryOffsets\ struct\ instead."{}})\ VTKIOHDF\_EXPORT\ TransientGeometryOffsets}
+\DoxyCodeLine{00096\ \{}
+\DoxyCodeLine{00097\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordtype}{bool}\ Success\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00099\ \ \ vtkIdType\ PartOffset\ =\ 0;}
+\DoxyCodeLine{00100\ \ \ vtkIdType\ PointOffset\ =\ 0;}
+\DoxyCodeLine{00101\ \ \ std::vector<vtkIdType>\ CellOffsets;}
+\DoxyCodeLine{00102\ \ \ std::vector<vtkIdType>\ ConnectivityOffsets;}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00105\ \ \ TransientGeometryOffsets(T*\ impl,\ vtkIdType\ step);}
+\DoxyCodeLine{00106\ \};}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ *\ @struct\ TemporalGeometryOffsets}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ *\ @brief\ Use\ to\ get\ the\ offsets\ for\ temporal\ vtkHDF.}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ *\ To\ use\ it,\ create\ an\ object\ using\ the\ templated\ constructor\ of\ this\ struct.}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ *\ It\ will\ fill\ the\ object\ with\ data\ that\ can\ be\ then\ retrieved.}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00115\ \textcolor{keyword}{struct\ }VTKIOHDF\_EXPORT\ TemporalGeometryOffsets}
+\DoxyCodeLine{00116\ \{}
+\DoxyCodeLine{00117\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00118\ \ \ \textcolor{keywordtype}{bool}\ Success\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00119\ \ \ vtkIdType\ PartOffset\ =\ 0;}
+\DoxyCodeLine{00120\ \ \ vtkIdType\ PointOffset\ =\ 0;}
+\DoxyCodeLine{00121\ \ \ std::vector<vtkIdType>\ CellOffsets;}
+\DoxyCodeLine{00122\ \ \ std::vector<vtkIdType>\ ConnectivityOffsets;}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00125\ \ \ TemporalGeometryOffsets(T*\ impl,\ vtkIdType\ step);}
+\DoxyCodeLine{00126\ \};}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ *\ Offsets\ for\ temporalHyperTreeGrid}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00131\ \textcolor{keyword}{struct\ }VTKIOHDF\_EXPORT\ TemporalHyperTreeGridOffsets}
+\DoxyCodeLine{00132\ \{}
+\DoxyCodeLine{00133\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordtype}{bool}\ Success\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00135\ \ \ vtkIdType\ TreeIdsOffset\ =\ 0;}
+\DoxyCodeLine{00136\ \ \ vtkIdType\ DepthPerTreeOffset\ =\ 0;}
+\DoxyCodeLine{00137\ \ \ vtkIdType\ NumberOfCellsPerTreeDepthOffset\ =\ 0;}
+\DoxyCodeLine{00138\ \ \ vtkIdType\ DescriptorsOffset\ =\ 0;}
+\DoxyCodeLine{00139\ \ \ vtkIdType\ MaskOffset\ =\ 0;}
+\DoxyCodeLine{00140\ \ \ vtkIdType\ XCoordinatesOffset\ =\ 0;}
+\DoxyCodeLine{00141\ \ \ vtkIdType\ YCoordinatesOffset\ =\ 0;}
+\DoxyCodeLine{00142\ \ \ vtkIdType\ ZCoordinatesOffset\ =\ 0;}
+\DoxyCodeLine{00143\ \ \ vtkIdType\ PartOffset\ =\ 0;}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00146\ \ \ TemporalHyperTreeGridOffsets(T*\ impl,\ vtkIdType\ step);}
+\DoxyCodeLine{00147\ \};}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00153\ VTKIOHDF\_EXPORT\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_ace15a92fa72aa5c71160e26a97af3a1f}{Open}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ fileName,\ hid\_t\&\ fileID);}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00159\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00160\ VTKIOHDF\_EXPORT\ hid\_t\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a435de7cba90699c70722ce6606854e76}{TemplateTypeToHdfNativeType}}();}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00165\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00166\ VTKIOHDF\_EXPORT\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_aae2ef8cab4dad2f9d2440f5e5641c91b}{GetAttribute}}(}
+\DoxyCodeLine{00167\ \ \ hid\_t\ group,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ attributeName,\ \textcolor{keywordtype}{size\_t}\ numberOfElements,\ T*\ value);}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00172\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a6e06e4f1366ff5cf7161f7d27869f908}{GetStringAttribute}}(hid\_t\ groupID,\ \textcolor{keyword}{const}\ std::string\&\ name,\ std::string\&\ attribute);}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00177\ VTKIOHDF\_EXPORT\ std::size\_t\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a972d4bbc3f88a6d25c1f9ca2935352dd}{GetNumberOfSteps}}(hid\_t\ groupID);}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00182\ VTKIOHDF\_EXPORT\ std::vector<hsize\_t>\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a911064da6f21e5704b39042b3031e6c0}{GetDimensions}}(hid\_t\ fileID,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ datasetName);}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00187\ VTKIOHDF\_EXPORT\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a06c73e1170158a46ec6922ed2c09a2a7}{RetrieveHDFInformation}}(hid\_t\&\ fileID,\ hid\_t\&\ groupID,}
+\DoxyCodeLine{00188\ \ \ \textcolor{keyword}{const}\ std::string\&\ rootName,\ std::array<int,\ 2>\&\ version,\ \textcolor{keywordtype}{int}\&\ dataSetType,\ \textcolor{keywordtype}{int}\&\ numberOfPieces,}
+\DoxyCodeLine{00189\ \ \ std::array<hid\_t,\ 3>\&\ attributeDataGroup);}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00194\ VTKIOHDF\_EXPORT\ herr\_t\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_af0645c12d78dc0ae430e7c3d9091d7df}{FileInfoCallBack}}(}
+\DoxyCodeLine{00195\ \ \ hid\_t\ loc\_id,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name,\ \textcolor{keyword}{const}\ H5L\_info\_t*\ info,\ \textcolor{keywordtype}{void}*\ opdata);}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00200\ VTKIOHDF\_EXPORT\ std::vector<std::string>\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a16ac9d874e44bc50397a184e1876e51e}{GetArrayNames}}(}
+\DoxyCodeLine{00201\ \ \ \textcolor{keyword}{const}\ std::array<hid\_t,\ 3>\&\ attributeDataGroup,\ \textcolor{keywordtype}{int}\ attributeType);}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00206\ VTKIOHDF\_EXPORT\ std::vector<std::string>\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_aeacd7cf70a375e3680b2ae7e30f17e56}{GetOrderedChildrenOfGroup}}(}
+\DoxyCodeLine{00207\ \ \ hid\_t\ groupID,\ \textcolor{keyword}{const}\ std::string\&\ path);}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00215\ VTKIOHDF\_EXPORT\ hid\_t\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a1a37f725024466e9508d9af2813e101e}{OpenDataSet}}(}
+\DoxyCodeLine{00216\ \ \ hid\_t\ group,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name,\ hid\_t*\ nativeType,\ std::vector<hsize\_t>\&\ dims);}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00231\ VTKIOHDF\_EXPORT\ vtkDataArray*\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a1e1c21e273319a9fa02efab54e0fad94}{NewArrayForGroup}}(hid\_t\ dataset,\ hid\_t\ nativeType,}
+\DoxyCodeLine{00232\ \ \ \textcolor{keyword}{const}\ std::vector<hsize\_t>\&\ dims,\ \textcolor{keyword}{const}\ std::vector<hsize\_t>\&\ parameterExtent);}
+\DoxyCodeLine{00233\ VTKIOHDF\_EXPORT\ vtkDataArray*\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a1e1c21e273319a9fa02efab54e0fad94}{NewArrayForGroup}}(}
+\DoxyCodeLine{00234\ \ \ hid\_t\ group,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name,\ \textcolor{keyword}{const}\ std::vector<hsize\_t>\&\ parameterExtent);}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00243\ VTKIOHDF\_EXPORT\ std::vector<vtkIdType>\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_a4365420de451c3f28d6fd0b2f1b949f5}{GetMetadata}}(}
+\DoxyCodeLine{00244\ \ \ hid\_t\ group,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name,\ hsize\_t\ size,\ hsize\_t\ offset);}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00251\ VTKIOHDF\_EXPORT\ std::array<vtkIdType,\ 2>\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_af0ef91f80d404c78dd131e30c202c3b8}{GetFieldArraySize}}(}
+\DoxyCodeLine{00252\ \ \ hid\_t\ group,\ vtkIdType\ step,\ std::string\ name);}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00257\ VTKIOHDF\_EXPORT\ vtkIdType\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_aa97bdd0a08cafabe1a0f4ab6b5b9e524}{GetArrayOffset}}(}
+\DoxyCodeLine{00258\ \ \ hid\_t\ group,\ vtkIdType\ step,\ \textcolor{keywordtype}{int}\ attributeType,\ std::string\ name);}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00265\ VTKIOHDF\_EXPORT\ \doxymbox{\hyperlink{classvtk_abstract_array}{vtkAbstractArray}}*\ \doxymbox{\hyperlink{namespacevtk_h_d_f_utilities_adcbdf32280eb87aba7a6214ffb70307f}{NewFieldArray}}(\textcolor{keyword}{const}\ std::array<hid\_t,\ 3>\&\ attributeDataGroup,}
+\DoxyCodeLine{00266\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name,\ vtkIdType\ offset,\ vtkIdType\ size,\ vtkIdType\ dimMaxSize);}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ VTKIOHDF\_EXPORT\ \doxymbox{\hyperlink{classvtk_string_array}{vtkStringArray}}*\ NewStringArray(}
+\DoxyCodeLine{00269\ \ \ hid\_t\ dataset,\ std::vector<hsize\_t>\ dims,\ std::vector<hsize\_t>\ fileExtent);}
+\DoxyCodeLine{00270\ \}}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#include\ "{}vtkHDFUtilities.txx"{}}\ \textcolor{comment}{//\ for\ template\ implementations}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00276\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkHDFUtilities.h}}
+
+\end{DoxyCode}

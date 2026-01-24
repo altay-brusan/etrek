@@ -1,0 +1,28 @@
+var class_d_v_p_s_presentation_l_u_t =
+[
+    [ "DVPSPresentationLUT", "class_d_v_p_s_presentation_l_u_t.html#a01cce6b16fd8951e8aae6f6a6f9f40ee", null ],
+    [ "DVPSPresentationLUT", "class_d_v_p_s_presentation_l_u_t.html#a7e3e2897346d7660d492ab07c6133048", null ],
+    [ "~DVPSPresentationLUT", "class_d_v_p_s_presentation_l_u_t.html#a34bac2464bb1453d9e3354cf9bba4431", null ],
+    [ "activate", "class_d_v_p_s_presentation_l_u_t.html#aaf1aac8176e83a8bf606ee5ed1d79a88", null ],
+    [ "activateInverseLUT", "class_d_v_p_s_presentation_l_u_t.html#ae7651af6bac593f58b68da1363903c2e", null ],
+    [ "clear", "class_d_v_p_s_presentation_l_u_t.html#a75500c060c6c851724c6b4978d3d5605", null ],
+    [ "clone", "class_d_v_p_s_presentation_l_u_t.html#a009f3a5ce8c93f9b3f4e45824a84ca4d", null ],
+    [ "compareDiLookupTable", "class_d_v_p_s_presentation_l_u_t.html#ad71c00dd97403ffbc56fbe8a15e5940c", null ],
+    [ "createDiLookupTable", "class_d_v_p_s_presentation_l_u_t.html#ae86d219097d8c0ac4e396360df8ed442", null ],
+    [ "getAlignment", "class_d_v_p_s_presentation_l_u_t.html#aef6a78dd876b75b5bae8b4c1844a18ee", null ],
+    [ "getCurrentExplanation", "class_d_v_p_s_presentation_l_u_t.html#aed73011da7ddc0a86a8b84783e3aea16", null ],
+    [ "getLUTExplanation", "class_d_v_p_s_presentation_l_u_t.html#af8460d6c8e536ee4e87e9c3ef7b067be", null ],
+    [ "getSOPInstanceUID", "class_d_v_p_s_presentation_l_u_t.html#a05203c335ab29ce6374eba7d1334749f", null ],
+    [ "getType", "class_d_v_p_s_presentation_l_u_t.html#a428862f14428d10c1d55023193614f11", null ],
+    [ "haveTable", "class_d_v_p_s_presentation_l_u_t.html#a5bc2fec29d70daf8344767b8da9c8cb4", null ],
+    [ "invert", "class_d_v_p_s_presentation_l_u_t.html#a527ee5810e3600e34e5f3764468ea078", null ],
+    [ "isInverse", "class_d_v_p_s_presentation_l_u_t.html#a1ba9dfe74bbbf5eeda0845821f8a04b4", null ],
+    [ "isLegalPrintPresentationLUT", "class_d_v_p_s_presentation_l_u_t.html#a9e403917d1204de1fefdc7578940758e", null ],
+    [ "matchesImageDepth", "class_d_v_p_s_presentation_l_u_t.html#ac9a356ac899a9c63c5c7128ee811516c", null ],
+    [ "printSCPCreate", "class_d_v_p_s_presentation_l_u_t.html#a5d451051e5c9612713f68dff4e4abd82", null ],
+    [ "read", "class_d_v_p_s_presentation_l_u_t.html#a2387e0ea5005afce0827a9c48926502c", null ],
+    [ "setLUT", "class_d_v_p_s_presentation_l_u_t.html#a6b7afdef0a37b457c8cb2b3cebf8631a", null ],
+    [ "setSOPInstanceUID", "class_d_v_p_s_presentation_l_u_t.html#a6a836d1a60e57ac6b7f991d659bec86c", null ],
+    [ "setType", "class_d_v_p_s_presentation_l_u_t.html#aee2453988127590da1b6dd78c18894f5", null ],
+    [ "write", "class_d_v_p_s_presentation_l_u_t.html#a7c60a0e3e78725e5e45498efb4f675c9", null ]
+];

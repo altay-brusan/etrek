@@ -1,0 +1,433 @@
+\doxysection{Ioss\+\_\+\+Utils.\+h}
+\hypertarget{_ioss___utils_8h_source}{}\label{_ioss___utils_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_Utils.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_Utils.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright(C)\ 1999-\/2025\ National\ Technology\ \&\ Engineering\ Solutions}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ of\ Sandia,\ LLC\ (NTESS).\ \ Under\ the\ terms\ of\ Contract\ DE-\/NA0003525\ with}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ NTESS,\ the\ U.S.\ Government\ retains\ certain\ rights\ in\ this\ software.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ See\ packages/seacas/LICENSE\ for\ details}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}Ioss\_CodeTypes.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}Ioss\_ElementTopology.h"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}Ioss\_EntityType.h"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}Ioss\_Field.h"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}Ioss\_Property.h"{}}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}Ioss\_Sort.h"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <algorithm>}\ \textcolor{comment}{//\ for\ sort,\ lower\_bound,\ copy,\ etc}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <cstddef>}\ \ \ \textcolor{comment}{//\ for\ size\_t}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <cstdint>}\ \ \ \textcolor{comment}{//\ for\ int64\_t}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <cstdlib>}\ \ \ \textcolor{comment}{//\ for\ nullptrr}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <iostream>}\ \ \textcolor{comment}{//\ for\ ostringstream,\ etcstream,\ etc}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <stdexcept>}\ \textcolor{comment}{//\ for\ runtime\_error}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <string>}\ \ \ \ \textcolor{comment}{//\ for\ string}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ <vector>}\ \ \ \ \textcolor{comment}{//\ for\ vector}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}ioss\_export.h"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}vtk\_ioss\_mangle.h"{}}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_ioss}{Ioss}}\ \{}
+\DoxyCodeLine{00030\ \ \ \textcolor{keyword}{class\ }DatabaseIO;}
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{class\ }Field;}
+\DoxyCodeLine{00032\ \ \ \textcolor{keyword}{class\ }GroupingEntity;}
+\DoxyCodeLine{00033\ \ \ \textcolor{keyword}{class\ }Region;}
+\DoxyCodeLine{00034\ \ \ \textcolor{keyword}{class\ }SideBlock;}
+\DoxyCodeLine{00035\ \ \ \textcolor{keyword}{class\ }PropertyManager;}
+\DoxyCodeLine{00036\ \ \ \textcolor{keyword}{enum\ class}\ ElementShape\ :\ \textcolor{keywordtype}{unsigned}\ int;}
+\DoxyCodeLine{00037\ \}\ \textcolor{comment}{//\ namespace\ Ioss}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ [[noreturn]]\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ IOSS\_ERROR(\textcolor{keyword}{const}\ std::ostringstream\ \&errmsg)}
+\DoxyCodeLine{00040\ \{}
+\DoxyCodeLine{00041\ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error((errmsg).str());}
+\DoxyCodeLine{00042\ \}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ [[noreturn]]\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ IOSS\_ERROR(\textcolor{keyword}{const}\ std::string\ \&errmsg)\ \{\ \textcolor{keywordflow}{throw}\ std::runtime\_error(errmsg);\ \}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#ifdef\ NDEBUG}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#define\ IOSS\_ASSERT\_USED(x)\ (void)x}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#define\ IOSS\_ASSERT\_USED(x)}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{comment}{//\ We\ have\ been\ relying\ on\ the\ assumption\ that\ calling\ \`{}.data()`\ on\ an\ empty\ vector}}
+\DoxyCodeLine{00053\ \textcolor{comment}{//\ will\ return\ \`{}nullptr`.\ \ However,\ according\ to\ cppreference\ (based\ on\ the\ standard):}}
+\DoxyCodeLine{00054\ \textcolor{comment}{//}}
+\DoxyCodeLine{00055\ \textcolor{comment}{//\ \`{}If\ size()\ is\ 0,\ data()\ may\ or\ may\ not\ return\ a\ null\ pointer.`}}
+\DoxyCodeLine{00056\ \textcolor{comment}{//}}
+\DoxyCodeLine{00057\ \textcolor{comment}{//\ We\ don't\ have\ any\ systems\ on\ which\ we\ have\ found\ that\ (yet?),\ but\ this\ is\ proactive}}
+\DoxyCodeLine{00058\ \textcolor{comment}{//\ in\ removing\ our\ use\ of\ \`{}.data()`\ on\ potentially\ empty\ vectors...}}
+\DoxyCodeLine{00059\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ IOSS\_NODISCARD\ \textcolor{keyword}{constexpr}\ T\ *Data(std::vector<T>\ \&vec)}
+\DoxyCodeLine{00060\ \{}
+\DoxyCodeLine{00061\ \ \ \textcolor{keywordflow}{if}\ (vec.empty())\ \{}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00063\ \ \ \}}
+\DoxyCodeLine{00064\ \ \ \textcolor{keywordflow}{return}\ vec.data();}
+\DoxyCodeLine{00065\ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ IOSS\_NODISCARD\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{const}\ T\ *Data(\textcolor{keyword}{const}\ std::vector<T>\ \&vec)}
+\DoxyCodeLine{00068\ \{}
+\DoxyCodeLine{00069\ \ \ \textcolor{keywordflow}{if}\ (vec.empty())\ \{}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00071\ \ \ \}}
+\DoxyCodeLine{00072\ \ \ \textcolor{keywordflow}{return}\ vec.data();}
+\DoxyCodeLine{00073\ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keywordtype}{size\_t}\ N>\ IOSS\_NODISCARD\ \textcolor{keyword}{constexpr}\ T\ *Data(std::array<T,\ N>\ \&arr)}
+\DoxyCodeLine{00076\ \{}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordflow}{return}\ N\ ==\ 0\ ?\ nullptr\ :\ arr.data();}
+\DoxyCodeLine{00078\ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keywordtype}{size\_t}\ N>\ IOSS\_NODISCARD\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{const}\ T\ *Data(\textcolor{keyword}{const}\ std::array<T,\ N>\ \&arr)}
+\DoxyCodeLine{00081\ \{}
+\DoxyCodeLine{00082\ \ \ \textcolor{keywordflow}{return}\ N\ ==\ 0\ ?\ nullptr\ :\ arr.data();}
+\DoxyCodeLine{00083\ \}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_ioss}{Ioss}}\ \{}
+\DoxyCodeLine{00086\ \ \ \textcolor{comment}{/*\ \(\backslash\)brief\ Utility\ methods.}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00088\ \ \ \textcolor{keyword}{class\ }IOSS\_EXPORT\ \doxymbox{\hyperlink{class_ioss_1_1_utils}{Utils}}}
+\DoxyCodeLine{00089\ \ \ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keyword}{static}\ std::ostream}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ *m\_outputStream;\ }
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keyword}{static}\ std::ostream\ *m\_debugStream;\ \ \ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keyword}{static}\ std::ostream\ *m\_warningStream;\ }
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keyword}{static}\ std::string\ m\_preWarningText;\ \ }
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group___ioss_streams_ga7af757ffd44f52d47d805f6120b9780b}{set\_all\_streams}}(std::ostream\ \&out\_stream);}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00108\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::ostream\ \&\doxymbox{\hyperlink{group___ioss_streams_gabf4f6aa55a1dfd44047a35c663983c37}{get\_debug\_stream}}();}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00112\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::ostream\ \&\doxymbox{\hyperlink{group___ioss_streams_ga55bd8ed65dfaeebcf1c666ce654284b9}{get\_warning\_stream}}();}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00116\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::ostream\ \&\doxymbox{\hyperlink{group___ioss_streams_ga67c0cb8603a67bb62705df162ab5d099}{get\_output\_stream}}();}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \&get\_warning\_text()\ \{\ \textcolor{keywordflow}{return}\ m\_preWarningText;\ \}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group___ioss_streams_ga7f4aecc2cd2326658cf1d0b6e99cae5a}{set\_output\_stream}}(std::ostream\ \&output\_stream);}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group___ioss_streams_ga1f09ce7b06fc5b354cf55d5c670f7d59}{set\_debug\_stream}}(std::ostream\ \&debug\_stream);}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group___ioss_streams_gad48fc6ac832ebb5b9be062ef6dc7ea29}{set\_warning\_stream}}(std::ostream\ \&warning\_stream);}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{group___ioss_streams_ga045c5b10deb49ae979c0aaa16e672621}{set\_pre\_warning\_text}}(\textcolor{keyword}{const}\ std::string\ \&text)\ \{\ m\_preWarningText\ =\ text;\ \}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ copyright(std::ostream\ \&out,\ \textcolor{keyword}{const}\ std::string\ \&year\_range);}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ check\_valid\_change\_set\_name(\textcolor{keyword}{const}\ std::string\ \ \&cs\_name,}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::Region\ \&region,}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rank\ =\ 0);}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ check\_dynamic\_cast(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr)}
+\DoxyCodeLine{00146\ \ \ \ \ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ptr\ ==\ \textcolor{keyword}{nullptr})\ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ std::ostringstream\ errmsg;}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ errmsg\ <<\ \textcolor{stringliteral}{"{}INTERNAL\ ERROR:\ Invalid\ dynamic\ cast\ returned\ nullptr\(\backslash\)n"{}};}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ IOSS\_ERROR(errmsg);}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00152\ \ \ \ \ \}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{comment}{//\ NOTE:\ This\ code\ previously\ checked\ for\ existence\ of\ filesystem\ include,\ but}}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ gcc-\/8.X\ has\ the\ include\ but\ needs\ a\ library,\ also\ intel\ and\ clang}}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ pretend\ to\ be\ gcc,\ so\ macro\ to\ test\ for\ usability\ of\ filesystem}}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ was\ complicated\ and\ we\ can\ easily\ get\ by\ with\ the\ following\ code.}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ is\_path\_absolute(\textcolor{keyword}{const}\ std::string\ \&path)}
+\DoxyCodeLine{00159\ \ \ \ \ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!path.empty())\ \{}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#ifdef\ \_\_IOSS\_WINDOWS\_\_}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ path[0]\ ==\ \textcolor{charliteral}{'\(\backslash\)\(\backslash\)'}\ \&\&\ path[1]\ ==\ \textcolor{charliteral}{':'};}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ path[0]\ ==\ \textcolor{charliteral}{'/'};}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00168\ \ \ \ \ \}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00171\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_ae1d0617adaad9ed6d4f58c86dc3fbf4f}{get\_type\_from\_file}}(\textcolor{keyword}{const}\ std::string\ \&filename);}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ uniquify(std::vector<T>\ \&vec,\ \textcolor{keywordtype}{bool}\ skip\_first\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00174\ \ \ \ \ \{}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ it\ =\ vec.begin();}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (skip\_first)\ \{}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ it++;}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ Ioss::sort(it,\ vec.end());}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ vec.resize(unique(vec,\ skip\_first));}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ vec.shrink\_to\_fit();}
+\DoxyCodeLine{00182\ \ \ \ \ \}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ generate\_index(std::vector<T>\ \&index)}
+\DoxyCodeLine{00185\ \ \ \ \ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ T\ sum\ =\ 0;}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ index.size()\ -\/\ 1;\ i++)\ \{}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ T\ cnt\ \ \ \ =\ index[i];}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ index[i]\ =\ sum;}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ sum\ +=\ cnt;}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ index.back()\ =\ sum;}
+\DoxyCodeLine{00193\ \ \ \ \ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00196\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ T\ find\_index\_location(T\ node,\ \textcolor{keyword}{const}\ std::vector<T>\ \&index)}
+\DoxyCodeLine{00197\ \ \ \ \ \{}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \textcolor{comment}{//\ 0-\/based\ node\ numbering}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \textcolor{comment}{//\ index[p]\ =\ first\ node\ (0-\/based)\ on\ processor\ p}}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#if\ 1}}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \textcolor{comment}{//\ Assume\ data\ coherence.\ \ I.e.,\ a\ new\ search\ will\ be\ close\ to\ the}}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \textcolor{comment}{//\ previous\ search.}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ prev\ =\ 1;}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ nproc\ =\ index.size();}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (prev\ <\ nproc\ \&\&\ index[prev\ -\/\ 1]\ <=\ node\ \&\&\ index[prev]\ >\ node)\ \{}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ prev\ -\/\ 1;}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ p\ =\ 1;\ p\ <\ nproc;\ p++)\ \{}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index[p]\ >\ node)\ \{}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ prev\ =\ p;}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ p\ -\/\ 1;}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ std::ostringstream\ errmsg;}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ errmsg\ <<\ \textcolor{stringliteral}{"{}FATAL\ ERROR:\ find\_index\_location.\ Searching\ for\ "{}}\ <<\ node\ <<\ \textcolor{stringliteral}{"{}\ in:\(\backslash\)n"{}};}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ idx\ :\ index)\ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ errmsg\ <<\ idx\ <<\ \textcolor{stringliteral}{"{},\ "{}};}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ errmsg\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ IOSS\_ERROR(errmsg);}
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::distance(index.begin(),\ std::upper\_bound(index.begin(),\ index.end(),\ node))\ -\/\ 1;}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00227\ \ \ \ \ \}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ copy\_string(\textcolor{keywordtype}{char}\ *dest,\ \textcolor{keywordtype}{char}\ \textcolor{keyword}{const}\ *source,\ \textcolor{keywordtype}{size\_t}\ elements);}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ copy\_string(\textcolor{keywordtype}{char}\ *dest,\ \textcolor{keyword}{const}\ std::string\ \&source,\ \textcolor{keywordtype}{size\_t}\ elements)}
+\DoxyCodeLine{00232\ \ \ \ \ \{}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ copy\_string(dest,\ source.c\_str(),\ elements);}
+\DoxyCodeLine{00234\ \ \ \ \ \}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{size\_t}\ size>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ copy\_string(\textcolor{keywordtype}{char}\ (\&output)[size],\ \textcolor{keyword}{const}\ std::string\ \&source)}
+\DoxyCodeLine{00237\ \ \ \ \ \{}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ copy\_string(output,\ source.c\_str(),\ size);}
+\DoxyCodeLine{00239\ \ \ \ \ \}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{size\_t}\ size>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ copy\_string(\textcolor{keywordtype}{char}\ (\&output)[size],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *source)}
+\DoxyCodeLine{00242\ \ \ \ \ \{}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \textcolor{comment}{//\ Copy\ the\ string\ don't\ copy\ too\ many\ bytes.}}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ copy\_string(output,\ source,\ size);}
+\DoxyCodeLine{00245\ \ \ \ \ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ clear(std::vector<T>\ \&vec)}
+\DoxyCodeLine{00248\ \ \ \ \ \{}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ vec.clear();}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ vec.shrink\_to\_fit();}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ assert(vec.capacity()\ ==\ 0);}
+\DoxyCodeLine{00252\ \ \ \ \ \}}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00265\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a9a94cb5c68503220241559be2f58cdf6}{number\_width}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ number,\ \textcolor{keywordtype}{bool}\ use\_commas\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00266\ \ \ \ \ \{}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (number\ ==\ 0)\ \{}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ width\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(std::floor(std::log10(number)))\ +\ 1;}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (use\_commas)\ \{}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ width\ +=\ ((width\ -\/\ 1)\ /\ 3);}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ width;}
+\DoxyCodeLine{00275\ \ \ \ \ \}}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{int}\ power\_2(\textcolor{keywordtype}{int}\ count)}
+\DoxyCodeLine{00278\ \ \ \ \ \{}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \textcolor{comment}{//\ Return\ the\ power\ of\ two\ which\ is\ equal\ to\ or\ greater\ than\ \`{}count`}}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \textcolor{comment}{//\ count\ =\ 15\ -\/>\ returns\ 16}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \textcolor{comment}{//\ count\ =\ 16\ -\/>\ returns\ 16}}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \textcolor{comment}{//\ count\ =\ 17\ -\/>\ returns\ 32}}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \textcolor{comment}{//\ Use\ brute\ force...}}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ pow2\ =\ 1;}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (pow2\ <\ count)\ \{}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ pow2\ *=\ 2;}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ pow2;}
+\DoxyCodeLine{00290\ \ \ \ \ \}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00293\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ check\_block\_order(IOSS\_MAYBE\_UNUSED\ \textcolor{keyword}{const}\ std::vector<T\ *>\ \&blocks)}
+\DoxyCodeLine{00294\ \ \ \ \ \{}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\#ifndef\ NDEBUG}}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \textcolor{comment}{//\ Verify\ that\ element\ blocks\ are\ defined\ in\ sorted\ offset\ order...}}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \textcolor{keyword}{typename}\ std::vector<T\ *>::const\_iterator\ I;}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \ \ \ \ int64\_t\ eb\_offset\ =\ -\/1;}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (I\ =\ blocks.begin();\ I\ !=\ blocks.end();\ ++I)\ \{}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ int64\_t\ this\_off\ =\ (*I)-\/>get\_offset();}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this\_off\ <\ eb\_offset)\ \{}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ eb\_offset\ =\ this\_off;}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ IOSS\_PAR\_UNUSED(blocks);}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00315\ \ \ \ \ \}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ term\_width();}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ log\_power\_2(uint64\_t\ value);}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a3fb26af669aa584cb2d788b38f586127}{time\_and\_date}}(\textcolor{keywordtype}{char}\ *time\_string,\ \textcolor{keywordtype}{char}\ *date\_string,\ \textcolor{keywordtype}{size\_t}\ length);}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ decode\_filename(\textcolor{keyword}{const}\ std::string\ \&filename,\ \textcolor{keywordtype}{int}\ processor,}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ num\_processors);}
+\DoxyCodeLine{00335\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ get\_number(\textcolor{keyword}{const}\ std::string\ \&suffix);}
+\DoxyCodeLine{00336\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ extract\_id(\textcolor{keyword}{const}\ std::string\ \&name\_id);}
+\DoxyCodeLine{00337\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ encode\_entity\_name(\textcolor{keyword}{const}\ std::string\ \&entity\_type,}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int64\_t\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00344\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a1c9ad6cac31c7df1c7d8dd77eca8c864}{get\_trailing\_digits}}(\textcolor{keyword}{const}\ std::string\ \&name);}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00354\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a19f61788e0599d34af5beb81d7b372a4}{format\_id\_list}}(\textcolor{keyword}{const}\ std::vector<size\_t>\ \&ids,}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \ \ \ \ \ \ \ \ \&rng\_sep\ =\ \textcolor{stringliteral}{"{}\ to\ "{}},}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \ \ \ \ \ \ \ \ \&seq\_sep\ =\ \textcolor{stringliteral}{"{},\ "{}});}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00365\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_ad784c1f36c6295b2e21e8f9fa9b2a13e}{fixup\_name}}(\textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00374\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a38d3210f619c5568bf0e2098f3710ea2}{fixup\_name}}(std::string\ \&name);}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a916bb29061da1f81955d735ef2fe16f0}{check\_set\_bool\_property}}(\textcolor{keyword}{const}\ Ioss::PropertyManager\ \&properties,}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&prop\_name,\ \textcolor{keywordtype}{bool}\ \&prop\_value);}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00396\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_acf78bb1aba7fb516695e8e443f43631c}{block\_is\_omitted}}(Ioss::GroupingEntity\ *block);}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00411\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a83753c60f352ac22bf2ade968aaf433f}{fixup\_type}}(\textcolor{keyword}{const}\ std::string\ \&base,\ \textcolor{keywordtype}{int}\ nodes\_per\_element,}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ spatial);}
+\DoxyCodeLine{00413\ }
+\DoxyCodeLine{00419\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a18d5a600c26dc3ba9eeab8eb0f4b9f39}{capitalize}}(std::string\ name);}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00426\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_ab234261504008bc7d18c81805e10111f}{uppercase}}(std::string\ name);}
+\DoxyCodeLine{00427\ }
+\DoxyCodeLine{00433\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a3a2365c77c9c28b620e965b773fd1a4d}{lowercase}}(std::string\ name);}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ check\_non\_null(\textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},\ \textcolor{keyword}{const}\ std::string\ \&name,}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&func);}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00444\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a11363e2b32f6f2177a100dbbfb865f17}{str\_equal}}(\textcolor{keyword}{const}\ std::string\ \&s1,\ \textcolor{keyword}{const}\ std::string\ \&s2);}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00452\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a35d59fec0d9d055a2574090f0df6cd9f}{substr\_equal}}(\textcolor{keyword}{const}\ std::string\ \&prefix,\ \textcolor{keyword}{const}\ std::string\ \&str);}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_ac589da2c94a86ab813356a1e8af41965}{check\_int\_to\_real\_overflow}}(\textcolor{keyword}{const}\ Ioss::Field\ \&field,\ int64\_t\ *data,}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ num\_entity);}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00469\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a935ab58141d2c145b875846a250d46fe}{platform\_information}}();}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00481\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a174cf3661392aed34a928c8d347853f1}{local\_filename}}(\textcolor{keyword}{const}\ std::string\ \&relative\_filename,}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&working\_directory);}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ get\_fields(int64\_t\ entity\_count,\ Ioss::NameList\ \&names,}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss::Field::RoleType\ fld\_role,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_ioss_1_1_database_i_o}{DatabaseIO}}\ *db,\ \textcolor{keywordtype}{int}\ *local\_truth,}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<Ioss::Field>\ \&fields);}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00489\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ field\_warning(\textcolor{keyword}{const}\ Ioss::GroupingEntity\ *ge,\ \textcolor{keyword}{const}\ Ioss::Field\ \&field,}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\_view\ inout);}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00492\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ calculate\_sideblock\_membership(IntVector\ \&face\_is\_member,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_ioss_1_1_side_block}{SideBlock}}\ *sb,}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ int\_byte\_size,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *element,}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *sides,\ int64\_t\ number\_sides,}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_ioss_1_1_region}{Region}}\ *region);}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00512\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ int64\_t\ \doxymbox{\hyperlink{class_ioss_1_1_utils_adaccefc7b4a6d03cdd55cfcd63297e01}{get\_side\_offset}}(\textcolor{keyword}{const}\ Ioss::ElementTopology\ *parent\_topo,}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::ElementTopology\ *side\_topo);}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00515\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ int64\_t\ \doxymbox{\hyperlink{class_ioss_1_1_utils_adaccefc7b4a6d03cdd55cfcd63297e01}{get\_side\_offset}}(\textcolor{keyword}{const}\ Ioss::SideBlock\ *sb);}
+\DoxyCodeLine{00516\ }
+\DoxyCodeLine{00517\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ hash(\textcolor{keyword}{const}\ std::string\ \&name);}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ timer();}
+\DoxyCodeLine{00520\ }
+\DoxyCodeLine{00531\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a398009b58627f8e1e400ee8d5de4fc79}{input\_file}}(\textcolor{keyword}{const}\ std::string\ \&file\_name,\ Ioss::NameList\ *lines,}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ max\_line\_length\ =\ 0);}
+\DoxyCodeLine{00533\ }
+\DoxyCodeLine{00534\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>\ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ to\_string(\textcolor{keyword}{const}\ T\ \&t)}
+\DoxyCodeLine{00535\ \ \ \ \ \{}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::to\_string(t);}
+\DoxyCodeLine{00537\ \ \ \ \ \}}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00545\ }
+\DoxyCodeLine{00557\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a72befcfc3de813fa4ed49eb14b9906ee}{variable\_name\_kluge}}(\textcolor{keyword}{const}\ std::string\ \&name,}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ component\_count,\ \textcolor{keywordtype}{size\_t}\ copies,}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ max\_var\_len);}
+\DoxyCodeLine{00560\ }
+\DoxyCodeLine{00561\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ shape\_to\_string(\textcolor{keyword}{const}\ Ioss::ElementShape\ \&shape);}
+\DoxyCodeLine{00562\ }
+\DoxyCodeLine{00563\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{static}\ std::string\ entity\_type\_to\_string(\textcolor{keyword}{const}\ Ioss::EntityType\ \&\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00564\ }
+\DoxyCodeLine{00574\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_utils_a421b1447a683d9fe834a6106994aa38f}{generate\_history\_mesh}}(Ioss::Region\ *region);}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00576\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ info\_fields(\textcolor{keyword}{const}\ Ioss::GroupingEntity\ *ige,\ Ioss::Field::RoleType\ role,}
+\DoxyCodeLine{00577\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&header,\ \textcolor{keyword}{const}\ std::string\ \&suffix\ =\ \textcolor{stringliteral}{"{}\(\backslash\)n\(\backslash\)t"{}},}
+\DoxyCodeLine{00578\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{namespacedetail}{detail}}\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ info\_property(\textcolor{keyword}{const}\ Ioss::GroupingEntity\ *ige,\ Ioss::Property::Origin\ origin,}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&header,\ \textcolor{keyword}{const}\ std::string\ \&suffix\ =\ \textcolor{stringliteral}{"{}\(\backslash\)n\(\backslash\)t"{}},}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ print\_empty\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00583\ }
+\DoxyCodeLine{00584\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ insert\_sort\_and\_unique(\textcolor{keyword}{const}\ Ioss::NameList\ \&src,\ Ioss::NameList\ \&dest)}
+\DoxyCodeLine{00585\ \ \ \ \ \{}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ dest.insert(dest.end(),\ src.begin(),\ src.end());}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ std::sort(dest.begin(),\ dest.end(),\ std::less<>());}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ endIter\ =\ std::unique(dest.begin(),\ dest.end());}
+\DoxyCodeLine{00589\ \ \ \ \ \ \ dest.resize(endIter\ -\/\ dest.begin());}
+\DoxyCodeLine{00590\ \ \ \ \ \}}
+\DoxyCodeLine{00591\ }
+\DoxyCodeLine{00592\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00593\ \ \ \ \ \textcolor{comment}{//\ SEE:\ http://lemire.me/blog/2017/04/10/removing-\/duplicates-\/from-\/lists-\/quickly}}
+\DoxyCodeLine{00594\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ unique(std::vector<T>\ \&out,\ \textcolor{keywordtype}{bool}\ skip\_first)}
+\DoxyCodeLine{00595\ \ \ \ \ \{}
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (out.empty())\ \{}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00598\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ i\ \ \ \ =\ 1;}
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ pos\ \ =\ 1;}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ T\ \ \ \ \ \ oldv\ =\ out[0];}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (skip\_first)\ \{}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ i\ \ \ \ =\ 2;}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \ \ pos\ \ =\ 2;}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \ \ oldv\ =\ out[1];}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (;\ i\ <\ out.size();\ ++i)\ \{}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \ \ T\ newv\ \ \ =\ out[i];}
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \ \ out[pos]\ =\ newv;}
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \ \ pos\ +=\ (newv\ !=\ oldv);}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ \ \ oldv\ =\ newv;}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00613\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ pos;}
+\DoxyCodeLine{00614\ \ \ \ \ \}}
+\DoxyCodeLine{00615\ \ \ \};}
+\DoxyCodeLine{00616\ }
+\DoxyCodeLine{00617\ \ \ \textcolor{keyword}{inline}\ std::ostream\ \&OUTPUT()\ \{\ \textcolor{keywordflow}{return}\ Utils::get\_output\_stream();\ \}}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \ \ \textcolor{keyword}{inline}\ std::ostream\ \&DebugOut()\ \{\ \textcolor{keywordflow}{return}\ Utils::get\_debug\_stream();\ \}}
+\DoxyCodeLine{00620\ }
+\DoxyCodeLine{00621\ \ \ \textcolor{keyword}{inline}\ std::ostream\ \&WarnOut(\textcolor{keywordtype}{bool}\ output\_prewarning\ =\ \textcolor{keyword}{true})}
+\DoxyCodeLine{00622\ \ \ \{}
+\DoxyCodeLine{00623\ \ \ \ \ \textcolor{keywordflow}{if}\ (output\_prewarning)\ \{}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ Utils::get\_warning\_stream()\ <<\ Utils::get\_warning\_text();}
+\DoxyCodeLine{00625\ \ \ \ \ \}}
+\DoxyCodeLine{00626\ \ \ \ \ \textcolor{keywordflow}{return}\ Utils::get\_warning\_stream();}
+\DoxyCodeLine{00627\ \ \ \}}
+\DoxyCodeLine{00628\ }
+\DoxyCodeLine{00629\ \}\ \textcolor{comment}{//\ namespace\ Ioss}}
+
+\end{DoxyCode}

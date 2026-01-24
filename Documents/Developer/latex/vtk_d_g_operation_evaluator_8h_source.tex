@@ -1,0 +1,418 @@
+\doxysection{vtk\+DGOperation\+Evaluator.\+h}
+\hypertarget{vtk_d_g_operation_evaluator_8h_source}{}\label{vtk_d_g_operation_evaluator_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDGOperationEvaluator.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDGOperationEvaluator.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#ifndef\ vtkDGOperationEvaluator\_h}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#define\ vtkDGOperationEvaluator\_h}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}vtkCompiler.h"{}}\ \textcolor{comment}{//\ For\ export\ macro.}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}vtkDGOperationState.h"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}vtkDGOperationStateEntry.h"{}}\ \textcolor{comment}{//\ For\ API.}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}vtkDoubleArray.h"{}}\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ API.}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}vtkMatrix3x3.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ API.}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{enum}\ vtkDGSharingType}
+\DoxyCodeLine{00021\ \{}
+\DoxyCodeLine{00022\ \ \ SharedDOF,\ \ \ \ }
+\DoxyCodeLine{00023\ \ \ Discontinuous\ }
+\DoxyCodeLine{00024\ \};}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00027\ \textcolor{keyword}{enum}\ vtkDGSideType}
+\DoxyCodeLine{00028\ \{}
+\DoxyCodeLine{00029\ \ \ Cells,\ }
+\DoxyCodeLine{00030\ \ \ Sides\ \ }
+\DoxyCodeLine{00031\ \};}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{enum}\ vtkDGShapeModifier}
+\DoxyCodeLine{00041\ \{}
+\DoxyCodeLine{00042\ \ \ InverseJacobian,\ }
+\DoxyCodeLine{00043\ \ \ None,\ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00044\ \ \ ScaledJacobian\ \ \ }
+\DoxyCodeLine{00045\ \};}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ InputIterator,\ \textcolor{keyword}{typename}\ OutputIterator,\ vtkDGSharingType\ DOFSharing,}
+\DoxyCodeLine{00055\ \ \ vtkDGSideType\ SourceType,\ vtkDGShapeModifier\ Modifier,}
+\DoxyCodeLine{00056\ \ \ vtkDGSharingType\ ShapeSharing\ =\ Discontinuous>}
+\DoxyCodeLine{00057\ \textcolor{keyword}{class\ }VTK\_ALWAYS\_EXPORT\ VTK\_WRAPEXCLUDE\ vtkDGOperationEvaluator\ :\ \textcolor{keyword}{public}\ vtkDGOperationState}
+\DoxyCodeLine{00058\ \{}
+\DoxyCodeLine{00059\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{using\ }InputIteratorType\ =\ InputIterator;}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{using\ }OutputIteratorType\ =\ OutputIterator;}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ vtkDGOperationEvaluator(}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{//\ Attribute\ arrays/operation}}
+\DoxyCodeLine{00065\ \ \ \ \ \doxymbox{\hyperlink{classvtk_d_g_operator_entry}{vtkDGOperatorEntry}}\&\ op,\ vtkDataArray*\ connectivity,\ vtkDataArray*\ values,}
+\DoxyCodeLine{00066\ \ \ \ \ vtkDataArray*\ sideConn,\ vtkTypeUInt64\ offset,}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{//\ Shape\ arrays/operation}}
+\DoxyCodeLine{00068\ \ \ \ \ \doxymbox{\hyperlink{classvtk_d_g_operator_entry}{vtkDGOperatorEntry}}\ shapeGradient\ =\ \doxymbox{\hyperlink{classvtk_d_g_operator_entry}{vtkDGOperatorEntry}}(),}
+\DoxyCodeLine{00069\ \ \ \ \ vtkDataArray*\ shapeConnectivity\ =\ \textcolor{keyword}{nullptr},\ vtkDataArray*\ shapeValues\ =\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00070\ \ \ \ \ :\ vtkDGOperationState(}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ op,\ connectivity,\ values,\ sideConn,\ offset,\ shapeGradient,\ shapeConnectivity,\ shapeValues)}
+\DoxyCodeLine{00072\ \ \ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordflow}{if}\ (!op)}
+\DoxyCodeLine{00074\ \ \ \ \ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::logic\_error(\textcolor{stringliteral}{"{}Must\ have\ non-\/null\ operator."{}});}
+\DoxyCodeLine{00076\ \ \ \ \ \}}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordflow}{if}\ (Modifier\ !=\ None\ \&\&\ !shapeGradient)}
+\DoxyCodeLine{00078\ \ \ \ \ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::logic\_error(\textcolor{stringliteral}{"{}Must\ have\ non-\/null\ shape\ gradient\ operator."{}});}
+\DoxyCodeLine{00080\ \ \ \ \ \}}
+\DoxyCodeLine{00081\ \ \ \ \ this-\/>BasisTuple.resize(op.\doxymbox{\hyperlink{classvtk_d_g_operator_entry_a2e3c06b1257deac5183a2ac648598ddd}{NumberOfFunctions}}\ *\ op.\doxymbox{\hyperlink{classvtk_d_g_operator_entry_a0e07820e38e772b0cc99bbb825590c2b}{OperatorSize}});}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{int}\ ncc\ =\ 0;}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>CellConnectivity)}
+\DoxyCodeLine{00084\ \ \ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ ncc\ =\ this-\/>CellConnectivity-\/>GetNumberOfComponents();}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ this-\/>ConnTuple.resize(ncc);}
+\DoxyCodeLine{00087\ \ \ \ \ \}}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (DOFSharing\ ==\ SharedDOF)}
+\DoxyCodeLine{00089\ \ \ \ \ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::logic\_error(\textcolor{stringliteral}{"{}DOF\ sharing\ requires\ a\ cell-\/connectivity\ array."{}});}
+\DoxyCodeLine{00091\ \ \ \ \ \}}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordtype}{int}\ nvc\ =\ this-\/>CellValues-\/>GetNumberOfComponents();}
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keywordflow}{if}\ (DOFSharing\ ==\ SharedDOF)}
+\DoxyCodeLine{00094\ \ \ \ \ \{}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ this-\/>NumberOfValuesPerFunction\ =\ nvc;}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ this-\/>ValueTuple.resize(nvc\ *\ ncc);}
+\DoxyCodeLine{00097\ \ \ \ \ \}}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00099\ \ \ \ \ \{}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ this-\/>NumberOfValuesPerFunction\ =\ nvc\ /\ this-\/>OpEntry.NumberOfFunctions;}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ this-\/>ValueTuple.resize(nvc);}
+\DoxyCodeLine{00102\ \ \ \ \ \}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{comment}{//\ If\ we\ must\ also\ evaluate\ the\ shape-\/attribute\ modifier\ for\ each}}
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{comment}{//\ result\ value,\ then\ prepare\ tuples\ to\ hold\ shape\ data.}}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keywordflow}{if}\ (Modifier\ !=\ None)}
+\DoxyCodeLine{00107\ \ \ \ \ \{}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ this-\/>Jacobian.resize(9);\ \textcolor{comment}{//\ TODO:\ Handle\ 2-\/d\ Jacobians\ differently\ eventually.}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ this-\/>ShapeBasisTuple.resize(shapeGradient.NumberOfFunctions\ *\ shapeGradient.OperatorSize);}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nsc\ =\ 0;}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>ShapeConnectivity)}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ nsc\ =\ this-\/>ShapeConnectivity-\/>GetNumberOfComponents();}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ this-\/>ShapeConnTuple.resize(nsc);}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (ShapeSharing\ ==\ SharedDOF)}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::logic\_error(\textcolor{stringliteral}{"{}Shape\ DOF-\/sharing\ requires\ a\ shape-\/connectivity\ array."{}});}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nvs\ =\ this-\/>ShapeValues-\/>GetNumberOfComponents();}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ShapeSharing\ ==\ SharedDOF)}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ this-\/>NumberOfShapeValuesPerFunction\ =\ nvs;}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ this-\/>ShapeValueTuple.resize(nvs\ *\ nsc);}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ this-\/>NumberOfShapeValuesPerFunction\ =\ nvs\ /\ this-\/>ShapeGradientEntry.NumberOfFunctions;}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ this-\/>ShapeValueTuple.resize(nvs);}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00131\ \ \ \ \ \}}
+\DoxyCodeLine{00132\ \ \ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordtype}{void}\ CloneInto(\doxymbox{\hyperlink{classvtk_d_g_operation_state_entry_base}{vtkDGOperationStateEntryBase}}\&\ entry)\textcolor{keyword}{\ const\ override}}
+\DoxyCodeLine{00135\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}*\ typedEntry\ =}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{dynamic\_cast<}\doxymbox{\hyperlink{classvtk_d_g_operation_state_entry}{vtkDGOperationStateEntry<InputIterator,\ OutputIterator>}}*\textcolor{keyword}{>}(\&entry))}
+\DoxyCodeLine{00138\ \ \ \ \ \{}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ vtkDGOperationEvaluator<InputIterator,\ OutputIterator,\ DOFSharing,\ SourceType,\ Modifier,}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ ShapeSharing>\doxymbox{\hyperlink{classvtk_d_g_operation_evaluator_a0d5e6e1786c56faeec309b81e34eb613}{::prepEntry}}(*typedEntry,\ this-\/>OpEntry,\ this-\/>CellConnectivity,}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ this-\/>CellValues,\ this-\/>SideConnectivity,\ this-\/>Offset,\ this-\/>ShapeGradientEntry,}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ this-\/>ShapeConnectivity,\ this-\/>ShapeValues);}
+\DoxyCodeLine{00143\ \ \ \ \ \}}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{comment}{//\ TODO:\ else\ throw\ exception?}}
+\DoxyCodeLine{00145\ \ \ \}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_d_g_operation_evaluator_a9d831bd7f4d42ab7edd01703337bee60}{InnerProduct}}(vtkTypeUInt64\ tt,\ OutputIterator\&\ outIter)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00150\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keyword}{auto}\ xx(outIter[tt]);}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordtype}{int}\ nc\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(xx.size());}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{comment}{//\ Zero\ out\ the\ tuple:}}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ ii\ =\ 0;\ ii\ <\ nc;\ ++ii)}
+\DoxyCodeLine{00155\ \ \ \ \ \{}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ xx[ii]\ =\ 0.;}
+\DoxyCodeLine{00157\ \ \ \ \ \}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{comment}{//\ Sum\ the\ inner\ product\ of\ the\ basis\ and\ the\ coefficient\ values\ into\ the\ tuple:}}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ ii\ =\ 0;\ ii\ <\ this-\/>NumberOfValuesPerFunction;\ ++ii)}
+\DoxyCodeLine{00160\ \ \ \ \ \{}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ jj\ =\ 0;\ jj\ <\ this-\/>OpEntry.OperatorSize;\ ++jj)}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ kk\ =\ 0;\ kk\ <\ this-\/>OpEntry.NumberOfFunctions;\ ++kk)}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ xx[ii\ *\ this-\/>OpEntry.OperatorSize\ +\ jj]\ +=}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>BasisTuple[kk\ *\ this-\/>OpEntry.OperatorSize\ +\ jj]\ *}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>ValueTuple[kk\ *\ this-\/>NumberOfValuesPerFunction\ +\ ii];}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00170\ \ \ \ \ \}}
+\DoxyCodeLine{00171\ \ \ \}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_d_g_operation_evaluator_ad86feda174bc321fb30a0a9828177cdf}{ShapeInnerProduct}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00176\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{int}\ nc\ =\ 9;\ \textcolor{comment}{//\ TODO:\ Use\ cell\ dimension\ instead\ (9\ for\ 3-\/d,\ 4\ for\ 2-\/d)?}}
+\DoxyCodeLine{00178\ \ \ \ \ assert(nc\ ==\ this-\/>ShapeGradientEntry.OperatorSize\ *\ this-\/>NumberOfShapeValuesPerFunction);}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{comment}{//\ Zero\ out\ the\ tuple:}}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ ii\ =\ 0;\ ii\ <\ nc;\ ++ii)}
+\DoxyCodeLine{00181\ \ \ \ \ \{}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ this-\/>Jacobian[ii]\ =\ 0.;}
+\DoxyCodeLine{00183\ \ \ \ \ \}}
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ ii\ =\ 0;\ ii\ <\ this-\/>NumberOfShapeValuesPerFunction;\ ++ii)}
+\DoxyCodeLine{00185\ \ \ \ \ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ jj\ =\ 0;\ jj\ <\ this-\/>ShapeGradientEntry.OperatorSize;\ ++jj)}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ kk\ =\ 0;\ kk\ <\ this-\/>ShapeGradientEntry.NumberOfFunctions;\ ++kk)}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ this-\/>Jacobian[jj\ +\ this-\/>NumberOfShapeValuesPerFunction\ *\ ii]\ +=}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>ShapeBasisTuple[kk\ *\ this-\/>ShapeGradientEntry.OperatorSize\ +\ jj]\ *}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>ShapeValueTuple[kk\ *\ this-\/>NumberOfShapeValuesPerFunction\ +\ ii];}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00195\ \ \ \ \ \}}
+\DoxyCodeLine{00196\ \ \ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00199\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_d_g_operation_evaluator_ac13ecae392adb841f1d3c5eff6688572}{ComputeJacobian}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00200\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordflow}{if}\ (ShapeSharing\ ==\ SharedDOF)}
+\DoxyCodeLine{00202\ \ \ \ \ \{}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>LastShapeCellId\ !=\ this-\/>LastCellId)}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ this-\/>ShapeConnectivity-\/>GetUnsignedTuple(this-\/>LastCellId,\ this-\/>ShapeConnTuple.data());}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ std::size\_t\ nc\ =\ this-\/>ShapeConnTuple.size();}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nv\ =\ this-\/>ShapeValues-\/>GetNumberOfComponents();}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (std::size\_t\ jj\ =\ 0;\ jj\ <\ nc;\ ++jj)}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ this-\/>ShapeValues-\/>GetTuple(}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>ShapeConnTuple[jj],\ this-\/>ShapeValueTuple.data()\ +\ nv\ *\ jj);}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ this-\/>LastShapeCellId\ =\ this-\/>LastCellId;}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00215\ \ \ \ \ \}}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (ShapeSharing\ ==\ Discontinuous)}
+\DoxyCodeLine{00217\ \ \ \ \ \{}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>LastShapeCellId\ !=\ this-\/>LastCellId)}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ this-\/>ShapeValues-\/>GetTuple(this-\/>LastCellId,\ this-\/>ShapeValueTuple.data());}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ this-\/>LastShapeCellId\ =\ this-\/>LastCellId;}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00223\ \ \ \ \ \}}
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00225\ \ \ \ \ \{}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::logic\_error(\textcolor{stringliteral}{"{}Invalid\ shape\ DOF-\/sharing\ enumerant."{}});}
+\DoxyCodeLine{00227\ \ \ \ \ \}}
+\DoxyCodeLine{00228\ \ \ \ \ this-\/>ShapeGradientEntry.Op(this-\/>RST,\ this-\/>ShapeBasisTuple);}
+\DoxyCodeLine{00229\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_d_g_operation_evaluator_ad86feda174bc321fb30a0a9828177cdf}{ShapeInnerProduct}}();}
+\DoxyCodeLine{00230\ \ \ \}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \ \ \textcolor{comment}{//\ Compute\ the\ inverse\ Jacobian\ and\ multiply\ the\ \(\backslash\)a\ ii-\/th\ tuple\ of\ result\ by\ it.}}
+\DoxyCodeLine{00233\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00234\ \ \ \textcolor{comment}{//\ This\ performs\ the\ multiplication\ in\ place.}}
+\DoxyCodeLine{00235\ \ \ \textcolor{keywordtype}{void}\ ApplyInverseJacobian(vtkTypeUInt64\ ii,\ OutputIterator\&\ outIter)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00236\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00237\ \ \ \ \ this-\/>ComputeJacobian();}
+\DoxyCodeLine{00238\ \ \ \ \ \textcolor{comment}{//\ Invert\ Jacobian\ and\ multiply\ result's\ ii-\/th\ tuple\ by\ it.}}
+\DoxyCodeLine{00239\ \ \ \ \ std::array<double,\ 9>\ inverseJacobian;}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{comment}{//\ Transpose\ required;\ oddly,\ ApplyScaledJacobian\ and\ ApplyInverseJacobian}}
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{comment}{//\ cannot\ both\ use\ the\ same\ Jacobian\ matrix.}}
+\DoxyCodeLine{00242\ \ \ \ \ \doxymbox{\hyperlink{classvtk_matrix3x3_ae2c6fdaea08db14a01a9e76550ced83b}{vtkMatrix3x3::Transpose}}(this-\/>Jacobian.data(),\ this-\/>Jacobian.data());}
+\DoxyCodeLine{00243\ \ \ \ \ \doxymbox{\hyperlink{classvtk_matrix3x3_aaf3701dc460dfb7e634e526c22b06a34}{vtkMatrix3x3::Invert}}(this-\/>Jacobian.data(),\ inverseJacobian.data());}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keyword}{auto}\ rr(outIter[ii]);}
+\DoxyCodeLine{00245\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ nc\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(rr.size());}
+\DoxyCodeLine{00246\ \ \ \ \ \textcolor{keywordflow}{if}\ (nc\ \%\ 3\ !=\ 0)}
+\DoxyCodeLine{00247\ \ \ \ \ \{}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::logic\_error(\textcolor{stringliteral}{"{}Jacobian\ must\ apply\ to\ vector\ or\ matrix\ values."{}});}
+\DoxyCodeLine{00249\ \ \ \ \ \}}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ vv\ =\ 0;\ vv\ <\ nc\ /\ 3;\ ++vv)}
+\DoxyCodeLine{00251\ \ \ \ \ \{}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ vtkTypeUInt64\ mm\ =\ 3\ *\ vv;}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \textcolor{keywordtype}{double}*\ vec\ =\ rr.data()\ +\ mm;}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvtk_matrix3x3_a57fd0d38c415a84fc8ff4e8bd62402d8}{vtkMatrix3x3::MultiplyPoint}}(inverseJacobian.data(),\ vec,\ vec);}
+\DoxyCodeLine{00255\ \ \ \ \ \}}
+\DoxyCodeLine{00256\ \ \ \}}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{//\ Compute\ the\ Jacobian\ scaled\ by\ its\ determinant;\ multiply\ the\ \(\backslash\)a\ ii-\/th\ tuple\ of\ result\ by\ it.}}
+\DoxyCodeLine{00259\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00260\ \ \ \textcolor{comment}{//\ This\ performs\ the\ multiplication\ in\ place.}}
+\DoxyCodeLine{00261\ \ \ \textcolor{keywordtype}{void}\ ApplyScaledJacobian(vtkTypeUInt64\ ii,\ OutputIterator\&\ outIter)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00262\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00263\ \ \ \ \ this-\/>ComputeJacobian();}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{comment}{//\ Compute\ the\ Jacobian\ and\ multiply\ result's\ ii-\/th\ tuple}}
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{comment}{//\ by\ the\ Jacobian\ normalized\ by\ its\ determinant.}}
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{keywordtype}{double}\ norm\ =\ 1.0\ /\ \doxymbox{\hyperlink{classvtk_matrix3x3_a13067a86952f7791b8dfbc88157136a6}{vtkMatrix3x3::Determinant}}(this-\/>Jacobian.data());}
+\DoxyCodeLine{00267\ \ \ \ \ std::array<double,\ 3>\ vec;}
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keyword}{auto}\ rr(outIter[ii]);}
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ nc\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(rr.size());}
+\DoxyCodeLine{00270\ \ \ \ \ \textcolor{keywordflow}{if}\ (nc\ \%\ 3\ !=\ 0)}
+\DoxyCodeLine{00271\ \ \ \ \ \{}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::logic\_error(\textcolor{stringliteral}{"{}Jacobian\ must\ apply\ to\ vector\ or\ matrix\ values."{}});}
+\DoxyCodeLine{00273\ \ \ \ \ \}}
+\DoxyCodeLine{00274\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ vv\ =\ 0;\ vv\ <\ nc\ /\ 3;\ ++vv)}
+\DoxyCodeLine{00275\ \ \ \ \ \{}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ vtkTypeUInt64\ mm\ =\ 3\ *\ vv;}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ vec\ =\ \{\ \{\ rr[mm],\ rr[mm\ +\ 1],\ rr[mm\ +\ 2]\ \}\ \};}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ Is\ this\ J\string^T\ *\ vec?\ or\ J*vec?\ Depends\ on\ row-\/major\ vs\ column-\/major\ Jacobian.}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \textcolor{comment}{//\ clang-\/format\ off}}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ rr[mm\ \ \ \ ]\ =\ norm\ *\ (this-\/>Jacobian[0]\ *\ vec[0]\ +\ this-\/>Jacobian[1]\ *\ vec[1]\ +\ this-\/>Jacobian[2]\ *\ vec[2]);}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ rr[mm\ +\ 1]\ =\ norm\ *\ (this-\/>Jacobian[3]\ *\ vec[0]\ +\ this-\/>Jacobian[4]\ *\ vec[1]\ +\ this-\/>Jacobian[5]\ *\ vec[2]);}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ rr[mm\ +\ 2]\ =\ norm\ *\ (this-\/>Jacobian[6]\ *\ vec[0]\ +\ this-\/>Jacobian[7]\ *\ vec[1]\ +\ this-\/>Jacobian[8]\ *\ vec[2]);}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \textcolor{comment}{//\ clang-\/format\ on}}
+\DoxyCodeLine{00284\ \ \ \ \ \}}
+\DoxyCodeLine{00285\ \ \ \}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \textcolor{keywordtype}{void}\ operator()(}
+\DoxyCodeLine{00288\ \ \ \ \ InputIterator\&\ inIter,\ OutputIterator\&\ outIter,\ vtkTypeUInt64\ begin,\ vtkTypeUInt64\ end)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00289\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00290\ \ \ \ \ vtkTypeUInt64\ currId;}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keywordflow}{if}\ (DOFSharing\ ==\ SharedDOF\ \&\&\ SourceType\ ==\ Sides)}
+\DoxyCodeLine{00292\ \ \ \ \ \{}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkTypeUInt64\ ii\ =\ begin;\ ii\ !=\ end;\ ++ii)}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ currId\ =\ inIter.GetCellId(ii);}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ this-\/>SideConnectivity-\/>GetUnsignedTuple(currId\ -\/\ this-\/>Offset,\ this-\/>SideTuple.data());}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ currId\ =\ this-\/>SideTuple[0];}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>LastCellId\ !=\ currId)}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ this-\/>CellConnectivity-\/>GetUnsignedTuple(currId,\ this-\/>ConnTuple.data());}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ std::size\_t\ nc\ =\ this-\/>ConnTuple.size();}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nv\ =\ this-\/>CellValues-\/>GetNumberOfComponents();}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (std::size\_t\ jj\ =\ 0;\ jj\ <\ nc;\ ++jj)}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>CellValues-\/>GetTuple(this-\/>ConnTuple[jj],\ this-\/>ValueTuple.data()\ +\ nv\ *\ jj);}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ this-\/>LastCellId\ =\ currId;}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ param\ =\ inIter.GetParameter(ii);}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ jj\ =\ 0;\ jj\ <\ 3;\ ++jj)}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ this-\/>RST[jj]\ =\ param[jj];}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ this-\/>OpEntry.Op(this-\/>RST,\ this-\/>BasisTuple);}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ this-\/>InnerProduct(ii,\ outIter);}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (Modifier\ ==\ InverseJacobian)}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ this-\/>ApplyInverseJacobian(ii,\ outIter);}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (Modifier\ ==\ ScaledJacobian)}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ this-\/>ApplyScaledJacobian(ii,\ outIter);}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00325\ \ \ \ \ \}}
+\DoxyCodeLine{00326\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (DOFSharing\ ==\ SharedDOF\ \&\&\ SourceType\ ==\ Cells)}
+\DoxyCodeLine{00327\ \ \ \ \ \{}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkTypeUInt64\ ii\ =\ begin;\ ii\ !=\ end;\ ++ii)}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ currId\ =\ inIter.GetCellId(ii);}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>LastCellId\ !=\ currId)}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NB:\ We\ could\ ask\ for\ currId\ -\/\ this-\/>Offset\ here,\ but\ perhaps\ we\ should}}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ assume\ this-\/>Offset\ will\ always\ be\ 0\ for\ the\ CellSpec?}}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ this-\/>CellConnectivity-\/>GetUnsignedTuple(currId,\ this-\/>ConnTuple.data());}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ std::size\_t\ nc\ =\ this-\/>ConnTuple.size();}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nv\ =\ this-\/>CellValues-\/>GetNumberOfComponents();}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (std::size\_t\ jj\ =\ 0;\ jj\ <\ nc;\ ++jj)}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>CellValues-\/>GetTuple(this-\/>ConnTuple[jj],\ this-\/>ValueTuple.data()\ +\ nv\ *\ jj);}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ this-\/>LastCellId\ =\ currId;}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ param\ =\ inIter.GetParameter(ii);}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ jj\ =\ 0;\ jj\ <\ 3;\ ++jj)}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ this-\/>RST[jj]\ =\ param[jj];}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ this-\/>OpEntry.Op(this-\/>RST,\ this-\/>BasisTuple);}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ this-\/>InnerProduct(ii,\ outIter);}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (Modifier\ ==\ InverseJacobian)}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ this-\/>ApplyInverseJacobian(ii,\ outIter);}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (Modifier\ ==\ ScaledJacobian)}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ this-\/>ApplyScaledJacobian(ii,\ outIter);}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00360\ \ \ \ \ \}}
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (DOFSharing\ ==\ Discontinuous\ \&\&\ SourceType\ ==\ Sides)}
+\DoxyCodeLine{00362\ \ \ \ \ \{}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkTypeUInt64\ ii\ =\ begin;\ ii\ !=\ end;\ ++ii)}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ currId\ =\ inIter.GetCellId(ii);}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ this-\/>SideConnectivity-\/>GetUnsignedTuple(currId\ -\/\ this-\/>Offset,\ this-\/>SideTuple.data());}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ currId\ =\ this-\/>SideTuple[0];}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>LastCellId\ !=\ currId)}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ this-\/>CellValues-\/>GetTuple(currId,\ this-\/>ValueTuple.data());}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ this-\/>LastCellId\ =\ currId;}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ param\ =\ inIter.GetParameter(ii);}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ jj\ =\ 0;\ jj\ <\ 3;\ ++jj)}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ this-\/>RST[jj]\ =\ param[jj];}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ this-\/>OpEntry.Op(this-\/>RST,\ this-\/>BasisTuple);}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ this-\/>InnerProduct(ii,\ outIter);}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (Modifier\ ==\ InverseJacobian)}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ this-\/>ApplyInverseJacobian(ii,\ outIter);}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (Modifier\ ==\ ScaledJacobian)}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ this-\/>ApplyScaledJacobian(ii,\ outIter);}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00389\ \ \ \ \ \}}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{//\ DOFSharing\ ==\ Discontinuous\ \&\&\ SourceType\ ==\ Cells}}
+\DoxyCodeLine{00391\ \ \ \ \ \{}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkTypeUInt64\ ii\ =\ begin;\ ii\ !=\ end;\ ++ii)}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ currId\ =\ inIter.GetCellId(ii);}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NB:\ We\ could\ subtract\ this-\/>Offset\ from\ currId,\ but\ assume\ for}}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ now\ that\ CellSpec\ always\ has\ an\ offset\ of\ 0.}}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>LastCellId\ !=\ currId)}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ \ \ this-\/>CellValues-\/>GetTuple(currId,\ this-\/>ValueTuple.data());}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ this-\/>LastCellId\ =\ currId;}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ param\ =\ inIter.GetParameter(ii);}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ jj\ =\ 0;\ jj\ <\ 3;\ ++jj)}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ this-\/>RST[jj]\ =\ param[jj];}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ this-\/>OpEntry.Op(this-\/>RST,\ this-\/>BasisTuple);}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ this-\/>InnerProduct(ii,\ outIter);}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (Modifier\ ==\ InverseJacobian)}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ this-\/>ApplyInverseJacobian(ii,\ outIter);}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (Modifier\ ==\ ScaledJacobian)}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ this-\/>ApplyScaledJacobian(ii,\ outIter);}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00418\ \ \ \ \ \}}
+\DoxyCodeLine{00419\ \ \ \}}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00427\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_d_g_operation_evaluator_a0d5e6e1786c56faeec309b81e34eb613}{prepEntry}}(\doxymbox{\hyperlink{classvtk_d_g_operation_state_entry}{vtkDGOperationStateEntry<InputIterator,\ OutputIterator>}}\&\ entry,}
+\DoxyCodeLine{00428\ \ \ \ \ \doxymbox{\hyperlink{classvtk_d_g_operator_entry}{vtkDGOperatorEntry}}\ op,\ vtkDataArray*\ conn,\ vtkDataArray*\ values,\ vtkDataArray*\ sides,}
+\DoxyCodeLine{00429\ \ \ \ \ vtkTypeUInt64\ offset,\ \doxymbox{\hyperlink{classvtk_d_g_operator_entry}{vtkDGOperatorEntry}}\ shapeGradient\ =\ \doxymbox{\hyperlink{classvtk_d_g_operator_entry}{vtkDGOperatorEntry}}(),}
+\DoxyCodeLine{00430\ \ \ \ \ vtkDataArray*\ shapeConnectivity\ =\ \textcolor{keyword}{nullptr},\ vtkDataArray*\ shapeValues\ =\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00431\ \ \ \{}
+\DoxyCodeLine{00432\ \ \ \ \ entry.State\ =\ std::unique\_ptr<vtkDGOperationState>(\textcolor{keyword}{new}\ vtkDGOperationEvaluator<InputIterator,}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ OutputIterator,\ DOFSharing,\ SourceType,\ Modifier,\ ShapeSharing>(}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ op,\ conn,\ values,\ sides,\ offset,\ shapeGradient,\ shapeConnectivity,\ shapeValues));}
+\DoxyCodeLine{00435\ \ \ \ \ entry.Function\ =\ [\&entry](InputIterator\&\ inIter,\ OutputIterator\&\ outIter,\ vtkTypeUInt64\ begin,}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vtkTypeUInt64\ end)}
+\DoxyCodeLine{00437\ \ \ \ \ \{}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \textcolor{keyword}{auto}*\ eval\ =\ \textcolor{keyword}{reinterpret\_cast<}vtkDGOperationEvaluator<InputIterator,\ OutputIterator,}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ DOFSharing,\ SourceType,\ Modifier,\ ShapeSharing\textcolor{keyword}{>}*>(entry.State.get());}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (*eval)(inIter,\ outIter,\ begin,\ end);}
+\DoxyCodeLine{00441\ \ \ \ \ \};}
+\DoxyCodeLine{00442\ \ \ \}}
+\DoxyCodeLine{00443\ \};}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00445\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkDGOperationEvaluator\_h}}
+\DoxyCodeLine{00446\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkDGOperationEvaluator.h}}
+
+\end{DoxyCode}

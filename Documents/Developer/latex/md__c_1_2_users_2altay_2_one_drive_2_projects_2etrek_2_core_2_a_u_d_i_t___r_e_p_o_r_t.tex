@@ -1,0 +1,349 @@
+\chapter{Core Package Memory Safety \& Namespace Hygiene Audit Report }
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t}{}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t}\index{Core Package Memory Safety \& Namespace Hygiene Audit Report@{Core Package Memory Safety \& Namespace Hygiene Audit Report}}
+\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md33}%
+\Hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md33}%
+
+
+{\bfseries{Date:\+}} 2025-\/10-\/16 {\bfseries{Branch:\+}} refactor/\+namespace-\/standardization-\/and-\/header-\/hygiene {\bfseries{Scope:\+}} Core/\+\texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}/\+\texorpdfstring{$\ast$}{*}.h, Core/\+\texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}/\+\texorpdfstring{$\ast$}{*}.cpp
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md35}{}\doxysection{\texorpdfstring{Executive Summary}{Executive Summary}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md35}
+This audit reviewed all 12 headers and 11 implementation files in the Core package for:\+
+\begin{DoxyEnumerate}
+\item {\ttfamily using namespace} directives in headers
+\item Memory ownership patterns and dangling pointer risks
+\item Header include hygiene and forward declaration opportunities
+\item Pimpl pattern destructors
+\item Qt/\+\+STL shared pointer interoperability
+\item Singleton/\+factory memory safety
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md36}{}\doxysubsection{\texorpdfstring{Critical Findings:\+ 3 HIGH, 8 MEDIUM, 5 LOW priority issues}{Critical Findings:\+ 3 HIGH, 8 MEDIUM, 5 LOW priority issues}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md36}
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md38}{}\doxysection{\texorpdfstring{1. Using Namespace Violations in Headers}{1. Using Namespace Violations in Headers}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md38}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md39}{}\doxysubsection{\texorpdfstring{❌ VIOLATION:\+ Logger\+Provider.\+h:\+14}{❌ VIOLATION:\+ Logger\+Provider.\+h:\+14}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md39}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ \ }Etrek::Core::Globalization;}
+\DoxyCodeLine{\textcolor{keyword}{namespace\ \ }Etrek::Core::Log\ \{}
+
+\end{DoxyCode}
+ {\bfseries{Impact:\+}} HIGH -\/ Pollutes global namespace for all consumers {\bfseries{Fix:\+}} Remove {\ttfamily using namespace} and fully qualify {\ttfamily Translation\+Provider} or use local alias\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md40}{}\doxysubsection{\texorpdfstring{❌ VIOLATION:\+ Setting\+Provider.\+h:\+12}{❌ VIOLATION:\+ Setting\+Provider.\+h:\+12}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md40}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ }Etrek::Core::Data;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{namespace\ }Etrek::Core::Setting\ \{}
+
+\end{DoxyCode}
+ {\bfseries{Impact:\+}} HIGH -\/ Namespace pollution {\bfseries{Fix:\+}} Remove and qualify types as {\ttfamily Model::\+\+Database\+Connection\+Setting} etc.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md41}{}\doxysubsection{\texorpdfstring{❌ VIOLATION:\+ Authentication\+Repository.\+h:\+15-\/18}{❌ VIOLATION:\+ Authentication\+Repository.\+h:\+15-\/18}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md41}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ }\doxymbox{\hyperlink{namespace_etrek_1_1_core_1_1_data_1_1_entity}{Etrek::Core::Data::Entity}};}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ }Etrek::Core::Data;}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ }Etrek::Core::Data::Model;}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ }Etrek::Core::Log;}
+
+\end{DoxyCode}
+ {\bfseries{Impact:\+}} HIGH -\/ Multiple namespace pollution in header {\bfseries{Fix:\+}} Remove all {\ttfamily using namespace} from header, use fully qualified names or local aliases in .cpp\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md42}{}\doxysubsection{\texorpdfstring{❌ VIOLATION:\+ Database\+Setup\+Manager.\+h:\+12-\/13}{❌ VIOLATION:\+ Database\+Setup\+Manager.\+h:\+12-\/13}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md42}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ }Etrek::Core::Log;}
+\DoxyCodeLine{\textcolor{keyword}{using\ namespace\ }Etrek::Core::Data;}
+
+\end{DoxyCode}
+ {\bfseries{Impact:\+}} HIGH -\/ Namespace pollution {\bfseries{Fix:\+}} Remove and qualify types explicitly
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md44}{}\doxysection{\texorpdfstring{2. Raw Pointer Ownership Issues}{2. Raw Pointer Ownership Issues}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md44}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md45}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ App\+Logger.\+h:\+74-\/75}{⚠️ MEDIUM:\+ App\+Logger.\+h:\+74-\/75}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md45}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_etrek_1_1_core_1_1_globalization_1_1_translation_provider}{TranslationProvider}}*\ translator\ =\ \textcolor{keyword}{nullptr};\ \textcolor{comment}{//\ Pointer\ to\ the\ translation\ provider}}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_etrek_1_1_core_1_1_log_1_1_logger_provider}{LoggerProvider}}*\ m\_provider\ =\ \textcolor{keyword}{nullptr};}
+
+\end{DoxyCode}
+ {\bfseries{Issue:\+}} Non-\/owning raw pointers without documentation {\bfseries{Risk:\+}} Dangling pointer if provider is destroyed first {\bfseries{Fix:\+}}
+\begin{DoxyItemize}
+\item Document as non-\/owning:\+ {\ttfamily Translation\+Provider\texorpdfstring{$\ast$}{*} translator; /\+/\+ non-\/owning observer}
+\item Consider {\ttfamily std::\+reference\+\_\+wrapper} if nullability not needed
+\item Add lifetime assertion in constructor documentation
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md46}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ App\+Logger\+Factory.\+h:\+38-\/39}{⚠️ MEDIUM:\+ App\+Logger\+Factory.\+h:\+38-\/39}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md46}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_etrek_1_1_core_1_1_log_1_1_logger_provider}{LoggerProvider}}\&\ m\_provider;}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_etrek_1_1_core_1_1_globalization_1_1_translation_provider}{TranslationProvider}}*\ translator;}
+
+\end{DoxyCode}
+ {\bfseries{Issue:\+}} Inconsistent ownership -\/ reference vs raw pointer {\bfseries{Risk:\+}} {\ttfamily translator} can dangle {\bfseries{Fix:\+}} Document non-\/owning nature, or use reference if non-\/null always\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md47}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ Logger\+Provider.\+h:\+67}{⚠️ MEDIUM:\+ Logger\+Provider.\+h:\+67}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md47}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_etrek_1_1_core_1_1_globalization_1_1_translation_provider}{TranslationProvider}}*\ translator;}
+
+\end{DoxyCode}
+ {\bfseries{Issue:\+}} Non-\/owning pointer stored in singleton {\bfseries{Risk:\+}} Dangling if translator destroyed before singleton shutdown {\bfseries{Fix:\+}} Document lifetime requirement:\+ translator must outlive Logger\+Provider\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md48}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ Authentication\+Repository.\+h:\+150 \& Database\+Setup\+Manager.\+h:\+78}{⚠️ MEDIUM:\+ Authentication\+Repository.\+h:\+150 \& Database\+Setup\+Manager.\+h:\+78}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md48}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_etrek_1_1_core_1_1_globalization_1_1_translation_provider}{TranslationProvider}}*\ translator;}
+
+\end{DoxyCode}
+ {\bfseries{Issue:\+}} Same pattern repeated -\/ non-\/owning pointer without lifetime docs {\bfseries{Fix:\+}} Add comment:\+ {\ttfamily /\+/\+ non-\/owning, must outlive this repository}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md49}{}\doxysubsection{\texorpdfstring{🔍 LOW:\+ Multiple QObject\texorpdfstring{$\ast$}{*} parent parameters}{🔍 LOW:\+ Multiple QObject\texorpdfstring{$\ast$}{*} parent parameters}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md49}
+{\bfseries{Files:\+}} Ris\+Connection\+Setting, File\+Logger\+Setting, Database\+Connection\+Setting {\bfseries{Issue:\+}} Standard Qt pattern, but classes are used with {\ttfamily std::\+shared\+\_\+ptr} {\bfseries{Risk:\+}} Mixing Qt parent-\/child ownership with shared\+\_\+ptr can cause double-\/delete {\bfseries{Note:\+}} \doxylink{_database_connection_setting_8h_source}{Database\+Connection\+Setting.\+h}:\+22 explicitly documents "{}\+Do not assign a parent"{} {\bfseries{Fix:\+}} Enforce this contract -\/ consider making constructor {\ttfamily = delete} for parent parameter
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md51}{}\doxysection{\texorpdfstring{3. Qt/\+\+STL Shared Pointer Interop}{3. Qt/\+\+STL Shared Pointer Interop}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md51}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md52}{}\doxysubsection{\texorpdfstring{❌ HIGH:\+ Setting\+Provider.\+h:\+69-\/74}{❌ HIGH:\+ Setting\+Provider.\+h:\+69-\/74}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md52}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::shared\_ptr<Model::DatabaseConnectionSetting>\ m\_databaseSetting;}
+\DoxyCodeLine{std::shared\_ptr<Model::FileLoggerSetting>\ m\_fileLoggerSetting;}
+\DoxyCodeLine{QVector<QSharedPointer<Model::RisConnectionSetting>>\ m\_risSetting;\ \textcolor{comment}{//\ ⚠️\ Mixed!}}
+
+\end{DoxyCode}
+ {\bfseries{Issue:\+}} Mixing {\ttfamily std::\+shared\+\_\+ptr} and {\ttfamily QShared\+Pointer} in same class {\bfseries{Risk:\+}} Inconsistent semantics, harder to reason about lifetimes {\bfseries{Fix:\+}} Standardize on {\ttfamily std::\+shared\+\_\+ptr} throughout (preferred for C++17 project)\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md53}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ Setting\+Provider.\+cpp:\+71}{⚠️ MEDIUM:\+ Setting\+Provider.\+cpp:\+71}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md53}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ connection\ =\ QSharedPointer<Model::RisConnectionSetting>::create();}
+
+\end{DoxyCode}
+ {\bfseries{Issue:\+}} Using {\ttfamily QShared\+Pointer::\+create()} but parent is nullptr {\bfseries{Risk:\+}} If these objects are ever passed to code expecting {\ttfamily std::\+shared\+\_\+ptr}, requires bridging {\bfseries{Fix:\+}} Use {\ttfamily std::\+make\+\_\+shared} consistently; QObjects with nullptr parent don\textquotesingle{}t need Qt smart pointers
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md55}{}\doxysection{\texorpdfstring{4. Singleton Pattern Memory Safety}{4. Singleton Pattern Memory Safety}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md55}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md56}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ Logger\+Provider.\+h:\+36 \& Logger\+Provider.\+cpp:\+15-\/19}{⚠️ MEDIUM:\+ Logger\+Provider.\+h:\+36 \& Logger\+Provider.\+cpp:\+15-\/19}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md56}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{static}\ \doxymbox{\hyperlink{class_etrek_1_1_core_1_1_log_1_1_logger_provider}{LoggerProvider}}\&\ Instance()}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{class_etrek_1_1_core_1_1_log_1_1_logger_provider}{LoggerProvider}}\ instance;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ instance;}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ {\bfseries{Issue:\+}} Function-\/local static (Meyer\textquotesingle{}s Singleton) -\/ safe for initialization, but no control over destruction order {\bfseries{Risk:\+}} If {\ttfamily Shutdown()} called after static destruction order issues {\bfseries{Current Mitigation:\+}} main.\+cpp:\+102-\/104 calls {\ttfamily Shutdown()} in {\ttfamily about\+To\+Quit} -\/ GOOD {\bfseries{Recommendation:\+}} Document that {\ttfamily Shutdown()} must be called before {\ttfamily main()} returns, or make idempotent\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md57}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ Logger\+Provider.\+cpp:\+102-\/106 Shutdown() is NOT idempotent}{⚠️ MEDIUM:\+ Logger\+Provider.\+cpp:\+102-\/106 Shutdown() is NOT idempotent}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md57}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_etrek_1_1_core_1_1_log_1_1_logger_provider_a5e29627392d094049b023151e850fe70}{LoggerProvider::Shutdown}}()}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ m\_loggerMap.clear();}
+\DoxyCodeLine{\ \ \ \ spdlog::shutdown();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ {\bfseries{Issue:\+}} Calling {\ttfamily spdlog::\+shutdown()} twice may be undefined {\bfseries{Fix:\+}} Add guard:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_etrek_1_1_core_1_1_log_1_1_logger_provider_a5e29627392d094049b023151e850fe70}{LoggerProvider::Shutdown}}()}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (m\_loggerMap.empty())\ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ already\ shut\ down}}
+\DoxyCodeLine{\ \ \ \ m\_loggerMap.clear();}
+\DoxyCodeLine{\ \ \ \ spdlog::shutdown();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md59}{}\doxysection{\texorpdfstring{5. Include Hygiene \& Forward Declarations}{5. Include Hygiene \& Forward Declarations}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md59}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md60}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ Multiple headers include "{}\+Translation\+Provider.\+h"{} when pointer suffices}{⚠️ MEDIUM:\+ Multiple headers include "{}\+Translation\+Provider.\+h"{} when pointer suffices}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md60}
+{\bfseries{Files:\+}} \doxylink{_app_logger_8h_source}{App\+Logger.\+h}:\+8, \doxylink{_app_logger_factory_8h_source}{App\+Logger\+Factory.\+h}:\+6, \doxylink{_logger_provider_8h_source}{Logger\+Provider.\+h}:\+11, \doxylink{_authentication_repository_8h_source}{Authentication\+Repository.\+h}:\+12, \doxylink{_database_setup_manager_8h_source}{Database\+Setup\+Manager.\+h}:\+8
+
+{\bfseries{Issue:\+}} Including full header for {\ttfamily Translation\+Provider\texorpdfstring{$\ast$}{*}} (pointer-\/only usage) {\bfseries{Fix:\+}} Forward declare in Common/\+\+Include:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{namespace\ }Etrek::Core::Globalization\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_etrek_1_1_core_1_1_globalization_1_1_translation_provider}{TranslationProvider}};}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+ And replace includes with forward declaration in these headers\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md61}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ App\+Logger.\+h includes Logger\+Provider.\+h}{⚠️ MEDIUM:\+ App\+Logger.\+h includes Logger\+Provider.\+h}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md61}
+{\bfseries{Issue:\+}} Circular dependency risk -\/ App\+Logger includes Logger\+Provider, Logger\+Provider returns App\+Logger {\bfseries{Current:\+}} Works because App\+Logger\+Factory mediates, but fragile {\bfseries{Fix:\+}} Forward declare {\ttfamily Logger\+Provider} in \doxylink{_app_logger_8h_source}{App\+Logger.\+h}, include in .cpp\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md62}{}\doxysubsection{\texorpdfstring{🔍 LOW:\+ Log\+Level.\+h:\+6 includes "{}spdlog/\+spdlog.\+h"{}}{🔍 LOW:\+ Log\+Level.\+h:\+6 includes "{}spdlog/\+spdlog.\+h"{}}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md62}
+{\bfseries{Issue:\+}} Exposing spdlog in public API via inline functions {\bfseries{Impact:\+}} Low (header-\/only lib) but leaks implementation detail {\bfseries{Recommendation:\+}} Keep as-\/is (inline functions need definition), but document facade intent\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md63}{}\doxysubsection{\texorpdfstring{🔍 LOW:\+ Missing include guards consistency}{🔍 LOW:\+ Missing include guards consistency}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md63}
+{\bfseries{Good:\+}} All headers have {\ttfamily \#ifndef} guards {\bfseries{Improvement:\+}} Consider {\ttfamily \#pragma once} (MSVC/\+\+Clang/\+\+GCC all support, shorter)
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md65}{}\doxysection{\texorpdfstring{6. API Safety \& Correctness}{6. API Safety \& Correctness}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md65}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md66}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ Logger\+Provider.\+cpp:\+55 -\/ Logic Error}{⚠️ MEDIUM:\+ Logger\+Provider.\+cpp:\+55 -\/ Logic Error}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md66}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordflow}{return}\ Result<QString>::Failure(translator-\/>\doxymbox{\hyperlink{class_etrek_1_1_core_1_1_globalization_1_1_translation_provider_a7cca7d75ab9a2f9416e1a5c5ac4cb51f}{getInfoMessage}}(LOG\_FILE\_LOGGER\_INIT\_SUCCEED\_MSG));}
+
+\end{DoxyCode}
+ {\bfseries{Issue:\+}} Returning {\ttfamily Failure} with success message! {\bfseries{Fix:\+}} Should be {\ttfamily Result\texorpdfstring{$<$}{<}QString\texorpdfstring{$>$}{>}::Success(...)}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md67}{}\doxysubsection{\texorpdfstring{🔍 LOW:\+ No {\ttfamily noexcept} specifications}{🔍 LOW:\+ No {\ttfamily noexcept} specifications}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md67}
+{\bfseries{Files:\+}} All headers {\bfseries{Observation:\+}} Many methods could be marked {\ttfamily noexcept} (e.\+g., getters, destructors) {\bfseries{Benefit:\+}} Better optimization, move semantics safety {\bfseries{Recommendation:\+}} Add {\ttfamily noexcept} to:\+
+\begin{DoxyItemize}
+\item All getters in Model classes
+\item \doxylink{_date_time_utils_8h_source}{Date\+Time\+Utils.\+h} inline functions (most are naturally noexcept)
+\item Crypto\+Manager static methods (document exception behavior)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md68}{}\doxysubsection{\texorpdfstring{🔍 LOW:\+ Missing const-\/correctness in some methods}{🔍 LOW:\+ Missing const-\/correctness in some methods}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md68}
+{\bfseries{Example:\+}} Logger\+Provider::\+\+Shutdown() modifies state but called from signal handler context {\bfseries{Recommendation:\+}} Review thread-\/safety and const-\/correctness together
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md70}{}\doxysection{\texorpdfstring{7. Concurrency \& Thread Safety}{7. Concurrency \& Thread Safety}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md70}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md71}{}\doxysubsection{\texorpdfstring{✅ GOOD:\+ Logger\+Provider uses QRead\+Write\+Lock correctly (L61, L66, L85)}{✅ GOOD:\+ Logger\+Provider uses QRead\+Write\+Lock correctly (L61, L66, L85)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md71}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{QReadLocker\ readLocker(\&lock);}
+\DoxyCodeLine{\textcolor{comment}{//\ ...}}
+\DoxyCodeLine{readLocker.unlock();}
+\DoxyCodeLine{\textcolor{comment}{//\ ...}}
+\DoxyCodeLine{QWriteLocker\ writeLocker(\&lock);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md72}{}\doxysubsection{\texorpdfstring{⚠️ MEDIUM:\+ Logger\+Provider::\+\+Shutdown() has no lock}{⚠️ MEDIUM:\+ Logger\+Provider::\+\+Shutdown() has no lock}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md72}
+{\bfseries{Issue:\+}} Shutdown() clears {\ttfamily m\+\_\+logger\+Map} without acquiring lock {\bfseries{Risk:\+}} If called concurrently with Get\+File\+Logger(), data race {\bfseries{Fix:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_etrek_1_1_core_1_1_log_1_1_logger_provider_a5e29627392d094049b023151e850fe70}{LoggerProvider::Shutdown}}()}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ QWriteLocker\ locker(\&lock);}
+\DoxyCodeLine{\ \ \ \ m\_loggerMap.clear();}
+\DoxyCodeLine{\ \ \ \ locker.unlock();}
+\DoxyCodeLine{\ \ \ \ spdlog::shutdown();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md73}{}\doxysubsection{\texorpdfstring{🔍 LOW:\+ Singleton Logger\+Provider accessed from multiple threads}{🔍 LOW:\+ Singleton Logger\+Provider accessed from multiple threads}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md73}
+{\bfseries{Current:\+}} Individual operations are locked {\bfseries{Risk:\+}} Shutdown from one thread while another creates logger {\bfseries{Recommendation:\+}} Document threading model -\/ "{}\+Logger\+Provider is thread-\/safe for creation/\+access, but Shutdown() must be called from main thread after all other threads complete"{}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md75}{}\doxysection{\texorpdfstring{8. Pimpl Pattern \& Destructor Placement}{8. Pimpl Pattern \& Destructor Placement}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md75}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md76}{}\doxysubsection{\texorpdfstring{✅ GOOD:\+ No pimpl pattern used in Core package}{✅ GOOD:\+ No pimpl pattern used in Core package}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md76}
+{\bfseries{Observation:\+}} All classes have inline member definitions {\bfseries{Impact:\+}} No hidden destructor issues
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md78}{}\doxysection{\texorpdfstring{9. Header Self-\/\+Containment Check}{9. Header Self-\/\+Containment Check}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md78}
+{\bfseries{Recommendation:\+}} Add to CI:\+ 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ test\_header\_compile.cpp}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}Core/Log/AppLogger.h"{}}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}Core/Log/AppLoggerFactory.h"{}}}
+\DoxyCodeLine{\textcolor{comment}{//\ ...\ etc\ for\ all\ headers}}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ main()\ \{\ \textcolor{keywordflow}{return}\ 0;\ \}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Predicted Failures:\+}}
+\begin{DoxyItemize}
+\item \doxylink{_app_logger_8h_source}{App\+Logger.\+h} -\/ will fail without {\ttfamily Translation\+Provider} definition (needs forward decl fix)
+\item \doxylink{_logger_provider_8h_source}{Logger\+Provider.\+h} -\/ will fail without {\ttfamily Translation\+Provider} definition
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md80}{}\doxysection{\texorpdfstring{Priority Refactoring Checklist}{Priority Refactoring Checklist}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md80}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md81}{}\doxysubsection{\texorpdfstring{Phase 1:\+ Critical Namespace Hygiene (Must Do)}{Phase 1:\+ Critical Namespace Hygiene (Must Do)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md81}
+
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Remove {\ttfamily using namespace} from \doxylink{_logger_provider_8h_source}{Logger\+Provider.\+h}:\+14
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Remove {\ttfamily using namespace} from \doxylink{_setting_provider_8h}{Setting\+Provider.\+h}:\+12
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Remove {\ttfamily using namespace} (4x) from \doxylink{_authentication_repository_8h_source}{Authentication\+Repository.\+h}:\+15-\/18
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Remove {\ttfamily using namespace} (2x) from \doxylink{_database_setup_manager_8h_source}{Database\+Setup\+Manager.\+h}:\+12-\/13
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Verify all headers compile standalone after namespace fixes
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md82}{}\doxysubsection{\texorpdfstring{Phase 2:\+ Memory Safety (High Priority)}{Phase 2:\+ Memory Safety (High Priority)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md82}
+
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Fix Logger\+Provider.\+cpp:\+55 -\/ Success vs Failure logic error
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Document all raw pointer lifetimes (App\+Logger, Authentication\+Repository, etc.)
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Add locking to Logger\+Provider::\+\+Shutdown()
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Make Shutdown() idempotent with guard
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Standardize Setting\+Provider to use {\ttfamily std::\+shared\+\_\+ptr} consistently (remove QShared\+Pointer mix)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md83}{}\doxysubsection{\texorpdfstring{Phase 3:\+ Include Hygiene (Medium Priority)}{Phase 3:\+ Include Hygiene (Medium Priority)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md83}
+
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Add Translation\+Provider forward declaration to Common/\+\+Include
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Replace \doxylink{_translation_provider_8h_source}{Translation\+Provider.\+h} includes with forward decls in 5 headers
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Forward declare Logger\+Provider in \doxylink{_app_logger_8h_source}{App\+Logger.\+h}
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Run IWYU tool and apply safe suggestions
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md84}{}\doxysubsection{\texorpdfstring{Phase 4:\+ API Hardening (Low Priority)}{Phase 4:\+ API Hardening (Low Priority)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md84}
+
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Add {\ttfamily noexcept} to all getters in Model classes
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Add {\ttfamily noexcept} to \doxylink{_date_time_utils_8h_source}{Date\+Time\+Utils.\+h} inline functions where appropriate
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Document thread-\/safety guarantees per class
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Consider {\ttfamily \+[\+[nodiscard]\+]\+} for Result$<$\+T$>$ returns
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md85}{}\doxysubsection{\texorpdfstring{Phase 5:\+ Tooling \& Verification}{Phase 5:\+ Tooling \& Verification}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md85}
+
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Enable {\ttfamily /\+\+W4} (MSVC) or {\ttfamily -\/Wall -\/Wextra} (GCC/\+\+Clang)
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Build cleanly with no new warnings
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Add header self-\/compile test to CI
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Run with CRT leak detection enabled (\+\_\+\+CRTDBG\+\_\+\+MAP\+\_\+\+ALLOC already in main.\+cpp)
+\end{DoxyItemize}
+\begin{DoxyItemize}
+\item[\DoxyUnchecked] Optional:\+ Run IWYU and apply results
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md87}{}\doxysection{\texorpdfstring{Recommendations for New Code}{Recommendations for New Code}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md87}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Never use {\ttfamily using namespace} in headers}} -\/ period.
+\item {\bfseries{Document all raw pointers}} with {\ttfamily /\+/\+ non-\/owning} or {\ttfamily /\+/\+ observes Foo}
+\item {\bfseries{Prefer {\ttfamily std::\+shared\+\_\+ptr} over {\ttfamily QShared\+Pointer}}} unless Qt parent-\/child ownership needed
+\item {\bfseries{QObject subclasses used with smart pointers}}:\+ Always pass {\ttfamily nullptr} as parent
+\item {\bfseries{Singletons}}:\+ Use Meyer\textquotesingle{}s singleton pattern (function-\/local static) with explicit shutdown
+\item {\bfseries{Thread safety}}:\+ Document per-\/class; use RAII locks ({\ttfamily std::\+scoped\+\_\+lock}, {\ttfamily QRead\+Locker})
+\item {\bfseries{Include headers}}:\+ Only include what you directly use; forward declare where possible
+\item {\bfseries{Mark as {\ttfamily noexcept}}}:\+ Getters, swaps, moves where guaranteed
+\item {\bfseries{Use {\ttfamily \+[\+[nodiscard]\+]\+}}} for functions where ignoring return value is a bug
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md89}{}\doxysection{\texorpdfstring{Estimated Refactoring Effort}{Estimated Refactoring Effort}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md89}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Phase  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Effort  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Risk  \\
+Phase 1:\+ Namespace Hygiene  &2-\/3 hours  &Low (compile errors caught immediately)  \\
+Phase 2:\+ Memory Safety  &3-\/4 hours  &Medium (requires careful testing)  \\
+Phase 3:\+ Include Hygiene  &2-\/3 hours  &Low (compile errors caught immediately)  \\
+Phase 4:\+ API Hardening  &4-\/5 hours  &Low (mostly additive)  \\
+Phase 5:\+ Tooling  &2-\/3 hours  &Low (verification only)  \\
+{\bfseries{Total}}  &{\bfseries{13-\/18 hours}}  &-\/  \\
+\end{DoxyTable}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md91}{}\doxysection{\texorpdfstring{Conclusion}{Conclusion}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_core_2_a_u_d_i_t___r_e_p_o_r_t_autotoc_md91}
+\doxylink{requirements_The}{The} Core package has a solid foundation with good use of RAII (smart pointers), proper locking in Logger\+Provider, and clear separation of concerns. \doxylink{requirements_The}{The} main issues are:\+
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Namespace pollution in 4 headers}} (easy fix, high impact)
+\item {\bfseries{Undocumented raw pointer lifetimes}} (medium risk, needs documentation)
+\item {\bfseries{Mixed Qt/\+\+STL smart pointer usage}} (low risk, inconsistent)
+\item {\bfseries{Missing locks in Shutdown()}} (data race potential)
+\end{DoxyEnumerate}
+
+None of these issues represent immediate crash risks in single-\/threaded scenarios, but they violate modern C++ best practices and increase maintenance burden. \doxylink{requirements_The}{The} refactoring is straightforward and low-\/risk with high long-\/term value.
+
+{\bfseries{Recommendation:\+}} Execute Phase 1 and Phase 2 before merging the current refactoring branch. 

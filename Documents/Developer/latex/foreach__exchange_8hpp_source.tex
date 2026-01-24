@@ -1,0 +1,111 @@
+\doxysection{foreach\+\_\+exchange.\+hpp}
+\hypertarget{foreach__exchange_8hpp_source}{}\label{foreach__exchange_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/master/foreach\_exchange.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/master/foreach\_exchange.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{keyword}{struct\ }diy::Master::CoroutineArg}
+\DoxyCodeLine{00002\ \{}
+\DoxyCodeLine{00003\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lid;}
+\DoxyCodeLine{00004\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_with_link}{ProxyWithLink}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ proxy;}
+\DoxyCodeLine{00005\ \ \ \ \ coroutine::cothread\_t\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ main;}
+\DoxyCodeLine{00006\ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master;}
+\DoxyCodeLine{00007\ \ \ \ \ std::function<void(\textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_with_link}{ProxyWithLink}}\&)>\ \ \ \ \ \ f;}
+\DoxyCodeLine{00008\ \};}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00011\ diy::Master::}
+\DoxyCodeLine{00012\ launch\_process\_block\_coroutine()}
+\DoxyCodeLine{00013\ \{}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keyword}{using\ namespace\ }coroutine;}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_coroutine_arg}{CoroutineArg}}*\ \ \ \ \ \ \ \ \ \ \ arg\ \ \ \ \ =\ \textcolor{keyword}{static\_cast<}\doxymbox{\hyperlink{structdiy_1_1_master_1_1_coroutine_arg}{CoroutineArg}}*\textcolor{keyword}{>}(argument());}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}\ \ \ \ \ =\ arg-\/>lid;}
+\DoxyCodeLine{00018\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_with_link}{ProxyWithLink}}\&\ \ \ \ \ \ \ \ \ \ cp\ \ \ \ \ \ =\ arg-\/>proxy;}
+\DoxyCodeLine{00019\ \ \ \ \ cothread\_t\ \ \ \ \ \ \ \ \ \ \ \ \ \ main\ \ \ \ =\ arg-\/>main;}
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{comment}{//\ unused}}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{comment}{//Master*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master\ \ =\ arg-\/>master;}}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keyword}{auto}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ f\ \ \ \ \ \ \ =\ arg-\/>f;}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \ \ co\_switch(main);\ \ \ \ \ \ \ \ \textcolor{comment}{//\ give\ the\ argument\ back}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \ \ f(\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}},\ cp);}
+\DoxyCodeLine{00027\ \ \ \ \ cp.set\_done(\textcolor{keyword}{true});}
+\DoxyCodeLine{00028\ \ \ \ \ co\_switch(main);}
+\DoxyCodeLine{00029\ \}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ F>}
+\DoxyCodeLine{00032\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00033\ diy::Master::}
+\DoxyCodeLine{00034\ foreach\_exchange(\textcolor{keyword}{const}\ F\&\ f,\ \textcolor{keywordtype}{bool}\ remote,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ stack\_size)}
+\DoxyCodeLine{00035\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{using\ }Block\ =\ \textcolor{keyword}{typename}\ detail::block\_traits<F>::type;}
+\DoxyCodeLine{00037\ \ \ \ \ foreach\_exchange\_<Block>(f,\ remote,\ stack\_size);}
+\DoxyCodeLine{00038\ \}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00041\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00042\ diy::Master::}
+\DoxyCodeLine{00043\ foreach\_exchange\_(\textcolor{keyword}{const}\ CoroutineCallback<Block>\&\ f,\ \textcolor{keywordtype}{bool}\ remote,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ stack\_size)}
+\DoxyCodeLine{00044\ \{}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}foreach\_exchange"{}});}
+\DoxyCodeLine{00046\ \ \ \ \ DIY\_UNUSED(scoped);}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ assert(commands\_.empty());\ \ \textcolor{comment}{//\ can't\ have\ queued,\ unexecuted\ commands\ left\ over\ from\ ordinary\ foreach()}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keyword}{using\ namespace\ }coroutine;}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ setup\ coroutines\ and\ proxies}}
+\DoxyCodeLine{00053\ \ \ \ \ std::vector<cothread\_t>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ coroutines;}
+\DoxyCodeLine{00054\ \ \ \ \ std::vector<std::unique\_ptr<ProxyWithLink>>\ proxies;}
+\DoxyCodeLine{00055\ \ \ \ \ std::vector<Block*>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blocks(size(),\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ size();\ ++i)}
+\DoxyCodeLine{00057\ \ \ \ \ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ cothread\_t\ c\ =\ co\_create(stack\_size,\ \&launch\_process\_block\_coroutine);}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ coroutines.push\_back(c);}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ proxies.emplace\_back(make\_unique<ProxyWithLink>(proxy(i)));}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ trampoline\ =\ [\&f,\&blocks,\textcolor{keyword}{this}](\textcolor{keywordtype}{int}\ lid,\ \textcolor{keyword}{const}\ ProxyWithLink\&\ cp)}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ \ \ Block*\ \textcolor{keyword}{const}\&\ b\ =\ blocks[lid];}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ f(b,\ cp);}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ CoroutineArg\ arg\ \{\ i,\ *proxies.back(),\ co\_active(),\ \textcolor{keyword}{this},\ trampoline\ \};}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ argument()\ =\ \&arg;}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ co\_switch(c);}
+\DoxyCodeLine{00071\ \ \ \ \ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{int}\ ndone\ =\ 0;}
+\DoxyCodeLine{00074\ \ \ \ \ std::vector<bool>\ \ \ done(size(),\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{while}(ndone\ <\ size())}
+\DoxyCodeLine{00076\ \ \ \ \ \{}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ parallelize\ the\ loop\ using\ multiple\ threads}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ size();\ ++i)}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (done[i]\ ==\ \textcolor{keyword}{true})}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ blocks[i]\ =\ get<Block>(i);\ \textcolor{comment}{//\ load\ block\ in\ case\ it's\ out\ of\ core}}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ cothread\_t\ \ c\ \ =\ coroutines[i];}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ \ \ \ \ \ \ cp\ =\ *proxies[i];}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ cp.init();\ \ \ \ \ \ \textcolor{comment}{//\ reset\ incoming/outgoing/collectives}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ cp.set\_main(co\_active());}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ co\_switch(c);}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cp.done())}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ done[i]\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ndone++;}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ should\ we\ disable\ the\ last\ exchange;\ the\ user\ could\ call\ that\ one\ manually}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ exchange\ calls\ execute(),\ but\ commands\_\ are\ empty,\ so\ it\ should\ be\ Ok}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ exchange(remote);}
+\DoxyCodeLine{00101\ \ \ \ \ \}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{for}\ (cothread\_t\ cor\ :\ coroutines)}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ co\_delete(cor);}
+\DoxyCodeLine{00105\ \}}
+
+\end{DoxyCode}

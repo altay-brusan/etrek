@@ -1,0 +1,28 @@
+var class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item =
+[
+    [ "Item", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#aafd5a0930d46fc504b4cbb6a5aabca45", null ],
+    [ "Item", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a74aa4810af8eec1c6123843baaf7d63c", null ],
+    [ "~Item", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a06d1ae4a013e01cfc844bba6a64fda2a", null ],
+    [ "clear", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#ae8ac5fd5b62be938b2ea9b6dd470212a", null ],
+    [ "getDeviceSerialNumber", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a6ddd5b515ec46950c7369fd00dad85c1", null ],
+    [ "getInstitutionAddress", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a0a450d7f8613bd1cb0d5c8ac2e55f47a", null ],
+    [ "getInstitutionalDepartmentName", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#ade1e45d14c5b43d3956d47d081fa3f0e", null ],
+    [ "getInstitutionalDepartmentTypeCodeSequence", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#adbbbaf0d7f106b6161c8c3085feb2b83", null ],
+    [ "getInstitutionalDepartmentTypeCodeSequence", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a7df1ce155d2bd3f290b67ecfdbe37147", null ],
+    [ "getInstitutionName", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a48ab078c566ab0e25cff1864c242e45b", null ],
+    [ "getManufacturer", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#aa93860c3eae6ad20d5721f9103fcc3d4", null ],
+    [ "getManufacturerModelName", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#aa2fe92486211ba9b2c9807bbe10b1e17", null ],
+    [ "getTreatmentMachineName", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a8ee5581add0eb80f318139185d70e5dc", null ],
+    [ "isEmpty", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a8c3565a0de0292e9f1e100732dcdd89b", null ],
+    [ "isValid", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a84476e20bc9cf8166e363261f13c70bf", null ],
+    [ "operator=", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a78b7799097fc3155d142217017d926c0", null ],
+    [ "read", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a9f40739168e43d09ff16dc5fe5636a9f", null ],
+    [ "setDeviceSerialNumber", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a798697de86559981bcd3df07d000ab0e", null ],
+    [ "setInstitutionAddress", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a1e7facbfd599194ca58de8ce381930da", null ],
+    [ "setInstitutionalDepartmentName", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a1610cd6b107939c0276b114edfaefa0e", null ],
+    [ "setInstitutionName", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a4ae806f33a61277b1206daae8a4a5fc9", null ],
+    [ "setManufacturer", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a141e11da1b50e0bc5d70b8489876ef5a", null ],
+    [ "setManufacturerModelName", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a99a0931d398482176ad59aa9cfa2a2cf", null ],
+    [ "setTreatmentMachineName", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a0940b3985defaa56dfbd0f5e72f0ab0d", null ],
+    [ "write", "class_d_r_t_treatment_machine_sequence_in_r_t_brachy_application_setups_module_1_1_item.html#a240aae4a65bf03ca07ff5339d397adac", null ]
+];

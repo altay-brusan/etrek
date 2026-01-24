@@ -1,0 +1,4 @@
+var struct_eigen_1_1internal_1_1sparse__conjunction__evaluator_3_01_xpr_type_00_01_iterator_based_00_01_iterator_based_01_4 =
+[
+    [ "InnerIterator", "class_eigen_1_1internal_1_1sparse__conjunction__evaluator_3_01_xpr_type_00_01_iterator_based_00_c2f169adc5f8760251f1bd99603a9afc.html", null ]
+];

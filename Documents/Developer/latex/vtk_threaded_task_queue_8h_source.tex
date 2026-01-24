@@ -1,0 +1,103 @@
+\doxysection{vtk\+Threaded\+Task\+Queue.\+h}
+\hypertarget{vtk_threaded_task_queue_8h_source}{}\label{vtk_threaded_task_queue_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkThreadedTaskQueue.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkThreadedTaskQueue.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#ifndef\ vtkThreadedTaskQueue\_h}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#define\ vtkThreadedTaskQueue\_h}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#include\ <condition\_variable>}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#if\ !defined(\_\_WRAP\_\_)}}
+\DoxyCodeLine{00052\ \textcolor{keyword}{namespace\ }vtkThreadedTaskQueueInternals}
+\DoxyCodeLine{00053\ \{}
+\DoxyCodeLine{00054\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00055\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00056\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_threaded_task_queue_internals_1_1_task_queue}{TaskQueue}};}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00059\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_threaded_task_queue_internals_1_1_result_queue}{ResultQueue}};}
+\DoxyCodeLine{00060\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00061\ \}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ R,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00066\ \textcolor{keyword}{class\ }vtkThreadedTaskQueue}
+\DoxyCodeLine{00067\ \{}
+\DoxyCodeLine{00068\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00069\ \ \ vtkThreadedTaskQueue(std::function<R(Args...)>\ worker,\ \textcolor{keywordtype}{bool}\ strict\_ordering\ =\ \textcolor{keyword}{true},}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{int}\ buffer\_size\ =\ -\/1,\ \textcolor{keywordtype}{int}\ max\_concurrent\_tasks\ =\ -\/1);}
+\DoxyCodeLine{00071\ \ \ \string~vtkThreadedTaskQueue();}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00076\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_threaded_task_queue_a7e3a880c994d27783ab65647437e67af}{Push}}(Args\&\&...\ args);}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_threaded_task_queue_a4a96fc1953b86c5fa1b8cec2a04e88ba}{Pop}}(R\&\ result);}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_threaded_task_queue_a57f3fdbb2111e802143401e62acf74af}{TryPop}}(R\&\ result);}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_threaded_task_queue_a87c14e140c5484a3fa3e7ac5df8c5ba2}{IsEmpty}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_threaded_task_queue_a9a08b98ec333866380f57cfcc33b52c6}{Flush}}();}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00102\ \ \ vtkThreadedTaskQueue(\textcolor{keyword}{const}\ vtkThreadedTaskQueue\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkThreadedTaskQueue\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ std::function<R(Args...)>\ Worker;}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ std::unique\_ptr<vtkThreadedTaskQueueInternals::TaskQueue<R>>\ Tasks;}
+\DoxyCodeLine{00108\ \ \ std::unique\_ptr<vtkThreadedTaskQueueInternals::ResultQueue<R>>\ Results;}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \textcolor{keywordtype}{int}\ NumberOfThreads;}
+\DoxyCodeLine{00111\ \ \ std::unique\_ptr<std::thread[]>\ Threads;}
+\DoxyCodeLine{00112\ \};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00115\ \textcolor{keyword}{class\ }vtkThreadedTaskQueue<void,\ Args...>}
+\DoxyCodeLine{00116\ \{}
+\DoxyCodeLine{00117\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00118\ \ \ vtkThreadedTaskQueue(std::function<\textcolor{keywordtype}{void}(Args...)>\ worker,\ \textcolor{keywordtype}{bool}\ strict\_ordering\ =\ \textcolor{keyword}{true},}
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordtype}{int}\ buffer\_size\ =\ -\/1,\ \textcolor{keywordtype}{int}\ max\_concurrent\_tasks\ =\ -\/1);}
+\DoxyCodeLine{00120\ \ \ \string~vtkThreadedTaskQueue();}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00125\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_threaded_task_queue_3_01void_00_01_args_8_8_8_01_4_a57d0a18929816d5590af2d75db6055ab}{Push}}(Args\&\&...\ args);}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_threaded_task_queue_3_01void_00_01_args_8_8_8_01_4_ab61f23608d3e697ff75bda8445879346}{IsEmpty}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00136\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_threaded_task_queue_3_01void_00_01_args_8_8_8_01_4_a87bb3a0dd7a117fb172c674923df0ad2}{Flush}}();}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00139\ \ \ vtkThreadedTaskQueue(\textcolor{keyword}{const}\ vtkThreadedTaskQueue\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00140\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkThreadedTaskQueue\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ std::function<void(Args...)>\ Worker;}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ std::unique\_ptr<vtkThreadedTaskQueueInternals::TaskQueue<void>>\ Tasks;}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ std::condition\_variable\ ResultsCV;}
+\DoxyCodeLine{00147\ \ \ std::mutex\ NextResultIdMutex;}
+\DoxyCodeLine{00148\ \ \ std::atomic<std::uint64\_t>\ NextResultId;}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{int}\ NumberOfThreads;}
+\DoxyCodeLine{00151\ \ \ std::unique\_ptr<std::thread[]>\ Threads;}
+\DoxyCodeLine{00152\ \};}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#include\ "{}vtkThreadedTaskQueue.txx"{}}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ !defined(\_\_WRAP\_\_)}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00160\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkThreadedTaskQueue.h}}
+
+\end{DoxyCode}

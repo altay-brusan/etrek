@@ -1,0 +1,528 @@
+\doxysection{ts.\+h}
+\hypertarget{ts_8h_source}{}\label{ts_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/ts.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/ts.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Copyright\ 2006-\/2024\ The\ OpenSSL\ Project\ Authors.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Licensed\ under\ the\ Apache\ License\ 2.0\ (the\ "{}License"{}).\ \ You\ may\ not\ use}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ this\ file\ except\ in\ compliance\ with\ the\ License.\ \ You\ can\ obtain\ a\ copy}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ in\ the\ file\ LICENSE\ in\ the\ source\ distribution\ or\ at}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ https://www.openssl.org/source/license.html}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_TS\_H}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#\ define\ OPENSSL\_TS\_H}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#\ pragma\ once}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#\ include\ <openssl/macros.h>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#\ \ define\ HEADER\_TS\_H}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#\ include\ <openssl/opensslconf.h>}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_TS}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#\ include\ <openssl/symhacks.h>}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#\ include\ <openssl/buffer.h>}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#\ include\ <openssl/evp.h>}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#\ include\ <openssl/bio.h>}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#\ include\ <openssl/asn1.h>}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#\ include\ <openssl/safestack.h>}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#\ include\ <openssl/rsa.h>}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#\ include\ <openssl/dsa.h>}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#\ include\ <openssl/dh.h>}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#\ include\ <openssl/tserr.h>}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#\ include\ <openssl/ess.h>}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#\ include\ <openssl/x509.h>}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#\ include\ <openssl/x509v3.h>}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_STDIO}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#\ \ include\ <stdio.h>}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#\ ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00039\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }TS\_msg\_imprint\_st\ TS\_MSG\_IMPRINT;}
+\DoxyCodeLine{00043\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }TS\_req\_st\ TS\_REQ;}
+\DoxyCodeLine{00044\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }TS\_accuracy\_st\ TS\_ACCURACY;}
+\DoxyCodeLine{00045\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }TS\_tst\_info\_st\ TS\_TST\_INFO;}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{comment}{/*\ Possible\ values\ for\ status.\ */}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#\ define\ TS\_STATUS\_GRANTED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#\ define\ TS\_STATUS\_GRANTED\_WITH\_MODS\ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#\ define\ TS\_STATUS\_REJECTION\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#\ define\ TS\_STATUS\_WAITING\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#\ define\ TS\_STATUS\_REVOCATION\_WARNING\ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#\ define\ TS\_STATUS\_REVOCATION\_NOTIFICATION\ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{comment}{/*\ Possible\ values\ for\ failure\_info.\ */}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#\ define\ TS\_INFO\_BAD\_ALG\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#\ define\ TS\_INFO\_BAD\_REQUEST\ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#\ define\ TS\_INFO\_BAD\_DATA\_FORMAT\ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#\ define\ TS\_INFO\_TIME\_NOT\_AVAILABLE\ \ \ \ \ \ 14}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#\ define\ TS\_INFO\_UNACCEPTED\_POLICY\ \ \ \ \ \ \ 15}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#\ define\ TS\_INFO\_UNACCEPTED\_EXTENSION\ \ \ \ 16}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#\ define\ TS\_INFO\_ADD\_INFO\_NOT\_AVAILABLE\ \ 17}}
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#\ define\ TS\_INFO\_SYSTEM\_FAILURE\ \ \ \ \ \ \ \ \ \ 25}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }TS\_status\_info\_st\ TS\_STATUS\_INFO;}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }TS\_resp\_st\ TS\_RESP;}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ DECLARE\_ASN1\_ALLOC\_FUNCTIONS(TS\_REQ)}
+\DoxyCodeLine{00071\ DECLARE\_ASN1\_ENCODE\_FUNCTIONS\_only(TS\_REQ,\ TS\_REQ)}
+\DoxyCodeLine{00072\ DECLARE\_ASN1\_DUP\_FUNCTION(TS\_REQ)}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_NO\_STDIO}}
+\DoxyCodeLine{00075\ TS\_REQ\ *d2i\_TS\_REQ\_fp(FILE\ *fp,\ TS\_REQ\ **a);}
+\DoxyCodeLine{00076\ \textcolor{keywordtype}{int}\ i2d\_TS\_REQ\_fp(FILE\ *fp,\ \textcolor{keyword}{const}\ TS\_REQ\ *a);}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00078\ TS\_REQ\ *d2i\_TS\_REQ\_bio(BIO\ *fp,\ TS\_REQ\ **a);}
+\DoxyCodeLine{00079\ \textcolor{keywordtype}{int}\ i2d\_TS\_REQ\_bio(BIO\ *fp,\ \textcolor{keyword}{const}\ TS\_REQ\ *a);}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ DECLARE\_ASN1\_ALLOC\_FUNCTIONS(TS\_MSG\_IMPRINT)}
+\DoxyCodeLine{00082\ DECLARE\_ASN1\_ENCODE\_FUNCTIONS\_only(TS\_MSG\_IMPRINT,\ TS\_MSG\_IMPRINT)}
+\DoxyCodeLine{00083\ DECLARE\_ASN1\_DUP\_FUNCTION(TS\_MSG\_IMPRINT)}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_NO\_STDIO}}
+\DoxyCodeLine{00086\ TS\_MSG\_IMPRINT\ *d2i\_TS\_MSG\_IMPRINT\_fp(FILE\ *fp,\ TS\_MSG\_IMPRINT\ **a);}
+\DoxyCodeLine{00087\ \textcolor{keywordtype}{int}\ i2d\_TS\_MSG\_IMPRINT\_fp(FILE\ *fp,\ \textcolor{keyword}{const}\ TS\_MSG\_IMPRINT\ *a);}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00089\ TS\_MSG\_IMPRINT\ *d2i\_TS\_MSG\_IMPRINT\_bio(BIO\ *bio,\ TS\_MSG\_IMPRINT\ **a);}
+\DoxyCodeLine{00090\ \textcolor{keywordtype}{int}\ i2d\_TS\_MSG\_IMPRINT\_bio(BIO\ *bio,\ \textcolor{keyword}{const}\ TS\_MSG\_IMPRINT\ *a);}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ DECLARE\_ASN1\_ALLOC\_FUNCTIONS(TS\_RESP)}
+\DoxyCodeLine{00093\ DECLARE\_ASN1\_ENCODE\_FUNCTIONS\_only(TS\_RESP,\ TS\_RESP)}
+\DoxyCodeLine{00094\ DECLARE\_ASN1\_DUP\_FUNCTION(TS\_RESP)}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_NO\_STDIO}}
+\DoxyCodeLine{00097\ TS\_RESP\ *d2i\_TS\_RESP\_fp(FILE\ *fp,\ TS\_RESP\ **a);}
+\DoxyCodeLine{00098\ \textcolor{keywordtype}{int}\ i2d\_TS\_RESP\_fp(FILE\ *fp,\ \textcolor{keyword}{const}\ TS\_RESP\ *a);}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00100\ TS\_RESP\ *d2i\_TS\_RESP\_bio(BIO\ *bio,\ TS\_RESP\ **a);}
+\DoxyCodeLine{00101\ \textcolor{keywordtype}{int}\ i2d\_TS\_RESP\_bio(BIO\ *bio,\ \textcolor{keyword}{const}\ TS\_RESP\ *a);}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ DECLARE\_ASN1\_ALLOC\_FUNCTIONS(TS\_STATUS\_INFO)}
+\DoxyCodeLine{00104\ DECLARE\_ASN1\_ENCODE\_FUNCTIONS\_only(TS\_STATUS\_INFO,\ TS\_STATUS\_INFO)}
+\DoxyCodeLine{00105\ DECLARE\_ASN1\_DUP\_FUNCTION(TS\_STATUS\_INFO)}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ DECLARE\_ASN1\_ALLOC\_FUNCTIONS(TS\_TST\_INFO)}
+\DoxyCodeLine{00108\ DECLARE\_ASN1\_ENCODE\_FUNCTIONS\_only(TS\_TST\_INFO,\ TS\_TST\_INFO)}
+\DoxyCodeLine{00109\ DECLARE\_ASN1\_DUP\_FUNCTION(TS\_TST\_INFO)}
+\DoxyCodeLine{00110\ TS\_TST\_INFO\ *PKCS7\_to\_TS\_TST\_INFO(PKCS7\ *token);}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_NO\_STDIO}}
+\DoxyCodeLine{00113\ TS\_TST\_INFO\ *d2i\_TS\_TST\_INFO\_fp(FILE\ *fp,\ TS\_TST\_INFO\ **a);}
+\DoxyCodeLine{00114\ \textcolor{keywordtype}{int}\ i2d\_TS\_TST\_INFO\_fp(FILE\ *fp,\ \textcolor{keyword}{const}\ TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00116\ TS\_TST\_INFO\ *d2i\_TS\_TST\_INFO\_bio(BIO\ *bio,\ TS\_TST\_INFO\ **a);}
+\DoxyCodeLine{00117\ \textcolor{keywordtype}{int}\ i2d\_TS\_TST\_INFO\_bio(BIO\ *bio,\ \textcolor{keyword}{const}\ TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ DECLARE\_ASN1\_ALLOC\_FUNCTIONS(TS\_ACCURACY)}
+\DoxyCodeLine{00120\ DECLARE\_ASN1\_ENCODE\_FUNCTIONS\_only(TS\_ACCURACY,\ TS\_ACCURACY)}
+\DoxyCodeLine{00121\ DECLARE\_ASN1\_DUP\_FUNCTION(TS\_ACCURACY)}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{keywordtype}{int}\ TS\_REQ\_set\_version(TS\_REQ\ *a,\ \textcolor{keywordtype}{long}\ version);}
+\DoxyCodeLine{00124\ \textcolor{keywordtype}{long}\ TS\_REQ\_get\_version(\textcolor{keyword}{const}\ TS\_REQ\ *a);}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{keywordtype}{int}\ TS\_STATUS\_INFO\_set\_status(TS\_STATUS\_INFO\ *a,\ \textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00127\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *TS\_STATUS\_INFO\_get0\_status(\textcolor{keyword}{const}\ TS\_STATUS\_INFO\ *a);}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \textcolor{keyword}{const}\ STACK\_OF(ASN1\_UTF8STRING)\ *}
+\DoxyCodeLine{00130\ TS\_STATUS\_INFO\_get0\_text(\textcolor{keyword}{const}\ TS\_STATUS\_INFO\ *a);}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{keyword}{const}\ ASN1\_BIT\_STRING\ *}
+\DoxyCodeLine{00133\ TS\_STATUS\_INFO\_get0\_failure\_info(\textcolor{keyword}{const}\ TS\_STATUS\_INFO\ *a);}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \textcolor{keywordtype}{int}\ TS\_REQ\_set\_msg\_imprint(TS\_REQ\ *a,\ TS\_MSG\_IMPRINT\ *msg\_imprint);}
+\DoxyCodeLine{00136\ TS\_MSG\_IMPRINT\ *TS\_REQ\_get\_msg\_imprint(TS\_REQ\ *a);}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{keywordtype}{int}\ TS\_MSG\_IMPRINT\_set\_algo(TS\_MSG\_IMPRINT\ *a,\ X509\_ALGOR\ *alg);}
+\DoxyCodeLine{00139\ X509\_ALGOR\ *TS\_MSG\_IMPRINT\_get\_algo(TS\_MSG\_IMPRINT\ *a);}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{keywordtype}{int}\ TS\_MSG\_IMPRINT\_set\_msg(TS\_MSG\_IMPRINT\ *a,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *d,\ \textcolor{keywordtype}{int}\ len);}
+\DoxyCodeLine{00142\ ASN1\_OCTET\_STRING\ *TS\_MSG\_IMPRINT\_get\_msg(TS\_MSG\_IMPRINT\ *a);}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{keywordtype}{int}\ TS\_REQ\_set\_policy\_id(TS\_REQ\ *a,\ \textcolor{keyword}{const}\ ASN1\_OBJECT\ *policy);}
+\DoxyCodeLine{00145\ ASN1\_OBJECT\ *TS\_REQ\_get\_policy\_id(TS\_REQ\ *a);}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{keywordtype}{int}\ TS\_REQ\_set\_nonce(TS\_REQ\ *a,\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *nonce);}
+\DoxyCodeLine{00148\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *TS\_REQ\_get\_nonce(\textcolor{keyword}{const}\ TS\_REQ\ *a);}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \textcolor{keywordtype}{int}\ TS\_REQ\_set\_cert\_req(TS\_REQ\ *a,\ \textcolor{keywordtype}{int}\ cert\_req);}
+\DoxyCodeLine{00151\ \textcolor{keywordtype}{int}\ TS\_REQ\_get\_cert\_req(\textcolor{keyword}{const}\ TS\_REQ\ *a);}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ STACK\_OF(X509\_EXTENSION)\ *TS\_REQ\_get\_exts(TS\_REQ\ *a);}
+\DoxyCodeLine{00154\ \textcolor{keywordtype}{void}\ TS\_REQ\_ext\_free(TS\_REQ\ *a);}
+\DoxyCodeLine{00155\ \textcolor{keywordtype}{int}\ TS\_REQ\_get\_ext\_count(TS\_REQ\ *a);}
+\DoxyCodeLine{00156\ \textcolor{keywordtype}{int}\ TS\_REQ\_get\_ext\_by\_NID(TS\_REQ\ *a,\ \textcolor{keywordtype}{int}\ nid,\ \textcolor{keywordtype}{int}\ lastpos);}
+\DoxyCodeLine{00157\ \textcolor{keywordtype}{int}\ TS\_REQ\_get\_ext\_by\_OBJ(TS\_REQ\ *a,\ \textcolor{keyword}{const}\ ASN1\_OBJECT\ *obj,\ \textcolor{keywordtype}{int}\ lastpos);}
+\DoxyCodeLine{00158\ \textcolor{keywordtype}{int}\ TS\_REQ\_get\_ext\_by\_critical(TS\_REQ\ *a,\ \textcolor{keywordtype}{int}\ crit,\ \textcolor{keywordtype}{int}\ lastpos);}
+\DoxyCodeLine{00159\ X509\_EXTENSION\ *TS\_REQ\_get\_ext(TS\_REQ\ *a,\ \textcolor{keywordtype}{int}\ loc);}
+\DoxyCodeLine{00160\ X509\_EXTENSION\ *TS\_REQ\_delete\_ext(TS\_REQ\ *a,\ \textcolor{keywordtype}{int}\ loc);}
+\DoxyCodeLine{00161\ \textcolor{keywordtype}{int}\ TS\_REQ\_add\_ext(TS\_REQ\ *a,\ X509\_EXTENSION\ *ex,\ \textcolor{keywordtype}{int}\ loc);}
+\DoxyCodeLine{00162\ \textcolor{keywordtype}{void}\ *TS\_REQ\_get\_ext\_d2i(TS\_REQ\ *a,\ \textcolor{keywordtype}{int}\ nid,\ \textcolor{keywordtype}{int}\ *crit,\ \textcolor{keywordtype}{int}\ *idx);}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{comment}{/*\ Function\ declarations\ for\ TS\_REQ\ defined\ in\ ts/ts\_req\_print.c\ */}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \textcolor{keywordtype}{int}\ TS\_REQ\_print\_bio(BIO\ *bio,\ TS\_REQ\ *a);}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{comment}{/*\ Function\ declarations\ for\ TS\_RESP\ defined\ in\ ts/ts\_resp\_utils.c\ */}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{keywordtype}{int}\ TS\_RESP\_set\_status\_info(TS\_RESP\ *a,\ TS\_STATUS\_INFO\ *info);}
+\DoxyCodeLine{00171\ TS\_STATUS\_INFO\ *TS\_RESP\_get\_status\_info(TS\_RESP\ *a);}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{comment}{/*\ Caller\ loses\ ownership\ of\ PKCS7\ and\ TS\_TST\_INFO\ objects.\ */}}
+\DoxyCodeLine{00174\ \textcolor{keywordtype}{void}\ TS\_RESP\_set\_tst\_info(TS\_RESP\ *a,\ PKCS7\ *p7,\ TS\_TST\_INFO\ *tst\_info);}
+\DoxyCodeLine{00175\ PKCS7\ *TS\_RESP\_get\_token(TS\_RESP\ *a);}
+\DoxyCodeLine{00176\ TS\_TST\_INFO\ *TS\_RESP\_get\_tst\_info(TS\_RESP\ *a);}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_set\_version(TS\_TST\_INFO\ *a,\ \textcolor{keywordtype}{long}\ version);}
+\DoxyCodeLine{00179\ \textcolor{keywordtype}{long}\ TS\_TST\_INFO\_get\_version(\textcolor{keyword}{const}\ TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_set\_policy\_id(TS\_TST\_INFO\ *a,\ ASN1\_OBJECT\ *policy\_id);}
+\DoxyCodeLine{00182\ ASN1\_OBJECT\ *TS\_TST\_INFO\_get\_policy\_id(TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_set\_msg\_imprint(TS\_TST\_INFO\ *a,\ TS\_MSG\_IMPRINT\ *msg\_imprint);}
+\DoxyCodeLine{00185\ TS\_MSG\_IMPRINT\ *TS\_TST\_INFO\_get\_msg\_imprint(TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_set\_serial(TS\_TST\_INFO\ *a,\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *serial);}
+\DoxyCodeLine{00188\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *TS\_TST\_INFO\_get\_serial(\textcolor{keyword}{const}\ TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_set\_time(TS\_TST\_INFO\ *a,\ \textcolor{keyword}{const}\ ASN1\_GENERALIZEDTIME\ *gtime);}
+\DoxyCodeLine{00191\ \textcolor{keyword}{const}\ ASN1\_GENERALIZEDTIME\ *TS\_TST\_INFO\_get\_time(\textcolor{keyword}{const}\ TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_set\_accuracy(TS\_TST\_INFO\ *a,\ TS\_ACCURACY\ *accuracy);}
+\DoxyCodeLine{00194\ TS\_ACCURACY\ *TS\_TST\_INFO\_get\_accuracy(TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{keywordtype}{int}\ TS\_ACCURACY\_set\_seconds(TS\_ACCURACY\ *a,\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *seconds);}
+\DoxyCodeLine{00197\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *TS\_ACCURACY\_get\_seconds(\textcolor{keyword}{const}\ TS\_ACCURACY\ *a);}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{keywordtype}{int}\ TS\_ACCURACY\_set\_millis(TS\_ACCURACY\ *a,\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *millis);}
+\DoxyCodeLine{00200\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *TS\_ACCURACY\_get\_millis(\textcolor{keyword}{const}\ TS\_ACCURACY\ *a);}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \textcolor{keywordtype}{int}\ TS\_ACCURACY\_set\_micros(TS\_ACCURACY\ *a,\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *micros);}
+\DoxyCodeLine{00203\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *TS\_ACCURACY\_get\_micros(\textcolor{keyword}{const}\ TS\_ACCURACY\ *a);}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_set\_ordering(TS\_TST\_INFO\ *a,\ \textcolor{keywordtype}{int}\ ordering);}
+\DoxyCodeLine{00206\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_get\_ordering(\textcolor{keyword}{const}\ TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_set\_nonce(TS\_TST\_INFO\ *a,\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *nonce);}
+\DoxyCodeLine{00209\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *TS\_TST\_INFO\_get\_nonce(\textcolor{keyword}{const}\ TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_set\_tsa(TS\_TST\_INFO\ *a,\ GENERAL\_NAME\ *tsa);}
+\DoxyCodeLine{00212\ GENERAL\_NAME\ *TS\_TST\_INFO\_get\_tsa(TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ STACK\_OF(X509\_EXTENSION)\ *TS\_TST\_INFO\_get\_exts(TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00215\ \textcolor{keywordtype}{void}\ TS\_TST\_INFO\_ext\_free(TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00216\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_get\_ext\_count(TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00217\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_get\_ext\_by\_NID(TS\_TST\_INFO\ *a,\ \textcolor{keywordtype}{int}\ nid,\ \textcolor{keywordtype}{int}\ lastpos);}
+\DoxyCodeLine{00218\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_get\_ext\_by\_OBJ(TS\_TST\_INFO\ *a,\ \textcolor{keyword}{const}\ ASN1\_OBJECT\ *obj,}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ lastpos);}
+\DoxyCodeLine{00220\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_get\_ext\_by\_critical(TS\_TST\_INFO\ *a,\ \textcolor{keywordtype}{int}\ crit,\ \textcolor{keywordtype}{int}\ lastpos);}
+\DoxyCodeLine{00221\ X509\_EXTENSION\ *TS\_TST\_INFO\_get\_ext(TS\_TST\_INFO\ *a,\ \textcolor{keywordtype}{int}\ loc);}
+\DoxyCodeLine{00222\ X509\_EXTENSION\ *TS\_TST\_INFO\_delete\_ext(TS\_TST\_INFO\ *a,\ \textcolor{keywordtype}{int}\ loc);}
+\DoxyCodeLine{00223\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_add\_ext(TS\_TST\_INFO\ *a,\ X509\_EXTENSION\ *ex,\ \textcolor{keywordtype}{int}\ loc);}
+\DoxyCodeLine{00224\ \textcolor{keywordtype}{void}\ *TS\_TST\_INFO\_get\_ext\_d2i(TS\_TST\_INFO\ *a,\ \textcolor{keywordtype}{int}\ nid,\ \textcolor{keywordtype}{int}\ *crit,\ \textcolor{keywordtype}{int}\ *idx);}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ *\ Declarations\ related\ to\ response\ generation,\ defined\ in\ ts/ts\_resp\_sign.c.}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{comment}{/*\ Optional\ flags\ for\ response\ generation.\ */}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \textcolor{comment}{/*\ Don't\ include\ the\ TSA\ name\ in\ response.\ */}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\#\ define\ TS\_TSA\_NAME\ \ \ \ \ \ \ \ \ \ \ \ \ 0x01}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{comment}{/*\ Set\ ordering\ to\ true\ in\ response.\ */}}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#\ define\ TS\_ORDERING\ \ \ \ \ \ \ \ \ \ \ \ \ 0x02}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00239\ \textcolor{comment}{\ *\ Include\ the\ signer\ certificate\ and\ the\ other\ specified\ certificates\ in}}
+\DoxyCodeLine{00240\ \textcolor{comment}{\ *\ the\ ESS\ signing\ certificate\ attribute\ beside\ the\ PKCS7\ signed\ data.}}
+\DoxyCodeLine{00241\ \textcolor{comment}{\ *\ Only\ the\ signer\ certificates\ is\ included\ by\ default.}}
+\DoxyCodeLine{00242\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#\ define\ TS\_ESS\_CERT\_ID\_CHAIN\ \ \ \ 0x04}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \textcolor{comment}{/*\ Forward\ declaration.\ */}}
+\DoxyCodeLine{00246\ \textcolor{keyword}{struct\ }TS\_resp\_ctx;}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \textcolor{comment}{/*\ This\ must\ return\ a\ unique\ number\ less\ than\ 160\ bits\ long.\ */}}
+\DoxyCodeLine{00249\ \textcolor{keyword}{typedef}\ ASN1\_INTEGER\ *(*TS\_serial\_cb)\ (\textcolor{keyword}{struct\ }TS\_resp\_ctx\ *,\ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00252\ \textcolor{comment}{\ *\ This\ must\ return\ the\ seconds\ and\ microseconds\ since\ Jan\ 1,\ 1970\ in\ the\ sec}}
+\DoxyCodeLine{00253\ \textcolor{comment}{\ *\ and\ usec\ variables\ allocated\ by\ the\ caller.\ Return\ non-\/zero\ for\ success}}
+\DoxyCodeLine{00254\ \textcolor{comment}{\ *\ and\ zero\ for\ failure.}}
+\DoxyCodeLine{00255\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00256\ \textcolor{keyword}{typedef}\ int\ (*TS\_time\_cb)\ (\textcolor{keyword}{struct\ }TS\_resp\_ctx\ *,\ \textcolor{keywordtype}{void}\ *,\ \textcolor{keywordtype}{long}\ *sec,}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{long}\ *usec);}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00260\ \textcolor{comment}{\ *\ This\ must\ process\ the\ given\ extension.\ It\ can\ modify\ the\ TS\_TST\_INFO}}
+\DoxyCodeLine{00261\ \textcolor{comment}{\ *\ object\ of\ the\ context.\ Return\ values:\ !0\ (processed),\ 0\ (error,\ it\ must}}
+\DoxyCodeLine{00262\ \textcolor{comment}{\ *\ set\ the\ status\ info/failure\ info\ of\ the\ response).}}
+\DoxyCodeLine{00263\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00264\ \textcolor{keyword}{typedef}\ int\ (*TS\_extension\_cb)\ (\textcolor{keyword}{struct\ }TS\_resp\_ctx\ *,\ X509\_EXTENSION\ *,}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *);}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }TS\_resp\_ctx\ TS\_RESP\_CTX;}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \textcolor{comment}{/*\ Creates\ a\ response\ context\ that\ can\ be\ used\ for\ generating\ responses.\ */}}
+\DoxyCodeLine{00270\ TS\_RESP\_CTX\ *TS\_RESP\_CTX\_new(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00271\ TS\_RESP\_CTX\ *TS\_RESP\_CTX\_new\_ex(OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00272\ \textcolor{keywordtype}{void}\ TS\_RESP\_CTX\_free(TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \textcolor{comment}{/*\ This\ parameter\ must\ be\ set.\ */}}
+\DoxyCodeLine{00275\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_signer\_cert(TS\_RESP\_CTX\ *ctx,\ X509\ *signer);}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \textcolor{comment}{/*\ This\ parameter\ must\ be\ set.\ */}}
+\DoxyCodeLine{00278\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_signer\_key(TS\_RESP\_CTX\ *ctx,\ EVP\_PKEY\ *key);}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_signer\_digest(TS\_RESP\_CTX\ *ctx,}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ EVP\_MD\ *signer\_digest);}
+\DoxyCodeLine{00282\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_ess\_cert\_id\_digest(TS\_RESP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ EVP\_MD\ *md);}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \textcolor{comment}{/*\ This\ parameter\ must\ be\ set.\ */}}
+\DoxyCodeLine{00285\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_def\_policy(TS\_RESP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ ASN1\_OBJECT\ *def\_policy);}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \textcolor{comment}{/*\ No\ additional\ certs\ are\ included\ in\ the\ response\ by\ default.\ */}}
+\DoxyCodeLine{00288\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_certs(TS\_RESP\_CTX\ *ctx,\ STACK\_OF(X509)\ *certs);}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00291\ \textcolor{comment}{\ *\ Adds\ a\ new\ acceptable\ policy,\ only\ the\ default\ policy\ is\ accepted\ by}}
+\DoxyCodeLine{00292\ \textcolor{comment}{\ *\ default.}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00294\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_add\_policy(TS\_RESP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ ASN1\_OBJECT\ *policy);}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00297\ \textcolor{comment}{\ *\ Adds\ a\ new\ acceptable\ message\ digest.\ Note\ that\ no\ message\ digests\ are}}
+\DoxyCodeLine{00298\ \textcolor{comment}{\ *\ accepted\ by\ default.\ The\ md\ argument\ is\ shared\ with\ the\ caller.}}
+\DoxyCodeLine{00299\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00300\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_add\_md(TS\_RESP\_CTX\ *ctx,\ \textcolor{keyword}{const}\ EVP\_MD\ *md);}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \textcolor{comment}{/*\ Accuracy\ is\ not\ included\ by\ default.\ */}}
+\DoxyCodeLine{00303\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_accuracy(TS\_RESP\_CTX\ *ctx,}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ secs,\ \textcolor{keywordtype}{int}\ millis,\ \textcolor{keywordtype}{int}\ micros);}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ *\ Clock\ precision\ digits,\ i.e.\ the\ number\ of\ decimal\ digits:\ '0'\ means\ sec,}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ *\ '3'\ msec,\ '6'\ usec,\ and\ so\ on.\ Default\ is\ 0.}}
+\DoxyCodeLine{00309\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00310\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_clock\_precision\_digits(TS\_RESP\_CTX\ *ctx,}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ clock\_precision\_digits);}
+\DoxyCodeLine{00312\ \textcolor{comment}{/*\ At\ most\ we\ accept\ usec\ precision.\ */}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\#\ define\ TS\_MAX\_CLOCK\_PRECISION\_DIGITS\ \ \ 6}}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \textcolor{comment}{/*\ Maximum\ status\ message\ length\ */}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\#\ define\ TS\_MAX\_STATUS\_LENGTH\ \ \ (1024\ *\ 1024)}}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \textcolor{comment}{/*\ No\ flags\ are\ set\ by\ default.\ */}}
+\DoxyCodeLine{00319\ \textcolor{keywordtype}{void}\ TS\_RESP\_CTX\_add\_flags(TS\_RESP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ flags);}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \textcolor{comment}{/*\ Default\ callback\ always\ returns\ a\ constant.\ */}}
+\DoxyCodeLine{00322\ \textcolor{keywordtype}{void}\ TS\_RESP\_CTX\_set\_serial\_cb(TS\_RESP\_CTX\ *ctx,\ TS\_serial\_cb\ cb,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{comment}{/*\ Default\ callback\ uses\ the\ gettimeofday()\ and\ gmtime()\ system\ calls.\ */}}
+\DoxyCodeLine{00325\ \textcolor{keywordtype}{void}\ TS\_RESP\_CTX\_set\_time\_cb(TS\_RESP\_CTX\ *ctx,\ TS\_time\_cb\ cb,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00328\ \textcolor{comment}{\ *\ Default\ callback\ rejects\ all\ extensions.\ The\ extension\ callback\ is\ called}}
+\DoxyCodeLine{00329\ \textcolor{comment}{\ *\ when\ the\ TS\_TST\_INFO\ object\ is\ already\ set\ up\ and\ not\ signed\ yet.}}
+\DoxyCodeLine{00330\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00331\ \textcolor{comment}{/*\ FIXME:\ extension\ handling\ is\ not\ tested\ yet.\ */}}
+\DoxyCodeLine{00332\ \textcolor{keywordtype}{void}\ TS\_RESP\_CTX\_set\_extension\_cb(TS\_RESP\_CTX\ *ctx,}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TS\_extension\_cb\ cb,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ \textcolor{comment}{/*\ The\ following\ methods\ can\ be\ used\ in\ the\ callbacks.\ */}}
+\DoxyCodeLine{00336\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_status\_info(TS\_RESP\_CTX\ *ctx,}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ status,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *text);}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \textcolor{comment}{/*\ Sets\ the\ status\ info\ only\ if\ it\ is\ still\ TS\_STATUS\_GRANTED.\ */}}
+\DoxyCodeLine{00340\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_set\_status\_info\_cond(TS\_RESP\_CTX\ *ctx,}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ status,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *text);}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{keywordtype}{int}\ TS\_RESP\_CTX\_add\_failure\_info(TS\_RESP\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ failure);}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \textcolor{comment}{/*\ The\ get\ methods\ below\ can\ be\ used\ in\ the\ extension\ callback.\ */}}
+\DoxyCodeLine{00346\ TS\_REQ\ *TS\_RESP\_CTX\_get\_request(TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ TS\_TST\_INFO\ *TS\_RESP\_CTX\_get\_tst\_info(TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00351\ \textcolor{comment}{\ *\ Creates\ the\ signed\ TS\_TST\_INFO\ and\ puts\ it\ in\ TS\_RESP.}}
+\DoxyCodeLine{00352\ \textcolor{comment}{\ *\ In\ case\ of\ errors\ it\ sets\ the\ status\ info\ properly.}}
+\DoxyCodeLine{00353\ \textcolor{comment}{\ *\ Returns\ NULL\ only\ in\ case\ of\ memory\ allocation/fatal\ error.}}
+\DoxyCodeLine{00354\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00355\ TS\_RESP\ *TS\_RESP\_create\_response(TS\_RESP\_CTX\ *ctx,\ BIO\ *req\_bio);}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00358\ \textcolor{comment}{\ *\ Declarations\ related\ to\ response\ verification,}}
+\DoxyCodeLine{00359\ \textcolor{comment}{\ *\ they\ are\ defined\ in\ ts/ts\_resp\_verify.c.}}
+\DoxyCodeLine{00360\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \textcolor{keywordtype}{int}\ TS\_RESP\_verify\_signature(PKCS7\ *token,\ STACK\_OF(X509)\ *certs,}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\ *store,\ X509\ **signer\_out);}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \textcolor{comment}{/*\ Context\ structure\ for\ the\ generic\ verify\ method.\ */}}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \textcolor{comment}{/*\ Verify\ the\ signer's\ certificate\ and\ the\ signature\ of\ the\ response.\ */}}
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_SIGNATURE\ \ \ \ \ \ \ \ (1u\ <<\ 0)}}
+\DoxyCodeLine{00369\ \textcolor{comment}{/*\ Verify\ the\ version\ number\ of\ the\ response.\ */}}
+\DoxyCodeLine{00370\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_VERSION\ \ \ \ \ \ \ \ \ \ (1u\ <<\ 1)}}
+\DoxyCodeLine{00371\ \textcolor{comment}{/*\ Verify\ if\ the\ policy\ supplied\ by\ the\ user\ matches\ the\ policy\ of\ the\ TSA.\ */}}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_POLICY\ \ \ \ \ \ \ \ \ \ \ (1u\ <<\ 2)}}
+\DoxyCodeLine{00373\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00374\ \textcolor{comment}{\ *\ Verify\ the\ message\ imprint\ provided\ by\ the\ user.\ This\ flag\ should\ not\ be}}
+\DoxyCodeLine{00375\ \textcolor{comment}{\ *\ specified\ with\ TS\_VFY\_DATA.}}
+\DoxyCodeLine{00376\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_IMPRINT\ \ \ \ \ \ \ \ \ \ (1u\ <<\ 3)}}
+\DoxyCodeLine{00378\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00379\ \textcolor{comment}{\ *\ Verify\ the\ message\ imprint\ computed\ by\ the\ verify\ method\ from\ the\ user}}
+\DoxyCodeLine{00380\ \textcolor{comment}{\ *\ provided\ data\ and\ the\ MD\ algorithm\ of\ the\ response.\ This\ flag\ should\ not}}
+\DoxyCodeLine{00381\ \textcolor{comment}{\ *\ be\ specified\ with\ TS\_VFY\_IMPRINT.}}
+\DoxyCodeLine{00382\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00383\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_DATA\ \ \ \ \ \ \ \ \ \ \ \ \ (1u\ <<\ 4)}}
+\DoxyCodeLine{00384\ \textcolor{comment}{/*\ Verify\ the\ nonce\ value.\ */}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_NONCE\ \ \ \ \ \ \ \ \ \ \ \ (1u\ <<\ 5)}}
+\DoxyCodeLine{00386\ \textcolor{comment}{/*\ Verify\ if\ the\ TSA\ name\ field\ matches\ the\ signer\ certificate.\ */}}
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_SIGNER\ \ \ \ \ \ \ \ \ \ \ (1u\ <<\ 6)}}
+\DoxyCodeLine{00388\ \textcolor{comment}{/*\ Verify\ if\ the\ TSA\ name\ field\ equals\ to\ the\ user\ provided\ name.\ */}}
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_TSA\_NAME\ \ \ \ \ \ \ \ \ (1u\ <<\ 7)}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \textcolor{comment}{/*\ You\ can\ use\ the\ following\ convenience\ constants.\ */}}
+\DoxyCodeLine{00392\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_ALL\_IMPRINT\ \ \ \ \ \ (TS\_VFY\_SIGNATURE\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00393\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_VERSION\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00394\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_POLICY\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00395\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_IMPRINT\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00396\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_NONCE\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00397\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_SIGNER\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00398\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_TSA\_NAME)}}
+\DoxyCodeLine{00399\ \textcolor{preprocessor}{\#\ define\ TS\_VFY\_ALL\_DATA\ \ \ \ \ \ \ \ \ (TS\_VFY\_SIGNATURE\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00400\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_VERSION\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00401\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_POLICY\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00402\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_DATA\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00403\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_NONCE\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00404\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_SIGNER\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00405\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ TS\_VFY\_TSA\_NAME)}}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }TS\_verify\_ctx\ TS\_VERIFY\_CTX;}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ \textcolor{keywordtype}{int}\ TS\_RESP\_verify\_response(TS\_VERIFY\_CTX\ *ctx,\ TS\_RESP\ *response);}
+\DoxyCodeLine{00410\ \textcolor{keywordtype}{int}\ TS\_RESP\_verify\_token(TS\_VERIFY\_CTX\ *ctx,\ PKCS7\ *token);}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00413\ \textcolor{comment}{\ *\ Declarations\ related\ to\ response\ verification\ context,}}
+\DoxyCodeLine{00414\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00415\ TS\_VERIFY\_CTX\ *TS\_VERIFY\_CTX\_new(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00416\ \textcolor{keywordtype}{void}\ TS\_VERIFY\_CTX\_init(TS\_VERIFY\_CTX\ *ctx);}
+\DoxyCodeLine{00417\ \textcolor{keywordtype}{void}\ TS\_VERIFY\_CTX\_free(TS\_VERIFY\_CTX\ *ctx);}
+\DoxyCodeLine{00418\ \textcolor{keywordtype}{void}\ TS\_VERIFY\_CTX\_cleanup(TS\_VERIFY\_CTX\ *ctx);}
+\DoxyCodeLine{00419\ \textcolor{keywordtype}{int}\ TS\_VERIFY\_CTX\_set\_flags(TS\_VERIFY\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ f);}
+\DoxyCodeLine{00420\ \textcolor{keywordtype}{int}\ TS\_VERIFY\_CTX\_add\_flags(TS\_VERIFY\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ f);}
+\DoxyCodeLine{00421\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_4}}
+\DoxyCodeLine{00422\ OSSL\_DEPRECATEDIN\_3\_4\_FOR(\textcolor{stringliteral}{"{}Unclear\ semantics,\ replace\ with\ TS\_VERIFY\_CTX\_set0\_data()."{}})}
+\DoxyCodeLine{00423\ BIO\ *TS\_VERIFY\_CTX\_set\_data(TS\_VERIFY\_CTX\ *ctx,\ BIO\ *b);}
+\DoxyCodeLine{00424\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00425\ \textcolor{keywordtype}{int}\ TS\_VERIFY\_CTX\_set0\_data(TS\_VERIFY\_CTX\ *ctx,\ BIO\ *b);}
+\DoxyCodeLine{00426\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_4}}
+\DoxyCodeLine{00427\ OSSL\_DEPRECATEDIN\_3\_4\_FOR(\textcolor{stringliteral}{"{}Unclear\ semantics,\ replace\ with\ TS\_VERIFY\_CTX\_set0\_imprint()."{}})}
+\DoxyCodeLine{00428\ unsigned\ \textcolor{keywordtype}{char}\ *TS\_VERIFY\_CTX\_set\_imprint(TS\_VERIFY\_CTX\ *ctx,}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *hexstr,\ \textcolor{keywordtype}{long}\ len);}
+\DoxyCodeLine{00430\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00431\ \textcolor{keywordtype}{int}\ TS\_VERIFY\_CTX\_set0\_imprint(TS\_VERIFY\_CTX\ *ctx,}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *hexstr,\ \textcolor{keywordtype}{long}\ len);}
+\DoxyCodeLine{00433\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_4}}
+\DoxyCodeLine{00434\ OSSL\_DEPRECATEDIN\_3\_4\_FOR(\textcolor{stringliteral}{"{}Unclear\ semantics,\ replace\ with\ TS\_VERIFY\_CTX\_set0\_store()."{}})}
+\DoxyCodeLine{00435\ X509\_STORE\ *TS\_VERIFY\_CTX\_set\_store(TS\_VERIFY\_CTX\ *ctx,\ X509\_STORE\ *s);}
+\DoxyCodeLine{00436\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00437\ \textcolor{keywordtype}{int}\ TS\_VERIFY\_CTX\_set0\_store(TS\_VERIFY\_CTX\ *ctx,\ X509\_STORE\ *s);}
+\DoxyCodeLine{00438\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00439\ \textcolor{preprocessor}{\#\ \ define\ TS\_VERIFY\_CTS\_set\_certs(ctx,\ cert)\ TS\_VERIFY\_CTX\_set\_certs(ctx,cert)}}
+\DoxyCodeLine{00440\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00441\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_4}}
+\DoxyCodeLine{00442\ OSSL\_DEPRECATEDIN\_3\_4\_FOR(\textcolor{stringliteral}{"{}Unclear\ semantics,\ replace\ with\ TS\_VERIFY\_CTX\_set0\_certs()."{}})}
+\DoxyCodeLine{00443\ STACK\_OF(X509)\ *TS\_VERIFY\_CTX\_set\_certs(TS\_VERIFY\_CTX\ *ctx,\ STACK\_OF(X509)\ *certs);}
+\DoxyCodeLine{00444\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00445\ \textcolor{keywordtype}{int}\ TS\_VERIFY\_CTX\_set0\_certs(TS\_VERIFY\_CTX\ *ctx,\ STACK\_OF(X509)\ *certs);}
+\DoxyCodeLine{00446\ }
+\DoxyCodeLine{00447\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00448\ \textcolor{comment}{\ *\ If\ ctx\ is\ NULL,\ it\ allocates\ and\ returns\ a\ new\ object,\ otherwise}}
+\DoxyCodeLine{00449\ \textcolor{comment}{\ *\ it\ returns\ ctx.\ It\ initialises\ all\ the\ members\ as\ follows:}}
+\DoxyCodeLine{00450\ \textcolor{comment}{\ *\ flags\ =\ TS\_VFY\_ALL\_IMPRINT\ \&\ \string~(TS\_VFY\_TSA\_NAME\ |\ TS\_VFY\_SIGNATURE)}}
+\DoxyCodeLine{00451\ \textcolor{comment}{\ *\ certs\ =\ NULL}}
+\DoxyCodeLine{00452\ \textcolor{comment}{\ *\ store\ =\ NULL}}
+\DoxyCodeLine{00453\ \textcolor{comment}{\ *\ policy\ =\ policy\ from\ the\ request\ or\ NULL\ if\ absent\ (in\ this\ case}}
+\DoxyCodeLine{00454\ \textcolor{comment}{\ *\ \ \ \ \ \ TS\_VFY\_POLICY\ is\ cleared\ from\ flags\ as\ well)}}
+\DoxyCodeLine{00455\ \textcolor{comment}{\ *\ md\_alg\ =\ MD\ algorithm\ from\ request}}
+\DoxyCodeLine{00456\ \textcolor{comment}{\ *\ imprint,\ imprint\_len\ =\ imprint\ from\ request}}
+\DoxyCodeLine{00457\ \textcolor{comment}{\ *\ data\ =\ NULL}}
+\DoxyCodeLine{00458\ \textcolor{comment}{\ *\ nonce,\ nonce\_len\ =\ nonce\ from\ the\ request\ or\ NULL\ if\ absent\ (in\ this\ case}}
+\DoxyCodeLine{00459\ \textcolor{comment}{\ *\ \ \ \ \ \ TS\_VFY\_NONCE\ is\ cleared\ from\ flags\ as\ well)}}
+\DoxyCodeLine{00460\ \textcolor{comment}{\ *\ tsa\_name\ =\ NULL}}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ *\ Important:\ after\ calling\ this\ method\ TS\_VFY\_SIGNATURE\ should\ be\ added!}}
+\DoxyCodeLine{00462\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00463\ TS\_VERIFY\_CTX\ *TS\_REQ\_to\_TS\_VERIFY\_CTX(TS\_REQ\ *req,\ TS\_VERIFY\_CTX\ *ctx);}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \textcolor{comment}{/*\ Function\ declarations\ for\ TS\_RESP\ defined\ in\ ts/ts\_resp\_print.c\ */}}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \textcolor{keywordtype}{int}\ TS\_RESP\_print\_bio(BIO\ *bio,\ TS\_RESP\ *a);}
+\DoxyCodeLine{00468\ \textcolor{keywordtype}{int}\ TS\_STATUS\_INFO\_print\_bio(BIO\ *bio,\ TS\_STATUS\_INFO\ *a);}
+\DoxyCodeLine{00469\ \textcolor{keywordtype}{int}\ TS\_TST\_INFO\_print\_bio(BIO\ *bio,\ TS\_TST\_INFO\ *a);}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00471\ \textcolor{comment}{/*\ Common\ utility\ functions\ defined\ in\ ts/ts\_lib.c\ */}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \textcolor{keywordtype}{int}\ TS\_ASN1\_INTEGER\_print\_bio(BIO\ *bio,\ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *num);}
+\DoxyCodeLine{00474\ \textcolor{keywordtype}{int}\ TS\_OBJ\_print\_bio(BIO\ *bio,\ \textcolor{keyword}{const}\ ASN1\_OBJECT\ *obj);}
+\DoxyCodeLine{00475\ \textcolor{keywordtype}{int}\ TS\_ext\_print\_bio(BIO\ *bio,\ \textcolor{keyword}{const}\ STACK\_OF(X509\_EXTENSION)\ *extensions);}
+\DoxyCodeLine{00476\ \textcolor{keywordtype}{int}\ TS\_X509\_ALGOR\_print\_bio(BIO\ *bio,\ \textcolor{keyword}{const}\ X509\_ALGOR\ *alg);}
+\DoxyCodeLine{00477\ \textcolor{keywordtype}{int}\ TS\_MSG\_IMPRINT\_print\_bio(BIO\ *bio,\ TS\_MSG\_IMPRINT\ *msg);}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00480\ \textcolor{comment}{\ *\ Function\ declarations\ for\ handling\ configuration\ options,\ defined\ in}}
+\DoxyCodeLine{00481\ \textcolor{comment}{\ *\ ts/ts\_conf.c}}
+\DoxyCodeLine{00482\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00483\ }
+\DoxyCodeLine{00484\ X509\ *TS\_CONF\_load\_cert(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file);}
+\DoxyCodeLine{00485\ STACK\_OF(X509)\ *TS\_CONF\_load\_certs(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file);}
+\DoxyCodeLine{00486\ EVP\_PKEY\ *TS\_CONF\_load\_key(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *pass);}
+\DoxyCodeLine{00487\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *TS\_CONF\_get\_tsa\_section(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section);}
+\DoxyCodeLine{00488\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_serial(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,\ TS\_serial\_cb\ cb,}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_NO\_ENGINE}}
+\DoxyCodeLine{00491\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_crypto\_device(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *device);}
+\DoxyCodeLine{00493\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_default\_engine(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00494\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00495\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_signer\_cert(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *cert,\ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00497\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_certs(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *certs,}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00499\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_signer\_key(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *key,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *pass,}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00502\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_signer\_digest(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *md,\ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00504\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_def\_policy(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *policy,\ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00506\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_policies(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,\ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00507\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_digests(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,\ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00508\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_accuracy(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,\ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00509\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_clock\_precision\_digits(\textcolor{keyword}{const}\ CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00511\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_ordering(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,\ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00512\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_tsa\_name(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,\ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00513\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_ess\_cert\_id\_chain(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00515\ \textcolor{keywordtype}{int}\ TS\_CONF\_set\_ess\_cert\_id\_digest(CONF\ *conf,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *section,}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TS\_RESP\_CTX\ *ctx);}
+\DoxyCodeLine{00517\ }
+\DoxyCodeLine{00518\ \textcolor{preprocessor}{\#\ \ ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00519\ \}}
+\DoxyCodeLine{00520\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00521\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00522\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

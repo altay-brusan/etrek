@@ -1,0 +1,263 @@
+\doxysection{storage.\+hpp}
+\hypertarget{storage_8hpp_source}{}\label{storage_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/storage.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/storage.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_STORAGE\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_STORAGE\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <fstream>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <fcntl.h>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}serialization.hpp"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}thread.hpp"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}log.hpp"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}io/utils.hpp"{}}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00015\ \{}
+\DoxyCodeLine{00016\ \ \ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00017\ \ \ \{}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keyword}{using\ }Save\ =\ std::function<void(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*,\ BinaryBuffer\&)>;}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keyword}{using\ }Load\ =\ std::function<void(\textcolor{keywordtype}{void}*,\ BinaryBuffer\&)>;}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keyword}{struct\ }FileBuffer:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}}
+\DoxyCodeLine{00022\ \ \ \ \ \{}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ FileBuffer(FILE*\ file\_):\ file(file\_),\ head(0),\ tail(0)\ \ \ \ \{\}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ add\ error\ checking}}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer_adcd4459fefcea72b112391a92af4165f}{save\_binary}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ x,\ \textcolor{keywordtype}{size\_t}\ count)\textcolor{keyword}{\ override\ \ \ }\{\ fwrite(x,\ 1,\ count,\ file);\ head\ +=\ count;\ \}}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer_a510711e697b7a390d9708de86fd32205}{append\_binary}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ x,\ \textcolor{keywordtype}{size\_t}\ count)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00028\ \textcolor{keyword}{\ \ \ \ \ \ }\{}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ temp\_pos\ =\ ftell(file);}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ fseek(file,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{long}\textcolor{keyword}{>}(tail),\ SEEK\_END);}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ fwrite(x,\ 1,\ count,\ file);}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ tail\ +=\ count;}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ fseek(file,\ temp\_pos,\ SEEK\_SET);}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer_a2558dc29724ebd329f4c4a3e97c0ec15}{load\_binary}}(\textcolor{keywordtype}{char}*\ x,\ \textcolor{keywordtype}{size\_t}\ count)\textcolor{keyword}{\ override\ \ \ \ \ \ \ \ \ }\{\ \textcolor{keyword}{auto}\ n\ =\ fread(x,\ 1,\ count,\ file);\ DIY\_UNUSED(n);\}}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer_ad11140d06d1267fec510d812d27a4d5d}{load\_binary\_back}}(\textcolor{keywordtype}{char}*\ x,\ \textcolor{keywordtype}{size\_t}\ count)\textcolor{keyword}{\ override\ \ \ \ }\{\ fseek(file,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{long}\textcolor{keyword}{>}(tail),\ SEEK\_END);\ \textcolor{keyword}{auto}\ n\ =\ fread(x,\ 1,\ count,\ file);\ tail\ +=\ count;\ fseek(file,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{long}\textcolor{keyword}{>}(head),\ SEEK\_SET);\ DIY\_UNUSED(n);\}}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer_ab36501c6a7e75cc0b3826a1feed3d52f}{grow}}(\textcolor{keywordtype}{size\_t})\textcolor{keyword}{\ override\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Cannot\ grow\ a\ FileBuffer"{}});\ \}}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer_aa749c58b3e7fc44d026af081165aabb8}{advance}}(\textcolor{keywordtype}{size\_t})\textcolor{keyword}{\ override\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Cannot\ advance\ a\ FileBuffer"{}});\ \}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ for\ now,\ we\ just\ throw,\ but\ obviously\ it\ should\ be\ possile\ to\ store\ binary\ blobs\ in\ a\ file;\ might\ want\ to\ fall\ back}}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \textcolor{keyword}{using\ }Blob\ =\ \doxymbox{\hyperlink{structdiy_1_1_binary_blob}{BinaryBlob}};}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ save\_binary\_blob(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*,\ \textcolor{keywordtype}{size\_t})\textcolor{keyword}{\ override\ \ \ \ \ \ }\{\ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Cannot\ save\ binary\ blobs\ in\ a\ FileBuffer"{}});\ \}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ save\_binary\_blob(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*,\ \textcolor{keywordtype}{size\_t},\ Blob::Deleter)\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Cannot\ save\ binary\ blobs\ in\ a\ FileBuffer"{}});\ \}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{inline}\ Blob\ load\_binary\_blob()\textcolor{keyword}{\ override\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Cannot\ load\ binary\ blobs\ from\ a\ FileBuffer"{}});\ \}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ \ \ \ \ size()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ head;\ \}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \ \ FILE*\ \ file;}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ head,\ tail;\ \ \textcolor{comment}{//\ tail\ is\ used\ to\ support\ reading\ from\ the\ back;}}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ the\ mechanism\ is\ a\ little\ awkward\ and\ unused,\ but\ should\ work\ if\ needed}}
+\DoxyCodeLine{00053\ \ \ \ \ \};}
+\DoxyCodeLine{00054\ \ \ \}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdiy_1_1_external_storage}{ExternalStorage}}}
+\DoxyCodeLine{00057\ \ \ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \ \ put(\doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ bb)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =0;}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \ \ put(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ x,\ detail::Save\ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =0;}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ get(\textcolor{keywordtype}{int}\ i,\ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ bb,\ \textcolor{keywordtype}{size\_t}\ extra\ =\ 0)\ \ \ \ \ \ =0;}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ get(\textcolor{keywordtype}{int}\ i,\ \textcolor{keywordtype}{void}*\ x,\ detail::Load\ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{load}})\ \ \ \ \ \ \ \ \ \ \ \ \ \ =0;}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ destroy(\textcolor{keywordtype}{int}\ i)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =0;}
+\DoxyCodeLine{00064\ \ \ \};}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{keyword}{class\ }FileStorage:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classdiy_1_1_external_storage}{ExternalStorage}}}
+\DoxyCodeLine{00067\ \ \ \{}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }FileRecord}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ size;}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ std::string\ \ \ \ \ name;}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ FileStorage(\textcolor{keyword}{const}\ std::string\&\ filename\_template\ =\ \textcolor{stringliteral}{"{}/tmp/DIY.XXXXXX"{}}):}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ filename\_templates\_(1,\ filename\_template),}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ count\_(0),\ current\_size\_(0),\ max\_size\_(0)\ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ FileStorage(\textcolor{keyword}{const}\ std::vector<std::string>\&\ filename\_templates):}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ filename\_templates\_(filename\_templates),}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ count\_(0),\ current\_size\_(0),\ max\_size\_(0)\ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \ \ put(\doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ bb)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00085\ \textcolor{keyword}{\ \ \ \ \ \ }\{}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ log\ =\ get\_logger();}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ std::string\ \ \ \ \ filename;}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fh\ =\ open\_random(filename);}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}FileStorage::put():\ \{\};\ buffer\ size:\ \{\}"{}},\ filename,\ bb.size());}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ sz\ =\ bb.buffer.size();}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }r\_type\ =\ int;}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ r\_type\ written\ =\ \_write(fh,\ \&bb.buffer[0],\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(sz));}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }r\_type\ =\ ssize\_t;}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ r\_type\ written\ =\ write(fh,\ \&bb.buffer[0],\ sz);}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (written\ <\ \textcolor{keyword}{static\_cast<}r\_type\textcolor{keyword}{>}(sz)\ ||\ written\ ==\ r\_type(-\/1))}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ log-\/>warn(\textcolor{stringliteral}{"{}Could\ not\ write\ the\ full\ buffer\ to\ \{\}:\ written\ =\ \{\};\ size\ =\ \{\}"{}},\ filename,\ written,\ sz);}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ io::utils::close(fh);}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ bb.wipe();}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#if\ 0\ \ \ \ \ \ \ }\textcolor{comment}{//\ double-\/check\ the\ written\ file\ size:\ only\ for\ extreme\ debugging}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ FILE*\ fp\ =\ fopen(filename.c\_str(),\ \textcolor{stringliteral}{"{}r"{}});}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ fseek(fp,\ 0L,\ SEEK\_END);}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fsz\ =\ ftell(fp);}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (fsz\ !=\ sz)}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>warn(\textcolor{stringliteral}{"{}file\ size\ doesn't\ match\ the\ buffer\ size,\ \{\}\ vs\ \{\}"{}},\ fsz,\ sz);}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ fclose(fp);}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ make\_file\_record(filename,\ sz);}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \ \ \ put(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ x,\ detail::Save\ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}})\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00118\ \textcolor{keyword}{\ \ \ \ \ \ }\{}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ std::string\ \ \ \ \ filename;}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fh\ =\ open\_random(filename);}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)}}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer}{detail::FileBuffer}}\ fb(\_fdopen(fh,\ \textcolor{stringliteral}{"{}wb"{}}));}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer}{detail::FileBuffer}}\ fb(fdopen(fh,\ \textcolor{stringliteral}{"{}w"{}}));}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}(x,\ fb);}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ sz\ =\ fb.size();}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ fclose(fb.file);}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ io::utils::sync(fh);}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ make\_file\_record(filename,\ sz);}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ \ get(\textcolor{keywordtype}{int}\ i,\ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ bb,\ \textcolor{keywordtype}{size\_t}\ extra)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00135\ \textcolor{keyword}{\ \ \ \ \ \ }\{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ FileRecord\ fr\ =\ extract\_file\_record(i);}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ get\_logger()-\/>debug(\textcolor{stringliteral}{"{}FileStorage::get():\ \{\}"{}},\ fr.name);}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ bb.buffer.reserve(fr.size\ +\ extra);}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ bb.buffer.resize(fr.size);}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)}}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fh\ =\ -\/1;}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \_sopen\_s(\&fh,\ fr.name.c\_str(),\ \_O\_RDONLY\ |\ \_O\_BINARY,\ \_SH\_DENYNO,\ \_S\_IREAD);}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \_read(fh,\ \&bb.buffer[0],\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(fr.size));}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fh\ =\ open(fr.name.c\_str(),\ O\_RDONLY\ |\ O\_SYNC,\ 0600);}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ n\ =\ read(fh,\ \&bb.buffer[0],\ fr.size);}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ DIY\_UNUSED(n);}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ io::utils::close(fh);}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ remove\_file(fr);}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ \ get(\textcolor{keywordtype}{int}\ i,\ \textcolor{keywordtype}{void}*\ x,\ detail::Load\ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{load}})\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00156\ \textcolor{keyword}{\ \ \ \ \ \ }\{}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ FileRecord\ fr\ =\ extract\_file\_record(i);}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \textcolor{comment}{//int\ fh\ =\ open(fr.name.c\_str(),\ O\_RDONLY\ |\ O\_SYNC,\ 0600);}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fh\ =\ -\/1;}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \_sopen\_s(\&fh,\ fr.name.c\_str(),\ \_O\_RDONLY\ |\ \_O\_BINARY,\ \_SH\_DENYNO,\ \_S\_IREAD);}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer}{detail::FileBuffer}}\ fb(\_fdopen(fh,\ \textcolor{stringliteral}{"{}rb"{}}));}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fh\ =\ open(fr.name.c\_str(),\ O\_RDONLY,\ 0600);}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_file_buffer}{detail::FileBuffer}}\ fb(fdopen(fh,\ \textcolor{stringliteral}{"{}r"{}}));}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{load}}(x,\ fb);}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ fclose(fb.file);}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ remove\_file(fr);}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ destroy(\textcolor{keywordtype}{int}\ i)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00175\ \textcolor{keyword}{\ \ \ \ \ \ }\{}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ FileRecord\ \ \ \ \ \ fr;}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ CriticalMapAccessor\ accessor\ =\ filenames\_.access();}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ fr\ =\ (*accessor)[i];}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ accessor-\/>erase(i);}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ io::utils::remove(fr.name);}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ (*current\_size\_.access())\ -\/=\ fr.size;}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ count()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ (*count\_.const\_access());\ \}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ current\_size()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ (*current\_size\_.const\_access());\ \}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ max\_size()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ (*max\_size\_.const\_access());\ \}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \string~FileStorage()}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (FileRecordMap::const\_iterator\ it\ =\ \ filenames\_.const\_access()-\/>begin();}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ it\ !=\ filenames\_.const\_access()-\/>end();}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++it)}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ io::utils::remove(it-\/>second.name);}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ open\_random(std::string\&\ filename)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00202\ \textcolor{keyword}{\ \ \ \ \ \ }\{}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (filename\_templates\_.size()\ ==\ 1)}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ filename\ =\ filename\_templates\_[0].c\_str();}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ pick\ a\ template\ at\ random\ (very\ basic\ load\ balancing\ mechanism)}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ filename\ \ =\ filename\_templates\_[\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(std::rand())\ \%\ filename\_templates\_.size()].c\_str();}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ fh\ =\ diy::io::utils::mkstemp(filename);}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ fh;}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ make\_file\_record(\textcolor{keyword}{const}\ std::string\&\ filename,\ \textcolor{keywordtype}{size\_t}\ sz)}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ res\ =\ (*count\_.access())++;}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ FileRecord\ \ fr\ =\ \{\ sz,\ filename\ \};}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ (*filenames\_.access())[res]\ =\ fr;}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ keep\ track\ of\ sizes}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ critical\_resource<size\_t>::accessor\ \ \ \ \ cur\ =\ current\_size\_.access();}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ *cur\ +=\ sz;}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ critical\_resource<size\_t>::accessor\ \ \ \ \ max\ =\ max\_size\_.access();}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*cur\ >\ *max)}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ *max\ =\ *cur;}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \ \ \ \ FileRecord\ \ \ \ extract\_file\_record(\textcolor{keywordtype}{int}\ i)}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ CriticalMapAccessor\ accessor\ =\ filenames\_.access();}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ FileRecord\ fr\ =\ (*accessor)[i];}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ accessor-\/>erase(i);}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ fr;}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ remove\_file(\textcolor{keyword}{const}\ FileRecord\&\ fr)}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ io::utils::remove(fr.name);}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ (*current\_size\_.access())\ -\/=\ fr.size;}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ \ \ \ \ \ \ std::map<int,\ FileRecord>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ FileRecordMap;}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1critical__resource}{critical\_resource<FileRecordMap>}}\ \ \ \ \ \ \ \ \ \ \ \ CriticalMap;}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ \ \ \ \ \ \ CriticalMap::accessor\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CriticalMapAccessor;}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ std::vector<std::string>\ \ \ \ \ \ filename\_templates\_;}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ CriticalMap\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ filenames\_;}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1critical__resource}{critical\_resource<int>}}\ \ \ \ \ \ \ \ count\_;}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1critical__resource}{critical\_resource<size\_t>}}\ \ \ \ \ current\_size\_,\ max\_size\_;}
+\DoxyCodeLine{00254\ \ \ \};}
+\DoxyCodeLine{00255\ \}}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

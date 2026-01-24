@@ -1,3 +1,20 @@
+/**
+ * @file RisProcedureMappingRepository.h
+ * @brief Repository for RIS procedure code to internal view mappings.
+ *
+ * @details Provides CRUD operations for RIS procedure code mappings, enabling
+ *          automatic view selection when importing worklist entries from RIS systems.
+ *
+ * @author Etrek Development Team
+ * @date 2026-01-11
+ *
+ * @copyright Copyright (c) 2024-2026 Etrek Medical Imaging
+ *
+ * @see RisProcedureMapping
+ * @see RisProcedureMappingService
+ * @see RisProcedureMappingConfigurationDelegate
+ */
+
 #ifndef RISPROCEDUREMAPPINGREPOSITORY_H
 #define RISPROCEDUREMAPPINGREPOSITORY_H
 
