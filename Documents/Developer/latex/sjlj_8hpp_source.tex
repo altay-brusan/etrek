@@ -1,0 +1,135 @@
+\doxysection{sjlj.\+hpp}
+\hypertarget{sjlj_8hpp_source}{}\label{sjlj_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/coroutine/sjlj.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/coroutine/sjlj.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ note\ this\ was\ designed\ for\ UNIX\ systems.\ Based\ on\ ideas\ expressed\ in\ a\ paper\ by\ Ralf\ Engelschall.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ \ for\ SJLJ\ on\ other\ systems,\ one\ would\ want\ to\ rewrite\ springboard()\ and\ co\_create()\ and\ hack\ the\ jmb\_buf\ stack\ pointer.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#if\ \_\_USE\_FORTIFY\_LEVEL}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#define\ DIY\_USE\_FORTIFY\_LEVEL\ \_\_USE\_FORTIFY\_LEVEL}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#undef\ \_\_USE\_FORTIFY\_LEVEL}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#warning\ "{}diy::coroutine\ (sjlj.hpp)\ cannot\ be\ compiled\ with\ \_FORTIFY\_SOURCE;\ disabling."{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{comment}{//\#define\ \_BSD\_SOURCE}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\#define\ \_XOPEN\_SOURCE\ 500}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <stdlib.h>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <signal.h>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <setjmp.h>}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00020\ \{}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{namespace\ }coroutine}
+\DoxyCodeLine{00023\ \{}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1coroutine_1_1cothread__struct}{cothread\_struct}}}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ \ \ sigjmp\_buf\ context;}
+\DoxyCodeLine{00028\ \ \ void\ (*coentry)(void);}
+\DoxyCodeLine{00029\ \ \ \textcolor{keywordtype}{void}*\ stack;}
+\DoxyCodeLine{00030\ \};}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{comment}{/**********************}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *\ "{}Global\ varialbes"{}\ *}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ **********************/}}
+\DoxyCodeLine{00035\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{structdiy_1_1coroutine_1_1cothread__struct}{cothread\_struct}}\&\ co\_primary()}
+\DoxyCodeLine{00036\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{thread\_local}\ \doxymbox{\hyperlink{structdiy_1_1coroutine_1_1cothread__struct}{cothread\_struct}}\ x;}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordflow}{return}\ x;}
+\DoxyCodeLine{00039\ \}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{keyword}{inline}\ cothread\_struct*\&\ creating()}
+\DoxyCodeLine{00042\ \{}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{thread\_local}\ cothread\_struct*\ x;}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordflow}{return}\ x;}
+\DoxyCodeLine{00045\ \}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{inline}\ cothread\_struct*\&\ co\_running()}
+\DoxyCodeLine{00048\ \{}
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{thread\_local}\ cothread\_struct*\ x\ =\ 0;}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordflow}{return}\ x;}
+\DoxyCodeLine{00051\ \}}
+\DoxyCodeLine{00052\ \textcolor{comment}{/**********************/}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ springboard(\textcolor{keywordtype}{int})\ \{}
+\DoxyCodeLine{00055\ \ \ \textcolor{keywordflow}{if}(sigsetjmp(creating()-\/>context,\ 0))\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ co\_running()-\/>coentry();}
+\DoxyCodeLine{00057\ \ \ \}}
+\DoxyCodeLine{00058\ \}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ cothread\_t\ co\_active()\ \{}
+\DoxyCodeLine{00061\ \ \ \textcolor{keywordflow}{if}(!co\_running())\ co\_running()\ =\ \&co\_primary();}
+\DoxyCodeLine{00062\ \ \ \textcolor{keywordflow}{return}\ (cothread\_t)co\_running();}
+\DoxyCodeLine{00063\ \}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ cothread\_t\ co\_create(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ size,\ \textcolor{keywordtype}{void}\ (*coentry)(\textcolor{keywordtype}{void}))\ \{}
+\DoxyCodeLine{00066\ \ \ \textcolor{keywordflow}{if}(!co\_running())\ co\_running()\ =\ \&co\_primary();}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ cothread\_struct*\ thread\ =\ (cothread\_struct*)malloc(\textcolor{keyword}{sizeof}(cothread\_struct));}
+\DoxyCodeLine{00069\ \ \ \textcolor{keywordflow}{if}(thread)\ \{}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keyword}{struct\ }sigaction\ handler;}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keyword}{struct\ }sigaction\ old\_handler;}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ stack\_t\ stack;}
+\DoxyCodeLine{00074\ \ \ \ \ stack\_t\ old\_stack;}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ thread-\/>coentry\ =\ 0;}
+\DoxyCodeLine{00077\ \ \ \ \ thread-\/>stack\ =\ 0;}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ stack.ss\_flags\ =\ 0;}
+\DoxyCodeLine{00080\ \ \ \ \ stack.ss\_size\ =\ size;}
+\DoxyCodeLine{00081\ \ \ \ \ thread-\/>stack\ =\ stack.ss\_sp\ =\ malloc(size);}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordflow}{if}(stack.ss\_sp\ \&\&\ !sigaltstack(\&stack,\ \&old\_stack))\ \{}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ handler.sa\_handler\ =\ springboard;}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ handler.sa\_flags\ =\ SA\_ONSTACK;}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ sigemptyset(\&handler.sa\_mask);}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ creating()\ =\ thread;}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \textcolor{keywordflow}{if}(!sigaction(SIGUSR1,\ \&handler,\ \&old\_handler))\ \{}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(!raise(SIGUSR1))\ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ thread-\/>coentry\ =\ coentry;}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ sigaltstack(\&old\_stack,\ 0);}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ sigaction(SIGUSR1,\ \&old\_handler,\ 0);}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordflow}{if}(thread-\/>coentry\ !=\ coentry)\ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ co\_delete(thread);}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ thread\ =\ 0;}
+\DoxyCodeLine{00100\ \ \ \ \ \}}
+\DoxyCodeLine{00101\ \ \ \}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \textcolor{keywordflow}{return}\ (cothread\_t)thread;}
+\DoxyCodeLine{00104\ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \textcolor{keywordtype}{void}\ co\_delete(cothread\_t\ cothread)\ \{}
+\DoxyCodeLine{00107\ \ \ \textcolor{keywordflow}{if}(cothread)\ \{}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordflow}{if}(((cothread\_struct*)cothread)-\/>stack)\ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ free(((cothread\_struct*)cothread)-\/>stack);}
+\DoxyCodeLine{00110\ \ \ \ \ \}}
+\DoxyCodeLine{00111\ \ \ \ \ free(cothread);}
+\DoxyCodeLine{00112\ \ \ \}}
+\DoxyCodeLine{00113\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{keywordtype}{void}\ co\_switch(cothread\_t\ cothread)\ \{}
+\DoxyCodeLine{00116\ \ \ \textcolor{keywordflow}{if}(!sigsetjmp(co\_running()-\/>context,\ 0))\ \{}
+\DoxyCodeLine{00117\ \ \ \ \ co\_running()\ =\ (cothread\_struct*)cothread;}
+\DoxyCodeLine{00118\ \ \ \ \ siglongjmp(co\_running()-\/>context,\ 1);}
+\DoxyCodeLine{00119\ \ \ \}}
+\DoxyCodeLine{00120\ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#if\ DIY\_USE\_FORTIFY\_LEVEL}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#define\ \_\_USE\_FORTIFY\_LEVEL\ DIY\_USE\_FORTIFY\_LEVEL}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#undef\ DIY\_USE\_FORTIFY\_LEVEL}}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

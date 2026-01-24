@@ -1,0 +1,1266 @@
+\doxysection{proj.\+h}
+\hypertarget{proj_8h_source}{}\label{proj_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibproj/src/proj.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibproj/src/proj.h}}
+\doxymbox{\hyperlink{proj_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/******************************************************************************}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Project:\ \ PROJ.4}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ Purpose:\ \ Revised,\ experimental\ API\ for\ PROJ.4,\ intended\ as\ the\ foundation}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ for\ added\ geodetic\ functionality.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ The\ original\ proj\ API\ (defined\ previously\ in\ projects.h)\ has\ grown}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ organically\ over\ the\ years,\ but\ it\ has\ also\ grown\ somewhat\ messy.}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ The\ same\ has\ happened\ with\ the\ newer\ high\ level\ API\ (defined\ in}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ proj\_api.h):\ To\ support\ various\ historical\ objectives,\ proj\_api.h}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ contains\ a\ rather\ complex\ combination\ of\ conditional\ defines\ and}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ typedefs.\ Probably\ for\ good\ (historical)\ reasons,\ which\ are\ not}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ always\ evident\ from\ today's\ perspective.}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ This\ is\ an\ evolving\ attempt\ at\ creating\ a\ re-\/rationalized\ API}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ with\ primary\ design\ goals\ focused\ on\ sanitizing\ the\ namespaces.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Hence,\ all\ symbols\ exposed\ are\ being\ moved\ to\ the\ proj\_\ namespace,}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ while\ all\ data\ types\ are\ being\ moved\ to\ the\ PJ\_\ namespace.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Please\ note\ that\ this\ API\ is\ *orthogonal*\ to\ \ the\ previous\ APIs:}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Apart\ from\ some\ inclusion\ guards,\ projects.h\ and\ proj\_api.h\ are\ not}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ touched\ -\/\ if\ you\ do\ not\ include\ proj.h,\ the\ projects\ and\ proj\_api}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ APIs\ should\ work\ as\ they\ always\ have.}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ A\ few\ implementation\ details:}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Apart\ from\ the\ namespacing\ efforts,\ I'm\ trying\ to\ eliminate\ three}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ proj\_api\ elements,\ which\ I\ have\ found\ especially\ confusing.}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ FIRST\ and\ foremost,\ I\ try\ to\ avoid\ typedef'ing\ away\ pointer}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ semantics.\ I\ agree\ that\ it\ can\ be\ occasionally\ useful,\ but\ I}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ prefer\ having\ the\ pointer\ nature\ of\ function\ arguments\ being}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ explicitly\ visible.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Hence,\ projCtx\ has\ been\ replaced\ by\ PJ\_CONTEXT\ *.}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ and\ \ \ \ projPJ\ \ has\ been\ replaced\ by\ PJ\ *}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ SECOND,\ I\ try\ to\ eliminate\ cases\ of\ information\ hiding\ implemented}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ by\ redefining\ data\ types\ to\ void\ pointers.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ I\ prefer\ using\ a\ combination\ of\ forward\ declarations\ and\ typedefs.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Hence:}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ typedef\ void\ *projCtx;}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Has\ been\ replaced\ by:}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ struct\ projCtx\_t;}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ typedef\ struct\ projCtx\_t\ PJ\_CONTEXT;}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ This\ makes\ it\ possible\ for\ the\ calling\ program\ to\ know\ that\ the}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ data\ type\ exists,\ and\ handle\ pointers\ to\ that\ data\ type}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ without\ having\ any\ idea\ about\ its\ internals.}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ (obviously,\ in\ this\ example,\ struct\ projCtx\_t\ should\ also\ be}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ renamed\ struct\ pj\_ctx\ some\ day,\ but\ for\ backwards\ compatibility}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ it\ remains\ as-\/is\ for\ now).}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ THIRD,\ I\ try\ to\ eliminate\ implicit\ type\ punning.\ Hence\ this\ API}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ introduces\ the\ PJ\_COORD\ union\ data\ type,\ for\ generic\ 4D\ coordinate}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ handling.}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ PJ\_COORD\ makes\ it\ possible\ to\ make\ explicit\ the\ previously\ used}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ "{}implicit\ type\ punning"{},\ where\ a\ XY\ is\ turned\ into\ a\ LP\ by}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ re\#defining\ both\ as\ UV,\ behind\ the\ back\ of\ the\ user.}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ The\ PJ\_COORD\ union\ is\ used\ for\ storing\ 1D,\ 2D,\ 3D\ and\ 4D\ coordinates.}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ The\ bare\ essentials\ API\ presented\ here\ follows\ the\ PROJ.4}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ convention\ of\ sailing\ the\ coordinate\ to\ be\ reprojected,\ up\ on}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ the\ stack\ ("{}call\ by\ value"{}),\ and\ symmetrically\ returning\ the}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ result\ on\ the\ stack.\ Although\ the\ PJ\_COORD\ object\ is\ twice\ as\ large}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ as\ the\ traditional\ XY\ and\ LP\ objects,\ timing\ results\ have\ shown\ the}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ overhead\ to\ be\ very\ reasonable.}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Contexts\ and\ thread\ safety}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ After\ a\ year\ of\ experiments\ (and\ previous\ experience\ from\ the}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ trlib\ transformation\ library)\ it\ has\ become\ clear\ that\ the}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ context\ subsystem\ is\ unavoidable\ in\ a\ multi-\/threaded\ world.}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Hence,\ instead\ of\ hiding\ it\ away,\ we\ move\ it\ into\ the\ limelight,}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ highly\ recommending\ (but\ not\ formally\ requiring)\ the\ bracketing}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ of\ any\ code\ block\ calling\ PROJ.4\ functions\ with\ calls\ to}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ proj\_context\_create(...)/proj\_context\_destroy()}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Legacy\ single\ threaded\ code\ need\ not\ do\ anything,\ but\ *may*}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ implement\ a\ bit\ of\ future\ compatibility\ by\ using\ the\ backward}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ compatible\ call\ proj\_context\_create(0),\ which\ will\ not\ create}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ a\ new\ context,\ but\ simply\ provide\ a\ pointer\ to\ the\ default\ one.}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ See\ proj\_4D\_api\_test.c\ for\ examples\ of\ how\ to\ use\ the\ API.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ *\ Author:\ \ \ Thomas\ Knudsen,\ <thokn@sdfe.dk>}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ Benefitting\ from\ a\ large\ number\ of\ comments\ and\ suggestions}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ by\ (primarily)\ Kristian\ Evers\ and\ Even\ Rouault.}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ ******************************************************************************}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ *\ Copyright\ (c)\ 2016,\ 2017,\ Thomas\ Knudsen\ /\ SDFE}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ *\ Copyright\ (c)\ 2018,\ Even\ Rouault}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ *\ Permission\ is\ hereby\ granted,\ free\ of\ charge,\ to\ any\ person\ obtaining\ a}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ *\ copy\ of\ this\ software\ and\ associated\ documentation\ files\ (the\ "{}Software"{}),}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ *\ to\ deal\ in\ the\ Software\ without\ restriction,\ including\ without\ limitation}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ *\ the\ rights\ to\ use,\ copy,\ modify,\ merge,\ publish,\ distribute,\ sublicense,}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ *\ and/or\ sell\ copies\ of\ the\ Software,\ and\ to\ permit\ persons\ to\ whom\ the}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ *\ Software\ is\ furnished\ to\ do\ so,\ subject\ to\ the\ following\ conditions:}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ *\ The\ above\ copyright\ notice\ and\ this\ permission\ notice\ shall\ be\ included}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ *\ in\ all\ copies\ or\ substantial\ portions\ of\ the\ Software.}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ *\ THE\ SOFTWARE\ IS\ PROVIDED\ "{}AS\ IS"{},\ WITHOUT\ WARRANTY\ OF\ ANY\ KIND,\ EXPRESS}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ *\ OR\ IMPLIED,\ INCLUDING\ BUT\ NOT\ LIMITED\ TO\ THE\ WARRANTIES\ OF\ MERCHANTABILITY,}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ *\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE\ AND\ NONINFRINGEMENT.\ IN\ NO\ COORD\ SHALL}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ *\ THE\ AUTHORS\ OR\ COPYRIGHT\ HOLDERS\ BE\ LIABLE\ FOR\ ANY\ CLAIM,\ DAMAGES\ OR\ OTHER}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ *\ LIABILITY,\ WHETHER\ IN\ AN\ ACTION\ OF\ CONTRACT,\ TORT\ OR\ OTHERWISE,\ ARISING}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ *\ FROM,\ OUT\ OF\ OR\ IN\ CONNECTION\ WITH\ THE\ SOFTWARE\ OR\ THE\ USE\ OR\ OTHER}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ *\ DEALINGS\ IN\ THE\ SOFTWARE.}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ *****************************************************************************/}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#ifndef\ PROJ\_H}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#define\ PROJ\_H}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\#include\ <stddef.h>}\ \ \textcolor{comment}{/*\ For\ size\_t\ */}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#ifdef\ ACCEPT\_USE\_OF\_DEPRECATED\_PROJ\_API\_H}}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\ \ \#error\ "{}The\ proj\_api.h\ header\ has\ been\ removed\ from\ PROJ\ with\ version\ 8.0.0"{}}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#ifdef\ PROJ\_RENAME\_SYMBOLS}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#include\ "{}proj\_symbol\_rename.h"{}}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#include\ "{}vtk\_libproj\_mangle.h"{}}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#include\ "{}vtklibproj\_export.h"{}}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00134\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#ifndef\ PROJ\_DLL}}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\#ifdef\ PROJ\_MSVC\_DLL\_EXPORT}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\#define\ PROJ\_DLL\ \_\_declspec(dllexport)}}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#elif\ defined(PROJ\_MSVC\_DLL\_IMPORT)}}
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#define\ PROJ\_DLL\ \_\_declspec(dllimport)}}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#elif\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#define\ PROJ\_DLL\ \_\_attribute\_\_\ ((visibility("{}default"{})))}}
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#define\ PROJ\_DLL}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#ifdef\ PROJ\_SUPPRESS\_DEPRECATION\_MESSAGE}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\ \ \#define\ PROJ\_DEPRECATED(decl,\ msg)\ \ \ \ \ \ \ \ \ \ \ \ decl}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#elif\ defined(\_\_has\_extension)}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\ \ \#if\ \_\_has\_extension(attribute\_deprecated\_with\_message)}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\ \ \ \ \#define\ PROJ\_DEPRECATED(decl,\ msg)\ \ \ \ \ \ \ \ \ \ decl\ \_\_attribute\_\_\ ((deprecated(msg)))}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\ \ \#elif\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\ \ \ \ \#define\ PROJ\_DEPRECATED(decl,\ msg)\ \ \ \ \ \ \ \ \ \ decl\ \_\_attribute\_\_\ ((deprecated))}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\ \ \#else}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\ \ \ \ \#define\ PROJ\_DEPRECATED(decl,\ msg)\ \ \ \ \ \ \ \ \ \ decl}}
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\ \ \#endif}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#elif\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\ \ \#define\ PROJ\_DEPRECATED(decl,\ msg)\ \ \ \ \ \ \ \ \ \ \ \ decl\ \_\_attribute\_\_\ ((deprecated))}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#elif\ defined(\_MSVC\_VER)}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\ \ \#define\ PROJ\_DEPRECATED(decl,\ msg)\ \ \ \ \ \ \ \ \ \ \ \ \_\_declspec(deprecated(msg))\ decl}}
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\ \ \#define\ PROJ\_DEPRECATED(decl,\ msg)\ \ \ \ \ \ \ \ \ \ \ \ decl}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \textcolor{comment}{/*\ The\ version\ numbers\ should\ be\ updated\ with\ every\ release!\ **/}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\#define\ PROJ\_VERSION\_MAJOR\ 8}}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\#define\ PROJ\_VERSION\_MINOR\ 1}}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{\#define\ PROJ\_VERSION\_PATCH\ 0}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{comment}{/*\ Note:\ the\ following\ 3\ defines\ have\ been\ introduced\ in\ PROJ\ 8.0.1\ */}}
+\DoxyCodeLine{00181\ \textcolor{comment}{/*\ Macro\ to\ compute\ a\ PROJ\ version\ number\ from\ its\ components\ */}}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\#define\ PROJ\_COMPUTE\_VERSION(maj,min,patch)\ ((maj)*10000+(min)*100+(patch))}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{comment}{/*\ Current\ PROJ\ version\ from\ the\ above\ version\ numbers\ */}}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\#define\ PROJ\_VERSION\_NUMBER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{\ \ \ \ PROJ\_COMPUTE\_VERSION(PROJ\_VERSION\_MAJOR,\ PROJ\_VERSION\_MINOR,\ PROJ\_VERSION\_PATCH)}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \textcolor{comment}{/*\ Macro\ that\ returns\ true\ if\ the\ current\ PROJ\ version\ is\ at\ least\ the\ version\ specified\ by\ (maj,min,patch)\ */}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#define\ PROJ\_AT\_LEAST\_VERSION(maj,min,patch)\ \(\backslash\)}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\ \ \ \ (PROJ\_VERSION\_NUMBER\ >=\ PROJ\_COMPUTE\_VERSION(maj,min,patch))}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ vtklibproj\_EXPORT\ \textcolor{keyword}{extern}\ \textcolor{keywordtype}{char}\ \textcolor{keyword}{const}\ pj\_release[];\ \textcolor{comment}{/*\ global\ release\ id\ string\ */}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{comment}{/*\ first\ forward\ declare\ everything\ needed\ */}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \textcolor{comment}{/*\ Data\ type\ for\ generic\ geodetic\ 3D\ data\ plus\ epoch\ information\ */}}
+\DoxyCodeLine{00197\ \textcolor{keyword}{union\ }PJ\_COORD;}
+\DoxyCodeLine{00198\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{union\ }PJ\_COORD\ PJ\_COORD;}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{keyword}{struct\ }PJ\_AREA;}
+\DoxyCodeLine{00201\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_AREA\ PJ\_AREA;}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \textcolor{keyword}{struct\ }P5\_FACTORS\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Common\ designation\ */}}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordtype}{double}\ meridional\_scale;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ h\ */}}
+\DoxyCodeLine{00205\ \ \ \ \ \textcolor{keywordtype}{double}\ parallel\_scale;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ k\ */}}
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{keywordtype}{double}\ areal\_scale;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ s\ */}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keywordtype}{double}\ angular\_distortion;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ omega\ */}}
+\DoxyCodeLine{00209\ \ \ \ \ \textcolor{keywordtype}{double}\ meridian\_parallel\_angle;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ theta-\/prime\ */}}
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keywordtype}{double}\ meridian\_convergence;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ alpha\ */}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \textcolor{keywordtype}{double}\ tissot\_semimajor;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ a\ */}}
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{keywordtype}{double}\ tissot\_semiminor;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ b\ */}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{keywordtype}{double}\ dx\_dlam,\ dx\_dphi;}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{keywordtype}{double}\ dy\_dlam,\ dy\_dphi;}
+\DoxyCodeLine{00217\ \};}
+\DoxyCodeLine{00218\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }P5\_FACTORS\ PJ\_FACTORS;}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \textcolor{comment}{/*\ Data\ type\ for\ projection/transformation\ information\ */}}
+\DoxyCodeLine{00221\ \textcolor{keyword}{struct\ }PJconsts;}
+\DoxyCodeLine{00222\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJconsts\ PJ;\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ the\ PJ\ object\ herself\ */}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{comment}{/*\ Data\ type\ for\ library\ level\ information\ */}}
+\DoxyCodeLine{00225\ \textcolor{keyword}{struct\ }PJ\_INFO;}
+\DoxyCodeLine{00226\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_INFO\ PJ\_INFO;}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \textcolor{keyword}{struct\ }PJ\_PROJ\_INFO;}
+\DoxyCodeLine{00229\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_PROJ\_INFO\ PJ\_PROJ\_INFO;}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \textcolor{keyword}{struct\ }PJ\_GRID\_INFO;}
+\DoxyCodeLine{00232\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_GRID\_INFO\ PJ\_GRID\_INFO;}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{keyword}{struct\ }PJ\_INIT\_INFO;}
+\DoxyCodeLine{00235\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_INIT\_INFO\ PJ\_INIT\_INFO;}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{comment}{/*\ Data\ types\ for\ list\ of\ operations,\ ellipsoids,\ datums\ and\ units\ used\ in\ PROJ.4\ */}}
+\DoxyCodeLine{00238\ \textcolor{keyword}{struct\ }PJ\_LIST\ \{}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *id;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ projection\ keyword\ */}}
+\DoxyCodeLine{00240\ \ \ \ \ PJ\ \ \ \ \ \ \ \ \ \ *(*proj)(PJ\ *);\ \ \ \ \ \textcolor{comment}{/*\ projection\ entry\ point\ */}}
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *\ \textcolor{keyword}{const}\ *descr;\ \ \ \ \ \textcolor{comment}{/*\ description\ text\ */}}
+\DoxyCodeLine{00242\ \};}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_LIST\ PJ\_OPERATIONS;}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \textcolor{keyword}{struct\ }PJ\_ELLPS\ \{}
+\DoxyCodeLine{00247\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *id;\ \ \ \ \textcolor{comment}{/*\ ellipse\ keyword\ name\ */}}
+\DoxyCodeLine{00248\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *major;\ \textcolor{comment}{/*\ a=\ value\ */}}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *ell;\ \ \ \textcolor{comment}{/*\ elliptical\ parameter\ */}}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *name;\ \ \textcolor{comment}{/*\ comments\ */}}
+\DoxyCodeLine{00251\ \};}
+\DoxyCodeLine{00252\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_ELLPS\ PJ\_ELLPS;}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \textcolor{keyword}{struct\ }PJ\_UNITS\ \{}
+\DoxyCodeLine{00255\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *id;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ units\ keyword\ */}}
+\DoxyCodeLine{00256\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *to\_meter;\ \ \textcolor{comment}{/*\ multiply\ by\ value\ to\ get\ meters\ */}}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *name;\ \ \ \ \ \ \textcolor{comment}{/*\ comments\ */}}
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordtype}{double}\ \ \ \ \ \ factor;\ \ \ \ \ \textcolor{comment}{/*\ to\_meter\ factor\ in\ actual\ numbers\ */}}
+\DoxyCodeLine{00259\ \};}
+\DoxyCodeLine{00260\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_UNITS\ PJ\_UNITS;}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{keyword}{struct\ }PJ\_PRIME\_MERIDIANS\ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *id;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ prime\ meridian\ keyword\ */}}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *defn;\ \ \ \ \ \ \textcolor{comment}{/*\ offset\ from\ greenwich\ in\ DMS\ format.\ */}}
+\DoxyCodeLine{00265\ \};}
+\DoxyCodeLine{00266\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_PRIME\_MERIDIANS\ PJ\_PRIME\_MERIDIANS;}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \textcolor{comment}{/*\ Geodetic,\ mostly\ spatiotemporal\ coordinate\ types\ */}}
+\DoxyCodeLine{00270\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ \ \ x,\ \ \ y,\ \ z,\ t;\ \}\ \ PJ\_XYZT;}
+\DoxyCodeLine{00271\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ \ \ u,\ \ \ v,\ \ w,\ t;\ \}\ \ PJ\_UVWT;}
+\DoxyCodeLine{00272\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ lam,\ phi,\ \ z,\ t;\ \}\ \ PJ\_LPZT;}
+\DoxyCodeLine{00273\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ o,\ p,\ k;\ \}\ \ \ \ \ \ \ \ \ \ PJ\_OPK;\ \ \textcolor{comment}{/*\ Rotations:\ omega,\ phi,\ kappa\ */}}
+\DoxyCodeLine{00274\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ e,\ n,\ u;\ \}\ \ \ \ \ \ \ \ \ \ PJ\_ENU;\ \ \textcolor{comment}{/*\ East,\ North,\ Up\ */}}
+\DoxyCodeLine{00275\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ s,\ a1,\ a2;\ \}\ \ \ \ \ \ \ \ PJ\_GEOD;\ \textcolor{comment}{/*\ Geodesic\ length,\ fwd\ azi,\ rev\ azi\ */}}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \textcolor{comment}{/*\ Classic\ proj.4\ pair/triplet\ types\ -\/\ moved\ into\ the\ PJ\_\ name\ space\ */}}
+\DoxyCodeLine{00278\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ \ \ u,\ \ \ v;\ \}\ \ PJ\_UV;}
+\DoxyCodeLine{00279\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ \ \ x,\ \ \ y;\ \}\ \ PJ\_XY;}
+\DoxyCodeLine{00280\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ lam,\ phi;\ \}\ \ PJ\_LP;}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ \ \ x,\ \ \ y,\ \ z;\ \}\ \ PJ\_XYZ;}
+\DoxyCodeLine{00283\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ \ \ u,\ \ \ v,\ \ w;\ \}\ \ PJ\_UVW;}
+\DoxyCodeLine{00284\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{\ \textcolor{keywordtype}{double}\ lam,\ phi,\ \ z;\ \}\ \ PJ\_LPZ;}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \textcolor{comment}{/*\ Avoid\ preprocessor\ renaming\ and\ implicit\ type-\/punning:\ Use\ a\ union\ to\ make\ it\ explicit\ */}}
+\DoxyCodeLine{00288\ \textcolor{keyword}{union\ }PJ\_COORD\ \{}
+\DoxyCodeLine{00289\ \ \ \ \ \ \textcolor{keywordtype}{double}\ v[4];\ \ \ \textcolor{comment}{/*\ First\ and\ foremost,\ it\ really\ is\ "{}just\ 4\ numbers\ in\ a\ vector"{}\ */}}
+\DoxyCodeLine{00290\ \ \ \ \ PJ\_XYZT\ xyzt;}
+\DoxyCodeLine{00291\ \ \ \ \ PJ\_UVWT\ uvwt;}
+\DoxyCodeLine{00292\ \ \ \ \ PJ\_LPZT\ lpzt;}
+\DoxyCodeLine{00293\ \ \ \ \ PJ\_GEOD\ geod;}
+\DoxyCodeLine{00294\ \ \ \ \ \ PJ\_OPK\ opk;}
+\DoxyCodeLine{00295\ \ \ \ \ \ PJ\_ENU\ enu;}
+\DoxyCodeLine{00296\ \ \ \ \ \ PJ\_XYZ\ xyz;}
+\DoxyCodeLine{00297\ \ \ \ \ \ PJ\_UVW\ uvw;}
+\DoxyCodeLine{00298\ \ \ \ \ \ PJ\_LPZ\ lpz;}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ PJ\_XY\ xy;}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ PJ\_UV\ uv;}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ PJ\_LP\ lp;}
+\DoxyCodeLine{00302\ \};}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{keyword}{struct\ }PJ\_INFO\ \{}
+\DoxyCodeLine{00306\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ major;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Major\ release\ number\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ minor;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Minor\ release\ number\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00308\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ patch;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Patch\ level\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00309\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *release;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Release\ info.\ Version\ +\ date\ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00310\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *version;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Full\ version\ number\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *searchpath;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Paths\ where\ init\ and\ grid\ files\ are\ \ */}}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ looked\ for.\ Paths\ are\ separated\ by\ \ \ */}}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ semi-\/colons\ on\ Windows,\ and\ colons\ \ \ */}}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ on\ non-\/Windows\ platforms.\ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ \textcolor{keyword}{const}\ *paths;}
+\DoxyCodeLine{00316\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ path\_count;}
+\DoxyCodeLine{00317\ \};}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00319\ \textcolor{keyword}{struct\ }PJ\_PROJ\_INFO\ \{}
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *id;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Name\ of\ the\ projection\ in\ question\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00321\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *description;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Description\ of\ the\ projection\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00322\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *definition;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Projection\ definition\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ has\_inverse;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ 1\ if\ an\ inverse\ mapping\ exists,\ 0\ otherwise\ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00324\ \ \ \ \ \textcolor{keywordtype}{double}\ \ \ \ \ \ accuracy;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Expected\ accuracy\ of\ the\ transformation.\ -\/1\ if\ unknown.\ \ */}}
+\DoxyCodeLine{00325\ \};}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \textcolor{keyword}{struct\ }PJ\_GRID\_INFO\ \{}
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ gridname[32];\ \ \ \ \ \ \ \textcolor{comment}{/*\ name\ of\ grid\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00329\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ filename[260];\ \ \ \ \ \ \textcolor{comment}{/*\ full\ path\ to\ grid\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00330\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ format[8];\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ file\ format\ of\ grid\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00331\ \ \ \ \ PJ\_LP\ \ \ \ \ \ \ lowerleft;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Coordinates\ of\ lower\ left\ corner\ \ \ \ \ */}}
+\DoxyCodeLine{00332\ \ \ \ \ PJ\_LP\ \ \ \ \ \ \ upperright;\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Coordinates\ of\ upper\ right\ corner\ \ \ \ */}}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ n\_lon,\ n\_lat;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Grid\ size\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00334\ \ \ \ \ \textcolor{keywordtype}{double}\ \ \ \ \ \ cs\_lon,\ cs\_lat;\ \ \ \ \ \textcolor{comment}{/*\ Cell\ size\ of\ grid\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00335\ \};}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \textcolor{keyword}{struct\ }PJ\_INIT\_INFO\ \{}
+\DoxyCodeLine{00338\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ name[32];\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ name\ of\ init\ file\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00339\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ filename[260];\ \ \ \ \ \ \textcolor{comment}{/*\ full\ path\ to\ the\ init\ file.\ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00340\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ version[32];\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ version\ of\ the\ init\ file\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00341\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ origin[32];\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ origin\ of\ the\ file,\ e.g.\ EPSG\ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00342\ \ \ \ \ \textcolor{keywordtype}{char}\ \ \ \ \ \ \ \ lastupdate[16];\ \ \ \ \ \textcolor{comment}{/*\ Date\ of\ last\ update\ in\ YYYY-\/MM-\/DD\ format\ */}}
+\DoxyCodeLine{00343\ \};}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ PJ\_LOG\_LEVEL\ \{}
+\DoxyCodeLine{00346\ \ \ \ \ PJ\_LOG\_NONE\ \ =\ 0,}
+\DoxyCodeLine{00347\ \ \ \ \ PJ\_LOG\_ERROR\ =\ 1,}
+\DoxyCodeLine{00348\ \ \ \ \ PJ\_LOG\_DEBUG\ =\ 2,}
+\DoxyCodeLine{00349\ \ \ \ \ PJ\_LOG\_TRACE\ =\ 3,}
+\DoxyCodeLine{00350\ \ \ \ \ PJ\_LOG\_TELL\ \ =\ 4,}
+\DoxyCodeLine{00351\ \ \ \ \ PJ\_LOG\_DEBUG\_MAJOR\ =\ 2,\ \textcolor{comment}{/*\ for\ proj\_api.h\ compatibility\ */}}
+\DoxyCodeLine{00352\ \ \ \ \ PJ\_LOG\_DEBUG\_MINOR\ =\ 3\ \ \textcolor{comment}{/*\ for\ proj\_api.h\ compatibility\ */}}
+\DoxyCodeLine{00353\ \}\ PJ\_LOG\_LEVEL;}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{keyword}{typedef}\ void\ (*PJ\_LOG\_FUNCTION)(\textcolor{keywordtype}{void}\ *,\ int,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *);}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \textcolor{comment}{/*\ The\ context\ type\ -\/\ properly\ namespaced\ synonym\ for\ pj\_ctx\ */}}
+\DoxyCodeLine{00359\ \textcolor{keyword}{struct\ }pj\_ctx;}
+\DoxyCodeLine{00360\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }pj\_ctx\ PJ\_CONTEXT;}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \textcolor{comment}{/*\ A\ P\ I\ */}}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \textcolor{comment}{/*\ Functionality\ for\ handling\ thread\ contexts\ */}}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00373\ \textcolor{preprocessor}{\#define\ PJ\_DEFAULT\_CTX\ nullptr}}
+\DoxyCodeLine{00374\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00375\ \textcolor{preprocessor}{\#define\ PJ\_DEFAULT\_CTX\ 0}}
+\DoxyCodeLine{00376\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00377\ vtklibproj\_EXPORT\ PJ\_CONTEXT\ *proj\_context\_create\ (\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00378\ vtklibproj\_EXPORT\ PJ\_CONTEXT\ *proj\_context\_destroy\ (PJ\_CONTEXT\ *ctx);}
+\DoxyCodeLine{00379\ vtklibproj\_EXPORT\ PJ\_CONTEXT\ *proj\_context\_clone\ (PJ\_CONTEXT\ *ctx);}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00382\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ (*proj\_file\_finder)\ (PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_context\_set\_file\_finder(PJ\_CONTEXT\ *ctx,\ proj\_file\_finder\ finder,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00385\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_context\_set\_search\_paths(PJ\_CONTEXT\ *ctx,\ \textcolor{keywordtype}{int}\ count\_paths,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}*\ paths);}
+\DoxyCodeLine{00386\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_context\_set\_ca\_bundle\_path(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *path);}
+\DoxyCodeLine{00387\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_context\_use\_proj4\_init\_rules(PJ\_CONTEXT\ *ctx,\ \textcolor{keywordtype}{int}\ enable);}
+\DoxyCodeLine{00388\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_context\_get\_use\_proj4\_init\_rules(PJ\_CONTEXT\ *ctx,\ \textcolor{keywordtype}{int}\ from\_legacy\_code\_path);}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00394\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{proj_8h_a576ca78c0ce0c613cc360f9c0843f788}{PROJ\_FILE\_HANDLE}}\ \doxymbox{\hyperlink{proj_8h_a576ca78c0ce0c613cc360f9c0843f788}{PROJ\_FILE\_HANDLE}};}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00397\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{proj_8h_ad466f4e5535c25a803fa10f5ec47f997}{PROJ\_OPEN\_ACCESS}}}
+\DoxyCodeLine{00398\ \{}
+\DoxyCodeLine{00400\ \ \ \ \ \doxymbox{\hyperlink{proj_8h_ad466f4e5535c25a803fa10f5ec47f997af2ba80849abee993eb10a6ffe8876ae7}{PROJ\_OPEN\_ACCESS\_READ\_ONLY}},}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00403\ \ \ \ \ \doxymbox{\hyperlink{proj_8h_ad466f4e5535c25a803fa10f5ec47f997a81914ec3374ae193ca390645ebcc909d}{PROJ\_OPEN\_ACCESS\_READ\_UPDATE}},}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00406\ \ \ \ \ \doxymbox{\hyperlink{proj_8h_ad466f4e5535c25a803fa10f5ec47f997ad0d7748c3190392d10e4a6209b64f470}{PROJ\_OPEN\_ACCESS\_CREATE}}}
+\DoxyCodeLine{00407\ \}\ \doxymbox{\hyperlink{proj_8h_ad466f4e5535c25a803fa10f5ec47f997}{PROJ\_OPEN\_ACCESS}};}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00410\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i}{PROJ\_FILE\_API}}}
+\DoxyCodeLine{00411\ \{}
+\DoxyCodeLine{00413\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_a4f891168c59c1f6ba6a19d6c2c878b02}{version}};}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00416\ \ \ \ \ \doxymbox{\hyperlink{proj_8h_a576ca78c0ce0c613cc360f9c0843f788}{PROJ\_FILE\_HANDLE}}*\ (*open\_cbk)(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,\ \doxymbox{\hyperlink{proj_8h_ad466f4e5535c25a803fa10f5ec47f997}{PROJ\_OPEN\_ACCESS}}\ access,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00419\ \ \ \ \ size\_t\ \ \ \ \ \ \ \ \ \ \ \ (*\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_a91768ec13104c0db9597529960355205}{read\_cbk}})(PJ\_CONTEXT\ *ctx,\ \doxymbox{\hyperlink{proj_8h_a576ca78c0ce0c613cc360f9c0843f788}{PROJ\_FILE\_HANDLE}}*,\ \textcolor{keywordtype}{void}*\ buffer,\ \textcolor{keywordtype}{size\_t}\ sizeBytes,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00422\ \ \ \ \ size\_t\ \ \ \ \ \ \ \ \ \ \ \ (*\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_a40873c451d9013b4384b3eb46a7088a5}{write\_cbk}})(PJ\_CONTEXT\ *ctx,\ \doxymbox{\hyperlink{proj_8h_a576ca78c0ce0c613cc360f9c0843f788}{PROJ\_FILE\_HANDLE}}*,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ buffer,\ \textcolor{keywordtype}{size\_t}\ sizeBytes,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00425\ \ \ \ \ int\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (*\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_a88cf4a20f3b76d79ff08b4cc338aee41}{seek\_cbk}})(PJ\_CONTEXT\ *ctx,\ \doxymbox{\hyperlink{proj_8h_a576ca78c0ce0c613cc360f9c0843f788}{PROJ\_FILE\_HANDLE}}*,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ offset,\ \textcolor{keywordtype}{int}\ whence,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00428\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ long\ (*\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_a1dc41a01e0aed13b5ba3ce17da6df46c}{tell\_cbk}})(PJ\_CONTEXT\ *ctx,\ \doxymbox{\hyperlink{proj_8h_a576ca78c0ce0c613cc360f9c0843f788}{PROJ\_FILE\_HANDLE}}*,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00429\ }
+\DoxyCodeLine{00431\ \ \ \ \ void\ \ \ \ \ \ \ \ \ \ \ \ \ \ (*\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_a7e4b5d429bdcc6c51dd593f8ac9b4f6f}{close\_cbk}})(PJ\_CONTEXT\ *ctx,\ \doxymbox{\hyperlink{proj_8h_a576ca78c0ce0c613cc360f9c0843f788}{PROJ\_FILE\_HANDLE}}*,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00434\ \ \ \ \ int\ (*\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_a181d1d807269d5b4d2bc487394be8bc3}{exists\_cbk}})(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00435\ }
+\DoxyCodeLine{00437\ \ \ \ \ int\ (*\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_aaa6b829762cc60b964af38afb66ebbf5}{mkdir\_cbk}})(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00440\ \ \ \ \ int\ (*\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_aa0de2fa05e1698229ca7537c3acafd79}{unlink\_cbk}})(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00443\ \ \ \ \ int\ (*\doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i_a58b16e53be3f5d1d0eec61b57e5c0bc5}{rename\_cbk}})(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *oldPath,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *newPath,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00444\ \}\ \doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i}{PROJ\_FILE\_API}};}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_context\_set\_fileapi(}
+\DoxyCodeLine{00447\ \ \ \ \ PJ\_CONTEXT*\ ctx,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_p_r_o_j___f_i_l_e___a_p_i}{PROJ\_FILE\_API}}*\ fileapi,\ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00448\ }
+\DoxyCodeLine{00449\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_context\_set\_sqlite3\_vfs\_name(PJ\_CONTEXT*\ ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name);}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00453\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{proj_8h_a662f9a829bc5d35df6729ce7d4fecb04}{PROJ\_NETWORK\_HANDLE}}\ \doxymbox{\hyperlink{proj_8h_a662f9a829bc5d35df6729ce7d4fecb04}{PROJ\_NETWORK\_HANDLE}};}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00470\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{proj_8h_a662f9a829bc5d35df6729ce7d4fecb04}{PROJ\_NETWORK\_HANDLE}}*\ (*proj\_network\_open\_cbk\_type)(}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT*\ ctx,}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ url,}
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ offset,}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ size\_to\_read,}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ buffer,}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}*\ out\_size\_read,}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ error\_string\_max\_size,}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}*\ out\_error\_string,}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00482\ \textcolor{keyword}{typedef}\ void\ (*\doxymbox{\hyperlink{proj_8h_aaf732c562f9aff74e49302f1d15e616b}{proj\_network\_close\_cbk\_type}})(PJ\_CONTEXT*\ ctx,}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{proj_8h_a662f9a829bc5d35df6729ce7d4fecb04}{PROJ\_NETWORK\_HANDLE}}*\ handle,}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00485\ }
+\DoxyCodeLine{00487\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ (*proj\_network\_get\_header\_value\_cbk\_type)(}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT*\ ctx,}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{proj_8h_a662f9a829bc5d35df6729ce7d4fecb04}{PROJ\_NETWORK\_HANDLE}}*\ handle,}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ header\_name,}
+\DoxyCodeLine{00491\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00506\ \textcolor{keyword}{typedef}\ size\_t\ (*\doxymbox{\hyperlink{proj_8h_a560064e2b97a70a24a0d420c7881ade1}{proj\_network\_read\_range\_type}})(}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT*\ ctx,}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{proj_8h_a662f9a829bc5d35df6729ce7d4fecb04}{PROJ\_NETWORK\_HANDLE}}*\ handle,}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}\ offset,}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ size\_to\_read,}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ buffer,}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ error\_string\_max\_size,}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}*\ out\_error\_string,}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_context\_set\_network\_callbacks(}
+\DoxyCodeLine{00517\ \ \ \ \ PJ\_CONTEXT*\ ctx,}
+\DoxyCodeLine{00518\ \ \ \ \ \doxymbox{\hyperlink{proj_8h_acb853fa9db80d0d8d898a485e8376cc5}{proj\_network\_open\_cbk\_type}}\ open\_cbk,}
+\DoxyCodeLine{00519\ \ \ \ \ \doxymbox{\hyperlink{proj_8h_aaf732c562f9aff74e49302f1d15e616b}{proj\_network\_close\_cbk\_type}}\ close\_cbk,}
+\DoxyCodeLine{00520\ \ \ \ \ \doxymbox{\hyperlink{proj_8h_a5adb8137f1e0b8ccb9dde5aca10ce2d0}{proj\_network\_get\_header\_value\_cbk\_type}}\ get\_header\_value\_cbk,}
+\DoxyCodeLine{00521\ \ \ \ \ \doxymbox{\hyperlink{proj_8h_a560064e2b97a70a24a0d420c7881ade1}{proj\_network\_read\_range\_type}}\ read\_range\_cbk,}
+\DoxyCodeLine{00522\ \ \ \ \ \textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00524\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_context\_set\_enable\_network(PJ\_CONTEXT*\ ctx,}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ enabled);}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_context\_is\_network\_enabled(PJ\_CONTEXT*\ ctx);}
+\DoxyCodeLine{00528\ }
+\DoxyCodeLine{00529\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_context\_set\_url\_endpoint(PJ\_CONTEXT*\ ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ url);}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00531\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *proj\_context\_get\_url\_endpoint(PJ\_CONTEXT*\ ctx);}
+\DoxyCodeLine{00532\ }
+\DoxyCodeLine{00533\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *proj\_context\_get\_user\_writable\_directory(PJ\_CONTEXT\ *ctx,\ \textcolor{keywordtype}{int}\ create);}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_grid\_cache\_set\_enable(PJ\_CONTEXT*\ ctx,\ \textcolor{keywordtype}{int}\ enabled);}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_grid\_cache\_set\_filename(PJ\_CONTEXT*\ ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ fullname);}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_grid\_cache\_set\_max\_size(PJ\_CONTEXT*\ ctx,\ \textcolor{keywordtype}{int}\ max\_size\_MB);}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00541\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_grid\_cache\_set\_ttl(PJ\_CONTEXT*\ ctx,\ \textcolor{keywordtype}{int}\ ttl\_seconds);}
+\DoxyCodeLine{00542\ }
+\DoxyCodeLine{00543\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_grid\_cache\_clear(PJ\_CONTEXT*\ ctx);}
+\DoxyCodeLine{00544\ }
+\DoxyCodeLine{00545\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_is\_download\_needed(PJ\_CONTEXT*\ ctx,}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ url\_or\_filename,}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ ignore\_ttl\_setting);}
+\DoxyCodeLine{00548\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_download\_file(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *url\_or\_filename,}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ ignore\_ttl\_setting,}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ (*progress\_cbk)(PJ\_CONTEXT\ *,\ \textcolor{keywordtype}{double}\ pct,}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *user\_data),}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *user\_data);}
+\DoxyCodeLine{00553\ }
+\DoxyCodeLine{00555\ }
+\DoxyCodeLine{00556\ \textcolor{comment}{/*\ Manage\ the\ transformation\ definition\ object\ PJ\ */}}
+\DoxyCodeLine{00557\ vtklibproj\_EXPORT\ PJ\ *proj\_create\ (PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *definition);}
+\DoxyCodeLine{00558\ vtklibproj\_EXPORT\ PJ\ *proj\_create\_argv\ (PJ\_CONTEXT\ *ctx,\ \textcolor{keywordtype}{int}\ argc,\ \textcolor{keywordtype}{char}\ **argv);}
+\DoxyCodeLine{00559\ vtklibproj\_EXPORT\ PJ\ *proj\_create\_crs\_to\_crs(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *source\_crs,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *target\_crs,\ PJ\_AREA\ *area);}
+\DoxyCodeLine{00560\ vtklibproj\_EXPORT\ PJ\ *proj\_create\_crs\_to\_crs\_from\_pj(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *source\_crs,}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *target\_crs,}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_AREA\ *area,}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{00566\ vtklibproj\_EXPORT\ PJ\ *\doxymbox{\hyperlink{proj_8h_a769748adf593a2b213d85a5b54cc9fbb}{proj\_normalize\_for\_visualization}}(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ*\ obj);}
+\DoxyCodeLine{00568\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_assign\_context(PJ*\ pj,\ PJ\_CONTEXT*\ ctx);}
+\DoxyCodeLine{00569\ vtklibproj\_EXPORT\ PJ\ *proj\_destroy\ (PJ\ *P);}
+\DoxyCodeLine{00570\ }
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00572\ vtklibproj\_EXPORT\ PJ\_AREA\ *proj\_area\_create(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00573\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_area\_set\_bbox(PJ\_AREA\ *area,}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ west\_lon\_degree,}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ south\_lat\_degree,}
+\DoxyCodeLine{00576\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ east\_lon\_degree,}
+\DoxyCodeLine{00577\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ north\_lat\_degree);}
+\DoxyCodeLine{00578\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_area\_destroy(PJ\_AREA*\ area);}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ \textcolor{comment}{/*\ Apply\ transformation\ to\ observation\ -\/\ in\ forward\ or\ inverse\ direction\ */}}
+\DoxyCodeLine{00581\ \textcolor{keyword}{enum}\ PJ\_DIRECTION\ \{}
+\DoxyCodeLine{00582\ \ \ \ \ PJ\_FWD\ \ \ =\ \ 1,\ \ \ \textcolor{comment}{/*\ Forward\ \ \ \ */}}
+\DoxyCodeLine{00583\ \ \ \ \ PJ\_IDENT\ =\ \ 0,\ \ \ \textcolor{comment}{/*\ Do\ nothing\ */}}
+\DoxyCodeLine{00584\ \ \ \ \ PJ\_INV\ \ \ =\ -\/1\ \ \ \ \textcolor{comment}{/*\ Inverse\ \ \ \ */}}
+\DoxyCodeLine{00585\ \};}
+\DoxyCodeLine{00586\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ PJ\_DIRECTION\ PJ\_DIRECTION;}
+\DoxyCodeLine{00587\ }
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_angular\_input\ (PJ\ *P,\ \textcolor{keyword}{enum}\ PJ\_DIRECTION\ dir);}
+\DoxyCodeLine{00590\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_angular\_output\ (PJ\ *P,\ \textcolor{keyword}{enum}\ PJ\_DIRECTION\ dir);}
+\DoxyCodeLine{00591\ }
+\DoxyCodeLine{00592\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_degree\_input\ (PJ\ *P,\ \textcolor{keyword}{enum}\ PJ\_DIRECTION\ dir);}
+\DoxyCodeLine{00593\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_degree\_output\ (PJ\ *P,\ \textcolor{keyword}{enum}\ PJ\_DIRECTION\ dir);}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ vtklibproj\_EXPORT\ PJ\_COORD\ proj\_trans\ (PJ\ *P,\ PJ\_DIRECTION\ direction,\ PJ\_COORD\ coord);}
+\DoxyCodeLine{00596\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_trans\_array\ (PJ\ *P,\ PJ\_DIRECTION\ direction,\ \textcolor{keywordtype}{size\_t}\ n,\ PJ\_COORD\ *coord);}
+\DoxyCodeLine{00597\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{size\_t}\ proj\_trans\_generic\ (}
+\DoxyCodeLine{00598\ \ \ \ \ PJ\ *P,}
+\DoxyCodeLine{00599\ \ \ \ \ PJ\_DIRECTION\ direction,}
+\DoxyCodeLine{00600\ \ \ \ \ \textcolor{keywordtype}{double}\ *x,\ \textcolor{keywordtype}{size\_t}\ sx,\ \textcolor{keywordtype}{size\_t}\ nx,}
+\DoxyCodeLine{00601\ \ \ \ \ \textcolor{keywordtype}{double}\ *y,\ \textcolor{keywordtype}{size\_t}\ sy,\ \textcolor{keywordtype}{size\_t}\ ny,}
+\DoxyCodeLine{00602\ \ \ \ \ \textcolor{keywordtype}{double}\ *z,\ \textcolor{keywordtype}{size\_t}\ sz,\ \textcolor{keywordtype}{size\_t}\ nz,}
+\DoxyCodeLine{00603\ \ \ \ \ \textcolor{keywordtype}{double}\ *t,\ \textcolor{keywordtype}{size\_t}\ st,\ \textcolor{keywordtype}{size\_t}\ nt}
+\DoxyCodeLine{00604\ );}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ }
+\DoxyCodeLine{00607\ \textcolor{comment}{/*\ Initializers\ */}}
+\DoxyCodeLine{00608\ vtklibproj\_EXPORT\ PJ\_COORD\ proj\_coord\ (\textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y,\ \textcolor{keywordtype}{double}\ z,\ \textcolor{keywordtype}{double}\ t);}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00610\ \textcolor{comment}{/*\ Measure\ internal\ consistency\ -\/\ in\ forward\ or\ inverse\ direction\ */}}
+\DoxyCodeLine{00611\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_roundtrip\ (PJ\ *P,\ PJ\_DIRECTION\ direction,\ \textcolor{keywordtype}{int}\ n,\ PJ\_COORD\ *coord);}
+\DoxyCodeLine{00612\ }
+\DoxyCodeLine{00613\ \textcolor{comment}{/*\ Geodesic\ distance\ between\ two\ points\ with\ angular\ 2D\ coordinates\ */}}
+\DoxyCodeLine{00614\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_lp\_dist\ (\textcolor{keyword}{const}\ PJ\ *P,\ PJ\_COORD\ a,\ PJ\_COORD\ b);}
+\DoxyCodeLine{00615\ }
+\DoxyCodeLine{00616\ \textcolor{comment}{/*\ The\ geodesic\ distance\ AND\ the\ vertical\ offset\ */}}
+\DoxyCodeLine{00617\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_lpz\_dist\ (\textcolor{keyword}{const}\ PJ\ *P,\ PJ\_COORD\ a,\ PJ\_COORD\ b);}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \textcolor{comment}{/*\ Euclidean\ distance\ between\ two\ points\ with\ linear\ 2D\ coordinates\ */}}
+\DoxyCodeLine{00620\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_xy\_dist\ (PJ\_COORD\ a,\ PJ\_COORD\ b);}
+\DoxyCodeLine{00621\ }
+\DoxyCodeLine{00622\ \textcolor{comment}{/*\ Euclidean\ distance\ between\ two\ points\ with\ linear\ 3D\ coordinates\ */}}
+\DoxyCodeLine{00623\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_xyz\_dist\ (PJ\_COORD\ a,\ PJ\_COORD\ b);}
+\DoxyCodeLine{00624\ }
+\DoxyCodeLine{00625\ \textcolor{comment}{/*\ Geodesic\ distance\ (in\ meter)\ +\ fwd\ and\ rev\ azimuth\ between\ two\ points\ on\ the\ ellipsoid\ */}}
+\DoxyCodeLine{00626\ vtklibproj\_EXPORT\ PJ\_COORD\ proj\_geod\ (\textcolor{keyword}{const}\ PJ\ *P,\ PJ\_COORD\ a,\ PJ\_COORD\ b);}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \textcolor{comment}{/*\ PROJ\ error\ codes\ */}}
+\DoxyCodeLine{00629\ }
+\DoxyCodeLine{00635\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_INVALID\_OP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1024\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ other/unspecified\ error\ related\ to\ coordinate\ operation\ initialization\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00636\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_INVALID\_OP\_WRONG\_SYNTAX\ \ \ \ \ \ \ \ \ \ \ \ \ \ (PROJ\_ERR\_INVALID\_OP+1)\ \ \ \ \ }\textcolor{comment}{/*\ invalid\ pipeline\ structure,\ missing\ +proj\ argument,\ etc\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00637\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_INVALID\_OP\_MISSING\_ARG\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (PROJ\_ERR\_INVALID\_OP+2)\ \ \ \ \ }\textcolor{comment}{/*\ missing\ required\ operation\ parameter\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00638\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_INVALID\_OP\_ILLEGAL\_ARG\_VALUE\ \ \ \ \ \ \ \ \ (PROJ\_ERR\_INVALID\_OP+3)\ \ \ \ \ }\textcolor{comment}{/*\ one\ of\ the\ operation\ parameter\ has\ an\ illegal\ value\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00639\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_INVALID\_OP\_MUTUALLY\_EXCLUSIVE\_ARGS\ \ \ (PROJ\_ERR\_INVALID\_OP+4)\ \ \ \ \ }\textcolor{comment}{/*\ mutually\ exclusive\ arguments\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00640\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_INVALID\_OP\_FILE\_NOT\_FOUND\_OR\_INVALID\ (PROJ\_ERR\_INVALID\_OP+5)\ \ \ \ \ }\textcolor{comment}{/*\ file\ not\ found\ (particular\ case\ of\ PROJ\_ERR\_INVALID\_OP\_ILLEGAL\_ARG\_VALUE)\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00641\ }
+\DoxyCodeLine{00643\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_COORD\_TRANSFM\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ other\ error\ related\ to\ coordinate\ transformation\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00644\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_COORD\_TRANSFM\_INVALID\_COORD\ \ \ \ \ \ \ \ \ \ \ \ \ (PROJ\_ERR\_COORD\_TRANSFM+1)\ \ \ \ \ }\textcolor{comment}{/*\ for\ e.g\ lat\ >\ 90deg\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00645\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_COORD\_TRANSFM\_OUTSIDE\_PROJECTION\_DOMAIN\ (PROJ\_ERR\_COORD\_TRANSFM+2)\ \ \ \ \ }\textcolor{comment}{/*\ coordinate\ is\ outside\ of\ the\ projection\ domain.\ e.g\ approximate\ mercator\ with\ |longitude\ -\/\ lon\_0|\ >\ 90deg,\ or\ iterative\ convergence\ method\ failed\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00646\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_COORD\_TRANSFM\_NO\_OPERATION\ \ \ \ \ \ \ \ \ \ \ \ \ \ (PROJ\_ERR\_COORD\_TRANSFM+3)\ \ \ \ \ }\textcolor{comment}{/*\ no\ operation\ found,\ e.g\ if\ no\ match\ the\ required\ accuracy,\ or\ if\ ballpark\ transformations\ were\ asked\ to\ not\ be\ used\ and\ they\ would\ be\ only\ such\ candidate\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00647\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_COORD\_TRANSFM\_OUTSIDE\_GRID\ \ \ \ \ \ \ \ \ \ \ \ \ \ (PROJ\_ERR\_COORD\_TRANSFM+4)\ \ \ \ \ }\textcolor{comment}{/*\ point\ to\ transform\ falls\ outside\ grid\ or\ subgrid\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00648\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_COORD\_TRANSFM\_GRID\_AT\_NODATA\ \ \ \ \ \ \ \ \ \ \ \ (PROJ\_ERR\_COORD\_TRANSFM+5)\ \ \ \ \ }\textcolor{comment}{/*\ point\ to\ transform\ falls\ in\ a\ grid\ cell\ that\ evaluates\ to\ nodata\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00649\ }
+\DoxyCodeLine{00651\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_OTHER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4096}}
+\DoxyCodeLine{00652\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_OTHER\_API\_MISUSE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (PROJ\_ERR\_OTHER+1)\ \ \ \ \ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ error\ related\ to\ a\ misuse\ of\ PROJ\ API\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00653\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_OTHER\_NO\_INVERSE\_OP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (PROJ\_ERR\_OTHER+2)\ \ \ \ \ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ no\ inverse\ method\ available\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00654\ \textcolor{preprocessor}{\#define\ PROJ\_ERR\_OTHER\_NETWORK\_ERROR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (PROJ\_ERR\_OTHER+3)\ \ \ \ \ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ failure\ when\ accessing\ a\ network\ resource\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00655\ }
+\DoxyCodeLine{00656\ \textcolor{comment}{/*\ Set\ or\ read\ error\ level\ */}}
+\DoxyCodeLine{00657\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ \ proj\_context\_errno\ (PJ\_CONTEXT\ *ctx);}
+\DoxyCodeLine{00658\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ \ proj\_errno\ (\textcolor{keyword}{const}\ PJ\ *P);}
+\DoxyCodeLine{00659\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ \ proj\_errno\_set\ (\textcolor{keyword}{const}\ PJ\ *P,\ \textcolor{keywordtype}{int}\ err);}
+\DoxyCodeLine{00660\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ \ proj\_errno\_reset\ (\textcolor{keyword}{const}\ PJ\ *P);}
+\DoxyCodeLine{00661\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ \ proj\_errno\_restore\ (\textcolor{keyword}{const}\ PJ\ *P,\ \textcolor{keywordtype}{int}\ err);}
+\DoxyCodeLine{00662\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ proj\_errno\_string\ (\textcolor{keywordtype}{int}\ err);\ \textcolor{comment}{/*\ deprecated.\ use\ proj\_context\_errno\_string()\ */}}
+\DoxyCodeLine{00663\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\ proj\_context\_errno\_string(PJ\_CONTEXT*\ ctx,\ \textcolor{keywordtype}{int}\ err);}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ vtklibproj\_EXPORT\ PJ\_LOG\_LEVEL\ proj\_log\_level\ (PJ\_CONTEXT\ *ctx,\ PJ\_LOG\_LEVEL\ log\_level);}
+\DoxyCodeLine{00666\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_log\_func\ (PJ\_CONTEXT\ *ctx,\ \textcolor{keywordtype}{void}\ *app\_data,\ PJ\_LOG\_FUNCTION\ logf);}
+\DoxyCodeLine{00667\ }
+\DoxyCodeLine{00668\ \textcolor{comment}{/*\ Scaling\ and\ angular\ distortion\ factors\ */}}
+\DoxyCodeLine{00669\ vtklibproj\_EXPORT\ PJ\_FACTORS\ proj\_factors(PJ\ *P,\ PJ\_COORD\ lp);}
+\DoxyCodeLine{00670\ }
+\DoxyCodeLine{00671\ \textcolor{comment}{/*\ Info\ functions\ -\/\ get\ information\ about\ various\ PROJ.4\ entities\ */}}
+\DoxyCodeLine{00672\ vtklibproj\_EXPORT\ PJ\_INFO\ proj\_info(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00673\ vtklibproj\_EXPORT\ PJ\_PROJ\_INFO\ proj\_pj\_info(PJ\ *P);}
+\DoxyCodeLine{00674\ vtklibproj\_EXPORT\ PJ\_GRID\_INFO\ proj\_grid\_info(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *gridname);}
+\DoxyCodeLine{00675\ vtklibproj\_EXPORT\ PJ\_INIT\_INFO\ proj\_init\_info(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *initname);}
+\DoxyCodeLine{00676\ }
+\DoxyCodeLine{00677\ \textcolor{comment}{/*\ List\ functions:\ */}}
+\DoxyCodeLine{00678\ \textcolor{comment}{/*\ Get\ lists\ of\ operations,\ ellipsoids,\ units\ and\ prime\ meridians.\ */}}
+\DoxyCodeLine{00679\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ PJ\_OPERATIONS\ \ \ \ \ \ \ *proj\_list\_operations(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00680\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ PJ\_ELLPS\ \ \ \ \ \ \ \ \ \ \ \ *proj\_list\_ellps(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00681\ vtklibproj\_EXPORT\ PROJ\_DEPRECATED(\textcolor{keyword}{const}\ PJ\_UNITS\ \ \ \ \ \ \ \ \ \ \ \ *proj\_list\_units(\textcolor{keywordtype}{void}),\ \textcolor{stringliteral}{"{}Deprecated\ by\ proj\_get\_units\_from\_database"{}});}
+\DoxyCodeLine{00682\ vtklibproj\_EXPORT\ PROJ\_DEPRECATED(\textcolor{keyword}{const}\ PJ\_UNITS\ \ \ \ \ \ \ \ \ \ \ \ *proj\_list\_angular\_units(\textcolor{keywordtype}{void}),\ \textcolor{stringliteral}{"{}Deprecated\ by\ proj\_get\_units\_from\_database"{}});}
+\DoxyCodeLine{00683\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ PJ\_PRIME\_MERIDIANS\ \ *proj\_list\_prime\_meridians(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00684\ }
+\DoxyCodeLine{00685\ \textcolor{comment}{/*\ These\ are\ trivial,\ and\ while\ occasionally\ useful\ in\ real\ code,\ primarily\ here\ to\ \ \ \ \ \ */}}
+\DoxyCodeLine{00686\ \textcolor{comment}{/*\ simplify\ demo\ code,\ and\ in\ acknowledgement\ of\ the\ proj-\/internal\ discrepancy\ between\ \ \ */}}
+\DoxyCodeLine{00687\ \textcolor{comment}{/*\ angular\ units\ expected\ by\ classical\ proj,\ and\ by\ Charles\ Karney's\ geodesics\ subsystem\ */}}
+\DoxyCodeLine{00688\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_torad\ (\textcolor{keywordtype}{double}\ angle\_in\_degrees);}
+\DoxyCodeLine{00689\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_todeg\ (\textcolor{keywordtype}{double}\ angle\_in\_radians);}
+\DoxyCodeLine{00690\ }
+\DoxyCodeLine{00691\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_dmstor(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *is,\ \textcolor{keywordtype}{char}\ **rs);}
+\DoxyCodeLine{00692\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{char}\ *\ proj\_rtodms(\textcolor{keywordtype}{char}\ *s,\ \textcolor{keywordtype}{double}\ r,\ \textcolor{keywordtype}{int}\ pos,\ \textcolor{keywordtype}{int}\ neg);}
+\DoxyCodeLine{00693\ }
+\DoxyCodeLine{00694\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_cleanup(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00695\ }
+\DoxyCodeLine{00697\ }
+\DoxyCodeLine{00698\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{00699\ \textcolor{comment}{/*\ Binding\ in\ C\ of\ C++\ API\ */}}
+\DoxyCodeLine{00700\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00702\ }
+\DoxyCodeLine{00707\ }
+\DoxyCodeLine{00709\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{char}\ **\doxymbox{\hyperlink{group__iso19111__types_gab30fdab04c7368a72112f4097177f514}{PROJ\_STRING\_LIST}};}
+\DoxyCodeLine{00710\ }
+\DoxyCodeLine{00712\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}}
+\DoxyCodeLine{00713\ \{}
+\DoxyCodeLine{00715\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga3453493087d771fdd594accba4a60e16ac68cb36e3ad209f1c2872bc6d5f42e35}{PJ\_GUESSED\_WKT2\_2019}},}
+\DoxyCodeLine{00716\ }
+\DoxyCodeLine{00718\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga3453493087d771fdd594accba4a60e16a029cfc571334dcbea9815929b60d18ea}{PJ\_GUESSED\_WKT2\_2018}}\ =\ \doxymbox{\hyperlink{group__iso19111__types_gga3453493087d771fdd594accba4a60e16ac68cb36e3ad209f1c2872bc6d5f42e35}{PJ\_GUESSED\_WKT2\_2019}},}
+\DoxyCodeLine{00719\ }
+\DoxyCodeLine{00721\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga3453493087d771fdd594accba4a60e16a3d6484a5fbdc3a2fc3ea8eb349f98c63}{PJ\_GUESSED\_WKT2\_2015}},}
+\DoxyCodeLine{00722\ }
+\DoxyCodeLine{00724\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga3453493087d771fdd594accba4a60e16ac7cccffeb6901592ceba853c9586b6c4}{PJ\_GUESSED\_WKT1\_GDAL}},}
+\DoxyCodeLine{00725\ }
+\DoxyCodeLine{00727\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga3453493087d771fdd594accba4a60e16a9f287b70d8c417764f3ce64d138f37c1}{PJ\_GUESSED\_WKT1\_ESRI}},}
+\DoxyCodeLine{00728\ }
+\DoxyCodeLine{00730\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga3453493087d771fdd594accba4a60e16ad564d9c8fe177fd57079792ef1bf5c93}{PJ\_GUESSED\_NOT\_WKT}}}
+\DoxyCodeLine{00731\ \}\ \doxymbox{\hyperlink{group__iso19111__types_ga3453493087d771fdd594accba4a60e16}{PJ\_GUESSED\_WKT\_DIALECT}};}
+\DoxyCodeLine{00732\ }
+\DoxyCodeLine{00734\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}}
+\DoxyCodeLine{00735\ \{}
+\DoxyCodeLine{00736\ \ \ \ \ PJ\_CATEGORY\_ELLIPSOID,}
+\DoxyCodeLine{00737\ \ \ \ \ PJ\_CATEGORY\_PRIME\_MERIDIAN,}
+\DoxyCodeLine{00738\ \ \ \ \ PJ\_CATEGORY\_DATUM,}
+\DoxyCodeLine{00739\ \ \ \ \ PJ\_CATEGORY\_CRS,}
+\DoxyCodeLine{00740\ \ \ \ \ PJ\_CATEGORY\_COORDINATE\_OPERATION,}
+\DoxyCodeLine{00741\ \ \ \ \ PJ\_CATEGORY\_DATUM\_ENSEMBLE}
+\DoxyCodeLine{00742\ \}\ \doxymbox{\hyperlink{group__iso19111__types_ga26c44aece2b0119157cd4a061e45321f}{PJ\_CATEGORY}};}
+\DoxyCodeLine{00743\ }
+\DoxyCodeLine{00745\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}}
+\DoxyCodeLine{00746\ \{}
+\DoxyCodeLine{00747\ \ \ \ \ PJ\_TYPE\_UNKNOWN,}
+\DoxyCodeLine{00748\ }
+\DoxyCodeLine{00749\ \ \ \ \ PJ\_TYPE\_ELLIPSOID,}
+\DoxyCodeLine{00750\ }
+\DoxyCodeLine{00751\ \ \ \ \ PJ\_TYPE\_PRIME\_MERIDIAN,}
+\DoxyCodeLine{00752\ }
+\DoxyCodeLine{00753\ \ \ \ \ PJ\_TYPE\_GEODETIC\_REFERENCE\_FRAME,}
+\DoxyCodeLine{00754\ \ \ \ \ PJ\_TYPE\_DYNAMIC\_GEODETIC\_REFERENCE\_FRAME,}
+\DoxyCodeLine{00755\ \ \ \ \ PJ\_TYPE\_VERTICAL\_REFERENCE\_FRAME,}
+\DoxyCodeLine{00756\ \ \ \ \ PJ\_TYPE\_DYNAMIC\_VERTICAL\_REFERENCE\_FRAME,}
+\DoxyCodeLine{00757\ \ \ \ \ PJ\_TYPE\_DATUM\_ENSEMBLE,}
+\DoxyCodeLine{00758\ }
+\DoxyCodeLine{00760\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga0acde08a3427c34e551a61f758b31c48a50fab9ac545eb788d3b99ae46cf7a4df}{PJ\_TYPE\_CRS}},}
+\DoxyCodeLine{00761\ }
+\DoxyCodeLine{00762\ \ \ \ \ PJ\_TYPE\_GEODETIC\_CRS,}
+\DoxyCodeLine{00763\ \ \ \ \ PJ\_TYPE\_GEOCENTRIC\_CRS,}
+\DoxyCodeLine{00764\ }
+\DoxyCodeLine{00767\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga0acde08a3427c34e551a61f758b31c48a486bb5b77b77ea0fa4c08ea2e7a442d2}{PJ\_TYPE\_GEOGRAPHIC\_CRS}},}
+\DoxyCodeLine{00768\ }
+\DoxyCodeLine{00769\ \ \ \ \ PJ\_TYPE\_GEOGRAPHIC\_2D\_CRS,}
+\DoxyCodeLine{00770\ \ \ \ \ PJ\_TYPE\_GEOGRAPHIC\_3D\_CRS,}
+\DoxyCodeLine{00771\ \ \ \ \ PJ\_TYPE\_VERTICAL\_CRS,}
+\DoxyCodeLine{00772\ \ \ \ \ PJ\_TYPE\_PROJECTED\_CRS,}
+\DoxyCodeLine{00773\ \ \ \ \ PJ\_TYPE\_COMPOUND\_CRS,}
+\DoxyCodeLine{00774\ \ \ \ \ PJ\_TYPE\_TEMPORAL\_CRS,}
+\DoxyCodeLine{00775\ \ \ \ \ PJ\_TYPE\_ENGINEERING\_CRS,}
+\DoxyCodeLine{00776\ \ \ \ \ PJ\_TYPE\_BOUND\_CRS,}
+\DoxyCodeLine{00777\ \ \ \ \ PJ\_TYPE\_OTHER\_CRS,}
+\DoxyCodeLine{00778\ }
+\DoxyCodeLine{00779\ \ \ \ \ PJ\_TYPE\_CONVERSION,}
+\DoxyCodeLine{00780\ \ \ \ \ PJ\_TYPE\_TRANSFORMATION,}
+\DoxyCodeLine{00781\ \ \ \ \ PJ\_TYPE\_CONCATENATED\_OPERATION,}
+\DoxyCodeLine{00782\ \ \ \ \ PJ\_TYPE\_OTHER\_COORDINATE\_OPERATION,}
+\DoxyCodeLine{00783\ }
+\DoxyCodeLine{00784\ \ \ \ \ PJ\_TYPE\_TEMPORAL\_DATUM,}
+\DoxyCodeLine{00785\ \ \ \ \ PJ\_TYPE\_ENGINEERING\_DATUM,}
+\DoxyCodeLine{00786\ \ \ \ \ PJ\_TYPE\_PARAMETRIC\_DATUM,}
+\DoxyCodeLine{00787\ \}\ \doxymbox{\hyperlink{group__iso19111__types_ga0acde08a3427c34e551a61f758b31c48}{PJ\_TYPE}};}
+\DoxyCodeLine{00788\ }
+\DoxyCodeLine{00790\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}}
+\DoxyCodeLine{00791\ \{}
+\DoxyCodeLine{00793\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga654e7e400a70ad33bfbb23d9d1df39eea58a16adffac77f2ea0790c931a019cc2}{PJ\_COMP\_STRICT}},}
+\DoxyCodeLine{00794\ }
+\DoxyCodeLine{00802\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga654e7e400a70ad33bfbb23d9d1df39eea62f216b8be8636239b27e7cbe3da1c86}{PJ\_COMP\_EQUIVALENT}},}
+\DoxyCodeLine{00803\ }
+\DoxyCodeLine{00808\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga654e7e400a70ad33bfbb23d9d1df39eea403f7948c2c0127c5b23733727aa5809}{PJ\_COMP\_EQUIVALENT\_EXCEPT\_AXIS\_ORDER\_GEOGCRS}},}
+\DoxyCodeLine{00809\ \}\ \doxymbox{\hyperlink{group__iso19111__types_ga654e7e400a70ad33bfbb23d9d1df39ee}{PJ\_COMPARISON\_CRITERION}};}
+\DoxyCodeLine{00810\ }
+\DoxyCodeLine{00811\ }
+\DoxyCodeLine{00813\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}}
+\DoxyCodeLine{00814\ \{}
+\DoxyCodeLine{00816\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764ca2eb75464b58c0d53450e3f918beda107}{PJ\_WKT2\_2015}},}
+\DoxyCodeLine{00818\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764ca47783cb8b8618b947c792acc4704676c}{PJ\_WKT2\_2015\_SIMPLIFIED}},}
+\DoxyCodeLine{00820\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764ca385c236c0a6d8d0e32b7cb5b4f69da9e}{PJ\_WKT2\_2019}},}
+\DoxyCodeLine{00822\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764ca90f4f2d08eb84471fb5f3030778d0067}{PJ\_WKT2\_2018}}\ =\ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764ca385c236c0a6d8d0e32b7cb5b4f69da9e}{PJ\_WKT2\_2019}},}
+\DoxyCodeLine{00824\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764caa4990cbbc9ceb6091db4997cab818bc3}{PJ\_WKT2\_2019\_SIMPLIFIED}},}
+\DoxyCodeLine{00826\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764ca0834502845e91e50a27e4138c3dc586f}{PJ\_WKT2\_2018\_SIMPLIFIED}}\ =\ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764caa4990cbbc9ceb6091db4997cab818bc3}{PJ\_WKT2\_2019\_SIMPLIFIED}},}
+\DoxyCodeLine{00828\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764ca954fc3d4f834af1ae44d49fb3250733f}{PJ\_WKT1\_GDAL}},}
+\DoxyCodeLine{00830\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggaa2c2de23d90fe0d1d335f6184bff764ca5ae78834150a1efe397ef94456fa26ef}{PJ\_WKT1\_ESRI}}}
+\DoxyCodeLine{00831\ \}\ \doxymbox{\hyperlink{group__iso19111__types_gaa2c2de23d90fe0d1d335f6184bff764c}{PJ\_WKT\_TYPE}};}
+\DoxyCodeLine{00832\ }
+\DoxyCodeLine{00836\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}}
+\DoxyCodeLine{00837\ \{}
+\DoxyCodeLine{00839\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga2223a725c58dab5bf93f20aecc9f03c5a14d7cd14f47c08c0a989dd93038d5088}{PJ\_CRS\_EXTENT\_NONE}},}
+\DoxyCodeLine{00840\ }
+\DoxyCodeLine{00842\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga2223a725c58dab5bf93f20aecc9f03c5aa78f99b22a591c67de63ebc84b8982bd}{PJ\_CRS\_EXTENT\_BOTH}},}
+\DoxyCodeLine{00843\ }
+\DoxyCodeLine{00846\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga2223a725c58dab5bf93f20aecc9f03c5af2c505f187abfbba1906d3b337cba632}{PJ\_CRS\_EXTENT\_INTERSECTION}},}
+\DoxyCodeLine{00847\ }
+\DoxyCodeLine{00849\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga2223a725c58dab5bf93f20aecc9f03c5a060f0036b2bb75a37ab8c970527364f3}{PJ\_CRS\_EXTENT\_SMALLEST}}}
+\DoxyCodeLine{00850\ \}\ \doxymbox{\hyperlink{group__iso19111__types_ga2223a725c58dab5bf93f20aecc9f03c5}{PROJ\_CRS\_EXTENT\_USE}};}
+\DoxyCodeLine{00851\ }
+\DoxyCodeLine{00853\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00856\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga8a63b764c6b5ad06b35f7fdf81bcaa93a24fc0488dc48c856240bb76a5b25f555}{PROJ\_GRID\_AVAILABILITY\_USED\_FOR\_SORTING}},}
+\DoxyCodeLine{00857\ }
+\DoxyCodeLine{00859\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga8a63b764c6b5ad06b35f7fdf81bcaa93ac2f3e7703fab0a5c5fd822936e0d3d28}{PROJ\_GRID\_AVAILABILITY\_DISCARD\_OPERATION\_IF\_MISSING\_GRID}},}
+\DoxyCodeLine{00860\ }
+\DoxyCodeLine{00863\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga8a63b764c6b5ad06b35f7fdf81bcaa93a3a89888e35d853048dd987cab48e810a}{PROJ\_GRID\_AVAILABILITY\_IGNORED}},}
+\DoxyCodeLine{00864\ }
+\DoxyCodeLine{00869\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga8a63b764c6b5ad06b35f7fdf81bcaa93a43ccf77f63882bf37c176969940385cf}{PROJ\_GRID\_AVAILABILITY\_KNOWN\_AVAILABLE}},}
+\DoxyCodeLine{00870\ \}\ \doxymbox{\hyperlink{group__iso19111__types_ga8a63b764c6b5ad06b35f7fdf81bcaa93}{PROJ\_GRID\_AVAILABILITY\_USE}};}
+\DoxyCodeLine{00871\ }
+\DoxyCodeLine{00873\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}}
+\DoxyCodeLine{00874\ \{}
+\DoxyCodeLine{00876\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggadd9b673c590f7f90a4b022c68a2b2b00af3b0c368241b523426824fe0e97953c9}{PJ\_PROJ\_5}},}
+\DoxyCodeLine{00878\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggadd9b673c590f7f90a4b022c68a2b2b00a6ab85f34053d7904cef39f9c50639224}{PJ\_PROJ\_4}}}
+\DoxyCodeLine{00879\ \}\ \doxymbox{\hyperlink{group__iso19111__types_gadd9b673c590f7f90a4b022c68a2b2b00}{PJ\_PROJ\_STRING\_TYPE}};}
+\DoxyCodeLine{00880\ }
+\DoxyCodeLine{00882\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00885\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggadfc8adff35d141ac9c3c27f457f25be1a35e8f3d20b1828dd43a5f586f4f6442d}{PROJ\_SPATIAL\_CRITERION\_STRICT\_CONTAINMENT}},}
+\DoxyCodeLine{00886\ }
+\DoxyCodeLine{00889\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ggadfc8adff35d141ac9c3c27f457f25be1a6ee5ddba902534048e218bf2da31a608}{PROJ\_SPATIAL\_CRITERION\_PARTIAL\_INTERSECTION}}}
+\DoxyCodeLine{00890\ \}\ \doxymbox{\hyperlink{group__iso19111__types_gadfc8adff35d141ac9c3c27f457f25be1}{PROJ\_SPATIAL\_CRITERION}};}
+\DoxyCodeLine{00891\ }
+\DoxyCodeLine{00893\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00895\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga7c79b426947391654b6ef2bca4a83835a5a27780b3a4b8b931201c473fa5ed288}{PROJ\_INTERMEDIATE\_CRS\_USE\_ALWAYS}},}
+\DoxyCodeLine{00896\ }
+\DoxyCodeLine{00899\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gga7c79b426947391654b6ef2bca4a83835a453e93c9ebefeedfb03dd0d557e30918}{PROJ\_INTERMEDIATE\_CRS\_USE\_IF\_NO\_DIRECT\_TRANSFORMATION}},}
+\DoxyCodeLine{00900\ }
+\DoxyCodeLine{00901\ \ \ \ \ \textcolor{comment}{/*\ Do\ not\ attempt\ looking\ for\ intermediate\ CRS.\ */}}
+\DoxyCodeLine{00902\ \ \ \ \ PROJ\_INTERMEDIATE\_CRS\_USE\_NEVER,}
+\DoxyCodeLine{00903\ \}\ \doxymbox{\hyperlink{group__iso19111__types_ga7c79b426947391654b6ef2bca4a83835}{PROJ\_INTERMEDIATE\_CRS\_USE}};}
+\DoxyCodeLine{00904\ }
+\DoxyCodeLine{00906\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}}
+\DoxyCodeLine{00907\ \{}
+\DoxyCodeLine{00908\ \ \ \ \ PJ\_CS\_TYPE\_UNKNOWN,}
+\DoxyCodeLine{00909\ }
+\DoxyCodeLine{00910\ \ \ \ \ PJ\_CS\_TYPE\_CARTESIAN,}
+\DoxyCodeLine{00911\ \ \ \ \ PJ\_CS\_TYPE\_ELLIPSOIDAL,}
+\DoxyCodeLine{00912\ \ \ \ \ PJ\_CS\_TYPE\_VERTICAL,}
+\DoxyCodeLine{00913\ \ \ \ \ PJ\_CS\_TYPE\_SPHERICAL,}
+\DoxyCodeLine{00914\ \ \ \ \ PJ\_CS\_TYPE\_ORDINAL,}
+\DoxyCodeLine{00915\ \ \ \ \ PJ\_CS\_TYPE\_PARAMETRIC,}
+\DoxyCodeLine{00916\ \ \ \ \ PJ\_CS\_TYPE\_DATETIMETEMPORAL,}
+\DoxyCodeLine{00917\ \ \ \ \ PJ\_CS\_TYPE\_TEMPORALCOUNT,}
+\DoxyCodeLine{00918\ \ \ \ \ PJ\_CS\_TYPE\_TEMPORALMEASURE}
+\DoxyCodeLine{00919\ \}\ \doxymbox{\hyperlink{group__iso19111__types_ga309b520b438e2c6d150b2e635a4afdf6}{PJ\_COORDINATE\_SYSTEM\_TYPE}};}
+\DoxyCodeLine{00920\ }
+\DoxyCodeLine{00926\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00927\ \{}
+\DoxyCodeLine{00929\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_a2aaf613589d3ae5bdc9e02cace650923}{auth\_name}};}
+\DoxyCodeLine{00931\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_aa2f861ac8733182dec726999e56ce539}{code}};}
+\DoxyCodeLine{00933\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_a5482280d4396197234da00d190d0a83e}{name}};}
+\DoxyCodeLine{00935\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ga0acde08a3427c34e551a61f758b31c48}{PJ\_TYPE}}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_a28333bf93c4023585bf3a0c55a198449}{type}};}
+\DoxyCodeLine{00937\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_a3589d7f75ef15516817f252f6de5c698}{deprecated}};}
+\DoxyCodeLine{00940\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_a21223a0895e8fa80310feb11c23b3cb4}{bbox\_valid}};}
+\DoxyCodeLine{00942\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_a1480aa32b8d72f4816a62c8d1d40c5c8}{west\_lon\_degree}};}
+\DoxyCodeLine{00944\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_acc49b4f1606807b8e0d63533cffd585f}{south\_lat\_degree}};}
+\DoxyCodeLine{00946\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_a14e96dd40cd586df5fb70f837f9eaa9e}{east\_lon\_degree}};}
+\DoxyCodeLine{00948\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_a5436ebab441ec6ff7872c5a52391bba7}{north\_lat\_degree}};}
+\DoxyCodeLine{00950\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_a65e41527fc53a004147a1dd0206a77b9}{area\_name}};}
+\DoxyCodeLine{00953\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_aaf5dfb9e1767652ab87260c0375a46f9}{projection\_method\_name}};}
+\DoxyCodeLine{00954\ }
+\DoxyCodeLine{00958\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o_ac4818807f247f4eb17dad45f4083604d}{celestial\_body\_name}};}
+\DoxyCodeLine{00959\ \}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o}{PROJ\_CRS\_INFO}};}
+\DoxyCodeLine{00960\ }
+\DoxyCodeLine{00966\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{00967\ \{}
+\DoxyCodeLine{00969\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{group__iso19111__types_ga0acde08a3427c34e551a61f758b31c48}{PJ\_TYPE}}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_a86a3131e91abadf4a3d5f67f441bb1f1}{types}};}
+\DoxyCodeLine{00971\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_a17c2a3a95be809e1ab3f92b55c5bc36a}{typesCount}};}
+\DoxyCodeLine{00972\ }
+\DoxyCodeLine{00978\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_a6cb020dd412adf258061dce232abbcd9}{crs\_area\_of\_use\_contains\_bbox}};}
+\DoxyCodeLine{00981\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_afc1f01606cda74022df15f5daebc326f}{bbox\_valid}};}
+\DoxyCodeLine{00983\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_a14403e80f21eb233f4c8b6b94cc49b6e}{west\_lon\_degree}};}
+\DoxyCodeLine{00985\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_a2b7d92e06313d7bf8f267823bedc3fc8}{south\_lat\_degree}};}
+\DoxyCodeLine{00987\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_a0b655ded94197085360233cf0b7ac1da}{east\_lon\_degree}};}
+\DoxyCodeLine{00989\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_a9351b046681516bcddb2b0aa425fe17c}{north\_lat\_degree}};}
+\DoxyCodeLine{00990\ }
+\DoxyCodeLine{00992\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_a01aac8e9d525faca50907780d226a2cf}{allow\_deprecated}};}
+\DoxyCodeLine{00993\ }
+\DoxyCodeLine{00998\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s_a421c3840d94cf3b39a988706682cb9ac}{celestial\_body\_name}};}
+\DoxyCodeLine{00999\ \}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s}{PROJ\_CRS\_LIST\_PARAMETERS}};}
+\DoxyCodeLine{01000\ }
+\DoxyCodeLine{01007\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{01008\ \{}
+\DoxyCodeLine{01010\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o_a9200c7c0a7e75d497982e011e4b4c667}{auth\_name}};}
+\DoxyCodeLine{01011\ }
+\DoxyCodeLine{01013\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o_a3ccace573ea3bbc26fb1bfe0a887cd93}{code}};}
+\DoxyCodeLine{01014\ }
+\DoxyCodeLine{01016\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o_a6ad97e9bd39cbd422bce4fb53cc9443d}{name}};}
+\DoxyCodeLine{01017\ }
+\DoxyCodeLine{01020\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o_a4285a4e07ab9b36ae10cd6ad9e733f63}{category}};}
+\DoxyCodeLine{01021\ }
+\DoxyCodeLine{01025\ \ \ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o_a07cd57479cfe87b85e28c550575e728b}{conv\_factor}};}
+\DoxyCodeLine{01026\ }
+\DoxyCodeLine{01028\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o_a643252a772508e184788d34866f8e095}{proj\_short\_name}};}
+\DoxyCodeLine{01029\ }
+\DoxyCodeLine{01031\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o_af706b19665a2a823f8f2e879cc021051}{deprecated}};}
+\DoxyCodeLine{01032\ \}\ \doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o}{PROJ\_UNIT\_INFO}};}
+\DoxyCodeLine{01033\ }
+\DoxyCodeLine{01040\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct}}
+\DoxyCodeLine{01041\ \{}
+\DoxyCodeLine{01043\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_e_l_e_s_t_i_a_l___b_o_d_y___i_n_f_o_aaa1648ff908d86f196ab5bef68e0bb86}{auth\_name}};}
+\DoxyCodeLine{01044\ }
+\DoxyCodeLine{01046\ \ \ \ \ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{struct_p_r_o_j___c_e_l_e_s_t_i_a_l___b_o_d_y___i_n_f_o_aecefd8d3ed82eafd703098fbfdbeed6e}{name}};}
+\DoxyCodeLine{01047\ }
+\DoxyCodeLine{01048\ \}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_e_l_e_s_t_i_a_l___b_o_d_y___i_n_f_o}{PROJ\_CELESTIAL\_BODY\_INFO}};}
+\DoxyCodeLine{01049\ }
+\DoxyCodeLine{01050\ }
+\DoxyCodeLine{01052\ }
+\DoxyCodeLine{01069\ }
+\DoxyCodeLine{01071\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_OBJ\_LIST\ PJ\_OBJ\_LIST;}
+\DoxyCodeLine{01073\ }
+\DoxyCodeLine{01074\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_string\_list\_destroy(\doxymbox{\hyperlink{group__iso19111__types_gab30fdab04c7368a72112f4097177f514}{PROJ\_STRING\_LIST}}\ list);}
+\DoxyCodeLine{01075\ }
+\DoxyCodeLine{01076\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_context\_set\_autoclose\_database(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ autoclose);}
+\DoxyCodeLine{01078\ }
+\DoxyCodeLine{01079\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_context\_set\_database\_path(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dbPath,}
+\DoxyCodeLine{01081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keyword}{const}\ *auxDbPaths,}
+\DoxyCodeLine{01082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01083\ }
+\DoxyCodeLine{01084\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *proj\_context\_get\_database\_path(PJ\_CONTEXT\ *ctx);}
+\DoxyCodeLine{01085\ }
+\DoxyCodeLine{01086\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *proj\_context\_get\_database\_metadata(PJ\_CONTEXT*\ ctx,}
+\DoxyCodeLine{01087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ key);}
+\DoxyCodeLine{01088\ }
+\DoxyCodeLine{01089\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{group__iso19111__types_gab30fdab04c7368a72112f4097177f514}{PROJ\_STRING\_LIST}}\ proj\_context\_get\_database\_structure(}
+\DoxyCodeLine{01090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT*\ ctx,}
+\DoxyCodeLine{01091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01092\ }
+\DoxyCodeLine{01093\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{group__iso19111__types_ga3453493087d771fdd594accba4a60e16}{PJ\_GUESSED\_WKT\_DIALECT}}\ proj\_context\_guess\_wkt\_dialect(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *wkt);}
+\DoxyCodeLine{01095\ }
+\DoxyCodeLine{01096\ vtklibproj\_EXPORT\ PJ\ *proj\_create\_from\_wkt(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *wkt,}
+\DoxyCodeLine{01097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options,}
+\DoxyCodeLine{01098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gab30fdab04c7368a72112f4097177f514}{PROJ\_STRING\_LIST}}\ *out\_warnings,}
+\DoxyCodeLine{01099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gab30fdab04c7368a72112f4097177f514}{PROJ\_STRING\_LIST}}\ *out\_grammar\_errors);}
+\DoxyCodeLine{01100\ }
+\DoxyCodeLine{01101\ vtklibproj\_EXPORT\ PJ\ *proj\_create\_from\_database(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *auth\_name,}
+\DoxyCodeLine{01103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *code,}
+\DoxyCodeLine{01104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ga26c44aece2b0119157cd4a061e45321f}{PJ\_CATEGORY}}\ category,}
+\DoxyCodeLine{01105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ usePROJAlternativeGridNames,}
+\DoxyCodeLine{01106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01107\ }
+\DoxyCodeLine{01108\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_uom\_get\_info\_from\_database(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *auth\_name,}
+\DoxyCodeLine{01110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *code,}
+\DoxyCodeLine{01111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_name,}
+\DoxyCodeLine{01112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_conv\_factor,}
+\DoxyCodeLine{01113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_category);}
+\DoxyCodeLine{01114\ }
+\DoxyCodeLine{01115\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_grid\_get\_info\_from\_database(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *grid\_name,}
+\DoxyCodeLine{01117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_full\_name,}
+\DoxyCodeLine{01118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_package\_name,}
+\DoxyCodeLine{01119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_url,}
+\DoxyCodeLine{01120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *out\_direct\_download,}
+\DoxyCodeLine{01121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *out\_open\_license,}
+\DoxyCodeLine{01122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *out\_available);}
+\DoxyCodeLine{01123\ }
+\DoxyCodeLine{01124\ vtklibproj\_EXPORT\ PJ\ *proj\_clone(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01125\ }
+\DoxyCodeLine{01126\ vtklibproj\_EXPORT\ PJ\_OBJ\_LIST\ *proj\_create\_from\_name(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *auth\_name,}
+\DoxyCodeLine{01128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *searchedName,}
+\DoxyCodeLine{01129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{group__iso19111__types_ga0acde08a3427c34e551a61f758b31c48}{PJ\_TYPE}}*\ types,}
+\DoxyCodeLine{01130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ typesCount,}
+\DoxyCodeLine{01131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ approximateMatch,}
+\DoxyCodeLine{01132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ limitResultCount,}
+\DoxyCodeLine{01133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01134\ }
+\DoxyCodeLine{01135\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{group__iso19111__types_ga0acde08a3427c34e551a61f758b31c48}{PJ\_TYPE}}\ proj\_get\_type(\textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01136\ }
+\DoxyCodeLine{01137\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_is\_deprecated(\textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01138\ }
+\DoxyCodeLine{01139\ vtklibproj\_EXPORT\ PJ\_OBJ\_LIST\ *proj\_get\_non\_deprecated(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01141\ }
+\DoxyCodeLine{01142\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_is\_equivalent\_to(\textcolor{keyword}{const}\ PJ\ *obj,\ \textcolor{keyword}{const}\ PJ\ *other,}
+\DoxyCodeLine{01143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ga654e7e400a70ad33bfbb23d9d1df39ee}{PJ\_COMPARISON\_CRITERION}}\ criterion);}
+\DoxyCodeLine{01144\ }
+\DoxyCodeLine{01145\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_is\_equivalent\_to\_with\_ctx(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj,\ \textcolor{keyword}{const}\ PJ\ *other,}
+\DoxyCodeLine{01147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ga654e7e400a70ad33bfbb23d9d1df39ee}{PJ\_COMPARISON\_CRITERION}}\ criterion);}
+\DoxyCodeLine{01148\ }
+\DoxyCodeLine{01149\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_is\_crs(\textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01150\ }
+\DoxyCodeLine{01151\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ proj\_get\_name(\textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01152\ }
+\DoxyCodeLine{01153\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ proj\_get\_id\_auth\_name(\textcolor{keyword}{const}\ PJ\ *obj,\ \textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{01154\ }
+\DoxyCodeLine{01155\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ proj\_get\_id\_code(\textcolor{keyword}{const}\ PJ\ *obj,\ \textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{01156\ }
+\DoxyCodeLine{01157\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ proj\_get\_remarks(\textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01158\ }
+\DoxyCodeLine{01159\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ proj\_get\_scope(\textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01160\ }
+\DoxyCodeLine{01161\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_get\_area\_of\_use(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj,}
+\DoxyCodeLine{01163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}*\ out\_west\_lon\_degree,}
+\DoxyCodeLine{01164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}*\ out\_south\_lat\_degree,}
+\DoxyCodeLine{01165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}*\ out\_east\_lon\_degree,}
+\DoxyCodeLine{01166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}*\ out\_north\_lat\_degree,}
+\DoxyCodeLine{01167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_area\_name);}
+\DoxyCodeLine{01168\ }
+\DoxyCodeLine{01169\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ proj\_as\_wkt(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj,\ \doxymbox{\hyperlink{group__iso19111__types_gaa2c2de23d90fe0d1d335f6184bff764c}{PJ\_WKT\_TYPE}}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{01171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01172\ }
+\DoxyCodeLine{01173\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ proj\_as\_proj\_string(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj,}
+\DoxyCodeLine{01175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gadd9b673c590f7f90a4b022c68a2b2b00}{PJ\_PROJ\_STRING\_TYPE}}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{01176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01177\ }
+\DoxyCodeLine{01178\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ proj\_as\_projjson(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj,}
+\DoxyCodeLine{01180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01181\ }
+\DoxyCodeLine{01182\ vtklibproj\_EXPORT\ PJ\ *proj\_get\_source\_crs(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01184\ }
+\DoxyCodeLine{01185\ vtklibproj\_EXPORT\ PJ\ *proj\_get\_target\_crs(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01187\ }
+\DoxyCodeLine{01188\ vtklibproj\_EXPORT\ PJ\_OBJ\_LIST\ *proj\_identify(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj,}
+\DoxyCodeLine{01190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *auth\_name,}
+\DoxyCodeLine{01191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *options,}
+\DoxyCodeLine{01192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ **out\_confidence);}
+\DoxyCodeLine{01193\ }
+\DoxyCodeLine{01194\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{group__iso19111__types_gab30fdab04c7368a72112f4097177f514}{PROJ\_STRING\_LIST}}\ proj\_get\_geoid\_models\_from\_database(}
+\DoxyCodeLine{01195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *auth\_name,}
+\DoxyCodeLine{01197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *code,}
+\DoxyCodeLine{01198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01199\ }
+\DoxyCodeLine{01200\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_int\_list\_destroy(\textcolor{keywordtype}{int}*\ list);}
+\DoxyCodeLine{01201\ }
+\DoxyCodeLine{01202\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{01203\ }
+\DoxyCodeLine{01204\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{group__iso19111__types_gab30fdab04c7368a72112f4097177f514}{PROJ\_STRING\_LIST}}\ proj\_get\_authorities\_from\_database(PJ\_CONTEXT\ *ctx);}
+\DoxyCodeLine{01205\ }
+\DoxyCodeLine{01206\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{group__iso19111__types_gab30fdab04c7368a72112f4097177f514}{PROJ\_STRING\_LIST}}\ proj\_get\_codes\_from\_database(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *auth\_name,}
+\DoxyCodeLine{01208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ga0acde08a3427c34e551a61f758b31c48}{PJ\_TYPE}}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{01209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ allow\_deprecated);}
+\DoxyCodeLine{01210\ }
+\DoxyCodeLine{01211\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{struct_p_r_o_j___c_e_l_e_s_t_i_a_l___b_o_d_y___i_n_f_o}{PROJ\_CELESTIAL\_BODY\_INFO}}\ **proj\_get\_celestial\_body\_list\_from\_database(}
+\DoxyCodeLine{01212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *auth\_name,}
+\DoxyCodeLine{01214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *out\_result\_count);}
+\DoxyCodeLine{01215\ }
+\DoxyCodeLine{01216\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_celestial\_body\_list\_destroy(\doxymbox{\hyperlink{struct_p_r_o_j___c_e_l_e_s_t_i_a_l___b_o_d_y___i_n_f_o}{PROJ\_CELESTIAL\_BODY\_INFO}}**\ list);}
+\DoxyCodeLine{01217\ }
+\DoxyCodeLine{01218\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s}{PROJ\_CRS\_LIST\_PARAMETERS}}\ *proj\_get\_crs\_list\_parameters\_create(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{01219\ }
+\DoxyCodeLine{01220\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_get\_crs\_list\_parameters\_destroy(}
+\DoxyCodeLine{01221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s}{PROJ\_CRS\_LIST\_PARAMETERS}}*\ params);}
+\DoxyCodeLine{01222\ }
+\DoxyCodeLine{01223\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o}{PROJ\_CRS\_INFO}}\ **proj\_get\_crs\_info\_list\_from\_database(}
+\DoxyCodeLine{01224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *auth\_name,}
+\DoxyCodeLine{01226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___l_i_s_t___p_a_r_a_m_e_t_e_r_s}{PROJ\_CRS\_LIST\_PARAMETERS}}*\ params,}
+\DoxyCodeLine{01227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *out\_result\_count);}
+\DoxyCodeLine{01228\ }
+\DoxyCodeLine{01229\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_crs\_info\_list\_destroy(\doxymbox{\hyperlink{struct_p_r_o_j___c_r_s___i_n_f_o}{PROJ\_CRS\_INFO}}**\ list);}
+\DoxyCodeLine{01230\ }
+\DoxyCodeLine{01231\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o}{PROJ\_UNIT\_INFO}}\ **proj\_get\_units\_from\_database(}
+\DoxyCodeLine{01232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *auth\_name,}
+\DoxyCodeLine{01234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *category,}
+\DoxyCodeLine{01235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ allow\_deprecated,}
+\DoxyCodeLine{01236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *out\_result\_count);}
+\DoxyCodeLine{01237\ }
+\DoxyCodeLine{01238\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_unit\_list\_destroy(\doxymbox{\hyperlink{struct_p_r_o_j___u_n_i_t___i_n_f_o}{PROJ\_UNIT\_INFO}}**\ list);}
+\DoxyCodeLine{01239\ }
+\DoxyCodeLine{01240\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{01242\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_INSERT\_SESSION\ PJ\_INSERT\_SESSION;}
+\DoxyCodeLine{01244\ }
+\DoxyCodeLine{01245\ vtklibproj\_EXPORT\ PJ\_INSERT\_SESSION\ *proj\_insert\_object\_session\_create(PJ\_CONTEXT\ *ctx);}
+\DoxyCodeLine{01246\ }
+\DoxyCodeLine{01247\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_insert\_object\_session\_destroy(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_INSERT\_SESSION\ *session);}
+\DoxyCodeLine{01249\ }
+\DoxyCodeLine{01250\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{group__iso19111__types_gab30fdab04c7368a72112f4097177f514}{PROJ\_STRING\_LIST}}\ proj\_get\_insert\_statements(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_INSERT\_SESSION\ *session,}
+\DoxyCodeLine{01252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *\textcolor{keywordtype}{object},}
+\DoxyCodeLine{01253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *authority,}
+\DoxyCodeLine{01254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *code,}
+\DoxyCodeLine{01255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ numeric\_codes,}
+\DoxyCodeLine{01256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keyword}{const}\ *allowed\_authorities,}
+\DoxyCodeLine{01257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01258\ }
+\DoxyCodeLine{01259\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{char}\ *proj\_suggests\_code\_for(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *\textcolor{keywordtype}{object},}
+\DoxyCodeLine{01261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *authority,}
+\DoxyCodeLine{01262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ numeric\_code,}
+\DoxyCodeLine{01263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\textcolor{keyword}{const}\ *options);}
+\DoxyCodeLine{01264\ }
+\DoxyCodeLine{01265\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_string\_destroy(\textcolor{keywordtype}{char}*\ str);}
+\DoxyCodeLine{01266\ }
+\DoxyCodeLine{01267\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{01269\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }PJ\_OPERATION\_FACTORY\_CONTEXT\ PJ\_OPERATION\_FACTORY\_CONTEXT;}
+\DoxyCodeLine{01271\ }
+\DoxyCodeLine{01272\ vtklibproj\_EXPORT\ PJ\_OPERATION\_FACTORY\_CONTEXT\ *proj\_create\_operation\_factory\_context(}
+\DoxyCodeLine{01273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *authority);}
+\DoxyCodeLine{01275\ }
+\DoxyCodeLine{01276\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_destroy(}
+\DoxyCodeLine{01277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *ctx);}
+\DoxyCodeLine{01278\ }
+\DoxyCodeLine{01279\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_desired\_accuracy(}
+\DoxyCodeLine{01280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ accuracy);}
+\DoxyCodeLine{01283\ }
+\DoxyCodeLine{01284\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_area\_of\_interest(}
+\DoxyCodeLine{01285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ west\_lon\_degree,}
+\DoxyCodeLine{01288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ south\_lat\_degree,}
+\DoxyCodeLine{01289\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ east\_lon\_degree,}
+\DoxyCodeLine{01290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ north\_lat\_degree);}
+\DoxyCodeLine{01291\ }
+\DoxyCodeLine{01292\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_crs\_extent\_use(}
+\DoxyCodeLine{01293\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ga2223a725c58dab5bf93f20aecc9f03c5}{PROJ\_CRS\_EXTENT\_USE}}\ use);}
+\DoxyCodeLine{01296\ }
+\DoxyCodeLine{01297\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_spatial\_criterion(}
+\DoxyCodeLine{01298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_gadfc8adff35d141ac9c3c27f457f25be1}{PROJ\_SPATIAL\_CRITERION}}\ criterion);}
+\DoxyCodeLine{01301\ }
+\DoxyCodeLine{01302\ }
+\DoxyCodeLine{01303\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_grid\_availability\_use(}
+\DoxyCodeLine{01304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ga8a63b764c6b5ad06b35f7fdf81bcaa93}{PROJ\_GRID\_AVAILABILITY\_USE}}\ use);}
+\DoxyCodeLine{01307\ }
+\DoxyCodeLine{01308\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_use\_proj\_alternative\_grid\_names(}
+\DoxyCodeLine{01309\ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01310\ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01311\ \ \ \ \ \textcolor{keywordtype}{int}\ usePROJNames);}
+\DoxyCodeLine{01312\ }
+\DoxyCodeLine{01313\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_allow\_use\_intermediate\_crs(}
+\DoxyCodeLine{01314\ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01315\ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01316\ \ \ \ \ \doxymbox{\hyperlink{group__iso19111__types_ga7c79b426947391654b6ef2bca4a83835}{PROJ\_INTERMEDIATE\_CRS\_USE}}\ use);}
+\DoxyCodeLine{01317\ }
+\DoxyCodeLine{01318\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_allowed\_intermediate\_crs(}
+\DoxyCodeLine{01319\ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01320\ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01321\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keyword}{const}\ *list\_of\_auth\_name\_codes);}
+\DoxyCodeLine{01322\ }
+\DoxyCodeLine{01323\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_discard\_superseded(}
+\DoxyCodeLine{01324\ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01325\ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01326\ \ \ \ \ \textcolor{keywordtype}{int}\ discard);}
+\DoxyCodeLine{01327\ }
+\DoxyCodeLine{01328\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_operation\_factory\_context\_set\_allow\_ballpark\_transformations(}
+\DoxyCodeLine{01329\ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01330\ \ \ \ \ PJ\_OPERATION\_FACTORY\_CONTEXT\ *factory\_ctx,}
+\DoxyCodeLine{01331\ \ \ \ \ \textcolor{keywordtype}{int}\ allow);}
+\DoxyCodeLine{01332\ }
+\DoxyCodeLine{01333\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{01334\ }
+\DoxyCodeLine{01335\ }
+\DoxyCodeLine{01336\ vtklibproj\_EXPORT\ PJ\_OBJ\_LIST\ *proj\_create\_operations(}
+\DoxyCodeLine{01337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *source\_crs,}
+\DoxyCodeLine{01339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *target\_crs,}
+\DoxyCodeLine{01340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\_OPERATION\_FACTORY\_CONTEXT\ *operationContext);}
+\DoxyCodeLine{01341\ }
+\DoxyCodeLine{01342\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_list\_get\_count(\textcolor{keyword}{const}\ PJ\_OBJ\_LIST\ *result);}
+\DoxyCodeLine{01343\ }
+\DoxyCodeLine{01344\ vtklibproj\_EXPORT\ PJ\ *proj\_list\_get(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\_OBJ\_LIST\ *result,}
+\DoxyCodeLine{01346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{01347\ }
+\DoxyCodeLine{01348\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{void}\ proj\_list\_destroy(PJ\_OBJ\_LIST\ *result);}
+\DoxyCodeLine{01349\ }
+\DoxyCodeLine{01350\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_get\_suggested\_operation(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_OBJ\_LIST\ *operations,}
+\DoxyCodeLine{01352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_DIRECTION\ direction,}
+\DoxyCodeLine{01353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PJ\_COORD\ coord);}
+\DoxyCodeLine{01354\ }
+\DoxyCodeLine{01355\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{01356\ }
+\DoxyCodeLine{01357\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_crs\_is\_derived(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecrs}{crs}});}
+\DoxyCodeLine{01358\ }
+\DoxyCodeLine{01359\ vtklibproj\_EXPORT\ PJ\ *proj\_crs\_get\_geodetic\_crs(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecrs}{crs}});}
+\DoxyCodeLine{01360\ }
+\DoxyCodeLine{01361\ vtklibproj\_EXPORT\ PJ\ *proj\_crs\_get\_horizontal\_datum(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecrs}{crs}});}
+\DoxyCodeLine{01362\ }
+\DoxyCodeLine{01363\ vtklibproj\_EXPORT\ PJ\ *proj\_crs\_get\_sub\_crs(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecrs}{crs}},\ \textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{01364\ }
+\DoxyCodeLine{01365\ vtklibproj\_EXPORT\ PJ\ *proj\_crs\_get\_datum(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecrs}{crs}});}
+\DoxyCodeLine{01366\ }
+\DoxyCodeLine{01367\ vtklibproj\_EXPORT\ PJ\ *proj\_crs\_get\_datum\_ensemble(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecrs}{crs}});}
+\DoxyCodeLine{01368\ }
+\DoxyCodeLine{01369\ vtklibproj\_EXPORT\ PJ\ *proj\_crs\_get\_datum\_forced(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecrs}{crs}});}
+\DoxyCodeLine{01370\ }
+\DoxyCodeLine{01371\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_datum\_ensemble\_get\_member\_count(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *datum\_ensemble);}
+\DoxyCodeLine{01373\ }
+\DoxyCodeLine{01374\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_datum\_ensemble\_get\_accuracy(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *datum\_ensemble);}
+\DoxyCodeLine{01376\ }
+\DoxyCodeLine{01377\ vtklibproj\_EXPORT\ PJ\ *proj\_datum\_ensemble\_get\_member(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *datum\_ensemble,}
+\DoxyCodeLine{01379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ member\_index);}
+\DoxyCodeLine{01380\ }
+\DoxyCodeLine{01381\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_dynamic\_datum\_get\_frame\_reference\_epoch(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacedatum}{datum}});}
+\DoxyCodeLine{01383\ }
+\DoxyCodeLine{01384\ vtklibproj\_EXPORT\ PJ\ *proj\_crs\_get\_coordinate\_system(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecrs}{crs}});}
+\DoxyCodeLine{01385\ }
+\DoxyCodeLine{01386\ vtklibproj\_EXPORT\ \doxymbox{\hyperlink{group__iso19111__types_ga309b520b438e2c6d150b2e635a4afdf6}{PJ\_COORDINATE\_SYSTEM\_TYPE}}\ proj\_cs\_get\_type(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecs}{cs}});}
+\DoxyCodeLine{01388\ }
+\DoxyCodeLine{01389\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_cs\_get\_axis\_count(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01390\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecs}{cs}});}
+\DoxyCodeLine{01391\ }
+\DoxyCodeLine{01392\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_cs\_get\_axis\_info(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01393\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecs}{cs}},\ \textcolor{keywordtype}{int}\ index,}
+\DoxyCodeLine{01394\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_name,}
+\DoxyCodeLine{01395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_abbrev,}
+\DoxyCodeLine{01396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_direction,}
+\DoxyCodeLine{01397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_unit\_conv\_factor,}
+\DoxyCodeLine{01398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_unit\_name,}
+\DoxyCodeLine{01399\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_unit\_auth\_name,}
+\DoxyCodeLine{01400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_unit\_code);}
+\DoxyCodeLine{01401\ }
+\DoxyCodeLine{01402\ vtklibproj\_EXPORT\ PJ\ *proj\_get\_ellipsoid(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01404\ }
+\DoxyCodeLine{01405\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_ellipsoid\_get\_parameters(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *ellipsoid,}
+\DoxyCodeLine{01407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_semi\_major\_metre,}
+\DoxyCodeLine{01408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_semi\_minor\_metre,}
+\DoxyCodeLine{01409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ *out\_is\_semi\_minor\_computed,}
+\DoxyCodeLine{01410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_inv\_flattening);}
+\DoxyCodeLine{01411\ }
+\DoxyCodeLine{01412\ vtklibproj\_EXPORT\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *proj\_get\_celestial\_body\_name(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01413\ }
+\DoxyCodeLine{01414\ vtklibproj\_EXPORT\ PJ\ *proj\_get\_prime\_meridian(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01416\ }
+\DoxyCodeLine{01417\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_prime\_meridian\_get\_parameters(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *prime\_meridian,}
+\DoxyCodeLine{01419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_longitude,}
+\DoxyCodeLine{01420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_unit\_conv\_factor,}
+\DoxyCodeLine{01421\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_unit\_name);}
+\DoxyCodeLine{01422\ }
+\DoxyCodeLine{01423\ vtklibproj\_EXPORT\ PJ\ *proj\_crs\_get\_coordoperation(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *\doxymbox{\hyperlink{namespacecrs}{crs}});}
+\DoxyCodeLine{01425\ }
+\DoxyCodeLine{01426\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_coordoperation\_get\_method\_info(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01427\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *coordoperation,}
+\DoxyCodeLine{01428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_method\_name,}
+\DoxyCodeLine{01429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_method\_auth\_name,}
+\DoxyCodeLine{01430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_method\_code);}
+\DoxyCodeLine{01431\ }
+\DoxyCodeLine{01432\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_coordoperation\_is\_instantiable(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *coordoperation);}
+\DoxyCodeLine{01434\ }
+\DoxyCodeLine{01435\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_coordoperation\_has\_ballpark\_transformation(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *coordoperation);}
+\DoxyCodeLine{01437\ }
+\DoxyCodeLine{01438\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_coordoperation\_get\_param\_count(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01439\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *coordoperation);}
+\DoxyCodeLine{01440\ }
+\DoxyCodeLine{01441\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_coordoperation\_get\_param\_index(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01442\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *coordoperation,}
+\DoxyCodeLine{01443\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{01444\ }
+\DoxyCodeLine{01445\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_coordoperation\_get\_param(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01446\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *coordoperation,}
+\DoxyCodeLine{01447\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ index,}
+\DoxyCodeLine{01448\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_name,}
+\DoxyCodeLine{01449\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_auth\_name,}
+\DoxyCodeLine{01450\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_code,}
+\DoxyCodeLine{01451\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_value,}
+\DoxyCodeLine{01452\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_value\_string,}
+\DoxyCodeLine{01453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_unit\_conv\_factor,}
+\DoxyCodeLine{01454\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_unit\_name,}
+\DoxyCodeLine{01455\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_unit\_auth\_name,}
+\DoxyCodeLine{01456\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_unit\_code,}
+\DoxyCodeLine{01457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_unit\_category);}
+\DoxyCodeLine{01458\ }
+\DoxyCodeLine{01459\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_coordoperation\_get\_grid\_used\_count(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *coordoperation);}
+\DoxyCodeLine{01461\ }
+\DoxyCodeLine{01462\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_coordoperation\_get\_grid\_used(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01463\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *coordoperation,}
+\DoxyCodeLine{01464\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ index,}
+\DoxyCodeLine{01465\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_short\_name,}
+\DoxyCodeLine{01466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_full\_name,}
+\DoxyCodeLine{01467\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_package\_name,}
+\DoxyCodeLine{01468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **out\_url,}
+\DoxyCodeLine{01469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *out\_direct\_download,}
+\DoxyCodeLine{01470\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *out\_open\_license,}
+\DoxyCodeLine{01471\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ *out\_available);}
+\DoxyCodeLine{01472\ }
+\DoxyCodeLine{01473\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{double}\ proj\_coordoperation\_get\_accuracy(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01475\ }
+\DoxyCodeLine{01476\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_coordoperation\_get\_towgs84\_values(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01477\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *coordoperation,}
+\DoxyCodeLine{01478\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ *out\_values,}
+\DoxyCodeLine{01479\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ value\_count,}
+\DoxyCodeLine{01480\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ emit\_error\_if\_incompatible);}
+\DoxyCodeLine{01481\ }
+\DoxyCodeLine{01482\ vtklibproj\_EXPORT\ PJ\ *proj\_coordoperation\_create\_inverse(PJ\_CONTEXT\ *ctx,\ \textcolor{keyword}{const}\ PJ\ *obj);}
+\DoxyCodeLine{01483\ }
+\DoxyCodeLine{01484\ }
+\DoxyCodeLine{01485\ vtklibproj\_EXPORT\ \textcolor{keywordtype}{int}\ proj\_concatoperation\_get\_step\_count(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01486\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *concatoperation);}
+\DoxyCodeLine{01487\ }
+\DoxyCodeLine{01488\ vtklibproj\_EXPORT\ PJ\ *proj\_concatoperation\_get\_step(PJ\_CONTEXT\ *ctx,}
+\DoxyCodeLine{01489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ PJ\ *concatoperation,}
+\DoxyCodeLine{01490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ i\_step);}
+\DoxyCodeLine{01491\ }
+\DoxyCodeLine{01493\ }
+\DoxyCodeLine{01494\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{01495\ \}}
+\DoxyCodeLine{01496\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01497\ }
+\DoxyCodeLine{01498\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ ndef\ PROJ\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

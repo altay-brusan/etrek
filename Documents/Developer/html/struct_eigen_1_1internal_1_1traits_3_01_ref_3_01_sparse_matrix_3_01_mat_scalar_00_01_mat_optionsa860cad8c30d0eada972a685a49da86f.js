@@ -1,0 +1,4 @@
+var struct_eigen_1_1internal_1_1traits_3_01_ref_3_01_sparse_matrix_3_01_mat_scalar_00_01_mat_optionsa860cad8c30d0eada972a685a49da86f =
+[
+    [ "match", "struct_eigen_1_1internal_1_1traits_3_01_ref_3_01_sparse_matrix_3_01_mat_scalar_00_01_mat_optionsc6ef0ce4e339306d76a1e27f17721ded.html", null ]
+];

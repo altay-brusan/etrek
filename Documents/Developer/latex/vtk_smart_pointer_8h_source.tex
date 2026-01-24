@@ -1,0 +1,284 @@
+\doxysection{vtk\+Smart\+Pointer.\+h}
+\hypertarget{vtk_smart_pointer_8h_source}{}\label{vtk_smart_pointer_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkSmartPointer.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkSmartPointer.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#ifndef\ vtkSmartPointer\_h}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#define\ vtkSmartPointer\_h}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointerBase.h"{}}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_meta_8h}{vtkMeta.h}}"{}}\ \textcolor{comment}{//\ for\ IsComplete}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}vtkNew.h"{}}\ \ \textcolor{comment}{//\ for\ vtkNew.h}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <functional>}\ \ \textcolor{comment}{//\ for\ std::hash}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <type\_traits>}\ \textcolor{comment}{//\ for\ is\_base\_of}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <utility>}\ \ \ \ \ \textcolor{comment}{//\ for\ std::move}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00024\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00025\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ \ \ \textcolor{comment}{//\ These\ static\ asserts\ only\ fire\ when\ the\ function\ calling\ CheckTypes\ is}}
+\DoxyCodeLine{00028\ \ \ \textcolor{comment}{//\ used.\ Thus,\ this\ smart\ pointer\ class\ may\ still\ be\ used\ as\ a\ member\ variable}}
+\DoxyCodeLine{00029\ \ \ \textcolor{comment}{//\ with\ a\ forward\ declared\ T,\ so\ long\ as\ T\ is\ defined\ by\ the\ time\ the\ calling}}
+\DoxyCodeLine{00030\ \ \ \textcolor{comment}{//\ function\ is\ used.}}
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U\ =\ T>}
+\DoxyCodeLine{00032\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ CheckTypes()\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00033\ \ \ \{}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keyword}{static\_assert}(vtk::detail::IsComplete<T>::value,}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}vtkSmartPointer<T>'s\ T\ type\ has\ not\ been\ defined.\ Missing\ "{}}}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}include?"{}});}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keyword}{static\_assert}(vtk::detail::IsComplete<U>::value,}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Cannot\ store\ an\ object\ with\ undefined\ type\ in\ "{}}}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}vtkSmartPointer.\ Missing\ include?"{}});}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keyword}{static\_assert}(std::is\_base\_of<T,\ U>::value,}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Argument\ type\ is\ not\ compatible\ with\ vtkSmartPointer<T>'s\ "{}}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}T\ type."{}});}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keyword}{static\_assert}(std::is\_base\_of<vtkObjectBase,\ T>::value,}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}vtkSmartPointer\ can\ only\ be\ used\ with\ subclasses\ of\ "{}}}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}vtkObjectBase."{}});}
+\DoxyCodeLine{00046\ \ \ \}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00052\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}()\ noexcept}
+\DoxyCodeLine{00053\ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}()}
+\DoxyCodeLine{00054\ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00062\ \ \ \textcolor{comment}{//\ Need\ both\ overloads\ because\ the\ copy-\/constructor\ must\ be\ non-\/templated:}}
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a16b8bd1ed5b905030f1e3fb286db75d4}{vtkSmartPointer}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}\&\ r)}
+\DoxyCodeLine{00064\ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}(r)}
+\DoxyCodeLine{00065\ \ \ \{}
+\DoxyCodeLine{00066\ \ \ \}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ U>}
+\DoxyCodeLine{00069\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<U>}}\&\ r)}
+\DoxyCodeLine{00070\ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_smart_pointer_base}{vtkSmartPointerBase}}(r)}
+\DoxyCodeLine{00071\ \ \ \{}
+\DoxyCodeLine{00072\ \ \ \ \ vtkSmartPointer::CheckTypes<U>();}
+\DoxyCodeLine{00073\ \ \ \}}
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{/*\ @\}\ **/}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00080\ \ \ \textcolor{comment}{//\ Need\ both\ overloads\ because\ the\ move-\/constructor\ must\ be\ non-\/templated:}}
+\DoxyCodeLine{00081\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a3375f26edb1d714ce365bd0df7d40d2d}{vtkSmartPointer}}(\doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}\&\&\ r)\ noexcept}
+\DoxyCodeLine{00082\ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}(std::move(r))}
+\DoxyCodeLine{00083\ \ \ \{}
+\DoxyCodeLine{00084\ \ \ \}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ U>}
+\DoxyCodeLine{00087\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}(\doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<U>}}\&\&\ r)\ noexcept}
+\DoxyCodeLine{00088\ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}(std::move(r))}
+\DoxyCodeLine{00089\ \ \ \{}
+\DoxyCodeLine{00090\ \ \ \ \ vtkSmartPointer::CheckTypes<U>();}
+\DoxyCodeLine{00091\ \ \ \}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00098\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a1d3f6c522727dfce8b137ef630adf3e0}{vtkSmartPointer}}(T*\ r)}
+\DoxyCodeLine{00099\ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}(r)}
+\DoxyCodeLine{00100\ \ \ \{}
+\DoxyCodeLine{00101\ \ \ \ \ vtkSmartPointer::CheckTypes();}
+\DoxyCodeLine{00102\ \ \ \}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00105\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_new}{vtkNew<U>}}\&\ r)}
+\DoxyCodeLine{00106\ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_smart_pointer_base}{vtkSmartPointerBase}}(r.Object)}
+\DoxyCodeLine{00107\ \ \ \{\ \textcolor{comment}{//\ Create\ a\ new\ reference\ on\ copy}}
+\DoxyCodeLine{00108\ \ \ \ \ vtkSmartPointer::CheckTypes<U>();}
+\DoxyCodeLine{00109\ \ \ \}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00116\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00117\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a125b78028b848cbc5a70010e3bedb1e2}{vtkSmartPointer}}(\doxymbox{\hyperlink{classvtk_new}{vtkNew<U>}}\&\&\ r)\ noexcept}
+\DoxyCodeLine{00118\ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}(r.Object,\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_1_1_no_reference}{vtkSmartPointerBase::NoReference}}\{\})}
+\DoxyCodeLine{00119\ \ \ \{\ \textcolor{comment}{//\ Steal\ the\ reference\ on\ move}}
+\DoxyCodeLine{00120\ \ \ \ \ vtkSmartPointer::CheckTypes<U>();}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ r.Object\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00123\ \ \ \}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{comment}{//\ Need\ this\ since\ the\ compiler\ won't\ recognize\ template\ functions\ as}}
+\DoxyCodeLine{00131\ \ \ \textcolor{comment}{//\ assignment\ operators.}}
+\DoxyCodeLine{00132\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}\&\ \doxymbox{\hyperlink{classvtk_smart_pointer_a3631e743bd32f8a7f6e496b3e163e6bd}{operator=}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}\&\ r)}
+\DoxyCodeLine{00133\ \ \ \{}
+\DoxyCodeLine{00134\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_smart_pointer_base_a4cdad4534ce3721e3ba2f5103e066f02}{vtkSmartPointerBase::operator=}}(r.\doxymbox{\hyperlink{classvtk_smart_pointer_a89c690957726aeb3f2d65c0eecdf1aa2}{GetPointer}}());}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00136\ \ \ \}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ U>}
+\DoxyCodeLine{00139\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer}}\&\ \doxymbox{\hyperlink{classvtk_smart_pointer_a3631e743bd32f8a7f6e496b3e163e6bd}{operator=}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<U>}}\&\ r)}
+\DoxyCodeLine{00140\ \ \ \{}
+\DoxyCodeLine{00141\ \ \ \ \ vtkSmartPointer::CheckTypes<U>();}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_smart_pointer_base_a4cdad4534ce3721e3ba2f5103e066f02}{vtkSmartPointerBase::operator=}}(r.\doxymbox{\hyperlink{classvtk_smart_pointer_a89c690957726aeb3f2d65c0eecdf1aa2}{GetPointer}}());}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00145\ \ \ \}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00152\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00153\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}\&\ \doxymbox{\hyperlink{classvtk_smart_pointer_a400c03e534a7e60da1c7c81dfea6ce16}{operator=}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_new}{vtkNew<U>}}\&\ r)}
+\DoxyCodeLine{00154\ \ \ \{}
+\DoxyCodeLine{00155\ \ \ \ \ vtkSmartPointer::CheckTypes<U>();}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_smart_pointer_base_a4cdad4534ce3721e3ba2f5103e066f02}{vtkSmartPointerBase::operator=}}(r.Object);}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00159\ \ \ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00165\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00166\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}\&\ \doxymbox{\hyperlink{classvtk_smart_pointer_a1f072d75581cfcd7d59a5f9d2d9f9aa3}{operator=}}(U*\ r)}
+\DoxyCodeLine{00167\ \ \ \{}
+\DoxyCodeLine{00168\ \ \ \ \ vtkSmartPointer::CheckTypes<U>();}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_smart_pointer_base_a4cdad4534ce3721e3ba2f5103e066f02}{vtkSmartPointerBase::operator=}}(r);}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00172\ \ \ \}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00178\ \ \ T*\ \doxymbox{\hyperlink{classvtk_smart_pointer_a89c690957726aeb3f2d65c0eecdf1aa2}{GetPointer}}()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}T*\textcolor{keyword}{>}(this-\/>Object);\ \}}
+\DoxyCodeLine{00179\ \ \ T*\ Get()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}T*\textcolor{keyword}{>}(this-\/>Object);\ \}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00185\ \ \ \textcolor{keyword}{operator}\ T*()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}T*\textcolor{keyword}{>}(this-\/>Object);\ \}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00191\ \ \ T\&\ \doxymbox{\hyperlink{classvtk_smart_pointer_a99af15bbe9b748651075213b31dccb01}{operator*}}()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{static\_cast<}T*\textcolor{keyword}{>}(this-\/>Object);\ \}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00196\ \ \ T*\ \doxymbox{\hyperlink{classvtk_smart_pointer_a5a4cef398c5d51fad233e6739b54548e}{operator-\/>}}()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}T*\textcolor{keyword}{>}(this-\/>Object);\ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00210\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a2d62985395d352803fe2c60173732eb7}{TakeReference}}(T*\ t)\ \{\ *\textcolor{keyword}{this}\ =\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}(t,\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_1_1_no_reference}{NoReference}}());\ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00216\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}\ \doxymbox{\hyperlink{classvtk_smart_pointer_af3837bf67dd1f35b0de2ba649dc9ffe4}{New}}()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}(T::New(),\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_1_1_no_reference}{NoReference}}());\ \}}
+\DoxyCodeLine{00217\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}...\ ArgsT>}
+\DoxyCodeLine{00218\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<T>}}\ \doxymbox{\hyperlink{classvtk_smart_pointer_af3837bf67dd1f35b0de2ba649dc9ffe4}{New}}(ArgsT\&\&...\ args)}
+\DoxyCodeLine{00219\ \ \ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}(T::New(std::forward<ArgsT>(args)...),\ NoReference());}
+\DoxyCodeLine{00221\ \ \ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00229\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}\ \doxymbox{\hyperlink{classvtk_smart_pointer_ac690233f8c8d62bced592bebd926b5fe}{ExtendedNew}}()}
+\DoxyCodeLine{00230\ \ \ \{}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}(T::ExtendedNew(),\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_1_1_no_reference}{NoReference}}());}
+\DoxyCodeLine{00232\ \ \ \}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00237\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a04a2f128e0f1d422e930f1f0b6b6076e}{NewInstance}}(T*\ t)}
+\DoxyCodeLine{00238\ \ \ \{}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}(t-\/>NewInstance(),\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_1_1_no_reference}{NoReference}}());}
+\DoxyCodeLine{00240\ \ \ \}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a84ec56a8db08dffd7478f67806bbdae5}{Take}}(T*\ t)\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer<T>}}(t,\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_1_1_no_reference}{NoReference}}());\ \}}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \textcolor{comment}{//\ Work-\/around\ for\ HP\ and\ IBM\ overload\ resolution\ bug.\ \ Since}}
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{//\ NullPointerOnly\ is\ a\ private\ type\ the\ only\ pointer\ value\ that\ can}}
+\DoxyCodeLine{00259\ \ \ \textcolor{comment}{//\ be\ passed\ by\ user\ code\ is\ a\ null\ pointer.\ \ This\ operator\ will\ be}}
+\DoxyCodeLine{00260\ \ \ \textcolor{comment}{//\ chosen\ by\ the\ compiler\ when\ comparing\ against\ null\ explicitly\ and}}
+\DoxyCodeLine{00261\ \ \ \textcolor{comment}{//\ avoid\ the\ bogus\ ambiguous\ overload\ error.}}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\#if\ defined(\_\_HP\_aCC)\ ||\ defined(\_\_IBMCPP\_\_)}}
+\DoxyCodeLine{00263\ \textcolor{preprocessor}{\#define\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR\_WORKAROUND(op)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00264\ \textcolor{preprocessor}{\ \ bool\ operator\ op(NullPointerOnly*)\ const\ \{\ return\ ::operator\ op(*this,\ 0);\ \}}}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00267\ \ \ \textcolor{keyword}{class\ }NullPointerOnly}
+\DoxyCodeLine{00268\ \ \ \{}
+\DoxyCodeLine{00269\ \ \ \};}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00272\ \ \ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR\_WORKAROUND(==)}
+\DoxyCodeLine{00273\ \ \ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR\_WORKAROUND(!=)}
+\DoxyCodeLine{00274\ \ \ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR\_WORKAROUND(<)}
+\DoxyCodeLine{00275\ \ \ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR\_WORKAROUND(<=)}
+\DoxyCodeLine{00276\ \ \ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR\_WORKAROUND(>)}
+\DoxyCodeLine{00277\ \ \ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR\_WORKAROUND(>=)}
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\#undef\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR\_WORKAROUND}}
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00280\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00281\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer_a087a1a9a4454dcf3612ee7831da81a14}{vtkSmartPointer}}(T*\ r,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_1_1_no_reference}{NoReference}}\&\ n)}
+\DoxyCodeLine{00282\ \ \ \ \ :\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}(r,\ n)}
+\DoxyCodeLine{00283\ \ \ \{}
+\DoxyCodeLine{00284\ \ \ \}}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00287\ \ \ \textcolor{comment}{//\ These\ are\ purposely\ not\ implemented\ to\ prevent\ callers\ from}}
+\DoxyCodeLine{00288\ \ \ \textcolor{comment}{//\ trying\ to\ take\ references\ from\ other\ smart\ pointers.}}
+\DoxyCodeLine{00289\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a2d62985395d352803fe2c60173732eb7}{TakeReference}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00290\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a84ec56a8db08dffd7478f67806bbdae5}{Take}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_smart_pointer_base_a8fb92c34214a0d614cbb2d408b5c3899}{vtkSmartPointerBase}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00291\ \};}
+\DoxyCodeLine{00292\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00294\ \textcolor{keyword}{namespace\ }std}
+\DoxyCodeLine{00295\ \{}
+\DoxyCodeLine{00296\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00297\ \textcolor{keyword}{struct\ }hash<\doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer}}<T>>}
+\DoxyCodeLine{00298\ \{}
+\DoxyCodeLine{00299\ \ \ std::size\_t\ operator()(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<T>}}\&\ p)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>Hasher(p.Get());\ \}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ std::hash<T*>\ Hasher;}
+\DoxyCodeLine{00302\ \};}
+\DoxyCodeLine{00303\ \}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\#define\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR(op)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\ \ template\ <class\ T,\ class\ U>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\ \ inline\ bool\ operator\ op(const\ vtkSmartPointer<T>\&\ l,\ const\ vtkSmartPointer<U>\&\ r)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\ \ \ \ return\ (l.GetPointer()\ op\ r.GetPointer());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\ \ template\ <class\ T,\ class\ U>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\ \ inline\ bool\ operator\ op(T*\ l,\ const\ vtkSmartPointer<U>\&\ r)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\ \ \ \ return\ (l\ op\ r.GetPointer());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\ \ template\ <class\ T,\ class\ U>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00318\ \textcolor{preprocessor}{\ \ inline\ bool\ operator\ op(const\ vtkSmartPointer<T>\&\ l,\ U*\ r)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\ \ \ \ return\ (l.GetPointer()\ op\ r);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00321\ \textcolor{preprocessor}{\ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00322\ \textcolor{preprocessor}{\ \ template\ <class\ T,\ class\ U>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\ \ inline\ bool\ operator\ op(const\ vtkNew<T>\&\ l,\ const\ vtkSmartPointer<U>\&\ r)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00324\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\ \ \ \ return\ (l.GetPointer()\ op\ r.GetPointer());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\ \ template\ <class\ T,\ class\ U>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00328\ \textcolor{preprocessor}{\ \ inline\ bool\ operator\ op(const\ vtkSmartPointer<T>\&\ l,\ const\ vtkNew<U>\&\ r)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\ \ \ \ return\ (l.GetPointer()\ op\ r.GetPointer);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\ \ \}}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00336\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR(==)}
+\DoxyCodeLine{00337\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR(!=)}
+\DoxyCodeLine{00338\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR(<)}
+\DoxyCodeLine{00339\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR(<=)}
+\DoxyCodeLine{00340\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR(>)}
+\DoxyCodeLine{00341\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR(>=)}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{\#undef\ VTK\_SMART\_POINTER\_DEFINE\_OPERATOR}}
+\DoxyCodeLine{00344\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00347\ \{}
+\DoxyCodeLine{00348\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00352\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00353\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<T>}}\ \doxymbox{\hyperlink{namespacevtk_aae08788828779d09a528512f63572043}{MakeSmartPointer}}(T*\ obj)}
+\DoxyCodeLine{00354\ \{}
+\DoxyCodeLine{00355\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<T>}}\{\ obj\ \};}
+\DoxyCodeLine{00356\ \}}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00360\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00361\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<T>}}\ \doxymbox{\hyperlink{namespacevtk_a183c03f93ce345425a3b21cd4ac749ef}{TakeSmartPointer}}(T*\ obj)}
+\DoxyCodeLine{00362\ \{}
+\DoxyCodeLine{00363\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_smart_pointer_a84ec56a8db08dffd7478f67806bbdae5}{vtkSmartPointer<T>::Take}}(obj);}
+\DoxyCodeLine{00364\ \}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00367\ \}\ \textcolor{comment}{//\ end\ namespace\ vtk}}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00369\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00373\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00374\ \textcolor{keyword}{inline}\ ostream\&\ operator<<(ostream\&\ os,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<T>}}\&\ p)}
+\DoxyCodeLine{00375\ \{}
+\DoxyCodeLine{00376\ \ \ \textcolor{keywordflow}{return}\ os\ <<\ static\_cast<const\ vtkSmartPointerBase\&>(p);}
+\DoxyCodeLine{00377\ \}}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00380\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00381\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkSmartPointer.h}}
+
+\end{DoxyCode}

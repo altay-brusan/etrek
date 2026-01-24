@@ -1,0 +1,192 @@
+\doxysection{vtk\+Collision\+Detection\+Filter.\+h}
+\hypertarget{vtk_collision_detection_filter_8h_source}{}\label{vtk_collision_detection_filter_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkCollisionDetectionFilter.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkCollisionDetectionFilter.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Goodwin\ Lawlor\ All\ rights\ reserved}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ @warning}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ Currently\ only\ triangles\ are\ processed.\ Use\ vtkTriangleFilter\ to}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ *\ convert\ any\ strips\ or\ polygons\ to\ triangles.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ @cite}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *\ Goodwin\ Lawlor\ <goodwin.lawlor@ucd.ie>,\ University\ College\ Dublin,}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ who\ wrote\ this\ class.}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ Thanks\ to\ Peter\ C.\ Everett}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ <pce@world.std.com>\ for\ vtkOBBTree::IntersectWithOBBTree()\ in}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *\ particular,\ and\ all\ those\ who\ contributed\ to\ vtkOBBTree\ in\ general.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *\ The\ original\ code\ was\ contained\ here:\ https://github.com/glawlor/vtkbioeng}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00044\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ \ @see}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ \ vtkTriangleFilter,\ vtkSelectPolyData,\ vtkOBBTree}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#ifndef\ vtkCollisionDetectionFilter\_h}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#define\ vtkCollisionDetectionFilter\_h}}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#include\ "{}vtkFieldData.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ GetContactCells}}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#include\ "{}vtkFiltersModelingModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#include\ "{}vtkPolyDataAlgorithm.h"{}}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00058\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_o_b_b_tree}{vtkOBBTree}};}
+\DoxyCodeLine{00059\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}};}
+\DoxyCodeLine{00060\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_points}{vtkPoints}};}
+\DoxyCodeLine{00061\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}};}
+\DoxyCodeLine{00062\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_linear_transform}{vtkLinearTransform}};}
+\DoxyCodeLine{00063\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_id_type_array}{vtkIdTypeArray}};}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{keyword}{class\ }VTKFILTERSMODELING\_EXPORT\ vtkCollisionDetectionFilter\ :\ \textcolor{keyword}{public}\ vtkPolyDataAlgorithm}
+\DoxyCodeLine{00066\ \{}
+\DoxyCodeLine{00067\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{static}\ vtkCollisionDetectionFilter*\ \doxymbox{\hyperlink{classvtk_collision_detection_filter_a8d3b1e43077e334cbde1aafbbbc26c72}{New}}();}
+\DoxyCodeLine{00073\ \ \ vtkTypeMacro(vtkCollisionDetectionFilter,\ vtkPolyDataAlgorithm);}
+\DoxyCodeLine{00074\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_collision_detection_filter_aaab54a5dd497abc20485e18d62245f80}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \textcolor{keyword}{enum}\ CollisionModes}
+\DoxyCodeLine{00078\ \ \ \{}
+\DoxyCodeLine{00079\ \ \ \ \ VTK\_ALL\_CONTACTS\ =\ 0,}
+\DoxyCodeLine{00080\ \ \ \ \ VTK\_FIRST\_CONTACT\ =\ 1,}
+\DoxyCodeLine{00081\ \ \ \ \ VTK\_HALF\_CONTACTS\ =\ 2}
+\DoxyCodeLine{00082\ \ \ \};}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00090\ \ \ \doxymbox{\hyperlink{classvtk_collision_detection_filter_ab120291d445f948e4dc20e5ec3cbefb8}{vtkSetClampMacro}}(CollisionMode,\ \textcolor{keywordtype}{int},\ VTK\_ALL\_CONTACTS,\ VTK\_HALF\_CONTACTS);}
+\DoxyCodeLine{00091\ \ \ vtkGetMacro(CollisionMode,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{keywordtype}{void}\ SetCollisionModeToAllContacts()\ \{\ this-\/>SetCollisionMode(VTK\_ALL\_CONTACTS);\ \}}
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordtype}{void}\ SetCollisionModeToFirstContact()\ \{\ this-\/>SetCollisionMode(VTK\_FIRST\_CONTACT);\ \}}
+\DoxyCodeLine{00095\ \ \ \textcolor{keywordtype}{void}\ SetCollisionModeToHalfContacts()\ \{\ this-\/>SetCollisionMode(VTK\_HALF\_CONTACTS);\ \}}
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ GetCollisionModeAsString()}
+\DoxyCodeLine{00097\ \ \ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>CollisionMode\ ==\ VTK\_ALL\_CONTACTS)}
+\DoxyCodeLine{00099\ \ \ \ \ \{}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}AllContacts"{}};}
+\DoxyCodeLine{00101\ \ \ \ \ \}}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (this-\/>CollisionMode\ ==\ VTK\_FIRST\_CONTACT)}
+\DoxyCodeLine{00103\ \ \ \ \ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}FirstContact"{}};}
+\DoxyCodeLine{00105\ \ \ \ \ \}}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00107\ \ \ \ \ \{}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}HalfContacts"{}};}
+\DoxyCodeLine{00109\ \ \ \ \ \}}
+\DoxyCodeLine{00110\ \ \ \}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_collision_detection_filter_ab40eab669478b747d5f3e76eacf8fe1d}{IntersectPolygonWithPolygon}}(\textcolor{keywordtype}{int}\ npts,\ \textcolor{keywordtype}{double}*\ pts,\ \textcolor{keywordtype}{double}\ bounds[6],\ \textcolor{keywordtype}{int}\ npts2,\ \textcolor{keywordtype}{double}*\ pts2,}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordtype}{double}\ bounds2[6],\ \textcolor{keywordtype}{double}\ tol2,\ \textcolor{keywordtype}{double}\ x1[3],\ \textcolor{keywordtype}{double}\ x2[3],\ \textcolor{keywordtype}{int}\ CollisionMode);}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_collision_detection_filter_aaabafe1a1ecae517c9559b2a88e1f519}{SetInputData}}(\textcolor{keywordtype}{int}\ i,\ \doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}}*\ model);}
+\DoxyCodeLine{00130\ \ \ \doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}}*\ GetInputData(\textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00140\ \ \ \doxymbox{\hyperlink{classvtk_id_type_array}{vtkIdTypeArray}}*\ \doxymbox{\hyperlink{classvtk_collision_detection_filter_a30e5fd1cab7365f82cd8b3176d635174}{GetContactCells}}(\textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00147\ \ \ \doxymbox{\hyperlink{classvtk_algorithm_output}{vtkAlgorithmOutput}}*\ \doxymbox{\hyperlink{classvtk_collision_detection_filter_a028989fee686fadf176cdea313dbab85}{GetContactsOutputPort}}()\ \{\ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_algorithm_ae9008c5acfe2dfb68a03afb3852685e7}{GetOutputPort}}(2);\ \}}
+\DoxyCodeLine{00148\ \ \ \doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}}*\ GetContactsOutput()\ \{\ \textcolor{keywordflow}{return}\ this-\/>GetOutput(2);\ \}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00152\ \ \ \textcolor{comment}{/*\ Specify\ the\ transform\ object\ used\ to\ transform\ models.\ Alternatively,\ matrices}}
+\DoxyCodeLine{00153\ \textcolor{comment}{\ \ \ *\ can\ be\ set\ instead.}}
+\DoxyCodeLine{00154\ \textcolor{comment}{\`{}\ \ */}}
+\DoxyCodeLine{00155\ \ \ \textcolor{keywordtype}{void}\ SetTransform(\textcolor{keywordtype}{int}\ i,\ vtkLinearTransform*\ transform);}
+\DoxyCodeLine{00156\ \ \ vtkLinearTransform*\ GetTransform(\textcolor{keywordtype}{int}\ i)\ \{\ \textcolor{keywordflow}{return}\ this-\/>Transform[i];\ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{comment}{/*\ Specify\ the\ matrix\ object\ used\ to\ transform\ models.}}
+\DoxyCodeLine{00161\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{void}\ SetMatrix(\textcolor{keywordtype}{int}\ i,\ vtkMatrix4x4*\ matrix);}
+\DoxyCodeLine{00163\ \ \ vtkMatrix4x4*\ GetMatrix(\textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00167\ \ \ \textcolor{comment}{/*\ Set\ and\ Get\ the\ obb\ tolerance\ (absolute\ value,\ in\ world\ coords).\ Default\ is\ 0.001}}
+\DoxyCodeLine{00168\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00169\ \ \ vtkSetMacro(BoxTolerance,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00170\ \ \ vtkGetMacro(BoxTolerance,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00174\ \ \ \textcolor{comment}{/*\ Set\ and\ Get\ the\ cell\ tolerance\ (squared\ value).\ Default\ is\ 0.0}}
+\DoxyCodeLine{00175\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00176\ \ \ vtkSetMacro(CellTolerance,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00177\ \ \ vtkGetMacro(CellTolerance,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00181\ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00182\ \textcolor{comment}{\ \ \ *\ Set\ and\ Get\ the\ the\ flag\ to\ visualize\ the\ contact\ cells.\ If\ set\ the\ contacting\ cells}}
+\DoxyCodeLine{00183\ \textcolor{comment}{\ \ \ *\ will\ be\ coloured\ from\ red\ through\ to\ blue,\ with\ collisions\ first\ determined\ coloured\ red.}}
+\DoxyCodeLine{00184\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00185\ \ \ vtkSetMacro(GenerateScalars,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00186\ \ \ vtkGetMacro(GenerateScalars,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00187\ \ \ vtkBooleanMacro(GenerateScalars,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00191\ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00192\ \textcolor{comment}{\ \ \ *\ Get\ the\ number\ of\ contacting\ cell\ pairs.}}
+\DoxyCodeLine{00193\ \textcolor{comment}{\ \ \ *}}
+\DoxyCodeLine{00194\ \textcolor{comment}{\ \ \ *\ @note\ If\ FirstContact\ mode\ is\ set,\ it\ will\ return\ either\ 0\ or\ 1.}}
+\DoxyCodeLine{00195\ \textcolor{comment}{\ \ \ *\ @warning\ It\ is\ mandatory\ to\ call\ Update()\ before,\ otherwise\ -\/1\ is\ returned}}
+\DoxyCodeLine{00196\ \textcolor{comment}{\ \ \ *\ @return\ -\/1\ if\ internal\ nullptr\ is\ found,\ otherwise\ the\ number\ of\ contacts\ found}}
+\DoxyCodeLine{00197\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00198\ \ \ \textcolor{keywordtype}{int}\ GetNumberOfContacts();}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00202\ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00203\ \textcolor{comment}{\ \ \ *\ Get\ the\ number\ of\ box\ tests}}
+\DoxyCodeLine{00204\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00205\ \ \ \doxymbox{\hyperlink{classvtk_collision_detection_filter_a9508339604c8842739e3a958f09f60f7}{vtkGetMacro}}(NumberOfBoxTests,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00209\ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00210\ \textcolor{comment}{\ \ \ *\ Set\ and\ Get\ the\ number\ of\ cells\ in\ each\ OBB.\ Default\ is\ 2}}
+\DoxyCodeLine{00211\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00212\ \ \ vtkSetMacro(NumberOfCellsPerNode,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00213\ \ \ vtkGetMacro(NumberOfCellsPerNode,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00217\ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00218\ \textcolor{comment}{\ \ \ *\ Set\ and\ Get\ the\ opacity\ of\ the\ polydata\ output\ when\ a\ collision\ takes\ place.}}
+\DoxyCodeLine{00219\ \textcolor{comment}{\ \ \ *\ Default\ is\ 1.0}}
+\DoxyCodeLine{00220\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00221\ \ \ \doxymbox{\hyperlink{classvtk_collision_detection_filter_ab120291d445f948e4dc20e5ec3cbefb8}{vtkSetClampMacro}}(Opacity,\ \textcolor{keywordtype}{float},\ 0.0,\ 1.0);}
+\DoxyCodeLine{00222\ \ \ vtkGetMacro(Opacity,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00226\ \ \ \textcolor{comment}{/*}}
+\DoxyCodeLine{00227\ \textcolor{comment}{\ \ \ *\ Return\ the\ MTime\ also\ considering\ the\ transform.}}
+\DoxyCodeLine{00228\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00229\ \ \ vtkMTimeType\ \doxymbox{\hyperlink{classvtk_collision_detection_filter_a5f4cad1b97abb14ff538870e97e57764}{GetMTime}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00233\ \ \ vtkCollisionDetectionFilter();}
+\DoxyCodeLine{00234\ \ \ \string~vtkCollisionDetectionFilter()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \textcolor{comment}{//\ Usual\ data\ generation\ method}}
+\DoxyCodeLine{00237\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_collision_detection_filter_a207ded72a0598e468048d96afea75ad9}{RequestData}}(\doxymbox{\hyperlink{classvtk_information}{vtkInformation}}*,\ \doxymbox{\hyperlink{classvtk_information_vector}{vtkInformationVector}}**,\ \doxymbox{\hyperlink{classvtk_information_vector}{vtkInformationVector}}*)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00238\ \ \ \doxymbox{\hyperlink{classvtk_o_b_b_tree}{vtkOBBTree}}*\ Tree0;}
+\DoxyCodeLine{00239\ \ \ \doxymbox{\hyperlink{classvtk_o_b_b_tree}{vtkOBBTree}}*\ Tree1;}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \doxymbox{\hyperlink{classvtk_linear_transform}{vtkLinearTransform}}*\ Transform[2];}
+\DoxyCodeLine{00242\ \ \ \doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}}*\ Matrix[2];}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \textcolor{keywordtype}{int}\ NumberOfBoxTests;}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \ \ \textcolor{keywordtype}{int}\ NumberOfCellsPerNode;}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \textcolor{keywordtype}{int}\ GenerateScalars;}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \textcolor{keywordtype}{float}\ BoxTolerance;}
+\DoxyCodeLine{00251\ \ \ \textcolor{keywordtype}{float}\ CellTolerance;}
+\DoxyCodeLine{00252\ \ \ \textcolor{keywordtype}{float}\ Opacity;}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \ \ \textcolor{keywordtype}{int}\ CollisionMode;}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00257\ \ \ vtkCollisionDetectionFilter(\textcolor{keyword}{const}\ vtkCollisionDetectionFilter\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00258\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkCollisionDetectionFilter\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00259\ \};}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

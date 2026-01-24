@@ -1,0 +1,1097 @@
+\doxysection{vtk\+Data\+Array\+Tuple\+Range\+\_\+\+AOS.\+h}
+\hypertarget{vtk_data_array_tuple_range___a_o_s_8h_source}{}\label{vtk_data_array_tuple_range___a_o_s_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataArrayTupleRange\_AOS.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataArrayTupleRange\_AOS.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#ifndef\ vtkDataArrayTupleRange\_AOS\_h}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#define\ vtkDataArrayTupleRange\_AOS\_h}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}vtkAOSDataArrayTemplate.h"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_data_array_meta_8h}{vtkDataArrayMeta.h}}"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}vtkDataArrayTupleRange\_Generic.h"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}vtkDebugRangeIterators.h"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ Disable\ this\ specialization\ when\ iterator\ debugging\ is\ requested:}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ VTK\_DEBUG\_RANGE\_ITERATORS}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ VTK\_ITER\_OPTIMIZE\_START}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00028\ \{}
+\DoxyCodeLine{00029\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ Forward\ decs\ for\ friends/args}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType>}
+\DoxyCodeLine{00033\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference}};}
+\DoxyCodeLine{00034\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType>}
+\DoxyCodeLine{00035\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference}};}
+\DoxyCodeLine{00036\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType>}
+\DoxyCodeLine{00037\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_iterator}{ConstTupleIterator}};}
+\DoxyCodeLine{00038\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType>}
+\DoxyCodeLine{00039\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_iterator}{TupleIterator}};}
+\DoxyCodeLine{00040\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType>}
+\DoxyCodeLine{00041\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_range}{TupleRange}};}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ Const\ tuple\ reference}}
+\DoxyCodeLine{00045\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ValueType,\ ComponentIdType\ TupleSize>}
+\DoxyCodeLine{00046\ \textcolor{keyword}{struct\ }ConstTupleReference<\doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate}}<ValueType>,\ TupleSize>}
+\DoxyCodeLine{00047\ \{}
+\DoxyCodeLine{00048\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{using\ }ArrayType\ =\ \doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate<ValueType>}};}
+\DoxyCodeLine{00050\ \ \ \textcolor{keyword}{using\ }NumCompsType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_generic_tuple_size}{GenericTupleSize<TupleSize>}};}
+\DoxyCodeLine{00051\ \ \ \textcolor{keyword}{using\ }APIType\ =\ ValueType;}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00054\ \ \ \textcolor{keyword}{using\ }size\_type\ =\ ComponentIdType;}
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ APIType;}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{using\ }const\_reference\ =\ \textcolor{keyword}{const}\ ValueType\&;}
+\DoxyCodeLine{00057\ \ \ \textcolor{keyword}{using\ }iterator\ =\ \textcolor{keyword}{const}\ ValueType*;}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{using\ }const\_iterator\ =\ \textcolor{keyword}{const}\ ValueType*;}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00061\ \ \ ConstTupleReference()\ noexcept}
+\DoxyCodeLine{00062\ \ \ \ \ :\ Tuple\{\ \textcolor{keyword}{nullptr}\ \}}
+\DoxyCodeLine{00063\ \ \ \{}
+\DoxyCodeLine{00064\ \ \ \}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00067\ \ \ ConstTupleReference(\textcolor{keyword}{const}\ ValueType*\ tuple,\ NumCompsType\ numComps)\ noexcept}
+\DoxyCodeLine{00068\ \ \ \ \ :\ Tuple(tuple)}
+\DoxyCodeLine{00069\ \ \ \ \ ,\ NumComps(numComps)}
+\DoxyCodeLine{00070\ \ \ \{}
+\DoxyCodeLine{00071\ \ \ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00074\ \ \ ConstTupleReference(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference<ArrayType,\ TupleSize>}}\&\ o)\ noexcept}
+\DoxyCodeLine{00075\ \ \ \ \ :\ Tuple\{\ o.Tuple\ \}}
+\DoxyCodeLine{00076\ \ \ \ \ ,\ NumComps\{\ o.NumComps\ \}}
+\DoxyCodeLine{00077\ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00081\ \ \ ConstTupleReference(\textcolor{keyword}{const}\ ConstTupleReference\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00082\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00083\ \ \ ConstTupleReference(ConstTupleReference\&\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{comment}{//\ Allow\ this\ type\ to\ masquerade\ as\ a\ pointer,\ so\ that\ tupleIiter-\/>foo\ works.}}
+\DoxyCodeLine{00086\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00087\ \ \ ConstTupleReference*\ operator-\/>()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00088\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00089\ \ \ \textcolor{keyword}{const}\ ConstTupleReference*\ operator-\/>()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{comment}{//\ Caller\ must\ ensure\ that\ there\ are\ size()\ elements\ in\ array.}}
+\DoxyCodeLine{00092\ \ \ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ GetTuple(\textcolor{keyword}{volatile}\ APIType*\ tuple)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00093\ \ \ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{//\ Yes,\ the\ tuple\ argument\ is\ marked\ volatile.\ No,\ it's\ not\ a\ mistake.}}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{comment}{//\ \`{}volatile`'s\ intended\ usage\ per\ the\ standard\ is\ to\ disable\ optimizations}}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{comment}{//\ when\ accessing\ a\ variable.\ Without\ it,\ GCC\ 8\ will\ optimize\ the\ following}}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{comment}{//\ loop\ to\ memcpy,\ but\ we're\ usually\ copying\ small\ tuples\ here,\ and\ the}}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{comment}{//\ call\ to\ memcpy\ is\ more\ expensive\ than\ just\ doing\ an\ inline\ copy.\ By}}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{comment}{//\ disabling\ the\ memcpy\ optimization,\ benchmarks\ are\ 60\%\ faster\ when}}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{//\ iterating\ with\ the\ Get/SetTuple\ methods,\ and\ are\ comparable\ to\ other}}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{comment}{//\ methods\ of\ array\ access.}}
+\DoxyCodeLine{00103\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>NumComps.value\ >\ 0);}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ i\ =\ 0;\ i\ <\ this-\/>NumComps.value;\ ++i)}
+\DoxyCodeLine{00105\ \ \ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ tuple[i]\ =\ this-\/>Tuple[i];}
+\DoxyCodeLine{00107\ \ \ \ \ \}}
+\DoxyCodeLine{00108\ \ \ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ VT\ =\ ValueType>}
+\DoxyCodeLine{00111\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_same<VT,\ double>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ VTK\_ITER\_INLINE\ GetTuple(}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keyword}{volatile}\ \textcolor{keywordtype}{double}*\ tuple)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00113\ \ \ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{comment}{//\ Yes,\ this\ variable\ argument\ is\ marked\ volatile.\ See\ the\ explanation\ in\ GetTuple.}}
+\DoxyCodeLine{00115\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>NumComps.value\ >\ 0);}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ i\ =\ 0;\ i\ <\ this-\/>NumComps.value;\ ++i)}
+\DoxyCodeLine{00117\ \ \ \ \ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ tuple[i]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(this-\/>Tuple[i]);}
+\DoxyCodeLine{00119\ \ \ \ \ \}}
+\DoxyCodeLine{00120\ \ \ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{comment}{//\ skips\ some\ runtime\ checks\ when\ both\ sizes\ are\ fixed:}}
+\DoxyCodeLine{00123\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00124\ \ \ VTK\_ITER\_INLINE\ EnableIfStaticTupleSizes<TupleSize,\ OSize,\ bool>\ operator==(}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference<OArrayType,\ OSize>}}\&\ other)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00126\ \ \ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{comment}{//\ SFINAE\ guarantees\ that\ the\ tuple\ sizes\ are\ not\ dynamic\ in\ this\ overload:}}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keyword}{static\_assert}(TupleSize\ ==\ OSize,\ \textcolor{stringliteral}{"{}Cannot\ assign\ tuples\ with\ different\ sizes."{}});}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordflow}{return}\ std::equal(this-\/>cbegin(),\ this-\/>cend(),\ other.cbegin());}
+\DoxyCodeLine{00136\ \ \ \}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{comment}{//\ Needs\ a\ runtime\ check:}}
+\DoxyCodeLine{00139\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00140\ \ \ VTK\_ITER\_INLINE\ EnableIfEitherTupleSizeIsDynamic<TupleSize,\ OSize,\ bool>\ operator==(}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference<OArrayType,\ OSize>}}\&\ other)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00142\ \ \ \{}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{comment}{//\ Need\ to\ check\ the\ size\ at\ runtime\ :-\/(}}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordflow}{if}\ (other.size()\ !=\ this-\/>NumComps.value)}
+\DoxyCodeLine{00150\ \ \ \ \ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00152\ \ \ \ \ \}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordflow}{return}\ std::equal(this-\/>cbegin(),\ this-\/>cend(),\ other.cbegin());}
+\DoxyCodeLine{00155\ \ \ \}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \textcolor{comment}{//\ skips\ some\ runtime\ checks\ when\ both\ sizes\ are\ fixed:}}
+\DoxyCodeLine{00158\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00159\ \ \ VTK\_ITER\_INLINE\ EnableIfStaticTupleSizes<TupleSize,\ OSize,\ bool>\ operator==(}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keyword}{const}\ ConstTupleReference<OArrayType,\ OSize>\&\ other)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00161\ \ \ \{}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{comment}{//\ SFINAE\ guarantees\ that\ the\ tuple\ sizes\ are\ not\ dynamic\ in\ this\ overload:}}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keyword}{static\_assert}(TupleSize\ ==\ OSize,\ \textcolor{stringliteral}{"{}Cannot\ assign\ tuples\ with\ different\ sizes."{}});}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{keywordflow}{return}\ std::equal(this-\/>cbegin(),\ this-\/>cend(),\ other.cbegin());}
+\DoxyCodeLine{00171\ \ \ \}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \textcolor{comment}{//\ Needs\ a\ runtime\ check:}}
+\DoxyCodeLine{00174\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00175\ \ \ VTK\_ITER\_INLINE\ EnableIfEitherTupleSizeIsDynamic<TupleSize,\ OSize,\ bool>\ operator==(}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keyword}{const}\ ConstTupleReference<OArrayType,\ OSize>\&\ other)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00177\ \ \ \{}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{comment}{//\ Need\ to\ check\ the\ size\ at\ runtime\ :-\/(}}
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordflow}{if}\ (other.size()\ !=\ this-\/>NumComps.value)}
+\DoxyCodeLine{00185\ \ \ \ \ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00187\ \ \ \ \ \}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordflow}{return}\ std::equal(this-\/>cbegin(),\ this-\/>cend(),\ other.cbegin());}
+\DoxyCodeLine{00190\ \ \ \}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00193\ \ \ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{bool}\ operator!=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference<OArrayType,\ OSize>}}\&\ o)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00194\ \ \ \{}
+\DoxyCodeLine{00195\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ o);}
+\DoxyCodeLine{00196\ \ \ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArray,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00199\ \ \ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{bool}\ operator!=(\textcolor{keyword}{const}\ ConstTupleReference<OArray,\ OSize>\&\ o)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00200\ \ \ \{}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ o);}
+\DoxyCodeLine{00202\ \ \ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00205\ \ \ const\_reference\ operator[](size\_type\ i)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Tuple[i];\ \}}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00208\ \ \ size\_type\ size()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NumComps.value;\ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00211\ \ \ const\_iterator\ begin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ const\_iterator\{\ this-\/>Tuple\ \};\ \}}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00214\ \ \ const\_iterator\ end()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00215\ \ \ \{}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_iterator\{\ this-\/>Tuple\ +\ this-\/>NumComps.value\ \};}
+\DoxyCodeLine{00217\ \ \ \}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00220\ \ \ const\_iterator\ cbegin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ const\_iterator\{\ this-\/>Tuple\ \};\ \}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00223\ \ \ const\_iterator\ cend()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00224\ \ \ \{}
+\DoxyCodeLine{00225\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_iterator\{\ this-\/>Tuple\ +\ this-\/>NumComps.value\ \};}
+\DoxyCodeLine{00226\ \ \ \}}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_iterator}{ConstTupleIterator}}<ArrayType,\ TupleSize>;}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00231\ \ \ \textcolor{comment}{//\ Intentionally\ hidden:}}
+\DoxyCodeLine{00232\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00233\ \ \ ConstTupleReference\&\ operator=(\textcolor{keyword}{const}\ ConstTupleReference\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \textcolor{keyword}{const}\ ValueType*\ Tuple;}
+\DoxyCodeLine{00236\ \ \ NumCompsType\ NumComps;}
+\DoxyCodeLine{00237\ \};}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00240\ \textcolor{comment}{//\ Tuple\ reference}}
+\DoxyCodeLine{00241\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ValueType,\ ComponentIdType\ TupleSize>}
+\DoxyCodeLine{00242\ \textcolor{keyword}{struct\ }TupleReference<\doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate}}<ValueType>,\ TupleSize>}
+\DoxyCodeLine{00243\ \{}
+\DoxyCodeLine{00244\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00245\ \ \ \textcolor{keyword}{using\ }ArrayType\ =\ \doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate<ValueType>}};}
+\DoxyCodeLine{00246\ \ \ \textcolor{keyword}{using\ }NumCompsType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_generic_tuple_size}{GenericTupleSize<TupleSize>}};}
+\DoxyCodeLine{00247\ \ \ \textcolor{keyword}{using\ }APIType\ =\ ValueType;}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00250\ \ \ \textcolor{keyword}{using\ }size\_type\ =\ ComponentIdType;}
+\DoxyCodeLine{00251\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ APIType;}
+\DoxyCodeLine{00252\ \ \ \textcolor{keyword}{using\ }iterator\ =\ ValueType*;}
+\DoxyCodeLine{00253\ \ \ \textcolor{keyword}{using\ }const\_iterator\ =\ \textcolor{keyword}{const}\ ValueType*;}
+\DoxyCodeLine{00254\ \ \ \textcolor{keyword}{using\ }reference\ =\ ValueType\&;}
+\DoxyCodeLine{00255\ \ \ \textcolor{keyword}{using\ }const\_reference\ =\ ValueType\ \textcolor{keyword}{const}\&;}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00258\ \ \ TupleReference()\ noexcept}
+\DoxyCodeLine{00259\ \ \ \ \ :\ Tuple\{\ \textcolor{keyword}{nullptr}\ \}}
+\DoxyCodeLine{00260\ \ \ \{}
+\DoxyCodeLine{00261\ \ \ \}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00264\ \ \ TupleReference(ValueType*\ tuple,\ NumCompsType\ numComps)\ noexcept}
+\DoxyCodeLine{00265\ \ \ \ \ :\ Tuple(tuple)}
+\DoxyCodeLine{00266\ \ \ \ \ ,\ NumComps(numComps)}
+\DoxyCodeLine{00267\ \ \ \{}
+\DoxyCodeLine{00268\ \ \ \}}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00271\ \ \ TupleReference(\textcolor{keyword}{const}\ TupleReference\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00272\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00273\ \ \ TupleReference(TupleReference\&\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \textcolor{comment}{//\ Allow\ this\ type\ to\ masquerade\ as\ a\ pointer,\ so\ that\ tupleIiter-\/>foo\ works.}}
+\DoxyCodeLine{00276\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00277\ \ \ TupleReference*\ operator-\/>()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00278\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00279\ \ \ \textcolor{keyword}{const}\ TupleReference*\ operator-\/>()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \textcolor{comment}{//\ Caller\ must\ ensure\ that\ there\ are\ size()\ elements\ in\ array.}}
+\DoxyCodeLine{00282\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00283\ \ \ \textcolor{keywordtype}{void}\ GetTuple(\textcolor{keyword}{volatile}\ APIType*\ tuple)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00284\ \ \ \{}
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{comment}{//\ Yes,\ the\ tuple\ argument\ is\ marked\ volatile.\ No,\ it's\ not\ a\ mistake.}}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{comment}{//\ \`{}volatile`'s\ intended\ usage\ per\ the\ standard\ is\ to\ disable\ optimizations}}
+\DoxyCodeLine{00288\ \ \ \ \ \textcolor{comment}{//\ when\ accessing\ a\ variable.\ Without\ it,\ GCC\ 8\ will\ optimize\ the\ following}}
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{comment}{//\ loop\ to\ memcpy,\ but\ we're\ usually\ copying\ small\ tuples\ here,\ and\ the}}
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{comment}{//\ call\ to\ memcpy\ is\ more\ expensive\ than\ just\ doing\ an\ inline\ copy.\ By}}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{comment}{//\ disabling\ the\ memcpy\ optimization,\ benchmarks\ are\ 60\%\ faster\ when}}
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{comment}{//\ iterating\ with\ the\ Get/SetTuple\ methods,\ and\ are\ comparable\ to\ other}}
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{comment}{//\ methods\ of\ array\ access.}}
+\DoxyCodeLine{00294\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>NumComps.value\ >\ 0);}
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ i\ =\ 0;\ i\ <\ this-\/>NumComps.value;\ ++i)}
+\DoxyCodeLine{00296\ \ \ \ \ \{}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ tuple[i]\ =\ this-\/>Tuple[i];}
+\DoxyCodeLine{00298\ \ \ \ \ \}}
+\DoxyCodeLine{00299\ \ \ \}}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ VT\ =\ ValueType>}
+\DoxyCodeLine{00302\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_same<VT,\ double>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ VTK\_ITER\_INLINE\ GetTuple(}
+\DoxyCodeLine{00303\ \ \ \ \ \textcolor{keyword}{volatile}\ \textcolor{keywordtype}{double}*\ tuple)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00304\ \ \ \{}
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{comment}{//\ Yes,\ this\ variable\ argument\ is\ marked\ volatile.\ See\ the\ explanation\ in\ GetTuple.}}
+\DoxyCodeLine{00306\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>NumComps.value\ >\ 0);}
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ i\ =\ 0;\ i\ <\ this-\/>NumComps.value;\ ++i)}
+\DoxyCodeLine{00308\ \ \ \ \ \{}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ tuple[i]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(this-\/>Tuple[i]);}
+\DoxyCodeLine{00310\ \ \ \ \ \}}
+\DoxyCodeLine{00311\ \ \ \}}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \textcolor{comment}{//\ Caller\ must\ ensure\ that\ there\ are\ size()\ elements\ in\ array.}}
+\DoxyCodeLine{00314\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00315\ \ \ \textcolor{keywordtype}{void}\ SetTuple(\textcolor{keyword}{const}\ APIType*\ tuple)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00316\ \ \ \{}
+\DoxyCodeLine{00317\ \ \ \ \ \textcolor{keyword}{volatile}\ APIType*\ out\ =\ this-\/>Tuple;}
+\DoxyCodeLine{00318\ \ \ \ \ \textcolor{comment}{//\ Yes,\ this\ variable\ argument\ is\ marked\ volatile.\ See\ the\ explanation\ in\ GetTuple.}}
+\DoxyCodeLine{00319\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>NumComps.value\ >\ 0);}
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ i\ =\ 0;\ i\ <\ this-\/>NumComps.value;\ ++i)}
+\DoxyCodeLine{00321\ \ \ \ \ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ out[i]\ =\ tuple[i];}
+\DoxyCodeLine{00323\ \ \ \ \ \}}
+\DoxyCodeLine{00324\ \ \ \}}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ VT\ =\ ValueType>}
+\DoxyCodeLine{00327\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_same<VT,\ double>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ VTK\_ITER\_INLINE\ SetTuple(}
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ tuple)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00329\ \ \ \{}
+\DoxyCodeLine{00330\ \ \ \ \ \textcolor{keyword}{volatile}\ APIType*\ out\ =\ this-\/>Tuple;}
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{comment}{//\ Yes,\ this\ variable\ argument\ is\ marked\ volatile.\ See\ the\ explanation\ in\ GetTuple.}}
+\DoxyCodeLine{00332\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>NumComps.value\ >\ 0);}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ i\ =\ 0;\ i\ <\ this-\/>NumComps.value;\ ++i)}
+\DoxyCodeLine{00334\ \ \ \ \ \{}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ out[i]\ =\ \textcolor{keyword}{static\_cast<}APIType\textcolor{keyword}{>}(tuple[i]);}
+\DoxyCodeLine{00336\ \ \ \ \ \}}
+\DoxyCodeLine{00337\ \ \ \}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00340\ \ \ TupleReference\&\ operator=(\textcolor{keyword}{const}\ TupleReference\&\ other)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00341\ \ \ \{}
+\DoxyCodeLine{00342\ \ \ \ \ std::copy\_n(other.cbegin(),\ this-\/>NumComps.value,\ this-\/>begin());}
+\DoxyCodeLine{00343\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00344\ \ \ \}}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00347\ \ \ VTK\_ITER\_INLINE\ EnableIfStaticTupleSizes<TupleSize,\ OSize,\ TupleReference\&>\ operator=(}
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{keyword}{const}\ TupleReference<OArrayType,\ OSize>\&\ other)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00349\ \ \ \{}
+\DoxyCodeLine{00350\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00351\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00352\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \ \ \ \ \textcolor{comment}{//\ SFINAE\ guarantees\ that\ the\ tuple\ sizes\ are\ not\ dynamic\ in\ this\ overload:}}
+\DoxyCodeLine{00356\ \ \ \ \ \textcolor{keyword}{static\_assert}(TupleSize\ ==\ OSize,\ \textcolor{stringliteral}{"{}Cannot\ assign\ tuples\ with\ different\ sizes."{}});}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \ \ std::copy\_n(other.cbegin(),\ OSize,\ this-\/>begin());}
+\DoxyCodeLine{00359\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00360\ \ \ \}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00363\ \ \ VTK\_ITER\_INLINE\ EnableIfEitherTupleSizeIsDynamic<TupleSize,\ OSize,\ TupleReference\&>\ operator=(}
+\DoxyCodeLine{00364\ \ \ \ \ \textcolor{keyword}{const}\ TupleReference<OArrayType,\ OSize>\&\ other)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00365\ \ \ \{}
+\DoxyCodeLine{00366\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00367\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00368\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ \ \ \textcolor{comment}{//\ Note\ that\ the\ sizes\ are\ not\ checked\ here.\ Enable}}
+\DoxyCodeLine{00372\ \ \ \ \ \textcolor{comment}{//\ VTK\_DEBUG\_RANGE\_ITERATORS\ to\ enable\ check.}}
+\DoxyCodeLine{00373\ \ \ \ \ std::copy\_n(other.cbegin(),\ this-\/>NumComps.value,\ this-\/>begin());}
+\DoxyCodeLine{00374\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00375\ \ \ \}}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00378\ \ \ VTK\_ITER\_INLINE\ EnableIfStaticTupleSizes<TupleSize,\ OSize,\ TupleReference\&>\ operator=(}
+\DoxyCodeLine{00379\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<OArrayType,\ OSize>}}\&\ other)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00380\ \ \ \{}
+\DoxyCodeLine{00381\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00382\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00386\ \ \ \ \ \textcolor{comment}{//\ SFINAE\ guarantees\ that\ the\ tuple\ sizes\ are\ not\ dynamic\ in\ this\ overload:}}
+\DoxyCodeLine{00387\ \ \ \ \ \textcolor{keyword}{static\_assert}(TupleSize\ ==\ OSize,\ \textcolor{stringliteral}{"{}Cannot\ assign\ tuples\ with\ different\ sizes."{}});}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \ \ std::copy\_n(other.cbegin(),\ OSize,\ this-\/>begin());}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00391\ \ \ \}}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00394\ \ \ VTK\_ITER\_INLINE\ EnableIfEitherTupleSizeIsDynamic<TupleSize,\ OSize,\ TupleReference\&>\ operator=(}
+\DoxyCodeLine{00395\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<OArrayType,\ OSize>}}\&\ other)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00396\ \ \ \{}
+\DoxyCodeLine{00397\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00399\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \ \ \ \ \textcolor{comment}{//\ Note\ that\ the\ sizes\ are\ not\ checked\ here.\ Enable}}
+\DoxyCodeLine{00403\ \ \ \ \ \textcolor{comment}{//\ VTK\_DEBUG\_RANGE\_ITERATORS\ to\ enable\ check.}}
+\DoxyCodeLine{00404\ \ \ \ \ std::copy\_n(other.cbegin(),\ this-\/>NumComps.value,\ this-\/>begin());}
+\DoxyCodeLine{00405\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00406\ \ \ \}}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \ \ \textcolor{comment}{//\ skips\ some\ runtime\ checks\ when\ both\ sizes\ are\ fixed:}}
+\DoxyCodeLine{00409\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00410\ \ \ VTK\_ITER\_INLINE\ EnableIfStaticTupleSizes<TupleSize,\ OSize,\ bool>\ operator==(}
+\DoxyCodeLine{00411\ \ \ \ \ \textcolor{keyword}{const}\ TupleReference<OArrayType,\ OSize>\&\ other)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00412\ \ \ \{}
+\DoxyCodeLine{00413\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00414\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00415\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00417\ }
+\DoxyCodeLine{00418\ \ \ \ \ \textcolor{comment}{//\ SFINAE\ guarantees\ that\ the\ tuple\ sizes\ are\ not\ dynamic\ in\ this\ overload:}}
+\DoxyCodeLine{00419\ \ \ \ \ \textcolor{keyword}{static\_assert}(TupleSize\ ==\ OSize,\ \textcolor{stringliteral}{"{}Cannot\ assign\ tuples\ with\ different\ sizes."{}});}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \ \ \ \ \textcolor{keywordflow}{return}\ std::equal(this-\/>cbegin(),\ this-\/>cend(),\ other.cbegin());}
+\DoxyCodeLine{00422\ \ \ \}}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \ \ \textcolor{comment}{//\ Needs\ a\ runtime\ check:}}
+\DoxyCodeLine{00425\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00426\ \ \ VTK\_ITER\_INLINE\ EnableIfEitherTupleSizeIsDynamic<TupleSize,\ OSize,\ bool>\ operator==(}
+\DoxyCodeLine{00427\ \ \ \ \ \textcolor{keyword}{const}\ TupleReference<OArrayType,\ OSize>\&\ other)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00428\ \ \ \{}
+\DoxyCodeLine{00429\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00431\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00434\ \ \ \ \ \textcolor{comment}{//\ Note\ that\ the\ sizes\ are\ not\ checked\ here.\ Enable}}
+\DoxyCodeLine{00435\ \ \ \ \ \textcolor{comment}{//\ VTK\_DEBUG\_RANGE\_ITERATORS\ to\ enable\ check.}}
+\DoxyCodeLine{00436\ \ \ \ \ \textcolor{keywordflow}{return}\ std::equal(this-\/>cbegin(),\ this-\/>cend(),\ other.cbegin());}
+\DoxyCodeLine{00437\ \ \ \}}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \ \ \textcolor{comment}{//\ skips\ some\ runtime\ checks\ when\ both\ sizes\ are\ fixed:}}
+\DoxyCodeLine{00440\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00441\ \ \ VTK\_ITER\_INLINE\ EnableIfStaticTupleSizes<TupleSize,\ OSize,\ bool>\ operator==(}
+\DoxyCodeLine{00442\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<OArrayType,\ OSize>}}\&\ other)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00443\ \ \ \{}
+\DoxyCodeLine{00444\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00445\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00448\ }
+\DoxyCodeLine{00449\ \ \ \ \ \textcolor{comment}{//\ SFINAE\ guarantees\ that\ the\ tuple\ sizes\ are\ not\ dynamic\ in\ this\ overload:}}
+\DoxyCodeLine{00450\ \ \ \ \ \textcolor{keyword}{static\_assert}(TupleSize\ ==\ OSize,\ \textcolor{stringliteral}{"{}Cannot\ assign\ tuples\ with\ different\ sizes."{}});}
+\DoxyCodeLine{00451\ }
+\DoxyCodeLine{00452\ \ \ \ \ \textcolor{keywordflow}{return}\ std::equal(this-\/>cbegin(),\ this-\/>cend(),\ other.cbegin());}
+\DoxyCodeLine{00453\ \ \ \}}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \ \ \textcolor{comment}{//\ Needs\ a\ runtime\ check:}}
+\DoxyCodeLine{00456\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00457\ \ \ VTK\_ITER\_INLINE\ EnableIfEitherTupleSizeIsDynamic<TupleSize,\ OSize,\ bool>\ operator==(}
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<OArrayType,\ OSize>}}\&\ other)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00459\ \ \ \{}
+\DoxyCodeLine{00460\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00461\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ (std::is\_convertible<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ assigning\ tuples."{}});}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \ \ \ \ \textcolor{comment}{//\ Note\ that\ the\ sizes\ are\ not\ checked\ here.\ Enable}}
+\DoxyCodeLine{00466\ \ \ \ \ \textcolor{comment}{//\ VTK\_DEBUG\_RANGE\_ITERATORS\ to\ enable\ check.}}
+\DoxyCodeLine{00467\ \ \ \ \ \textcolor{keywordflow}{return}\ std::equal(this-\/>cbegin(),\ this-\/>cend(),\ other.cbegin());}
+\DoxyCodeLine{00468\ \ \ \}}
+\DoxyCodeLine{00469\ }
+\DoxyCodeLine{00470\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00471\ \ \ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{bool}\ operator!=(\textcolor{keyword}{const}\ TupleReference<OArrayType,\ OSize>\&\ o)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00472\ \ \ \{}
+\DoxyCodeLine{00473\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ o);}
+\DoxyCodeLine{00474\ \ \ \}}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00476\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArray,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00477\ \ \ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{bool}\ operator!=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<OArray,\ OSize>}}\&\ o)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00478\ \ \ \{}
+\DoxyCodeLine{00479\ \ \ \ \ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ o);}
+\DoxyCodeLine{00480\ \ \ \}}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \ \ \textcolor{comment}{//\ skips\ some\ runtime\ checks:}}
+\DoxyCodeLine{00483\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00484\ \ \ VTK\_ITER\_INLINE\ EnableIfStaticTupleSizes<TupleSize,\ OSize,\ void>\ swap(}
+\DoxyCodeLine{00485\ \ \ \ \ TupleReference<OArrayType,\ OSize>\ other)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00486\ \ \ \{}
+\DoxyCodeLine{00487\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00488\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00489\ \ \ \ \ \textcolor{keyword}{static\_assert}((std::is\_same<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ swapping\ tuples."{}});}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00491\ \ \ \ \ \textcolor{comment}{//\ SFINAE\ guarantees\ that\ the\ tuple\ sizes\ are\ not\ dynamic\ in\ this\ overload:}}
+\DoxyCodeLine{00492\ \ \ \ \ \textcolor{keyword}{static\_assert}(TupleSize\ ==\ OSize,\ \textcolor{stringliteral}{"{}Cannot\ swap\ tuples\ with\ different\ sizes."{}});}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00494\ \ \ \ \ std::swap\_ranges(this-\/>begin(),\ this-\/>end(),\ other.begin());}
+\DoxyCodeLine{00495\ \ \ \}}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \ \ \textcolor{comment}{//\ Needs\ a\ runtime\ check:}}
+\DoxyCodeLine{00498\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArrayType,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00499\ \ \ VTK\_ITER\_INLINE\ EnableIfEitherTupleSizeIsDynamic<TupleSize,\ OSize,\ void>\ swap(}
+\DoxyCodeLine{00500\ \ \ \ \ TupleReference<OArrayType,\ OSize>\ other)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00501\ \ \ \{}
+\DoxyCodeLine{00502\ \ \ \ \ \textcolor{comment}{//\ Check\ that\ types\ are\ convertible:}}
+\DoxyCodeLine{00503\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =\ GetAPIType<OArrayType>;}
+\DoxyCodeLine{00504\ \ \ \ \ \textcolor{keyword}{static\_assert}((std::is\_same<OAPIType,\ APIType>\{\}),\ \textcolor{stringliteral}{"{}Incompatible\ types\ when\ swapping\ tuples."{}});}
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00506\ \ \ \ \ \textcolor{comment}{//\ Note\ that\ the\ sizes\ are\ not\ checked\ here.\ Enable}}
+\DoxyCodeLine{00507\ \ \ \ \ \textcolor{comment}{//\ VTK\_DEBUG\_RANGE\_ITERATORS\ to\ enable\ check.}}
+\DoxyCodeLine{00508\ \ \ \ \ std::swap\_ranges(this-\/>begin(),\ this-\/>end(),\ other.begin());}
+\DoxyCodeLine{00509\ \ \ \}}
+\DoxyCodeLine{00510\ }
+\DoxyCodeLine{00511\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(TupleReference\ a,\ TupleReference\ b)\ \textcolor{keyword}{noexcept}\ \{\ a.swap(b);\ \}}
+\DoxyCodeLine{00512\ }
+\DoxyCodeLine{00513\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArray,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00514\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(TupleReference\ a,\ TupleReference<OArray,\ OSize>\ b)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00515\ \ \ \{}
+\DoxyCodeLine{00516\ \ \ \ \ a.swap(b);}
+\DoxyCodeLine{00517\ \ \ \}}
+\DoxyCodeLine{00518\ }
+\DoxyCodeLine{00519\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00520\ \ \ reference\ operator[](size\_type\ i)\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Tuple[i];\ \}}
+\DoxyCodeLine{00521\ }
+\DoxyCodeLine{00522\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00523\ \ \ const\_reference\ operator[](size\_type\ i)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Tuple[i];\ \}}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00526\ \ \ \textcolor{keywordtype}{void}\ fill(\textcolor{keyword}{const}\ value\_type\&\ v)\ \textcolor{keyword}{noexcept}\ \{\ std::fill(this-\/>begin(),\ this-\/>end(),\ v);\ \}}
+\DoxyCodeLine{00527\ }
+\DoxyCodeLine{00528\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00529\ \ \ size\_type\ size()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NumComps.value;\ \}}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00531\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00532\ \ \ iterator\ begin()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ iterator\{\ this-\/>Tuple\ \};\ \}}
+\DoxyCodeLine{00533\ }
+\DoxyCodeLine{00534\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00535\ \ \ iterator\ end()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ iterator\{\ this-\/>Tuple\ +\ this-\/>NumComps.value\ \};\ \}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00538\ \ \ const\_iterator\ begin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ const\_iterator\{\ this-\/>Tuple\ \};\ \}}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00541\ \ \ const\_iterator\ end()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00542\ \ \ \{}
+\DoxyCodeLine{00543\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_iterator\{\ this-\/>Tuple\ +\ this-\/>NumComps.value\ \};}
+\DoxyCodeLine{00544\ \ \ \}}
+\DoxyCodeLine{00545\ }
+\DoxyCodeLine{00546\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00547\ \ \ const\_iterator\ cbegin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ const\_iterator\{\ this-\/>Tuple\ \};\ \}}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00550\ \ \ const\_iterator\ cend()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00551\ \ \ \{}
+\DoxyCodeLine{00552\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_iterator\{\ this-\/>Tuple\ +\ this-\/>NumComps.value\ \};}
+\DoxyCodeLine{00553\ \ \ \}}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference}}<ArrayType,\ TupleSize>;}
+\DoxyCodeLine{00556\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_iterator}{TupleIterator}}<ArrayType,\ TupleSize>;}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00559\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00560\ \ \ \textcolor{keywordtype}{void}\ CopyReference(\textcolor{keyword}{const}\ TupleReference\&\ o)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00561\ \ \ \{}
+\DoxyCodeLine{00562\ \ \ \ \ this-\/>Tuple\ =\ o.Tuple;}
+\DoxyCodeLine{00563\ \ \ \ \ this-\/>NumComps\ =\ o.NumComps;}
+\DoxyCodeLine{00564\ \ \ \}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \ \ ValueType*\ Tuple;}
+\DoxyCodeLine{00567\ \ \ NumCompsType\ NumComps;}
+\DoxyCodeLine{00568\ \};}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00571\ \textcolor{comment}{//\ Const\ tuple\ iterator}}
+\DoxyCodeLine{00572\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ValueType,\ ComponentIdType\ TupleSize>}
+\DoxyCodeLine{00573\ \textcolor{keyword}{struct\ }ConstTupleIterator<\doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate}}<ValueType>,\ TupleSize>}
+\DoxyCodeLine{00574\ \{}
+\DoxyCodeLine{00575\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00576\ \ \ \textcolor{keyword}{using\ }ArrayType\ =\ \doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate<ValueType>}};}
+\DoxyCodeLine{00577\ \ \ \textcolor{keyword}{using\ }NumCompsType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_generic_tuple_size}{GenericTupleSize<TupleSize>}};}
+\DoxyCodeLine{00578\ }
+\DoxyCodeLine{00579\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00580\ \ \ \textcolor{keyword}{using\ }iterator\_category\ =\ std::random\_access\_iterator\_tag;}
+\DoxyCodeLine{00581\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00582\ \ \ \textcolor{keyword}{using\ }difference\_type\ =\ TupleIdType;}
+\DoxyCodeLine{00583\ \ \ \textcolor{keyword}{using\ }pointer\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00584\ \ \ \textcolor{keyword}{using\ }reference\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00585\ }
+\DoxyCodeLine{00586\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00587\ \ \ ConstTupleIterator()\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00590\ \ \ ConstTupleIterator(\textcolor{keyword}{const}\ ValueType*\ tuple,\ NumCompsType\ numComps)\ noexcept}
+\DoxyCodeLine{00591\ \ \ \ \ :\ Ref(tuple,\ numComps)}
+\DoxyCodeLine{00592\ \ \ \{}
+\DoxyCodeLine{00593\ \ \ \}}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00596\ \ \ ConstTupleIterator(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_iterator}{TupleIterator<ArrayType,\ TupleSize>}}\&\ o)\ noexcept}
+\DoxyCodeLine{00597\ \ \ \ \ :\ Ref\{\ o.Ref\ \}}
+\DoxyCodeLine{00598\ \ \ \{}
+\DoxyCodeLine{00599\ \ \ \}}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00602\ \ \ ConstTupleIterator(\textcolor{keyword}{const}\ ConstTupleIterator\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00603\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00604\ \ \ ConstTupleIterator\&\ operator=(\textcolor{keyword}{const}\ ConstTupleIterator\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00605\ }
+\DoxyCodeLine{00606\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00607\ \ \ ConstTupleIterator\&\ operator++()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00608\ \ \ \{}
+\DoxyCodeLine{00609\ \ \ \ \ this-\/>Ref.Tuple\ +=\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00610\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00611\ \ \ \}}
+\DoxyCodeLine{00612\ }
+\DoxyCodeLine{00613\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00614\ \ \ ConstTupleIterator\ operator++(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00615\ \ \ \{}
+\DoxyCodeLine{00616\ \ \ \ \ \textcolor{keyword}{auto}\ tuple\ =\ this-\/>Ref.Tuple;}
+\DoxyCodeLine{00617\ \ \ \ \ this-\/>Ref.Tuple\ +=\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00618\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstTupleIterator\{\ tuple,\ this-\/>Ref.NumComps\ \};}
+\DoxyCodeLine{00619\ \ \ \}}
+\DoxyCodeLine{00620\ }
+\DoxyCodeLine{00621\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00622\ \ \ ConstTupleIterator\&\ operator-\/-\/()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00623\ \ \ \{}
+\DoxyCodeLine{00624\ \ \ \ \ this-\/>Ref.Tuple\ -\/=\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00625\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00626\ \ \ \}}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00629\ \ \ ConstTupleIterator\ operator-\/-\/(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00630\ \ \ \{}
+\DoxyCodeLine{00631\ \ \ \ \ \textcolor{keyword}{auto}\ tuple\ =\ this-\/>Ref.Tuple;}
+\DoxyCodeLine{00632\ \ \ \ \ this-\/>Ref.Tuple\ -\/=\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00633\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstTupleIterator\{\ tuple,\ this-\/>Ref.NumComps\ \};}
+\DoxyCodeLine{00634\ \ \ \}}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00637\ \ \ reference\ operator[](difference\_type\ i)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00638\ \ \ \{}
+\DoxyCodeLine{00639\ \ \ \ \ \textcolor{keywordflow}{return}\ reference\{\ this-\/>Ref.Tuple\ +\ i\ *\ this-\/>Ref.NumComps,\ this-\/>Ref.NumComps\ \};}
+\DoxyCodeLine{00640\ \ \ \}}
+\DoxyCodeLine{00641\ }
+\DoxyCodeLine{00642\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00643\ \ \ reference\ operator*()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref;\ \}}
+\DoxyCodeLine{00644\ }
+\DoxyCodeLine{00645\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00646\ \ \ pointer\&\ operator-\/>()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref;\ \}}
+\DoxyCodeLine{00647\ }
+\DoxyCodeLine{00648\ \textcolor{preprocessor}{\#define\ VTK\_TMP\_MAKE\_OPERATOR(OP)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00649\ \textcolor{preprocessor}{\ \ friend\ VTK\_ITER\_INLINE\ bool\ operator\ OP(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00650\ \textcolor{preprocessor}{\ \ \ \ const\ ConstTupleIterator\&\ lhs,\ const\ ConstTupleIterator\&\ rhs)\ noexcept\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00651\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00652\ \textcolor{preprocessor}{\ \ \ \ return\ lhs.GetTuple()\ OP\ rhs.GetTuple();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00653\ \textcolor{preprocessor}{\ \ \}}}
+\DoxyCodeLine{00654\ }
+\DoxyCodeLine{00655\ \ \ VTK\_TMP\_MAKE\_OPERATOR(==)}
+\DoxyCodeLine{00656\ \ \ VTK\_TMP\_MAKE\_OPERATOR(!=)}
+\DoxyCodeLine{00657\ \ \ VTK\_TMP\_MAKE\_OPERATOR(<)}
+\DoxyCodeLine{00658\ \ \ VTK\_TMP\_MAKE\_OPERATOR(>)}
+\DoxyCodeLine{00659\ \ \ VTK\_TMP\_MAKE\_OPERATOR(<=)}
+\DoxyCodeLine{00660\ \ \ VTK\_TMP\_MAKE\_OPERATOR(>=)}
+\DoxyCodeLine{00661\ }
+\DoxyCodeLine{00662\ \textcolor{preprocessor}{\#undef\ VTK\_TMP\_MAKE\_OPERATOR}}
+\DoxyCodeLine{00663\ }
+\DoxyCodeLine{00664\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00665\ \ \ ConstTupleIterator\&\ operator+=(difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00666\ \ \ \{}
+\DoxyCodeLine{00667\ \ \ \ \ this-\/>Ref.Tuple\ +=\ offset\ *\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00668\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00669\ \ \ \}}
+\DoxyCodeLine{00670\ }
+\DoxyCodeLine{00671\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ ConstTupleIterator\ operator+(}
+\DoxyCodeLine{00672\ \ \ \ \ \textcolor{keyword}{const}\ ConstTupleIterator\&\ it,\ difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00673\ \ \ \{}
+\DoxyCodeLine{00674\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstTupleIterator\{\ it.GetTuple()\ +\ offset\ *\ it.GetNumComps().value,\ it.GetNumComps()\ \};}
+\DoxyCodeLine{00675\ \ \ \}}
+\DoxyCodeLine{00676\ }
+\DoxyCodeLine{00677\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ ConstTupleIterator\ operator+(}
+\DoxyCodeLine{00678\ \ \ \ \ difference\_type\ offset,\ \textcolor{keyword}{const}\ ConstTupleIterator\&\ it)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00679\ \ \ \{}
+\DoxyCodeLine{00680\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstTupleIterator\{\ it.GetTuple()\ +\ offset\ *\ it.GetNumComps().value,\ it.GetNumComps()\ \};}
+\DoxyCodeLine{00681\ \ \ \}}
+\DoxyCodeLine{00682\ }
+\DoxyCodeLine{00683\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00684\ \ \ ConstTupleIterator\&\ operator-\/=(difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00685\ \ \ \{}
+\DoxyCodeLine{00686\ \ \ \ \ this-\/>Ref.Tuple\ -\/=\ offset\ *\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00687\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00688\ \ \ \}}
+\DoxyCodeLine{00689\ }
+\DoxyCodeLine{00690\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ ConstTupleIterator\ operator-\/(}
+\DoxyCodeLine{00691\ \ \ \ \ \textcolor{keyword}{const}\ ConstTupleIterator\&\ it,\ difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00692\ \ \ \{}
+\DoxyCodeLine{00693\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstTupleIterator\{\ it.GetTuple()\ -\/\ offset\ *\ it.GetNumComps().value,\ it.GetNumComps()\ \};}
+\DoxyCodeLine{00694\ \ \ \}}
+\DoxyCodeLine{00695\ }
+\DoxyCodeLine{00696\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ difference\_type\ operator-\/(}
+\DoxyCodeLine{00697\ \ \ \ \ \textcolor{keyword}{const}\ ConstTupleIterator\&\ it1,\ \textcolor{keyword}{const}\ ConstTupleIterator\&\ it2)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00698\ \ \ \{}
+\DoxyCodeLine{00699\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}difference\_type\textcolor{keyword}{>}(}
+\DoxyCodeLine{00700\ \ \ \ \ \ \ (it1.GetTuple()\ -\/\ it2.GetTuple())\ /\ it1.GetNumComps().value);}
+\DoxyCodeLine{00701\ \ \ \}}
+\DoxyCodeLine{00702\ }
+\DoxyCodeLine{00703\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(ConstTupleIterator\&\ lhs,\ ConstTupleIterator\&\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00704\ \ \ \{}
+\DoxyCodeLine{00705\ \ \ \ \ \textcolor{keyword}{using\ }std::swap;}
+\DoxyCodeLine{00706\ \ \ \ \ swap(lhs.GetTuple(),\ rhs.GetTuple());}
+\DoxyCodeLine{00707\ \ \ \ \ swap(lhs.GetNumComps(),\ rhs.GetNumComps());}
+\DoxyCodeLine{00708\ \ \ \}}
+\DoxyCodeLine{00709\ }
+\DoxyCodeLine{00710\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00711\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00712\ \ \ \textcolor{keyword}{const}\ ValueType*\&\ GetTuple()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.Tuple;\ \}}
+\DoxyCodeLine{00713\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00714\ \ \ \textcolor{keyword}{const}\ ValueType*\ GetTuple()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.Tuple;\ \}}
+\DoxyCodeLine{00715\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00716\ \ \ NumCompsType\&\ GetNumComps()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.NumComps;\ \}}
+\DoxyCodeLine{00717\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00718\ \ \ NumCompsType\ GetNumComps()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.NumComps;\ \}}
+\DoxyCodeLine{00719\ }
+\DoxyCodeLine{00720\ \ \ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<ArrayType,\ TupleSize>}}\ Ref;}
+\DoxyCodeLine{00721\ \};}
+\DoxyCodeLine{00722\ }
+\DoxyCodeLine{00723\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00724\ \textcolor{comment}{//\ Tuple\ iterator}}
+\DoxyCodeLine{00725\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ValueType,\ ComponentIdType\ TupleSize>}
+\DoxyCodeLine{00726\ \textcolor{keyword}{struct\ }TupleIterator<\doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate}}<ValueType>,\ TupleSize>}
+\DoxyCodeLine{00727\ \{}
+\DoxyCodeLine{00728\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00729\ \ \ \textcolor{keyword}{using\ }ArrayType\ =\ \doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate<ValueType>}};}
+\DoxyCodeLine{00730\ \ \ \textcolor{keyword}{using\ }NumCompsType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_generic_tuple_size}{GenericTupleSize<TupleSize>}};}
+\DoxyCodeLine{00731\ }
+\DoxyCodeLine{00732\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00733\ \ \ \textcolor{keyword}{using\ }iterator\_category\ =\ std::random\_access\_iterator\_tag;}
+\DoxyCodeLine{00734\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00735\ \ \ \textcolor{keyword}{using\ }difference\_type\ =\ TupleIdType;}
+\DoxyCodeLine{00736\ \ \ \textcolor{keyword}{using\ }pointer\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00737\ \ \ \textcolor{keyword}{using\ }reference\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00738\ }
+\DoxyCodeLine{00739\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00740\ \ \ TupleIterator()\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00741\ }
+\DoxyCodeLine{00742\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00743\ \ \ TupleIterator(ValueType*\ tuple,\ NumCompsType\ numComps)\ noexcept}
+\DoxyCodeLine{00744\ \ \ \ \ :\ Ref(tuple,\ numComps)}
+\DoxyCodeLine{00745\ \ \ \{}
+\DoxyCodeLine{00746\ \ \ \}}
+\DoxyCodeLine{00747\ }
+\DoxyCodeLine{00748\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00749\ \ \ TupleIterator(\textcolor{keyword}{const}\ TupleIterator\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00750\ }
+\DoxyCodeLine{00751\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00752\ \ \ TupleIterator\&\ operator=(\textcolor{keyword}{const}\ TupleIterator\&\ o)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00753\ \ \ \{}
+\DoxyCodeLine{00754\ \ \ \ \ this-\/>Ref.CopyReference(o.Ref);}
+\DoxyCodeLine{00755\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00756\ \ \ \}}
+\DoxyCodeLine{00757\ }
+\DoxyCodeLine{00758\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00759\ \ \ TupleIterator\&\ operator++()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00760\ \ \ \{}
+\DoxyCodeLine{00761\ \ \ \ \ this-\/>Ref.Tuple\ +=\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00762\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00763\ \ \ \}}
+\DoxyCodeLine{00764\ }
+\DoxyCodeLine{00765\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00766\ \ \ TupleIterator\ operator++(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00767\ \ \ \{}
+\DoxyCodeLine{00768\ \ \ \ \ \textcolor{keyword}{auto}\ tuple\ =\ this-\/>Ref.Tuple;}
+\DoxyCodeLine{00769\ \ \ \ \ this-\/>Ref.Tuple\ +=\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00770\ \ \ \ \ \textcolor{keywordflow}{return}\ TupleIterator\{\ tuple,\ this-\/>Ref.NumComps\ \};}
+\DoxyCodeLine{00771\ \ \ \}}
+\DoxyCodeLine{00772\ }
+\DoxyCodeLine{00773\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00774\ \ \ TupleIterator\&\ operator-\/-\/()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00775\ \ \ \{}
+\DoxyCodeLine{00776\ \ \ \ \ this-\/>Ref.Tuple\ -\/=\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00777\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00778\ \ \ \}}
+\DoxyCodeLine{00779\ }
+\DoxyCodeLine{00780\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00781\ \ \ TupleIterator\ operator-\/-\/(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00782\ \ \ \{}
+\DoxyCodeLine{00783\ \ \ \ \ \textcolor{keyword}{auto}\ tuple\ =\ this-\/>Ref.Tuple;}
+\DoxyCodeLine{00784\ \ \ \ \ this-\/>Ref.Tuple\ -\/=\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00785\ \ \ \ \ \textcolor{keywordflow}{return}\ TupleIterator\{\ tuple,\ this-\/>Ref.NumComps\ \};}
+\DoxyCodeLine{00786\ \ \ \}}
+\DoxyCodeLine{00787\ }
+\DoxyCodeLine{00788\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00789\ \ \ reference\ operator[](difference\_type\ i)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00790\ \ \ \{}
+\DoxyCodeLine{00791\ \ \ \ \ \textcolor{keywordflow}{return}\ reference\{\ this-\/>Ref.Tuple\ +\ i\ *\ this-\/>Ref.NumComps.value,\ this-\/>Ref.NumComps\ \};}
+\DoxyCodeLine{00792\ \ \ \}}
+\DoxyCodeLine{00793\ }
+\DoxyCodeLine{00794\ \ \ reference\ operator*()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref;\ \}}
+\DoxyCodeLine{00795\ }
+\DoxyCodeLine{00796\ \ \ pointer\&\ operator-\/>()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref;\ \}}
+\DoxyCodeLine{00797\ }
+\DoxyCodeLine{00798\ \textcolor{preprocessor}{\#define\ VTK\_TMP\_MAKE\_OPERATOR(OP)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00799\ \textcolor{preprocessor}{\ \ friend\ VTK\_ITER\_INLINE\ bool\ operator\ OP(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00800\ \textcolor{preprocessor}{\ \ \ \ const\ TupleIterator\&\ lhs,\ const\ TupleIterator\&\ rhs)\ noexcept\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00801\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00802\ \textcolor{preprocessor}{\ \ \ \ return\ lhs.GetTuple()\ OP\ rhs.GetTuple();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00803\ \textcolor{preprocessor}{\ \ \}}}
+\DoxyCodeLine{00804\ }
+\DoxyCodeLine{00805\ \ \ VTK\_TMP\_MAKE\_OPERATOR(==)}
+\DoxyCodeLine{00806\ \ \ VTK\_TMP\_MAKE\_OPERATOR(!=)}
+\DoxyCodeLine{00807\ \ \ VTK\_TMP\_MAKE\_OPERATOR(<)}
+\DoxyCodeLine{00808\ \ \ VTK\_TMP\_MAKE\_OPERATOR(>)}
+\DoxyCodeLine{00809\ \ \ VTK\_TMP\_MAKE\_OPERATOR(<=)}
+\DoxyCodeLine{00810\ \ \ VTK\_TMP\_MAKE\_OPERATOR(>=)}
+\DoxyCodeLine{00811\ }
+\DoxyCodeLine{00812\ \textcolor{preprocessor}{\#undef\ VTK\_TMP\_MAKE\_OPERATOR}}
+\DoxyCodeLine{00813\ }
+\DoxyCodeLine{00814\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00815\ \ \ TupleIterator\&\ operator+=(difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00816\ \ \ \{}
+\DoxyCodeLine{00817\ \ \ \ \ this-\/>Ref.Tuple\ +=\ offset\ *\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00818\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00819\ \ \ \}}
+\DoxyCodeLine{00820\ }
+\DoxyCodeLine{00821\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ TupleIterator\ operator+(}
+\DoxyCodeLine{00822\ \ \ \ \ \textcolor{keyword}{const}\ TupleIterator\&\ it,\ difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00823\ \ \ \{}
+\DoxyCodeLine{00824\ \ \ \ \ \textcolor{keywordflow}{return}\ TupleIterator\{\ it.GetTuple()\ +\ offset\ *\ it.GetNumComps().value,\ it.GetNumComps()\ \};}
+\DoxyCodeLine{00825\ \ \ \}}
+\DoxyCodeLine{00826\ }
+\DoxyCodeLine{00827\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ TupleIterator\ operator+(}
+\DoxyCodeLine{00828\ \ \ \ \ difference\_type\ offset,\ \textcolor{keyword}{const}\ TupleIterator\&\ it)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00829\ \ \ \{}
+\DoxyCodeLine{00830\ \ \ \ \ \textcolor{keywordflow}{return}\ TupleIterator\{\ it.GetTuple()\ +\ offset\ *\ it.GetNumComps().value,\ it.GetNumComps()\ \};}
+\DoxyCodeLine{00831\ \ \ \}}
+\DoxyCodeLine{00832\ }
+\DoxyCodeLine{00833\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00834\ \ \ TupleIterator\&\ operator-\/=(difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00835\ \ \ \{}
+\DoxyCodeLine{00836\ \ \ \ \ this-\/>Ref.Tuple\ -\/=\ offset\ *\ this-\/>Ref.NumComps.value;}
+\DoxyCodeLine{00837\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00838\ \ \ \}}
+\DoxyCodeLine{00839\ }
+\DoxyCodeLine{00840\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ TupleIterator\ operator-\/(}
+\DoxyCodeLine{00841\ \ \ \ \ \textcolor{keyword}{const}\ TupleIterator\&\ it,\ difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00842\ \ \ \{}
+\DoxyCodeLine{00843\ \ \ \ \ \textcolor{keywordflow}{return}\ TupleIterator\{\ it.GetTuple()\ -\/\ offset\ *\ it.GetNumComps().value,\ it.GetNumComps()\ \};}
+\DoxyCodeLine{00844\ \ \ \}}
+\DoxyCodeLine{00845\ }
+\DoxyCodeLine{00846\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ difference\_type\ operator-\/(}
+\DoxyCodeLine{00847\ \ \ \ \ \textcolor{keyword}{const}\ TupleIterator\&\ it1,\ \textcolor{keyword}{const}\ TupleIterator\&\ it2)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00848\ \ \ \{}
+\DoxyCodeLine{00849\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}difference\_type\textcolor{keyword}{>}(}
+\DoxyCodeLine{00850\ \ \ \ \ \ \ (it1.GetTuple()\ -\/\ it2.GetTuple())\ /\ it1.GetNumComps().value);}
+\DoxyCodeLine{00851\ \ \ \}}
+\DoxyCodeLine{00852\ }
+\DoxyCodeLine{00853\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(TupleIterator\&\ lhs,\ TupleIterator\&\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00854\ \ \ \{}
+\DoxyCodeLine{00855\ \ \ \ \ \textcolor{keyword}{using\ }std::swap;}
+\DoxyCodeLine{00856\ \ \ \ \ swap(lhs.GetTuple(),\ rhs.GetTuple());}
+\DoxyCodeLine{00857\ \ \ \ \ swap(lhs.GetNumComps(),\ rhs.GetNumComps());}
+\DoxyCodeLine{00858\ \ \ \}}
+\DoxyCodeLine{00859\ }
+\DoxyCodeLine{00860\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_iterator}{ConstTupleIterator}}<ArrayType,\ TupleSize>;}
+\DoxyCodeLine{00861\ }
+\DoxyCodeLine{00862\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00863\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00864\ \ \ ValueType*\ GetTuple()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.Tuple;\ \}}
+\DoxyCodeLine{00865\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00866\ \ \ ValueType*\&\ GetTuple()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.Tuple;\ \}}
+\DoxyCodeLine{00867\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00868\ \ \ NumCompsType\ GetNumComps()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.NumComps;\ \}}
+\DoxyCodeLine{00869\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00870\ \ \ NumCompsType\&\ GetNumComps()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.NumComps;\ \}}
+\DoxyCodeLine{00871\ }
+\DoxyCodeLine{00872\ \ \ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference<ArrayType,\ TupleSize>}}\ Ref;}
+\DoxyCodeLine{00873\ \};}
+\DoxyCodeLine{00874\ }
+\DoxyCodeLine{00875\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00876\ \textcolor{comment}{//\ Tuple\ range}}
+\DoxyCodeLine{00877\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ValueType,\ ComponentIdType\ TupleSize>}
+\DoxyCodeLine{00878\ \textcolor{keyword}{struct\ }TupleRange<\doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate}}<ValueType>,\ TupleSize>}
+\DoxyCodeLine{00879\ \{}
+\DoxyCodeLine{00880\ \ \ \textcolor{keyword}{using\ }ArrayType\ =\ \doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate<ValueType>}};}
+\DoxyCodeLine{00881\ \ \ \textcolor{keyword}{using\ }APIType\ =\ GetAPIType<ArrayType>;}
+\DoxyCodeLine{00882\ }
+\DoxyCodeLine{00883\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00884\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_valid_tuple_size}{IsValidTupleSize<TupleSize>::value}},\ \textcolor{stringliteral}{"{}Invalid\ tuple\ size."{}});}
+\DoxyCodeLine{00885\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_vtk_data_array}{IsVtkDataArray<ArrayType>::value}},\ \textcolor{stringliteral}{"{}Invalid\ array\ type."{}});}
+\DoxyCodeLine{00886\ }
+\DoxyCodeLine{00887\ \ \ \textcolor{keyword}{using\ }NumCompsType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_generic_tuple_size}{GenericTupleSize<TupleSize>}};}
+\DoxyCodeLine{00888\ }
+\DoxyCodeLine{00889\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00890\ \ \ \textcolor{keyword}{using\ }TupleIteratorType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_iterator}{TupleIterator<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00891\ \ \ \textcolor{keyword}{using\ }ConstTupleIteratorType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_iterator}{ConstTupleIterator<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00892\ \ \ \textcolor{keyword}{using\ }TupleReferenceType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_reference}{TupleReference<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00893\ \ \ \textcolor{keyword}{using\ }ConstTupleReferenceType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_tuple_reference}{ConstTupleReference<ArrayType,\ TupleSize>}};}
+\DoxyCodeLine{00894\ \ \ \textcolor{keyword}{using\ }ComponentIteratorType\ =\ APIType*;}
+\DoxyCodeLine{00895\ \ \ \textcolor{keyword}{using\ }ConstComponentIteratorType\ =\ APIType\ \textcolor{keyword}{const}*;}
+\DoxyCodeLine{00896\ \ \ \textcolor{keyword}{using\ }ComponentReferenceType\ =\ APIType\&;}
+\DoxyCodeLine{00897\ \ \ \textcolor{keyword}{using\ }ConstComponentReferenceType\ =\ \textcolor{keyword}{const}\ APIType\&;}
+\DoxyCodeLine{00898\ \ \ \textcolor{keyword}{using\ }ComponentType\ =\ APIType;}
+\DoxyCodeLine{00899\ }
+\DoxyCodeLine{00900\ \ \ \textcolor{keyword}{using\ }size\_type\ =\ TupleIdType;}
+\DoxyCodeLine{00901\ \ \ \textcolor{keyword}{using\ }iterator\ =\ TupleIteratorType;}
+\DoxyCodeLine{00902\ \ \ \textcolor{keyword}{using\ }const\_iterator\ =\ ConstTupleIteratorType;}
+\DoxyCodeLine{00903\ \ \ \textcolor{keyword}{using\ }reference\ =\ TupleReferenceType;}
+\DoxyCodeLine{00904\ \ \ \textcolor{keyword}{using\ }const\_reference\ =\ ConstTupleReferenceType;}
+\DoxyCodeLine{00905\ }
+\DoxyCodeLine{00906\ \ \ \textcolor{comment}{//\ May\ be\ DynamicTupleSize,\ or\ the\ actual\ tuple\ size.}}
+\DoxyCodeLine{00907\ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{static}\ ComponentIdType\ TupleSizeTag\ =\ TupleSize;}
+\DoxyCodeLine{00908\ }
+\DoxyCodeLine{00909\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00910\ \ \ TupleRange()\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00911\ }
+\DoxyCodeLine{00912\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00913\ \ \ TupleRange(ArrayType*\ arr,\ TupleIdType\ beginTuple,\ TupleIdType\ endTuple)\ noexcept}
+\DoxyCodeLine{00914\ \ \ \ \ :\ Array(arr)}
+\DoxyCodeLine{00915\ \ \ \ \ ,\ NumComps(arr)}
+\DoxyCodeLine{00916\ \ \ \ \ ,\ BeginTuple(beginTuple)}
+\DoxyCodeLine{00917\ \ \ \ \ ,\ EndTuple(endTuple)}
+\DoxyCodeLine{00918\ \ \ \{}
+\DoxyCodeLine{00919\ \ \ \ \ assert(this-\/>Array);}
+\DoxyCodeLine{00920\ \ \ \ \ assert(beginTuple\ >=\ 0\ \&\&\ beginTuple\ <=\ endTuple);}
+\DoxyCodeLine{00921\ \ \ \ \ assert(endTuple\ >=\ 0\ \&\&\ endTuple\ <=\ this-\/>Array-\/>GetNumberOfTuples());}
+\DoxyCodeLine{00922\ \ \ \}}
+\DoxyCodeLine{00923\ }
+\DoxyCodeLine{00924\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00925\ \ \ TupleRange\ GetSubRange(TupleIdType\ beginTuple\ =\ 0,\ TupleIdType\ endTuple\ =\ -\/1)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00926\ \ \ \{}
+\DoxyCodeLine{00927\ \ \ \ \ \textcolor{keyword}{const}\ TupleIdType\ curBegin\ =\ this-\/>GetTupleId(this-\/>GetTuplePointer(this-\/>BeginTuple));}
+\DoxyCodeLine{00928\ \ \ \ \ \textcolor{keyword}{const}\ TupleIdType\ realBegin\ =\ curBegin\ +\ beginTuple;}
+\DoxyCodeLine{00929\ \ \ \ \ \textcolor{keyword}{const}\ TupleIdType\ realEnd\ =}
+\DoxyCodeLine{00930\ \ \ \ \ \ \ endTuple\ >=\ 0\ ?\ curBegin\ +\ endTuple\ :\ this-\/>GetTupleId(this-\/>GetTuplePointer(this-\/>EndTuple));}
+\DoxyCodeLine{00931\ }
+\DoxyCodeLine{00932\ \ \ \ \ \textcolor{keywordflow}{return}\ TupleRange\{\ this-\/>Array,\ realBegin,\ realEnd\ \};}
+\DoxyCodeLine{00933\ \ \ \}}
+\DoxyCodeLine{00934\ }
+\DoxyCodeLine{00935\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00936\ \ \ ArrayType*\ GetArray()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array;\ \}}
+\DoxyCodeLine{00937\ }
+\DoxyCodeLine{00938\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00939\ \ \ ComponentIdType\ GetTupleSize()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NumComps.value;\ \}}
+\DoxyCodeLine{00940\ }
+\DoxyCodeLine{00941\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00942\ \ \ TupleIdType\ GetBeginTupleId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00943\ \ \ \{}
+\DoxyCodeLine{00944\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>GetTupleId(this-\/>GetTuplePointer(this-\/>BeginTuple));}
+\DoxyCodeLine{00945\ \ \ \}}
+\DoxyCodeLine{00946\ }
+\DoxyCodeLine{00947\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00948\ \ \ TupleIdType\ GetEndTupleId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00949\ \ \ \{}
+\DoxyCodeLine{00950\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>GetTupleId(this-\/>GetTuplePointer(this-\/>EndTuple));}
+\DoxyCodeLine{00951\ \ \ \}}
+\DoxyCodeLine{00952\ }
+\DoxyCodeLine{00953\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00954\ \ \ size\_type\ size()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00955\ \ \ \{}
+\DoxyCodeLine{00956\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}size\_type\textcolor{keyword}{>}(}
+\DoxyCodeLine{00957\ \ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>GetTuplePointer(this-\/>EndTuple)\ -\/\ this-\/>GetTuplePointer(this-\/>BeginTuple))\ /}
+\DoxyCodeLine{00958\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}size\_type\textcolor{keyword}{>}(this-\/>NumComps.value);}
+\DoxyCodeLine{00959\ \ \ \}}
+\DoxyCodeLine{00960\ }
+\DoxyCodeLine{00961\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00962\ \ \ iterator\ begin()\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00963\ \ \ \{}
+\DoxyCodeLine{00964\ \ \ \ \ \textcolor{keywordflow}{return}\ iterator(this-\/>GetTuplePointer(this-\/>BeginTuple),\ this-\/>NumComps);}
+\DoxyCodeLine{00965\ \ \ \}}
+\DoxyCodeLine{00966\ }
+\DoxyCodeLine{00967\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00968\ \ \ iterator\ end()\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00969\ \ \ \{}
+\DoxyCodeLine{00970\ \ \ \ \ \textcolor{keywordflow}{return}\ iterator(this-\/>GetTuplePointer(this-\/>EndTuple),\ this-\/>NumComps);}
+\DoxyCodeLine{00971\ \ \ \}}
+\DoxyCodeLine{00972\ }
+\DoxyCodeLine{00973\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00974\ \ \ const\_iterator\ begin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00975\ \ \ \{}
+\DoxyCodeLine{00976\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_iterator(this-\/>GetTuplePointer(this-\/>BeginTuple),\ this-\/>NumComps);}
+\DoxyCodeLine{00977\ \ \ \}}
+\DoxyCodeLine{00978\ }
+\DoxyCodeLine{00979\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00980\ \ \ const\_iterator\ end()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00981\ \ \ \{}
+\DoxyCodeLine{00982\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_iterator(this-\/>GetTuplePointer(this-\/>EndTuple),\ this-\/>NumComps);}
+\DoxyCodeLine{00983\ \ \ \}}
+\DoxyCodeLine{00984\ }
+\DoxyCodeLine{00985\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00986\ \ \ const\_iterator\ cbegin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00987\ \ \ \{}
+\DoxyCodeLine{00988\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_iterator(this-\/>GetTuplePointer(this-\/>BeginTuple),\ this-\/>NumComps);}
+\DoxyCodeLine{00989\ \ \ \}}
+\DoxyCodeLine{00990\ }
+\DoxyCodeLine{00991\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00992\ \ \ const\_iterator\ cend()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00993\ \ \ \{}
+\DoxyCodeLine{00994\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_iterator(this-\/>GetTuplePointer(this-\/>EndTuple),\ this-\/>NumComps);}
+\DoxyCodeLine{00995\ \ \ \}}
+\DoxyCodeLine{00996\ }
+\DoxyCodeLine{00997\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00998\ \ \ reference\ operator[](size\_type\ i)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00999\ \ \ \{}
+\DoxyCodeLine{01000\ \ \ \ \ \textcolor{keywordflow}{return}\ reference\{\ this-\/>Array-\/>Buffer-\/>GetBuffer()\ +}
+\DoxyCodeLine{01001\ \ \ \ \ \ \ \ \ (this-\/>BeginTuple\ +\ i)\ *\ this-\/>NumComps.value,}
+\DoxyCodeLine{01002\ \ \ \ \ \ \ this-\/>NumComps\ \};}
+\DoxyCodeLine{01003\ \ \ \}}
+\DoxyCodeLine{01004\ }
+\DoxyCodeLine{01005\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{01006\ \ \ const\_reference\ operator[](size\_type\ i)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{01007\ \ \ \{}
+\DoxyCodeLine{01008\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_reference\{\ this-\/>Array-\/>Buffer-\/>GetBuffer()\ +}
+\DoxyCodeLine{01009\ \ \ \ \ \ \ \ \ (this-\/>BeginTuple\ +\ i)\ *\ this-\/>NumComps.value,}
+\DoxyCodeLine{01010\ \ \ \ \ \ \ this-\/>NumComps\ \};}
+\DoxyCodeLine{01011\ \ \ \}}
+\DoxyCodeLine{01012\ }
+\DoxyCodeLine{01013\ \ \ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ GetTuple(size\_type\ i,\ ValueType*\ tuple)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{01014\ \ \ \{}
+\DoxyCodeLine{01015\ \ \ \ \ \textcolor{keyword}{const}\ ValueType*\ tuplePtr\ =}
+\DoxyCodeLine{01016\ \ \ \ \ \ \ this-\/>Array-\/>Buffer-\/>GetBuffer()\ +\ (this-\/>BeginTuple\ +\ i)\ *\ this-\/>NumComps.value;}
+\DoxyCodeLine{01017\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ c\ =\ 0;\ c\ <\ this-\/>NumComps.value;\ ++c)}
+\DoxyCodeLine{01018\ \ \ \ \ \{}
+\DoxyCodeLine{01019\ \ \ \ \ \ \ tuple[c]\ =\ tuplePtr[c];}
+\DoxyCodeLine{01020\ \ \ \ \ \}}
+\DoxyCodeLine{01021\ \ \ \}}
+\DoxyCodeLine{01022\ }
+\DoxyCodeLine{01023\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ VT\ =\ ValueType>}
+\DoxyCodeLine{01024\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_same<VT,\ double>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ VTK\_ITER\_INLINE\ GetTuple(}
+\DoxyCodeLine{01025\ \ \ \ \ size\_type\ i,\ \textcolor{keywordtype}{double}*\ tuple)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{01026\ \ \ \{}
+\DoxyCodeLine{01027\ \ \ \ \ \textcolor{keyword}{const}\ ValueType*\ tuplePtr\ =}
+\DoxyCodeLine{01028\ \ \ \ \ \ \ this-\/>Array-\/>Buffer-\/>GetBuffer()\ +\ (this-\/>BeginTuple\ +\ i)\ *\ this-\/>NumComps.value;}
+\DoxyCodeLine{01029\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ c\ =\ 0;\ c\ <\ this-\/>NumComps.value;\ ++c)}
+\DoxyCodeLine{01030\ \ \ \ \ \{}
+\DoxyCodeLine{01031\ \ \ \ \ \ \ tuple[c]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(tuplePtr[c]);}
+\DoxyCodeLine{01032\ \ \ \ \ \}}
+\DoxyCodeLine{01033\ \ \ \}}
+\DoxyCodeLine{01034\ }
+\DoxyCodeLine{01035\ \ \ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ SetTuple(size\_type\ i,\ \textcolor{keyword}{const}\ ValueType*\ tuple)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{01036\ \ \ \{}
+\DoxyCodeLine{01037\ \ \ \ \ ValueType*\ tuplePtr\ =}
+\DoxyCodeLine{01038\ \ \ \ \ \ \ this-\/>Array-\/>Buffer-\/>GetBuffer()\ +\ (this-\/>BeginTuple\ +\ i)\ *\ this-\/>NumComps.value;}
+\DoxyCodeLine{01039\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ c\ =\ 0;\ c\ <\ this-\/>NumComps.value;\ ++c)}
+\DoxyCodeLine{01040\ \ \ \ \ \{}
+\DoxyCodeLine{01041\ \ \ \ \ \ \ tuplePtr[c]\ =\ tuple[c];}
+\DoxyCodeLine{01042\ \ \ \ \ \}}
+\DoxyCodeLine{01043\ \ \ \}}
+\DoxyCodeLine{01044\ }
+\DoxyCodeLine{01045\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ VT\ =\ ValueType>}
+\DoxyCodeLine{01046\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_same<VT,\ double>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ VTK\_ITER\_INLINE\ SetTuple(}
+\DoxyCodeLine{01047\ \ \ \ \ size\_type\ i,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ tuple)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{01048\ \ \ \{}
+\DoxyCodeLine{01049\ \ \ \ \ ValueType*\ tuplePtr\ =}
+\DoxyCodeLine{01050\ \ \ \ \ \ \ this-\/>Array-\/>Buffer-\/>GetBuffer()\ +\ (this-\/>BeginTuple\ +\ i)\ *\ this-\/>NumComps.value;}
+\DoxyCodeLine{01051\ \ \ \ \ \textcolor{keywordflow}{for}\ (ComponentIdType\ c\ =\ 0;\ c\ <\ this-\/>NumComps.value;\ ++c)}
+\DoxyCodeLine{01052\ \ \ \ \ \{}
+\DoxyCodeLine{01053\ \ \ \ \ \ \ tuplePtr[c]\ =\ \textcolor{keyword}{static\_cast<}ValueType\textcolor{keyword}{>}(tuple[c]);}
+\DoxyCodeLine{01054\ \ \ \ \ \}}
+\DoxyCodeLine{01055\ \ \ \}}
+\DoxyCodeLine{01056\ }
+\DoxyCodeLine{01057\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01058\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{01059\ \ \ ValueType*\ GetTuplePointer(vtkIdType\ tuple)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{01060\ \ \ \{}
+\DoxyCodeLine{01061\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Array-\/>Buffer-\/>GetBuffer()\ +\ (tuple\ *\ this-\/>NumComps.value);}
+\DoxyCodeLine{01062\ \ \ \}}
+\DoxyCodeLine{01063\ }
+\DoxyCodeLine{01064\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{01065\ \ \ TupleIdType\ GetTupleId(\textcolor{keyword}{const}\ ValueType*\ ptr)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{01066\ \ \ \{}
+\DoxyCodeLine{01067\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}TupleIdType\textcolor{keyword}{>}((ptr\ -\/\ this-\/>Array-\/>GetPointer(0))\ /\ this-\/>NumComps.value);}
+\DoxyCodeLine{01068\ \ \ \}}
+\DoxyCodeLine{01069\ }
+\DoxyCodeLine{01070\ \ \ \textcolor{keyword}{mutable}\ ArrayType*\ Array\{\ \textcolor{keyword}{nullptr}\ \};}
+\DoxyCodeLine{01071\ \ \ NumCompsType\ NumComps\{\};}
+\DoxyCodeLine{01072\ \ \ TupleIdType\ BeginTuple\{\ 0\ \};}
+\DoxyCodeLine{01073\ \ \ TupleIdType\ EndTuple\{\ 0\ \};}
+\DoxyCodeLine{01074\ \};}
+\DoxyCodeLine{01075\ }
+\DoxyCodeLine{01076\ \textcolor{comment}{//\ Unimplemented,\ only\ used\ inside\ decltype\ in\ SelectTupleRange:}}
+\DoxyCodeLine{01077\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType\ TupleSize,}
+\DoxyCodeLine{01078\ \ \ \textcolor{comment}{//\ Convenience:}}
+\DoxyCodeLine{01079\ \ \ \textcolor{keyword}{typename}\ ValueType\ =\ \textcolor{keyword}{typename}\ ArrayType::ValueType,}
+\DoxyCodeLine{01080\ \ \ \textcolor{keyword}{typename}\ AOSArrayType\ =\ \doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate<ValueType>}},}
+\DoxyCodeLine{01081\ \ \ \textcolor{comment}{//\ SFINAE\ to\ select\ AOS\ arrays:}}
+\DoxyCodeLine{01082\ \ \ \textcolor{keyword}{typename}\ =\ \textcolor{keyword}{typename}\ std::enable\_if<IsAOSDataArray<ArrayType>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}>}
+\DoxyCodeLine{01083\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_tuple_range}{TupleRange<AOSArrayType,\ TupleSize>}}\ DeclareTupleRangeSpecialization(ArrayType*);}
+\DoxyCodeLine{01084\ }
+\DoxyCodeLine{01085\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{01086\ \}\ \textcolor{comment}{//\ end\ namespace\ detail}}
+\DoxyCodeLine{01087\ \}\ \textcolor{comment}{//\ end\ namespace\ vtk}}
+\DoxyCodeLine{01088\ }
+\DoxyCodeLine{01089\ VTK\_ITER\_OPTIMIZE\_END}
+\DoxyCodeLine{01090\ }
+\DoxyCodeLine{01091\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ VTK\_DEBUG\_RANGE\_ITERATORS}}
+\DoxyCodeLine{01092\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkDataArrayTupleRange\_AOS\_h}}
+\DoxyCodeLine{01093\ }
+\DoxyCodeLine{01094\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkDataArrayTupleRange\_AOS.h}}
+
+\end{DoxyCode}

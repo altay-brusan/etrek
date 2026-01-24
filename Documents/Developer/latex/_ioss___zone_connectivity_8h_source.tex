@@ -1,0 +1,149 @@
+\doxysection{Ioss\+\_\+\+Zone\+Connectivity.\+h}
+\hypertarget{_ioss___zone_connectivity_8h_source}{}\label{_ioss___zone_connectivity_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_ZoneConnectivity.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_ZoneConnectivity.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright(C)\ 1999-\/2024\ National\ Technology\ \&\ Engineering\ Solutions}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ of\ Sandia,\ LLC\ (NTESS).\ \ Under\ the\ terms\ of\ Contract\ DE-\/NA0003525\ with}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ NTESS,\ the\ U.S.\ Government\ retains\ certain\ rights\ in\ this\ software.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ See\ packages/seacas/LICENSE\ for\ details}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}Ioss\_CodeTypes.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <array>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <iosfwd>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <stdlib.h>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}ioss\_export.h"{}}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}vtk\_ioss\_mangle.h"{}}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_ioss}{Ioss}}\ \{}
+\DoxyCodeLine{00022\ \ \ \textcolor{keyword}{class\ }Region;}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \textcolor{keyword}{struct\ }IOSS\_EXPORT\ ZoneConnectivity}
+\DoxyCodeLine{00025\ \ \ \{}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{comment}{//\ cereal\ requires\ a\ default\ constructor\ when\ de-\/serializing\ vectors\ of\ objects.\ \ Because}}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{comment}{//\ StructuredBlock\ contains\ a\ vector\ of\ ZoneConnectivity\ objects,\ this\ default\ constructor\ is}}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{comment}{//\ necessary.}}
+\DoxyCodeLine{00029\ \ \ \ \ ZoneConnectivity()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \ \ ZoneConnectivity(std::string\ name,\ \textcolor{keywordtype}{int}\ owner\_zone,\ std::string\ donor\_name,\ \textcolor{keywordtype}{int}\ donor\_zone,}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::IJK\_t\ p\_transform,\ \textcolor{keyword}{const}\ Ioss::IJK\_t\ range\_beg,}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::IJK\_t\ range\_end,\ \textcolor{keyword}{const}\ Ioss::IJK\_t\ donor\_beg,}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::IJK\_t\ donor\_end,\ \textcolor{keyword}{const}\ Ioss::IJK\_t\ owner\_offset\ =\ IJK\_t(),}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::IJK\_t\ donor\_offset\ =\ IJK\_t())}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ :\ m\_connectionName(std::move(name)),\ m\_donorName(std::move(donor\_name)),}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ m\_transform(p\_transform),\ m\_ownerRangeBeg(range\_beg),\ m\_ownerRangeEnd(range\_end),}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ m\_ownerOffset(owner\_offset),\ m\_donorRangeBeg(donor\_beg),\ m\_donorRangeEnd(donor\_end),}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ m\_donorOffset(donor\_offset),\ m\_ownerZone(owner\_zone),\ m\_donorZone(donor\_zone)}
+\DoxyCodeLine{00040\ \ \ \ \ \{}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ assert(is\_valid());}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ m\_ownsSharedNodes\ =\ m\_ownerZone\ <\ m\_donorZone\ ||\ m\_donorZone\ ==\ -\/1;}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ m\_isActive\ \ \ \ \ \ \ \ =\ has\_faces();}
+\DoxyCodeLine{00044\ \ \ \ \ \}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ ZoneConnectivity(std::string\ name,\ \textcolor{keywordtype}{int}\ owner\_zone,\ std::string\ donor\_name,\ \textcolor{keywordtype}{int}\ donor\_zone,}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss::IJK\_t\ p\_transform,\ Ioss::IJK\_t\ range\_beg,\ Ioss::IJK\_t\ range\_end,}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss::IJK\_t\ donor\_beg,\ Ioss::IJK\_t\ donor\_end,\ \textcolor{keywordtype}{bool}\ owns\_nodes,}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ from\_decomp)}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ :\ m\_connectionName(std::move(name)),\ m\_donorName(std::move(donor\_name)),}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ m\_transform(p\_transform),\ m\_ownerRangeBeg(range\_beg),\ m\_ownerRangeEnd(range\_end),}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ m\_donorRangeBeg(donor\_beg),\ m\_donorRangeEnd(donor\_end),\ m\_ownerZone(owner\_zone),}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ m\_donorZone(donor\_zone),\ m\_ownsSharedNodes(owns\_nodes),\ m\_fromDecomp(from\_decomp)}
+\DoxyCodeLine{00054\ \ \ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \textcolor{comment}{//\ This\ constructor\ typically\ called\ from\ decomposition\ process.}}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ assert(is\_valid());}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ m\_isActive\ =\ has\_faces();}
+\DoxyCodeLine{00058\ \ \ \ \ \}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ ZoneConnectivity(\textcolor{keyword}{const}\ ZoneConnectivity\ \&copy\_from)\ \ \ \ \ \ \ \ \ \ \ \ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00061\ \ \ \ \ ZoneConnectivity\ \&operator=(\textcolor{keyword}{const}\ ZoneConnectivity\ \&copy\_from)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{//\ Return\ number\ of\ nodes\ in\ the\ connection\ shared\ with\ the\ donor\ zone.}}
+\DoxyCodeLine{00064\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_shared\_node\_count()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00065\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ snc\ =\ 1;}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ i++)\ \{}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ snc\ *=\ (std::abs(m\_ownerRangeEnd[i]\ -\/\ m\_ownerRangeBeg[i])\ +\ 1);}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ snc;}
+\DoxyCodeLine{00071\ \ \ \ \ \}}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{comment}{//\ Validate\ zgc\ -\/-\/\ if\ is\_active(),\ then\ must\ have\ non-\/zero\ entries\ for\ all\ ranges.}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{//\ transform\ must\ have\ valid\ entries.}}
+\DoxyCodeLine{00075\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ is\_valid()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00076\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ has\_faces()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00077\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ retain\_original()\ \textcolor{keyword}{const};\ \textcolor{comment}{//\ True\ if\ need\ to\ retain\ in\ parallel\ decomp}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ IOSS\_NODISCARD\ std::array<int,\ 9>\ transform\_matrix()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00080\ \ \ \ \ IOSS\_NODISCARD\ Ioss::IJK\_t\ transform(\textcolor{keyword}{const}\ Ioss::IJK\_t\ \&index\_1)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00081\ \ \ \ \ IOSS\_NODISCARD\ Ioss::IJK\_t\ inverse\_transform(\textcolor{keyword}{const}\ Ioss::IJK\_t\ \&index\_1)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ IOSS\_NODISCARD\ std::vector<int>\ get\_range(\textcolor{keywordtype}{int}\ ordinal)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{comment}{/*\ COMPARE\ two\ ZoneConnectivity\ objects\ \ */}}
+\DoxyCodeLine{00086\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ Ioss::ZoneConnectivity\ \&rhs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00087\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_ab1c443221b96a6760851925131468a98}{operator!=}}(\textcolor{keyword}{const}\ Ioss::ZoneConnectivity\ \&rhs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00088\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ equal(\textcolor{keyword}{const}\ Ioss::ZoneConnectivity\ \&rhs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ is\_from\_decomp()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_fromDecomp;\ \}}
+\DoxyCodeLine{00091\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ is\_active()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_isActive\ \&\&\ has\_faces();\ \}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ std::string\ m\_connectionName\{\};\ \textcolor{comment}{//\ Name\ of\ the\ connection;\ either\ generated\ or\ from\ file}}
+\DoxyCodeLine{00094\ \ \ \ \ std::string\ m\_donorName\{\};\ \textcolor{comment}{//\ Name\ of\ the\ zone\ (m\_donorZone)\ to\ which\ this\ zone\ is\ connected\ via}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ this\ connection.}}
+\DoxyCodeLine{00096\ \ \ \ \ Ioss::IJK\_t\ m\_transform\{\};\ \textcolor{comment}{//\ The\ transform.\ \ In\ the\ same\ form\ as\ defined\ by\ CGNS}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Archive>\ \textcolor{keywordtype}{void}\ serialize(Archive\ \&archive)}
+\DoxyCodeLine{00099\ \ \ \ \ \{}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ archive(m\_connectionName,\ m\_donorName,\ m\_transform,\ m\_ownerRangeBeg,\ m\_ownerRangeEnd,}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_ownerOffset,\ m\_donorRangeBeg,\ m\_donorRangeEnd,\ m\_donorOffset,\ m\_ownerGUID,}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_donorGUID,\ m\_ownerZone,\ m\_donorZone,\ m\_ownerProcessor,\ m\_donorProcessor,}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_sameRange,\ m\_ownsSharedNodes,\ m\_fromDecomp,\ m\_isActive);}
+\DoxyCodeLine{00104\ \ \ \ \ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{comment}{//\ The\ following\ are\ all\ subsetted\ down\ to\ the\ portion\ that\ is\ actually\ on\ this\ zone}}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{comment}{//\ This\ can\ be\ different\ than\ m\_ownerRange\ and\ m\_donorRange\ in\ a\ parallel\ run\ if\ the}}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{comment}{//\ decomposition\ splits\ the\ connection.\ \ In\ a\ serial\ run,\ they\ are\ the\ same.}}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{comment}{//\ 1\ of\ ijk\ should\ be\ the\ same\ for\ rangeBeg\ and\ rangeEnd\ defining\ a\ surface.}}
+\DoxyCodeLine{00111\ \ \ \ \ Ioss::IJK\_t\ m\_ownerRangeBeg\{\};\ \textcolor{comment}{//\ ijk\ triplet\ defining\ beginning\ of\ range\ on\ this\ zone}}
+\DoxyCodeLine{00112\ \ \ \ \ Ioss::IJK\_t\ m\_ownerRangeEnd\{\};\ \textcolor{comment}{//\ ijk\ triplet\ defining\ end\ of\ range\ on\ this\ zone}}
+\DoxyCodeLine{00113\ \ \ \ \ Ioss::IJK\_t\ m\_ownerOffset\{\};\ \ \ \textcolor{comment}{//\ ijk\ triplet\ with\ offset\ of\ this\ zone.\ \ Used\ to\ convert}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ rangeBeg\ and\ rangeEnd\ global\ indices\ to\ local\ indices}}
+\DoxyCodeLine{00115\ \ \ \ \ Ioss::IJK\_t\ m\_donorRangeBeg\{\};\ \textcolor{comment}{//\ ijk\ triplet\ defining\ beginning\ of\ range\ on\ the\ connected\ zone}}
+\DoxyCodeLine{00116\ \ \ \ \ Ioss::IJK\_t\ m\_donorRangeEnd\{\};\ \textcolor{comment}{//\ ijk\ triplet\ defining\ end\ of\ range\ on\ the\ connected\ zone}}
+\DoxyCodeLine{00117\ \ \ \ \ Ioss::IJK\_t\ m\_donorOffset\{\};\ \ \ \textcolor{comment}{//\ ijk\ triplet\ with\ offset\ of\ the\ donor\ zone.\ \ Used\ to\ convert}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ donorRangeBeg\ and\ End\ global\ indices\ to\ local\ indices}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_ownerGUID\{\};\ \textcolor{comment}{//\ globally-\/unique\ id\ of\ owner}}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_donorGUID\{\};\ \textcolor{comment}{//\ globally-\/unique\ id\ of\ donor}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{comment}{//\ NOTE:\ Shared\ nodes\ are\ "{}owned"{}\ by\ the\ zone\ with\ the\ lowest\ zone\ id.}}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordtype}{int}\ \ m\_ownerZone\{\};\ \ \ \ \ \ \ \ \textcolor{comment}{//\ "{}id"{}\ of\ zone\ that\ owns\ this\ connection}}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordtype}{int}\ \ m\_donorZone\{\};\ \ \ \ \ \ \ \ \textcolor{comment}{//\ "{}id"{}\ of\ zone\ that\ is\ donor\ (or\ other\ side)\ of\ this\ connection}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordtype}{int}\ \ m\_ownerProcessor\{-\/1\};\ \textcolor{comment}{//\ processor\ that\ owns\ the\ owner\ zone}}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keywordtype}{int}\ \ m\_donorProcessor\{-\/1\};\ \textcolor{comment}{//\ processor\ that\ owns\ the\ donor\ zone}}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordtype}{bool}\ m\_sameRange\{\textcolor{keyword}{false}\};\ \ \ \textcolor{comment}{//\ True\ if\ owner\ and\ donor\ range\ should\ always\ match...(special\ use}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ during\ decomp)}}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{comment}{//\ True\ if\ it\ is\ the\ "{}lower"{}\ zone\ id\ in\ the\ connection.\ Uses\ adam\ unless\ both\ have\ same\ adam.}}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordtype}{bool}\ m\_ownsSharedNodes\{\textcolor{keyword}{false}\};\ \textcolor{comment}{//\ Deprecate\ soon}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{comment}{//\ True\ if\ this\ zc\ is\ created\ due\ to\ processor\ decompositions\ in\ a\ parallel\ run}}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{bool}\ m\_fromDecomp\{\textcolor{keyword}{false}\};}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keywordtype}{bool}\ m\_isActive\{\textcolor{keyword}{true}\};\ \textcolor{comment}{//\ True\ if\ non-\/zero\ range.\ That\ is,\ it\ has\ at\ least\ one\ face}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordtype}{bool}\ equal\_(\textcolor{keyword}{const}\ Ioss::ZoneConnectivity\ \&rhs,\ \textcolor{keywordtype}{bool}\ quiet)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00140\ \ \ \};}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ IOSS\_EXPORT\ std::ostream\ \&operator<<(std::ostream\ \&os,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_ioss_1_1_zone_connectivity}{ZoneConnectivity}}\ \&zgc);}
+\DoxyCodeLine{00143\ \}\ \textcolor{comment}{//\ namespace\ Ioss}}
+
+\end{DoxyCode}

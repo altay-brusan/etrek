@@ -1,0 +1,27 @@
+var class_d_r_t_source_image_sequence_1_1_item =
+[
+    [ "Item", "class_d_r_t_source_image_sequence_1_1_item.html#afb08e543d67dddc0c9db4f841cad65e1", null ],
+    [ "Item", "class_d_r_t_source_image_sequence_1_1_item.html#a2c79917149d269522a8246fbe836a93f", null ],
+    [ "~Item", "class_d_r_t_source_image_sequence_1_1_item.html#a63ffa8930ce3f1f981b44a51e46a9125", null ],
+    [ "clear", "class_d_r_t_source_image_sequence_1_1_item.html#a9ec76d3034d486a02530f6ad42eb037b", null ],
+    [ "getPatientOrientation", "class_d_r_t_source_image_sequence_1_1_item.html#a90c5ac6657cdfe0077706fc4bcba0982", null ],
+    [ "getPurposeOfReferenceCodeSequence", "class_d_r_t_source_image_sequence_1_1_item.html#a2832756203e87221880f5d2f7f3f34f2", null ],
+    [ "getPurposeOfReferenceCodeSequence", "class_d_r_t_source_image_sequence_1_1_item.html#a0dfb5e5f753f9337ff748f91af4f036e", null ],
+    [ "getReferencedFrameNumber", "class_d_r_t_source_image_sequence_1_1_item.html#a4d82a0ad86d964d7707096cee9c037bc", null ],
+    [ "getReferencedFrameNumber", "class_d_r_t_source_image_sequence_1_1_item.html#a225cbd592b17caa651e9ce8148831094", null ],
+    [ "getReferencedSegmentNumber", "class_d_r_t_source_image_sequence_1_1_item.html#a571d2cf087938a9dbb7b460886599d12", null ],
+    [ "getReferencedSOPClassUID", "class_d_r_t_source_image_sequence_1_1_item.html#a421259a4cf280d624998c67d1c3571a7", null ],
+    [ "getReferencedSOPInstanceUID", "class_d_r_t_source_image_sequence_1_1_item.html#a083cd074e842c01d62299e37dd06d338", null ],
+    [ "getSpatialLocationsPreserved", "class_d_r_t_source_image_sequence_1_1_item.html#a74ca1fb3f77cbd6bfb209b6142d62dc3", null ],
+    [ "isEmpty", "class_d_r_t_source_image_sequence_1_1_item.html#a97a13eeee634eaa092616e9fa79a0b26", null ],
+    [ "isValid", "class_d_r_t_source_image_sequence_1_1_item.html#ad7300093d50be92cee6f7f6134f0e58a", null ],
+    [ "operator=", "class_d_r_t_source_image_sequence_1_1_item.html#a2381d8f93174086086964f6153de755d", null ],
+    [ "read", "class_d_r_t_source_image_sequence_1_1_item.html#a6f14c5434b95384e8989287f7e129595", null ],
+    [ "setPatientOrientation", "class_d_r_t_source_image_sequence_1_1_item.html#a7ae8f3786bc065f5791327c313be9e34", null ],
+    [ "setReferencedFrameNumber", "class_d_r_t_source_image_sequence_1_1_item.html#abf8fa2d671752c3becabaa46f7643789", null ],
+    [ "setReferencedSegmentNumber", "class_d_r_t_source_image_sequence_1_1_item.html#a4bf2f822302e342a4c97d269b1beb639", null ],
+    [ "setReferencedSOPClassUID", "class_d_r_t_source_image_sequence_1_1_item.html#abba4e972b1321de802508f7272c03150", null ],
+    [ "setReferencedSOPInstanceUID", "class_d_r_t_source_image_sequence_1_1_item.html#a8add6d50cd1149f7843e087c4403c5ec", null ],
+    [ "setSpatialLocationsPreserved", "class_d_r_t_source_image_sequence_1_1_item.html#a224e826d42393d415368523b5c2c2fe4", null ],
+    [ "write", "class_d_r_t_source_image_sequence_1_1_item.html#a03a712ec750e3a8da3619498b20fdb95", null ]
+];

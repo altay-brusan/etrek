@@ -1,0 +1,114 @@
+\doxysection{vtk\+SMPThread\+Pool.\+h}
+\hypertarget{vtk_s_m_p_thread_pool_8h_source}{}\label{vtk_s_m_p_thread_pool_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/STDThread/vtkSMPThreadPool.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/STDThread/vtkSMPThreadPool.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ .NAME\ vtkSMPThreadPool\ -\/\ A\ thread\ pool\ implementation\ using\ std::thread}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ .SECTION\ Description}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ vtkSMPThreadPool\ class\ creates\ a\ thread\ pool\ of\ std::thread,\ the\ number}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ of\ thread\ must\ be\ specified\ at\ the\ initialization\ of\ the\ class.}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ The\ DoJob()\ method\ is\ used\ attributes\ the\ job\ to\ a\ free\ thread,\ if\ all}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ threads\ are\ working,\ the\ job\ is\ kept\ in\ a\ queue.\ Note\ that\ vtkSMPThreadPool}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ destructor\ joins\ threads\ and\ finish\ the\ jobs\ in\ the\ queue.}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#ifndef\ vtkSMPThreadPool\_h}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#define\ vtkSMPThreadPool\_h}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}vtkCommonCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}vtkSystemIncludes.h"{}}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <atomic>}\ \ \ \ \ \textcolor{comment}{//\ For\ std::atomic}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <functional>}\ \textcolor{comment}{//\ For\ std::function}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <mutex>}\ \ \ \ \ \ \textcolor{comment}{//\ For\ std::unique\_lock}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <thread>}\ \ \ \ \ \textcolor{comment}{//\ For\ std::thread}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <vector>}\ \ \ \ \ \textcolor{comment}{//\ For\ std::vector}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00025\ \{}
+\DoxyCodeLine{00026\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00027\ \{}
+\DoxyCodeLine{00028\ \textcolor{keyword}{namespace\ }smp}
+\DoxyCodeLine{00029\ \{}
+\DoxyCodeLine{00030\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{class\ }VTKCOMMONCORE\_EXPORT\ vtkSMPThreadPool}
+\DoxyCodeLine{00041\ \{}
+\DoxyCodeLine{00042\ \ \ \textcolor{comment}{//\ Internal\ data\ structures}}
+\DoxyCodeLine{00043\ \ \ \textcolor{keyword}{struct\ }ThreadJob;}
+\DoxyCodeLine{00044\ \ \ \textcolor{keyword}{struct\ }ThreadData;}
+\DoxyCodeLine{00045\ \ \ \textcolor{keyword}{struct\ }ProxyThreadData;}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{struct\ }ProxyData;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{class\ }VTKCOMMONCORE\_EXPORT\ Proxy\ final}
+\DoxyCodeLine{00060\ \ \ \{}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00067\ \ \ \ \ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_1_1_proxy_ae6d420bd1aa5e581022d5f0fdeb545cb}{\string~Proxy}}();}
+\DoxyCodeLine{00068\ \ \ \ \ Proxy(\textcolor{keyword}{const}\ Proxy\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00069\ \ \ \ \ Proxy\&\ operator=(\textcolor{keyword}{const}\ Proxy\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00070\ \ \ \ \ Proxy(Proxy\&\&)\ noexcept;}
+\DoxyCodeLine{00071\ \ \ \ \ Proxy\&\ operator=(Proxy\&\&)\ noexcept;}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_1_1_proxy_a564b4385861d21ad30ffaf49255f41cc}{Join}}();}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_1_1_proxy_a2438b86dde1f4e0535e6056531c3b9ed}{DoJob}}(std::function<\textcolor{keywordtype}{void}()>\ job);}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00089\ \ \ \ \ std::vector<std::reference\_wrapper<std::thread>>\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_1_1_proxy_a087f228f193504f95b95c152ffce3f86}{GetThreads}}()\ const;}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_1_1_proxy_a88d43990d536969c46e283d0f86bcfc8}{IsTopLevel}}()\ const\ noexcept;}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ private:}
+\DoxyCodeLine{00097\ \ \ \ \ friend\ class\ vtkSMPThreadPool;\ \textcolor{comment}{//\ Only\ the\ thread\ pool\ can\ construct\ this\ object}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ Proxy(std::unique\_ptr<ProxyData>\&\&\ data);}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ std::unique\_ptr<ProxyData>\ Data;}
+\DoxyCodeLine{00102\ \ \ \};}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ vtkSMPThreadPool();}
+\DoxyCodeLine{00105\ \ \ \string~vtkSMPThreadPool();}
+\DoxyCodeLine{00106\ \ \ vtkSMPThreadPool(const\ vtkSMPThreadPool\&)\ =\ delete;}
+\DoxyCodeLine{00107\ \ \ vtkSMPThreadPool\&\ operator=(const\ vtkSMPThreadPool\&)\ =\ delete;}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00125\ \ \ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_1_1_proxy}{Proxy}}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_af5cbf123d141994c88cdea3b5f8400b0}{AllocateThreads}}(std::\textcolor{keywordtype}{size\_t}\ threadCount\ =\ 0);}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00130\ \ \ static\ constexpr\ std::\textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_a39f8b02a7010f9a48b4c0d06a8b126e0}{ExternalThreadID}}\ =\ 1;}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00139\ \ \ std::\textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_add2f4305371052d2a9a951d7fd2aa76f}{GetThreadId}}()\ const\ noexcept;}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00144\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_a38ace42d483c7de1e3a7a97ccd4ae4a6}{IsParallelScope}}()\ const\ noexcept;}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_a45c13432fd7596787b20349f91968b55}{GetSingleThread}}()\ const;}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00154\ \ \ std::\textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_pool_ac30bc5fe204635eceec8fb1735b028fc}{ThreadCount}}()\ const\ noexcept;}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ private:}
+\DoxyCodeLine{00157\ \ \ \textcolor{comment}{//\ static\ because\ also\ used\ by\ proxy}}
+\DoxyCodeLine{00158\ \ \ static\ \textcolor{keywordtype}{void}\ RunJob(ThreadData\&\ data,\ std::\textcolor{keywordtype}{size\_t}\ jobIndex,\ std::unique\_lock<std::mutex>\&\ lock);}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ ThreadData*\ GetCallerThreadData()\ const\ noexcept;}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ std::thread\ MakeThread();}
+\DoxyCodeLine{00163\ \ \ \textcolor{keywordtype}{void}\ FillThreadsForNestedProxy(ProxyData*\ proxy,\ std::\textcolor{keywordtype}{size\_t}\ maxCount);}
+\DoxyCodeLine{00164\ \ \ std::\textcolor{keywordtype}{size\_t}\ GetNextThreadId()\ noexcept;}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ std::atomic<\textcolor{keywordtype}{bool}>\ Initialized\{\};}
+\DoxyCodeLine{00167\ \ \ std::atomic<bool>\ Joining\{\};}
+\DoxyCodeLine{00168\ \ \ std::vector<std::unique\_ptr<ThreadData>>\ Threads;\ \textcolor{comment}{//\ Thread\ pool,\ fixed\ size}}
+\DoxyCodeLine{00169\ \ \ std::atomic<std::size\_t>\ NextProxyThreadId\{\ 1\ \};}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00172\ \ \ \textcolor{keyword}{static}\ vtkSMPThreadPool\&\ GetInstance();}
+\DoxyCodeLine{00173\ \};}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00176\ \}\ \textcolor{comment}{//\ namespace\ smp}}
+\DoxyCodeLine{00177\ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00178\ \}\ \textcolor{comment}{//\ namespace\ vtk}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00181\ \textcolor{comment}{/*\ VTK-\/HeaderTest-\/Exclude:\ vtkSMPThreadPool.h\ */}}
+
+\end{DoxyCode}

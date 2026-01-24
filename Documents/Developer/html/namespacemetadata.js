@@ -1,0 +1,25 @@
+var namespacemetadata =
+[
+    [ "Citation", "classmetadata_1_1_citation.html", null ],
+    [ "GeographicExtent", "classmetadata_1_1_geographic_extent.html", "classmetadata_1_1_geographic_extent" ],
+    [ "GeographicBoundingBox", "classmetadata_1_1_geographic_bounding_box.html", "classmetadata_1_1_geographic_bounding_box" ],
+    [ "TemporalExtent", "classmetadata_1_1_temporal_extent.html", null ],
+    [ "VerticalExtent", "classmetadata_1_1_vertical_extent.html", null ],
+    [ "Extent", "classmetadata_1_1_extent.html", null ],
+    [ "Identifier", "classmetadata_1_1_identifier.html", null ],
+    [ "PositionalAccuracy", "classmetadata_1_1_positional_accuracy.html", null ],
+    [ "ExtentNNPtr", "namespacemetadata.html#a9f7e9deb3d34e61e322408e2d7fa96b1", null ],
+    [ "ExtentPtr", "namespacemetadata.html#ae1f848be16bc69875196c12e2be28e8b", null ],
+    [ "GeographicBoundingBoxNNPtr", "namespacemetadata.html#ad7538c47a6b9880a7722dfaf15f41a8f", null ],
+    [ "GeographicBoundingBoxPtr", "namespacemetadata.html#a5668fe9011aad56bd513857e44c2bac4", null ],
+    [ "GeographicExtentNNPtr", "namespacemetadata.html#a64173bd947de4493e2b153d151007576", null ],
+    [ "GeographicExtentPtr", "namespacemetadata.html#afa5d823b3a8d903dad02b204d27baa26", null ],
+    [ "IdentifierNNPtr", "namespacemetadata.html#a21e596eb848fff4cd5d590a84bea68d9", null ],
+    [ "IdentifierPtr", "namespacemetadata.html#a76a5676560b3da550950cff2b3cb42cd", null ],
+    [ "PositionalAccuracyNNPtr", "namespacemetadata.html#adc4c0972cd5d2bf895b5da60c48d704b", null ],
+    [ "PositionalAccuracyPtr", "namespacemetadata.html#a3cc5822b1191f20c9e7dbfa9488f5d21", null ],
+    [ "TemporalExtentNNPtr", "namespacemetadata.html#a9480d8c45cbbf4613acb4dff9228343a", null ],
+    [ "TemporalExtentPtr", "namespacemetadata.html#aead10dddb5d45b394ac40a7c93695cd6", null ],
+    [ "VerticalExtentNNPtr", "namespacemetadata.html#aa279fe6f785e32af428f151730152890", null ],
+    [ "VerticalExtentPtr", "namespacemetadata.html#ad92eb96ebb2b9a346c089fc424ae1a4e", null ]
+];

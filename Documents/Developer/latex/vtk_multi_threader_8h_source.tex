@@ -1,0 +1,152 @@
+\doxysection{vtk\+Multi\+Threader.\+h}
+\hypertarget{vtk_multi_threader_8h_source}{}\label{vtk_multi_threader_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMultiThreader.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMultiThreader.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#ifndef\ vtkMultiThreader\_h}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#define\ vtkMultiThreader\_h}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}vtkCommonCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}vtkThreads.h"{}}\ \textcolor{comment}{//\ for\ VTK\_MAX\_THREADS}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <mutex>}\ \textcolor{comment}{//\ For\ std::mutex}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#if\ defined(VTK\_USE\_PTHREADS)}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <pthread.h>}\ \ \ \textcolor{comment}{//\ Needed\ for\ PTHREAD\ implementation\ of\ mutex}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ <sys/types.h>}\ \textcolor{comment}{//\ Needed\ for\ unix\ implementation\ of\ pthreads}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ <unistd.h>}\ \ \ \ \textcolor{comment}{//\ Needed\ for\ unix\ implementation\ of\ pthreads}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{//\ If\ VTK\_USE\_PTHREADS\ is\ defined,\ then\ pthread\_create()\ will\ be}}
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ used\ to\ create\ multiple\ threads}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ If\ VTK\_USE\_PTHREADS\ is\ defined,\ then\ the\ multithreaded}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ function\ is\ of\ type\ void\ *,\ and\ returns\ nullptr}}
+\DoxyCodeLine{00033\ \textcolor{comment}{//\ Otherwise\ the\ type\ is\ void\ which\ is\ correct\ for\ WIN32}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ Defined\ in\ vtkThreads.h:}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//\ \ \ VTK\_MAX\_THREADS}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ \ \ VTK\_THREAD\_RETURN\_VALUE}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ \ \ VTK\_THREAD\_RETURN\_TYPE}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#ifdef\ VTK\_USE\_PTHREADS}}
+\DoxyCodeLine{00041\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}*\ (*vtkThreadFunctionType)(\textcolor{keywordtype}{void}*);}
+\DoxyCodeLine{00042\ \textcolor{keyword}{typedef}\ pthread\_t\ vtkThreadProcessIDType;}
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ \#define\ VTK\_THREAD\_RETURN\_VALUE\ \ nullptr}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ \#define\ VTK\_THREAD\_RETURN\_TYPE\ \ \ void\ *}}
+\DoxyCodeLine{00045\ \textcolor{keyword}{typedef}\ pthread\_t\ vtkMultiThreaderIDType;}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#ifdef\ VTK\_USE\_WIN32\_THREADS}}
+\DoxyCodeLine{00049\ \textcolor{keyword}{typedef}\ vtkWindowsLPTHREAD\_START\_ROUTINE\ vtkThreadFunctionType;}
+\DoxyCodeLine{00050\ \textcolor{keyword}{typedef}\ vtkWindowsHANDLE\ vtkThreadProcessIDType;}
+\DoxyCodeLine{00051\ \textcolor{comment}{//\ \#define\ VTK\_THREAD\_RETURN\_VALUE\ 0}}
+\DoxyCodeLine{00052\ \textcolor{comment}{//\ \#define\ VTK\_THREAD\_RETURN\_TYPE\ DWORD\ \_\_stdcall}}
+\DoxyCodeLine{00053\ \textcolor{keyword}{typedef}\ vtkWindowsDWORD\ vtkMultiThreaderIDType;}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#if\ !defined(VTK\_USE\_PTHREADS)\ \&\&\ !defined(VTK\_USE\_WIN32\_THREADS)}}
+\DoxyCodeLine{00057\ \textcolor{keyword}{typedef}\ void\ (*vtkThreadFunctionType)(\textcolor{keywordtype}{void}*);}
+\DoxyCodeLine{00058\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{int}\ vtkThreadProcessIDType;}
+\DoxyCodeLine{00059\ \textcolor{comment}{//\ \#define\ VTK\_THREAD\_RETURN\_VALUE}}
+\DoxyCodeLine{00060\ \textcolor{comment}{//\ \#define\ VTK\_THREAD\_RETURN\_TYPE\ void}}
+\DoxyCodeLine{00061\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{int}\ vtkMultiThreaderIDType;}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00065\ \textcolor{keyword}{class\ }VTKCOMMONCORE\_EXPORT\ vtkMultiThreader\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00066\ \{}
+\DoxyCodeLine{00067\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00068\ \ \ \textcolor{keyword}{static}\ vtkMultiThreader*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ vtkTypeMacro(vtkMultiThreader,\ vtkObject);}
+\DoxyCodeLine{00071\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threader_a31167e0e9fac8f87dac094b135c1c351}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_threader_1_1_thread_info}{ThreadInfo}}}
+\DoxyCodeLine{00086\ \ \ \{}
+\DoxyCodeLine{00087\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordtype}{int}\ ThreadID;}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordtype}{int}\ NumberOfThreads;}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordtype}{int}*\ ActiveFlag;}
+\DoxyCodeLine{00091\ \ \ \ \ std::mutex*\ ActiveFlagLock;}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordtype}{void}*\ UserData;}
+\DoxyCodeLine{00093\ \ \ \};}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00101\ \ \ \doxymbox{\hyperlink{classvtk_multi_threader_aa50ae99b4d00409f8c6074fcc9f2d6aa}{vtkSetClampMacro}}(NumberOfThreads,\ \textcolor{keywordtype}{int},\ 1,\ VTK\_MAX\_THREADS);}
+\DoxyCodeLine{00102\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ GetNumberOfThreads();}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00109\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threader_aba3a0e903205a90578ea7ad8fe94db48}{GetGlobalStaticMaximumNumberOfThreads}}();}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00118\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threader_a6231900544adf97809eca6e28bf22d60}{SetGlobalMaximumNumberOfThreads}}(\textcolor{keywordtype}{int}\ val);}
+\DoxyCodeLine{00119\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ GetGlobalMaximumNumberOfThreads();}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threader_a0813160d46b3c8323c119236340aa7c4}{SetGlobalDefaultNumberOfThreads}}(\textcolor{keywordtype}{int}\ val);}
+\DoxyCodeLine{00129\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ GetGlobalDefaultNumberOfThreads();}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{//\ These\ methods\ are\ excluded\ from\ wrapping\ 1)\ because\ the}}
+\DoxyCodeLine{00133\ \ \ \textcolor{comment}{//\ wrapper\ gives\ up\ on\ them\ and\ 2)\ because\ they\ really\ shouldn't\ be}}
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{//\ called\ from\ a\ script\ anyway.}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00140\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threader_a9a3259bff445e6f6c3223c1bec0d93d4}{SingleMethodExecute}}();}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threader_ac157664005c646f9988197476535b37b}{MultipleMethodExecute}}();}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00156\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threader_a8e15ce472c759da791c7bf8562614746}{SetSingleMethod}}(vtkThreadFunctionType,\ \textcolor{keywordtype}{void}*\ data);}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threader_aa7175a4abfab941ace7d46448bbee678}{SetMultipleMethod}}(\textcolor{keywordtype}{int}\ index,\ vtkThreadFunctionType,\ \textcolor{keywordtype}{void}*\ data);}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00169\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_threader_a46c4f3bb65687c80efcbdaca42509478}{SpawnThread}}(vtkThreadFunctionType,\ \textcolor{keywordtype}{void}*\ data);}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00174\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_threader_ad624d89413b7093101b9bc73109adfe4}{TerminateThread}}(\textcolor{keywordtype}{int}\ threadId);}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00179\ \ \ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_multi_threader_ac5ddf1d9b8ed4ffe6379d26dddf14b7e}{IsThreadActive}}(\textcolor{keywordtype}{int}\ threadId);}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{keyword}{static}\ vtkMultiThreaderIDType\ \doxymbox{\hyperlink{classvtk_multi_threader_ae5baf29ec03c3d231c2247c7f30a363a}{GetCurrentThreadID}}();}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_multi_threader_a9b48124e3daa5394af6a6a23681b786b}{ThreadsEqual}}(vtkMultiThreaderIDType\ t1,\ vtkMultiThreaderIDType\ t2);}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00192\ \ \ vtkMultiThreader();}
+\DoxyCodeLine{00193\ \ \ \string~vtkMultiThreader()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{comment}{//\ The\ number\ of\ threads\ to\ use}}
+\DoxyCodeLine{00196\ \ \ \textcolor{keywordtype}{int}\ NumberOfThreads;}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \textcolor{comment}{//\ An\ array\ of\ thread\ info\ containing\ a\ thread\ id}}
+\DoxyCodeLine{00199\ \ \ \textcolor{comment}{//\ (0,\ 1,\ 2,\ ..\ VTK\_MAX\_THREADS-\/1),\ the\ thread\ count,\ and\ a\ pointer}}
+\DoxyCodeLine{00200\ \ \ \textcolor{comment}{//\ to\ void\ so\ that\ user\ data\ can\ be\ passed\ to\ each\ thread}}
+\DoxyCodeLine{00201\ \ \ \doxymbox{\hyperlink{classvtk_multi_threader_1_1_thread_info}{ThreadInfo}}\ ThreadInfoArray[VTK\_MAX\_THREADS];}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \textcolor{comment}{//\ The\ methods}}
+\DoxyCodeLine{00204\ \ \ vtkThreadFunctionType\ SingleMethod;}
+\DoxyCodeLine{00205\ \ \ vtkThreadFunctionType\ MultipleMethod[VTK\_MAX\_THREADS];}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \ \ \textcolor{comment}{//\ Storage\ of\ MutexFunctions\ and\ ints\ used\ to\ control\ spawned}}
+\DoxyCodeLine{00208\ \ \ \textcolor{comment}{//\ threads\ and\ the\ spawned\ thread\ ids}}
+\DoxyCodeLine{00209\ \ \ \textcolor{keywordtype}{int}\ SpawnedThreadActiveFlag[VTK\_MAX\_THREADS];}
+\DoxyCodeLine{00210\ \ \ std::mutex*\ SpawnedThreadActiveFlagLock[VTK\_MAX\_THREADS];}
+\DoxyCodeLine{00211\ \ \ vtkThreadProcessIDType\ SpawnedThreadProcessID[VTK\_MAX\_THREADS];}
+\DoxyCodeLine{00212\ \ \ \doxymbox{\hyperlink{classvtk_multi_threader_1_1_thread_info}{ThreadInfo}}\ SpawnedThreadInfoArray[VTK\_MAX\_THREADS];}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \textcolor{comment}{//\ Internal\ storage\ of\ the\ data}}
+\DoxyCodeLine{00215\ \ \ \textcolor{keywordtype}{void}*\ SingleData;}
+\DoxyCodeLine{00216\ \ \ \textcolor{keywordtype}{void}*\ MultipleData[VTK\_MAX\_THREADS];}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00219\ \ \ vtkMultiThreader(\textcolor{keyword}{const}\ vtkMultiThreader\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00220\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkMultiThreader\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00221\ \};}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \textcolor{keyword}{using\ }ThreadInfoStruct\ =\ \doxymbox{\hyperlink{classvtk_multi_threader_1_1_thread_info}{vtkMultiThreader::ThreadInfo}};}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

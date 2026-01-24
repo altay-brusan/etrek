@@ -1,0 +1,223 @@
+\doxysection{vtk\+Batch.\+h}
+\hypertarget{vtk_batch_8h_source}{}\label{vtk_batch_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkBatch.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkBatch.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#ifndef\ vtkBatch\_h}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#define\ vtkBatch\_h}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}vtkCommonCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ "{}vtkSMPTools.h"{}}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}vtkType.h"{}}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00038\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00039\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBatchData>}
+\DoxyCodeLine{00040\ \textcolor{keyword}{struct\ }vtkBatch}
+\DoxyCodeLine{00041\ \{}
+\DoxyCodeLine{00042\ \ \ vtkBatch()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00043\ \ \ \string~vtkBatch()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ vtkIdType\ BeginId;}
+\DoxyCodeLine{00046\ \ \ vtkIdType\ EndId;}
+\DoxyCodeLine{00047\ \ \ TBatchData\ Data;}
+\DoxyCodeLine{00048\ \};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00051\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ TBatchData>}
+\DoxyCodeLine{00052\ \textcolor{keyword}{class\ }vtkBatches}
+\DoxyCodeLine{00053\ \{}
+\DoxyCodeLine{00054\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{using\ }vtkTBatch\ =\ \doxymbox{\hyperlink{structvtk_batch}{vtkBatch<TBatchData>}};}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{using\ }vector\ =\ std::vector<vtkTBatch>;}
+\DoxyCodeLine{00057\ \ \ \textcolor{keyword}{using\ }size\_type\ =\ \textcolor{keyword}{typename}\ vector::size\_type;}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{using\ }reference\ =\ \textcolor{keyword}{typename}\ vector::reference;}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{using\ }const\_reference\ =\ \textcolor{keyword}{typename}\ vector::const\_reference;}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{using\ }iterator\ =\ \textcolor{keyword}{typename}\ vector::iterator;}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{using\ }const\_iterator\ =\ \textcolor{keyword}{typename}\ vector::const\_iterator;}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00064\ \ \ vtkBatches()}
+\DoxyCodeLine{00065\ \ \ \ \ :\ BatchSize(0)}
+\DoxyCodeLine{00066\ \ \ \{}
+\DoxyCodeLine{00067\ \ \ \}}
+\DoxyCodeLine{00068\ \ \ \string~vtkBatches()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00073\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_batches_a9d73a5f4f2aeb824372997db270a9425}{Initialize}}(vtkIdType\ numberOfElements,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ batchSize\ =\ 1000)}
+\DoxyCodeLine{00074\ \ \ \{}
+\DoxyCodeLine{00075\ \ \ \ \ this-\/>BatchSize\ =\ batchSize;}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ batchSizeSigned\ =\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(batchSize);}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ numberOfBatches\ =\ ((numberOfElements\ -\/\ 1)\ /\ batchSizeSigned)\ +\ 1;}
+\DoxyCodeLine{00079\ \ \ \ \ this-\/>Batches.resize(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(numberOfBatches));}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ lastBatchId\ =\ numberOfBatches\ -\/\ 1;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(0,\ numberOfBatches,}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ [\&](vtkIdType\ beginBatchId,\ vtkIdType\ endBatchId)}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ vtkIdType\ endIdValues[2]\ =\ \{\ -\/1,\ numberOfElements\ \};}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ batchId\ =\ beginBatchId;\ batchId\ <\ endBatchId;\ ++batchId)}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ batch\ =\ this-\/>Batches[batchId];}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ batch.BeginId\ =\ batchId\ *\ batchSizeSigned;}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ endIdValues[0]\ =\ (batchId\ +\ 1)\ *\ batchSizeSigned;}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ batch.EndId\ =\ endIdValues[batchId\ ==\ lastBatchId];}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00094\ \ \ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_batches_a2ea668d515adbd582be91ddfb742cf8d}{TrimBatches}}(\textcolor{keyword}{const}\ std::function<\textcolor{keywordtype}{bool}(\textcolor{keyword}{const}\ vtkTBatch\&)>\ shouldRemoveBatch)}
+\DoxyCodeLine{00100\ \ \ \{}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ numberOfBatches\ =\ this-\/>\doxymbox{\hyperlink{classvtk_batches_a213ba3f9089689d775ebf4b3d2b89ae1}{GetNumberOfBatches}}();}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keywordflow}{if}\ (numberOfBatches\ ==\ 0)}
+\DoxyCodeLine{00103\ \ \ \ \ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00105\ \ \ \ \ \}}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ numberOfThreads\ =}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ std::min(\textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(\doxymbox{\hyperlink{classvtk_s_m_p_tools_a3a581f2c2b4ad865ffb6c84917b47841}{vtkSMPTools::GetEstimatedNumberOfThreads}}()),\ numberOfBatches);}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ lastThreadId\ =\ numberOfThreads\ -\/\ 1;}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ numberOfBatchesPerThread\ =\ numberOfBatches\ /\ numberOfThreads;}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \ \ std::vector<vtkIdType>\ tlInterEndBatchId;}
+\DoxyCodeLine{00112\ \ \ \ \ tlInterEndBatchId.resize(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(numberOfThreads));}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{comment}{//\ perform\ batch\ trimming\ of\ batch\ segments}}
+\DoxyCodeLine{00115\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(0,\ numberOfThreads,}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ [\&](vtkIdType\ beginThreadId,\ vtkIdType\ endThreadId)}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ threadId\ =\ beginThreadId;\ threadId\ <\ endThreadId;\ ++threadId)}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ beginBatchId\ =\ threadId\ *\ numberOfBatchesPerThread;}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ endBatchId\ =}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ threadId\ !=\ lastThreadId\ ?\ (threadId\ +\ 1)\ *\ numberOfBatchesPerThread\ :\ numberOfBatches;}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ beginBatchIter\ =\ this-\/>Batches.begin()\ +\ beginBatchId;}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ endBatchIter\ =\ this-\/>Batches.begin()\ +\ endBatchId;}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ newEndBatchIter\ =\ std::remove\_if(beginBatchIter,\ endBatchIter,\ shouldRemoveBatch);}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ tlInterEndBatchId[threadId]\ =}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ beginBatchId\ +\ std::distance(beginBatchIter,\ newEndBatchIter);}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{comment}{//\ compute\ the\ new\ end\ batch\ ids;}}
+\DoxyCodeLine{00131\ \ \ \ \ std::vector<vtkIdType>\ tlNewEndBatchId;}
+\DoxyCodeLine{00132\ \ \ \ \ tlNewEndBatchId.resize(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(numberOfThreads));}
+\DoxyCodeLine{00133\ \ \ \ \ tlNewEndBatchId[0]\ =\ tlInterEndBatchId[0];}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ threadId\ =\ 1;\ threadId\ <\ numberOfThreads;\ ++threadId)}
+\DoxyCodeLine{00135\ \ \ \ \ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ beginOldBatchId\ =\ threadId\ *\ numberOfBatchesPerThread;}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ prevNewEndBatchId\ =\ tlNewEndBatchId[threadId\ -\/\ 1];}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ distance\ =\ tlInterEndBatchId[threadId]\ -\/\ beginOldBatchId;}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ tlNewEndBatchId[threadId]\ =\ prevNewEndBatchId\ +\ distance;}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ std::move\_backward(this-\/>Batches.begin()\ +\ beginOldBatchId,}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ this-\/>Batches.begin()\ +\ tlInterEndBatchId[threadId],}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ this-\/>Batches.begin()\ +\ tlNewEndBatchId[threadId]);}
+\DoxyCodeLine{00143\ \ \ \ \ \}}
+\DoxyCodeLine{00144\ \ \ \ \ this-\/>Batches.erase(this-\/>Batches.begin()\ +\ tlNewEndBatchId[lastThreadId],\ this-\/>Batches.end());}
+\DoxyCodeLine{00145\ \ \ \}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00158\ \ \ TBatchData\ \doxymbox{\hyperlink{classvtk_batches_a3ecb3593a3d9c0d47e393e54eb0b10ff}{BuildOffsetsAndGetGlobalSum}}()}
+\DoxyCodeLine{00159\ \ \ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ numberOfBatches\ =\ this-\/>\doxymbox{\hyperlink{classvtk_batches_a213ba3f9089689d775ebf4b3d2b89ae1}{GetNumberOfBatches}}();}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keywordflow}{if}\ (numberOfBatches\ ==\ 0)}
+\DoxyCodeLine{00162\ \ \ \ \ \{}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ TBatchData\{\};}
+\DoxyCodeLine{00164\ \ \ \ \ \}}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ numberOfThreads\ =}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ std::min(\textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(\doxymbox{\hyperlink{classvtk_s_m_p_tools_a3a581f2c2b4ad865ffb6c84917b47841}{vtkSMPTools::GetEstimatedNumberOfThreads}}()),\ numberOfBatches);}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ lastThreadId\ =\ numberOfThreads\ -\/\ 1;}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ numberOfBatchesPerThread\ =\ numberOfBatches\ /\ numberOfThreads;}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{//\ calculate\ the\ thread\ local\ sums;}}
+\DoxyCodeLine{00171\ \ \ \ \ std::vector<TBatchData>\ tlSums;}
+\DoxyCodeLine{00172\ \ \ \ \ tlSums.resize(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(numberOfThreads));}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(0,\ numberOfThreads,}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ [\&](vtkIdType\ beginThreadId,\ vtkIdType\ endThreadId)}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ threadId\ =\ beginThreadId;\ threadId\ <\ endThreadId;\ ++threadId)}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ beginBatchId\ =\ threadId\ *\ numberOfBatchesPerThread;}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ endBatchId\ =}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ threadId\ !=\ lastThreadId\ ?\ (threadId\ +\ 1)\ *\ numberOfBatchesPerThread\ :\ numberOfBatches;}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ threadSum\ =\ tlSums[threadId];}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ batchId\ =\ beginBatchId;\ batchId\ <\ endBatchId;\ ++batchId)}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ threadSum\ +=\ this-\/>Batches[batchId].Data;}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{comment}{//\ calculate\ the\ global\ sum;}}
+\DoxyCodeLine{00192\ \ \ \ \ TBatchData\ globalSum;}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ threadSum\ :\ tlSums)}
+\DoxyCodeLine{00194\ \ \ \ \ \{}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ globalSum\ +=\ threadSum;}
+\DoxyCodeLine{00196\ \ \ \ \ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{comment}{//\ calculate\ the\ thread\ local\ offsets\ using\ the\ thread\ local\ sums}}
+\DoxyCodeLine{00199\ \ \ \ \ std::vector<TBatchData>\ tlOffsets;}
+\DoxyCodeLine{00200\ \ \ \ \ tlOffsets.resize(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(numberOfThreads));}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ threadId\ =\ 1;\ threadId\ <\ numberOfThreads;\ ++threadId)}
+\DoxyCodeLine{00202\ \ \ \ \ \{}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ tlOffsets[threadId]\ =\ tlOffsets[threadId\ -\/\ 1]\ +\ tlSums[threadId\ -\/\ 1];}
+\DoxyCodeLine{00204\ \ \ \ \ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{comment}{//\ convert\ the\ batch\ sums\ to\ offsets\ using\ the\ thread\ local\ offsets}}
+\DoxyCodeLine{00207\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(0,\ numberOfThreads,}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ [\&](vtkIdType\ beginThreadId,\ vtkIdType\ endThreadId)}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ threadId\ =\ beginThreadId;\ threadId\ <\ endThreadId;\ ++threadId)}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ beginBatchId\ =\ threadId\ *\ numberOfBatchesPerThread;}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vtkIdType\ endBatchId\ =}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ threadId\ !=\ lastThreadId\ ?\ (threadId\ +\ 1)\ *\ numberOfBatchesPerThread\ :\ numberOfBatches;}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ store\ the\ first\ batch\ sum}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ lastBatchData\ =\ this-\/>Batches[beginBatchId].Data;}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ convert\ the\ first\ batch\ sum\ to\ an\ offset}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ this-\/>Batches[beginBatchId].Data\ =\ tlOffsets[threadId];}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ batchId\ =\ beginBatchId\ +\ 1;\ batchId\ <\ endBatchId;\ ++batchId)}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ store\ the\ current\ batch\ sum}}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ currentBatchData\ =\ this-\/>Batches[batchId].Data;}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ convert\ the\ current\ batch\ sum\ to\ an\ offset}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>Batches[batchId].Data\ =\ this-\/>Batches[batchId\ -\/\ 1].Data\ +\ lastBatchData;}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ store\ the\ current\ batch\ sum\ for\ the\ next\ iteration}}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ lastBatchData\ =\ std::move(currentBatchData);}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keywordflow}{return}\ globalSum;}
+\DoxyCodeLine{00233\ \ \ \}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00238\ \ \ vtkIdType\ \doxymbox{\hyperlink{classvtk_batches_a213ba3f9089689d775ebf4b3d2b89ae1}{GetNumberOfBatches}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}vtkIdType\textcolor{keyword}{>}(this-\/>Batches.size());\ \}}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00243\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_batches_a29634c2e5a83eb0f12347e88655d9f93}{GetBatchSize}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>BatchSize;\ \}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00249\ \ \ reference\ \doxymbox{\hyperlink{classvtk_batches_ae74eaa87e6acf0ecbab57cfb36eb659e}{operator[]}}(size\_type\ pos)\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Batches[pos];\ \}}
+\DoxyCodeLine{00250\ \ \ const\_reference\ \doxymbox{\hyperlink{classvtk_batches_ae74eaa87e6acf0ecbab57cfb36eb659e}{operator[]}}(size\_type\ pos)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Batches[pos];\ \}}
+\DoxyCodeLine{00251\ \ \ iterator\ begin()\ noexcept\ \{\ \textcolor{keywordflow}{return}\ this-\/>Batches.begin();\ \}}
+\DoxyCodeLine{00252\ \ \ const\_iterator\ begin()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ this-\/>Batches.begin();\ \}}
+\DoxyCodeLine{00253\ \ \ const\_iterator\ cbegin()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ this-\/>Batches.cbegin();\ \}}
+\DoxyCodeLine{00254\ \ \ iterator\ end()\ noexcept\ \{\ \textcolor{keywordflow}{return}\ this-\/>Batches.end();\ \}}
+\DoxyCodeLine{00255\ \ \ const\_iterator\ end()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ this-\/>Batches.end();\ \}}
+\DoxyCodeLine{00256\ \ \ const\_iterator\ cend()\ const\ noexcept\ \{\ \textcolor{keywordflow}{return}\ this-\/>Batches.cend();\ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00260\ \ \ vector\ Batches;}
+\DoxyCodeLine{00261\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ BatchSize;}
+\DoxyCodeLine{00262\ \};}
+\DoxyCodeLine{00263\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkBatch\_h}}
+\DoxyCodeLine{00266\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkBatch.h}}
+
+\end{DoxyCode}

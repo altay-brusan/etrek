@@ -1,0 +1,168 @@
+\doxysection{vtk\+SMPThread\+Local\+Impl.\+h}
+\hypertarget{_sequential_2vtk_s_m_p_thread_local_impl_8h_source}{}\label{_sequential_2vtk_s_m_p_thread_local_impl_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/Sequential/vtkSMPThreadLocalImpl.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/Sequential/vtkSMPThreadLocalImpl.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ .NAME\ vtkSMPThreadLocal\ -\/\ A\ simple\ thread\ local\ implementation\ for\ sequential\ operations.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ .SECTION\ Description}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ Note\ that\ this\ particular\ implementation\ is\ designed\ to\ work\ in\ sequential}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ mode\ and\ supports\ only\ 1\ thread.}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#ifndef\ SequentialvtkSMPThreadLocalImpl\_h}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#define\ SequentialvtkSMPThreadLocalImpl\_h}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}SMP/Common/vtkSMPThreadLocalImplAbstract.h"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}vtkSystemIncludes.h"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <utility>}\ \textcolor{comment}{//\ For\ std::move}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00020\ \{}
+\DoxyCodeLine{00021\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00022\ \{}
+\DoxyCodeLine{00023\ \textcolor{keyword}{namespace\ }smp}
+\DoxyCodeLine{00024\ \{}
+\DoxyCodeLine{00025\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00028\ \textcolor{keyword}{class\ }vtkSMPThreadLocalImpl<BackendType::Sequential,\ T>\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_local_impl_abstract}{vtkSMPThreadLocalImplAbstract}}<T>}
+\DoxyCodeLine{00029\ \{}
+\DoxyCodeLine{00030\ \ \ \textcolor{keyword}{typedef}\ std::vector<T>\ TLS;}
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ TLS::iterator\ TLSIter;}
+\DoxyCodeLine{00032\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_local_impl_abstract_1_1_it_impl}{vtkSMPThreadLocalImplAbstract<T>::ItImpl}}\ ItImplAbstract;}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00035\ \ \ vtkSMPThreadLocalImpl()}
+\DoxyCodeLine{00036\ \ \ \ \ :\ NumInitialized(0)}
+\DoxyCodeLine{00037\ \ \ \{}
+\DoxyCodeLine{00038\ \ \ \ \ this-\/>Initialize();}
+\DoxyCodeLine{00039\ \ \ \}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \textcolor{keyword}{explicit}\ vtkSMPThreadLocalImpl(\textcolor{keyword}{const}\ T\&\ exemplar)}
+\DoxyCodeLine{00042\ \ \ \ \ :\ NumInitialized(0)}
+\DoxyCodeLine{00043\ \ \ \ \ ,\ Exemplar(exemplar)}
+\DoxyCodeLine{00044\ \ \ \{}
+\DoxyCodeLine{00045\ \ \ \ \ this-\/>Initialize();}
+\DoxyCodeLine{00046\ \ \ \}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ T\&\ Local()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00049\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{int}\ tid\ =\ this-\/>GetThreadID();}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordflow}{if}\ (!this-\/>Initialized[tid])}
+\DoxyCodeLine{00052\ \ \ \ \ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ this-\/>Internal[tid]\ =\ this-\/>Exemplar;}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ this-\/>Initialized[tid]\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ ++this-\/>NumInitialized;}
+\DoxyCodeLine{00056\ \ \ \ \ \}}
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Internal[tid];}
+\DoxyCodeLine{00058\ \ \ \}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{size\_t}\ size()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ this-\/>NumInitialized;\ \}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \textcolor{keyword}{class\ }ItImpl\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_local_impl_abstract}{vtkSMPThreadLocalImplAbstract}}<T>::ItImpl}
+\DoxyCodeLine{00063\ \ \ \{}
+\DoxyCodeLine{00064\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordtype}{void}\ Increment()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00066\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ this-\/>InitIter++;}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ this-\/>Iter++;}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \textcolor{comment}{//\ Make\ sure\ to\ skip\ uninitialized}}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \textcolor{comment}{//\ entries.}}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (this-\/>InitIter\ !=\ this-\/>EndIter)}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*this-\/>InitIter)}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ this-\/>InitIter++;}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ this-\/>Iter++;}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00081\ \ \ \ \ \}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordtype}{bool}\ Compare(ItImplAbstract*\ other)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00084\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Iter\ ==\ \textcolor{keyword}{static\_cast<}ItImpl*\textcolor{keyword}{>}(other)-\/>Iter;}
+\DoxyCodeLine{00086\ \ \ \ \ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ T\&\ GetContent()\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ *this-\/>Iter;\ \}}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ T*\ GetContentPtr()\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ \&*this-\/>Iter;\ \}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00093\ \ \ \ \ ItImpl*\ CloneImpl()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ ItImpl(*\textcolor{keyword}{this});\ \}}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }vtkSMPThreadLocalImpl<BackendType::Sequential,\ T>;}
+\DoxyCodeLine{00097\ \ \ \ \ std::vector<bool>\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_local_a_p_i}{::iterator}}\ InitIter;}
+\DoxyCodeLine{00098\ \ \ \ \ std::vector<bool>\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_thread_local_a_p_i}{::iterator}}\ EndIter;}
+\DoxyCodeLine{00099\ \ \ \ \ TLSIter\ Iter;}
+\DoxyCodeLine{00100\ \ \ \};}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ std::unique\_ptr<ItImplAbstract>\ begin()\ override}
+\DoxyCodeLine{00103\ \ \ \{}
+\DoxyCodeLine{00104\ \ \ \ \ TLSIter\ iter\ =\ this-\/>Internal.begin();}
+\DoxyCodeLine{00105\ \ \ \ \ std::vector<bool>::iterator\ iter2\ =\ this-\/>Initialized.begin();}
+\DoxyCodeLine{00106\ \ \ \ \ std::vector<bool>::iterator\ enditer\ =\ this-\/>Initialized.end();}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{comment}{//\ fast\ forward\ to\ first\ initialized}}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{comment}{//\ value}}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{while}\ (iter2\ !=\ enditer)}
+\DoxyCodeLine{00110\ \ \ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (*iter2)}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ iter2++;}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ iter++;}
+\DoxyCodeLine{00117\ \ \ \ \ \}}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keyword}{auto}\ retVal\ =\ std::make\_unique<ItImpl>();}
+\DoxyCodeLine{00119\ \ \ \ \ retVal-\/>InitIter\ =\ iter2;}
+\DoxyCodeLine{00120\ \ \ \ \ retVal-\/>EndIter\ =\ enditer;}
+\DoxyCodeLine{00121\ \ \ \ \ retVal-\/>Iter\ =\ iter;}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordflow}{return}\ retVal;}
+\DoxyCodeLine{00123\ \ \ \}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ std::unique\_ptr<ItImplAbstract>\ end()\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00126\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keyword}{auto}\ retVal\ =\ std::make\_unique<ItImpl>();}
+\DoxyCodeLine{00128\ \ \ \ \ retVal-\/>InitIter\ =\ this-\/>Initialized.end();}
+\DoxyCodeLine{00129\ \ \ \ \ retVal-\/>EndIter\ =\ this-\/>Initialized.end();}
+\DoxyCodeLine{00130\ \ \ \ \ retVal-\/>Iter\ =\ this-\/>Internal.end();}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordflow}{return}\ retVal;}
+\DoxyCodeLine{00132\ \ \ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00135\ \ \ TLS\ Internal;}
+\DoxyCodeLine{00136\ \ \ std::vector<bool>\ Initialized;}
+\DoxyCodeLine{00137\ \ \ \textcolor{keywordtype}{size\_t}\ NumInitialized;}
+\DoxyCodeLine{00138\ \ \ T\ Exemplar;}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \textcolor{keywordtype}{void}\ Initialize()}
+\DoxyCodeLine{00141\ \ \ \{}
+\DoxyCodeLine{00142\ \ \ \ \ this-\/>Internal.resize(this-\/>GetNumberOfThreads());}
+\DoxyCodeLine{00143\ \ \ \ \ this-\/>Initialized.resize(this-\/>GetNumberOfThreads());}
+\DoxyCodeLine{00144\ \ \ \ \ std::fill(this-\/>Initialized.begin(),\ this-\/>Initialized.end(),\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00145\ \ \ \}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordtype}{int}\ GetNumberOfThreads()\ \{\ \textcolor{keywordflow}{return}\ 1;\ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordtype}{int}\ GetThreadID()\ \{\ \textcolor{keywordflow}{return}\ 0;\ \}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \textcolor{comment}{//\ disable\ copying}}
+\DoxyCodeLine{00152\ \ \ vtkSMPThreadLocalImpl(\textcolor{keyword}{const}\ vtkSMPThreadLocalImpl\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00153\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkSMPThreadLocalImpl\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00154\ \};}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00157\ \}\ \textcolor{comment}{//\ namespace\ smp}}
+\DoxyCodeLine{00158\ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00159\ \}\ \textcolor{comment}{//\ namespace\ vtk}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00162\ \textcolor{comment}{/*\ VTK-\/HeaderTest-\/Exclude:\ vtkSMPThreadLocalImpl.h\ */}}
+
+\end{DoxyCode}

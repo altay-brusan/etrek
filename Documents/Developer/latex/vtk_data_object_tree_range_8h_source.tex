@@ -1,0 +1,268 @@
+\doxysection{vtk\+Data\+Object\+Tree\+Range.\+h}
+\hypertarget{vtk_data_object_tree_range_8h_source}{}\label{vtk_data_object_tree_range_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataObjectTreeRange.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataObjectTreeRange.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#ifndef\ vtkDataObjectTreeRange\_h}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#define\ vtkDataObjectTreeRange\_h}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}vtkCompositeDataSetNodeReference.h"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}vtkDataObjectTree.h"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}vtkDataObjectTreeIterator.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_meta_8h}{vtkMeta.h}}"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}vtkRange.h"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointer.h"{}}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00017\ \{}
+\DoxyCodeLine{00018\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ Pass\ these\ to\ vtk::Range(cds,\ options):}}
+\DoxyCodeLine{00021\ \textcolor{keyword}{enum\ class}\ DataObjectTreeOptions\ :\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00022\ \{}
+\DoxyCodeLine{00023\ \ \ None\ =\ 0,}
+\DoxyCodeLine{00024\ \ \ SkipEmptyNodes\ =\ 1\ <<\ 1,\ \ \textcolor{comment}{//\ Skip\ null\ datasets.}}
+\DoxyCodeLine{00025\ \ \ VisitOnlyLeaves\ =\ 1\ <<\ 2,\ \textcolor{comment}{//\ Skip\ child\ composite\ datasets.}}
+\DoxyCodeLine{00026\ \ \ TraverseSubTree\ =\ 1\ <<\ 3,\ \textcolor{comment}{//\ Descend\ into\ child\ composite\ datasets.}}
+\DoxyCodeLine{00027\ \};}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00030\ \}\ \textcolor{comment}{//\ end\ namespace\ vtk\ (for\ bitflag\ op\ definition)}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00033\ VTK\_GENERATE\_BITFLAG\_OPS(vtk::DataObjectTreeOptions)}
+\DoxyCodeLine{00034\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00037\ \{}
+\DoxyCodeLine{00038\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00039\ \{}
+\DoxyCodeLine{00040\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_data_object_tree_range}{DataObjectTreeRange}};}
+\DoxyCodeLine{00043\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_data_object_tree_iterator}{DataObjectTreeIterator}};}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{keyword}{using\ }DataObjectTreeIteratorReference\ =}
+\DoxyCodeLine{00046\ \ \ vtk::CompositeDataSetNodeReference<vtkDataObjectTreeIterator,\ DataObjectTreeIterator>;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{struct\ }DataObjectTreeIterator}
+\DoxyCodeLine{00049\ \{}
+\DoxyCodeLine{00050\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00051\ \ \ \textcolor{keyword}{using\ }InternalIterator\ =\ \doxymbox{\hyperlink{classvtk_data_object_tree_iterator}{vtkDataObjectTreeIterator}};}
+\DoxyCodeLine{00052\ \ \ \textcolor{keyword}{using\ }SmartIterator\ =\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<InternalIterator>}};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{using\ }iterator\_category\ =\ std::forward\_iterator\_tag;}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*;}
+\DoxyCodeLine{00057\ \ \ \textcolor{keyword}{using\ }difference\_type\ =\ int;}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{using\ }pointer\ =\ DataObjectTreeIteratorReference;}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{using\ }reference\ =\ DataObjectTreeIteratorReference;}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ DataObjectTreeIterator(\textcolor{keyword}{const}\ DataObjectTreeIterator\&\ o)}
+\DoxyCodeLine{00062\ \ \ \ \ :\ Iterator(o.Iterator\ ?\ \doxymbox{\hyperlink{classvtk_smart_pointer_a84ec56a8db08dffd7478f67806bbdae5}{SmartIterator::Take}}(o.Iterator-\/>NewInstance())\ :\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00063\ \ \ \{}
+\DoxyCodeLine{00064\ \ \ \ \ this-\/>CopyState(o.Iterator);}
+\DoxyCodeLine{00065\ \ \ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ DataObjectTreeIterator(DataObjectTreeIterator\&\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ DataObjectTreeIterator\&\ operator=(\textcolor{keyword}{const}\ DataObjectTreeIterator\&\ o)}
+\DoxyCodeLine{00070\ \ \ \{}
+\DoxyCodeLine{00071\ \ \ \ \ this-\/>Iterator\ =\ o.Iterator\ ?\ \doxymbox{\hyperlink{classvtk_smart_pointer_a84ec56a8db08dffd7478f67806bbdae5}{SmartIterator::Take}}(o.Iterator-\/>NewInstance())\ :\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00072\ \ \ \ \ this-\/>CopyState(o.Iterator);}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00074\ \ \ \}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ DataObjectTreeIterator\&\ operator++()\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00077\ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \ \ this-\/>Increment();}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00080\ \ \ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ DataObjectTreeIterator\ operator++(\textcolor{keywordtype}{int})\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00083\ \ \ \{}
+\DoxyCodeLine{00084\ \ \ \ \ DataObjectTreeIterator\ other(*\textcolor{keyword}{this});}
+\DoxyCodeLine{00085\ \ \ \ \ this-\/>Increment();}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordflow}{return}\ other;}
+\DoxyCodeLine{00087\ \ \ \}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ reference\ operator*()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>GetData();\ \}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ pointer\ operator-\/>()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>GetData();\ \}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ operator==(\textcolor{keyword}{const}\ DataObjectTreeIterator\&\ lhs,\ \textcolor{keyword}{const}\ DataObjectTreeIterator\&\ rhs)}
+\DoxyCodeLine{00094\ \ \ \{}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{//\ A\ null\ internal\ iterator\ means\ it\ is\ an\ 'end'\ sentinel.}}
+\DoxyCodeLine{00096\ \ \ \ \ InternalIterator*\ l\ =\ lhs.Iterator;}
+\DoxyCodeLine{00097\ \ \ \ \ InternalIterator*\ r\ =\ rhs.Iterator;}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keywordflow}{if}\ (!r\ \&\&\ !l)}
+\DoxyCodeLine{00100\ \ \ \ \ \{\ \textcolor{comment}{//\ end\ ==\ end}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00102\ \ \ \ \ \}}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!r)}
+\DoxyCodeLine{00104\ \ \ \ \ \{\ \textcolor{comment}{//\ right\ is\ end}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ l-\/>\doxymbox{\hyperlink{classvtk_data_object_tree_iterator_a47fb29838dc6758ed5a2ae184b4d867f}{IsDoneWithTraversal}}()\ !=\ 0;}
+\DoxyCodeLine{00106\ \ \ \ \ \}}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (!l)}
+\DoxyCodeLine{00108\ \ \ \ \ \{\ \textcolor{comment}{//\ left\ is\ end}}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ r-\/>IsDoneWithTraversal()\ !=\ 0;}
+\DoxyCodeLine{00110\ \ \ \ \ \}}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00112\ \ \ \ \ \{\ \textcolor{comment}{//\ Both\ iterators\ are\ valid,\ check\ unique\ idx:}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ r-\/>GetCurrentFlatIndex()\ ==\ l-\/>\doxymbox{\hyperlink{classvtk_data_object_tree_iterator_ac4c5c45fc89f33c30ec8415af61d37df}{GetCurrentFlatIndex}}();}
+\DoxyCodeLine{00114\ \ \ \ \ \}}
+\DoxyCodeLine{00115\ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ operator!=(\textcolor{keyword}{const}\ DataObjectTreeIterator\&\ lhs,\ \textcolor{keyword}{const}\ DataObjectTreeIterator\&\ rhs)}
+\DoxyCodeLine{00118\ \ \ \{}
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordflow}{return}\ !(lhs\ ==\ rhs);\ \textcolor{comment}{//\ let\ the\ compiler\ handle\ this\ one\ =)}}
+\DoxyCodeLine{00120\ \ \ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{void}\ swap(DataObjectTreeIterator\&\ lhs,\ DataObjectTreeIterator\&\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00123\ \ \ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keyword}{using\ }std::swap;}
+\DoxyCodeLine{00125\ \ \ \ \ swap(lhs.Iterator,\ rhs.Iterator);}
+\DoxyCodeLine{00126\ \ \ \}}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }DataObjectTreeRange;}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00131\ \ \ \textcolor{comment}{//\ Note:\ This\ takes\ ownership\ of\ iter\ and\ manages\ its\ lifetime.}}
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{//\ Iter\ should\ not\ be\ used\ past\ this\ point\ by\ the\ caller.}}
+\DoxyCodeLine{00133\ \ \ DataObjectTreeIterator(SmartIterator\&\&\ iter)\ noexcept}
+\DoxyCodeLine{00134\ \ \ \ \ :\ Iterator(std::move(iter))}
+\DoxyCodeLine{00135\ \ \ \{}
+\DoxyCodeLine{00136\ \ \ \}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{comment}{//\ Note:\ Iterators\ constructed\ using\ this\ ctor\ will\ be\ considered}}
+\DoxyCodeLine{00139\ \ \ \textcolor{comment}{//\ 'end'\ iterators\ via\ a\ sentinel\ pattern.}}
+\DoxyCodeLine{00140\ \ \ DataObjectTreeIterator()\ noexcept}
+\DoxyCodeLine{00141\ \ \ \ \ :\ Iterator\{\ \textcolor{keyword}{nullptr}\ \}}
+\DoxyCodeLine{00142\ \ \ \{}
+\DoxyCodeLine{00143\ \ \ \}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00146\ \ \ \textcolor{keywordtype}{void}\ CopyState(InternalIterator*\ source)}
+\DoxyCodeLine{00147\ \ \ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordflow}{if}\ (source)}
+\DoxyCodeLine{00149\ \ \ \ \ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ assert(this-\/>Iterator\ !=\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ this-\/>Iterator-\/>SetDataSet(source-\/>GetDataSet());}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ this-\/>Iterator-\/>SetSkipEmptyNodes(source-\/>GetSkipEmptyNodes());}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ this-\/>Iterator-\/>SetVisitOnlyLeaves(source-\/>GetVisitOnlyLeaves());}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ this-\/>Iterator-\/>SetTraverseSubTree(source-\/>GetTraverseSubTree());}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ this-\/>Iterator-\/>InitTraversal();}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ this-\/>AdvanceTo(source-\/>GetCurrentFlatIndex());}
+\DoxyCodeLine{00157\ \ \ \ \ \}}
+\DoxyCodeLine{00158\ \ \ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{void}\ AdvanceTo(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ flatIdx)}
+\DoxyCodeLine{00161\ \ \ \{}
+\DoxyCodeLine{00162\ \ \ \ \ assert(this-\/>Iterator\ !=\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00163\ \ \ \ \ assert(this-\/>Iterator-\/>GetCurrentFlatIndex()\ <=\ flatIdx);}
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{keywordflow}{while}\ (this-\/>Iterator-\/>GetCurrentFlatIndex()\ <\ flatIdx)}
+\DoxyCodeLine{00165\ \ \ \ \ \{}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ this-\/>Increment();}
+\DoxyCodeLine{00167\ \ \ \ \ \}}
+\DoxyCodeLine{00168\ \ \ \}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \textcolor{keywordtype}{void}\ Increment()}
+\DoxyCodeLine{00171\ \ \ \{}
+\DoxyCodeLine{00172\ \ \ \ \ assert(this-\/>Iterator\ !=\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00173\ \ \ \ \ assert(!this-\/>Iterator-\/>IsDoneWithTraversal());}
+\DoxyCodeLine{00174\ \ \ \ \ this-\/>Iterator-\/>GoToNextItem();}
+\DoxyCodeLine{00175\ \ \ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ DataObjectTreeIteratorReference\ GetData()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00178\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00179\ \ \ \ \ assert(this-\/>Iterator\ !=\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00180\ \ \ \ \ assert(!this-\/>Iterator-\/>IsDoneWithTraversal());}
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordflow}{return}\ DataObjectTreeIteratorReference\{\ this-\/>Iterator\ \};}
+\DoxyCodeLine{00182\ \ \ \}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \textcolor{keyword}{mutable}\ SmartIterator\ Iterator;}
+\DoxyCodeLine{00185\ \};}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00188\ \textcolor{comment}{//\ DataObjectTree\ range\ proxy.}}
+\DoxyCodeLine{00189\ \textcolor{keyword}{struct\ }DataObjectTreeRange}
+\DoxyCodeLine{00190\ \{}
+\DoxyCodeLine{00191\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00192\ \ \ \textcolor{keyword}{using\ }InternalIterator\ =\ \doxymbox{\hyperlink{classvtk_data_object_tree_iterator}{vtkDataObjectTreeIterator}};}
+\DoxyCodeLine{00193\ \ \ \textcolor{keyword}{using\ }SmartIterator\ =\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<InternalIterator>}};}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00196\ \ \ \textcolor{keyword}{using\ }size\_type\ =\ int;}
+\DoxyCodeLine{00197\ \ \ \textcolor{keyword}{using\ }iterator\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_data_object_tree_iterator}{DataObjectTreeIterator}};}
+\DoxyCodeLine{00198\ \ \ \textcolor{keyword}{using\ }const\_iterator\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_data_object_tree_iterator}{DataObjectTreeIterator}};}
+\DoxyCodeLine{00199\ \ \ \textcolor{keyword}{using\ }reference\ =\ DataObjectTreeIteratorReference;}
+\DoxyCodeLine{00200\ \ \ \textcolor{keyword}{using\ }const\_reference\ =\ \textcolor{keyword}{const}\ DataObjectTreeIteratorReference;}
+\DoxyCodeLine{00201\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*;}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ DataObjectTreeRange(}
+\DoxyCodeLine{00204\ \ \ \ \ \doxymbox{\hyperlink{classvtk_data_object_tree}{vtkDataObjectTree}}*\ cds,\ DataObjectTreeOptions\ opts\ =\ DataObjectTreeOptions::None)}
+\DoxyCodeLine{00205\ \ \ \ \ :\ DataObjectTree(cds)}
+\DoxyCodeLine{00206\ \ \ \ \ ,\ Options(opts)}
+\DoxyCodeLine{00207\ \ \ \{}
+\DoxyCodeLine{00208\ \ \ \ \ assert(this-\/>DataObjectTree);}
+\DoxyCodeLine{00209\ \ \ \}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \ \ \doxymbox{\hyperlink{classvtk_data_object_tree}{vtkDataObjectTree}}*\ GetDataObjectTree()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>DataObjectTree;\ \}}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \ DataObjectTreeOptions\ GetOptions()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Options;\ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \textcolor{comment}{//\ This\ is\ O(N),\ since\ the\ size\ requires\ traversal\ due\ to\ various\ options.}}
+\DoxyCodeLine{00216\ \ \ size\_type\ size()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00217\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00218\ \ \ \ \ size\_type\ result\ =\ 0;}
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{keyword}{auto}\ iter\ =\ this-\/>NewIterator();}
+\DoxyCodeLine{00220\ \ \ \ \ iter-\/>InitTraversal();}
+\DoxyCodeLine{00221\ \ \ \ \ \textcolor{keywordflow}{while}\ (!iter-\/>IsDoneWithTraversal())}
+\DoxyCodeLine{00222\ \ \ \ \ \{}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ ++result;}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ iter-\/>GoToNextItem();}
+\DoxyCodeLine{00225\ \ \ \ \ \}}
+\DoxyCodeLine{00226\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00227\ \ \ \}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ iterator\ begin()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_data_object_tree_iterator}{DataObjectTreeIterator}}\{\ this-\/>NewIterator()\ \};\ \}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ iterator\ end()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_data_object_tree_iterator}{DataObjectTreeIterator}}\{\};\ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \textcolor{comment}{//\ Note:\ These\ return\ mutable\ objects\ because\ const\ vtkObject\ are\ unusable.}}
+\DoxyCodeLine{00234\ \ \ const\_iterator\ cbegin()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_data_object_tree_iterator}{DataObjectTreeIterator}}\{\ this-\/>NewIterator()\ \};\ \}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \textcolor{comment}{//\ Note:\ These\ return\ mutable\ objects\ because\ const\ vtkObjects\ are\ unusable.}}
+\DoxyCodeLine{00237\ \ \ const\_iterator\ cend()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_data_object_tree_iterator}{DataObjectTreeIterator}}\{\};\ \}}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00240\ \ \ SmartIterator\ NewIterator()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00241\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keyword}{using\ }Opts\ =\ vtk::DataObjectTreeOptions;}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keyword}{auto}\ result\ =\ \doxymbox{\hyperlink{classvtk_smart_pointer_a84ec56a8db08dffd7478f67806bbdae5}{SmartIterator::Take}}(this-\/>DataObjectTree-\/>NewTreeIterator());}
+\DoxyCodeLine{00245\ \ \ \ \ result-\/>SetSkipEmptyNodes((this-\/>Options\ \&\ Opts::SkipEmptyNodes)\ !=\ Opts::None);}
+\DoxyCodeLine{00246\ \ \ \ \ result-\/>SetVisitOnlyLeaves((this-\/>Options\ \&\ Opts::VisitOnlyLeaves)\ !=\ Opts::None);}
+\DoxyCodeLine{00247\ \ \ \ \ result-\/>SetTraverseSubTree((this-\/>Options\ \&\ Opts::TraverseSubTree)\ !=\ Opts::None);}
+\DoxyCodeLine{00248\ \ \ \ \ result-\/>InitTraversal();}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00250\ \ \ \}}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{keyword}{mutable}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkDataObjectTree>}}\ DataObjectTree;}
+\DoxyCodeLine{00253\ \ \ DataObjectTreeOptions\ Options;}
+\DoxyCodeLine{00254\ \};}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00257\ \}}
+\DoxyCodeLine{00258\ \}\ \textcolor{comment}{//\ end\ namespace\ vtk::detail}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkDataObjectTreeRange\_h}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkDataObjectTreeRange.h}}
+
+\end{DoxyCode}

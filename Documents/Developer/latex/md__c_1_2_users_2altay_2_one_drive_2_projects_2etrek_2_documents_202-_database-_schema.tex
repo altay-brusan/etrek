@@ -1,0 +1,860 @@
+\chapter{E-\/\+TREK Database Schema }
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema}{}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema}\index{E-\/TREK Database Schema@{E-\/TREK Database Schema}}
+\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md279}%
+\Hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md279}%
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md280}{}\doxysection{\texorpdfstring{Overview}{Overview}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md280}
+E-\/\+TREK uses My\+SQL as the relational database for storing:\+
+\begin{DoxyItemize}
+\item {\bfseries{Patient demographics}} and medical imaging data (DICOM hierarchy)
+\item {\bfseries{Device configurations}} (generators, X-\/ray tubes, detectors, positioners)
+\item {\bfseries{DICOM Modality Worklist (MWL)}} entries and DICOM tag definitions
+\item {\bfseries{Imaging procedures}} and technique parameters
+\item {\bfseries{User accounts}}, roles, and authentication
+\item {\bfseries{System settings}} and institutional metadata
+\item {\bfseries{PACS/\+\+MPPS connections}}
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md281}{}\doxysection{\texorpdfstring{Entity Relationship Summary}{Entity Relationship Summary}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md281}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ AUTHENTICATION\ \&\ AUTHORIZATION\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{users\ ──<\ user\_roles\ >──\ roles}
+\DoxyCodeLine{}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DICOM\ HIERARCHY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{patients\ ──<\ studies\ ──<\ series\ ──<\ images\ ──<\ sop\_commons}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └──<\ acquisitions}
+\DoxyCodeLine{}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DEVICE\ \&\ HARDWARE\ CONFIGURATION\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{institutions\ ──<\ general\_equipments\ ──<\ detector\_setup\ ──\ detectors}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └──<\ xray\_tube\_setup\ ──\ xray\_tubes}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └──\ generators}
+\DoxyCodeLine{}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SCAN\ PROTOCOLS\ \&\ IMAGING\ PROCEDURES\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{anatomic\_regions\ ──<\ body\_parts\ ──<\ views\ ──<\ procedure\_views\ >──\ procedures}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └──<\ technique\_parameters\ ──<\ view\_techniques\ >──┘}
+\DoxyCodeLine{}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DICOM\ MODALITY\ WORKLIST\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{mwl\_profiles\ ──<\ mwl\_presentation\_contexts}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ └──<\ profile\_tag\_association\ >──\ dicom\_tags}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └──<\ mwl\_attributes\ >──\ mwl\_entries\ ──<\ mwl\_task\_mapping}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md282}{}\doxysection{\texorpdfstring{Data Flow Overview}{Data Flow Overview}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md282}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md283}{}\doxysubsection{\texorpdfstring{MWL to DICOM Workflow}{MWL to DICOM Workflow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md283}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ INPUT:\ MODALITY\ WORKLIST\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ mwl\_profiles\ \ \ \ \ \ \ \ \ \ Which\ RIS/MWL\ connection?\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ profile\_tag\_association\ ──►\ dicom\_tags\ \ \ \ \ Which\ DICOM\ tags\ to\ use?\ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ mwl\_entries\ \ \ \ \ \ \ \ \ \ \ Store\ the\ worklist\ item\ (patient,\ procedure,\ etc.)\ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ mwl\_attributes\ \ \ \ \ \ \ \ Store\ actual\ DICOM\ tag\ values\ (EAV\ pattern)\ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Operator\ starts\ examination}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SCAN\ PROTOCOL\ LOOKUP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ Procedure\ Code\ (from\ MWL)\ ──►\ procedures\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ procedure\_views\ ──────────►\ views\ ──►\ body\_parts\ ──►\ anatomic\_regions\ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ view\_techniques\ ──►\ technique\_parameters\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ Default\ kVp,\ mA,\ ms\ based\ on:\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ Body\ part\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ Patient\ size\ (Fat/Medium/Thin/Paediatric)\ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ View\ position\ (AP,\ LAT,\ etc.)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ └──────────────►\ Populate\ UI\ with\ defaults\ (operator\ can\ override)\ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Image\ acquisition}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OUTPUT:\ DICOM\ HIERARCHY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ patients\ ◄────\ Create/lookup\ patient\ from\ MWL\ demographics\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ studies\ ◄─────\ Create\ study\ (study\_instance\_uid,\ accession\_number)\ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ series\ ◄──────\ Create\ series\ for\ each\ view\ (series\_instance\_uid)\ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ images\ ◄──────\ Store\ image\ metadata\ (rows,\ columns,\ bits,\ etc.)\ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ sop\_commons\ ◄─\ Store\ SOP\ Instance\ UID\ (unique\ per\ image)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ acquisitions\ ◄\ Store\ acquisition\ details\ (dose,\ AEC\ settings)\ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Link\ MWL\ to\ created\ DICOM\ objects}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ mwl\_task\_mapping\ \ \ \ \ \ Junction\ table\ connecting:\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ mwl\_entry\_id\ \ →\ Input\ worklist\ item\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ procedure\_id\ \ →\ What\ was\ ordered\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ study\_id\ \ \ \ \ \ →\ Created\ study\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ series\_id\ \ \ \ \ →\ Created\ series\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ images\_id\ \ \ \ \ →\ Created\ image\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ sop\_common\_id\ →\ DICOM\ SOP\ instance\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ acquisition\_id→\ Acquisition\ details\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ Generate\ DICOM\ file}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DICOM\ FILE\ OUTPUT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ Combine\ data\ from\ all\ tables\ above\ to\ create\ compliant\ DICOM\ file\ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md284}{}\doxysubsection{\texorpdfstring{Scan Protocol Hierarchy}{Scan Protocol Hierarchy}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md284}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{anatomic\_regions\ (HEAD,\ THORAX,\ ABDOMEN,\ ...)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{body\_parts\ (SKULL,\ CHEST,\ SPINE,\ KNEE,\ ...)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ├──────────────────────────────────┐}
+\DoxyCodeLine{\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ \ \ views\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ technique\_parameters}
+\DoxyCodeLine{\ (AP,\ LAT,\ OBL,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (kVp,\ mA,\ ms\ per\ body\ part\ +\ patient\ size)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ └──────────►\ view\_techniques\ ◄─────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Links\ views\ to\ default\ exposure\ parameters}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Supports\ multi-\/shot\ (seq:\ 1,2,...)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Supports\ dual-\/energy\ (role:\ PRIMARY,\ LOW,\ HIGH)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ procedure\_views}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ procedures\ (Chest\ PA,\ CSpine\ AP,\ Pelvis\ AP,\ ...)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{\ \ Mapped\ from\ MWL\ procedure\ codes\ (SNOMED/SRT\ standard)}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md286}{}\doxysection{\texorpdfstring{Core Domain Modules}{Core Domain Modules}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md286}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md287}{}\doxysubsection{\texorpdfstring{1. Authentication \& Authorization}{1. Authentication \& Authorization}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md287}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md288}{}\doxysubsubsection{\texorpdfstring{users}{users}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md288}
+Stores user login credentials and audit information.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily user\+\_\+name} (UNIQUE):\+ Login username
+\item {\ttfamily password\+\_\+hash}:\+ Encrypted password
+\item {\ttfamily name}, {\ttfamily surname}:\+ User display name
+\item {\ttfamily is\+\_\+active}, {\ttfamily is\+\_\+deleted}:\+ Account status
+\item {\ttfamily create\+\_\+date}, {\ttfamily update\+\_\+date}:\+ Audit trail
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily users ──\texorpdfstring{$<$}{<} user\+\_\+roles \texorpdfstring{$>$}{>}── roles} (Many-\/to-\/many)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md289}{}\doxysubsubsection{\texorpdfstring{roles}{roles}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md289}
+Available user roles (admin, technician, engineer).\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md290}{}\doxysubsubsection{\texorpdfstring{user\+\_\+roles}{user\+\_\+roles}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md290}
+Junction table associating users with roles.
+
+{\bfseries{Design Notes:\+}}
+\begin{DoxyItemize}
+\item Password hashing handled by {\ttfamily Crypto\+Manager} in Core package
+\item Soft delete pattern ({\ttfamily is\+\_\+deleted}) preserves historical data
+\item Audit timestamps track account lifecycle
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md292}{}\doxysubsection{\texorpdfstring{2. DICOM Patient Hierarchy}{2. DICOM Patient Hierarchy}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md292}
+Implements DICOM Patient-\/\+Study-\/\+Series-\/\+Image model.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md293}{}\doxysubsubsection{\texorpdfstring{patients}{patients}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md293}
+Patient demographics (DICOM Patient Module).
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily patient\+\_\+name}:\+ Patient\textquotesingle{}s full name (0010,0010)
+\item {\ttfamily patient\+\_\+id}:\+ Primary identifier (0010,0020) -\/ {\bfseries{COMPOSITE KEY with issuer}}
+\item {\ttfamily issuer\+\_\+of\+\_\+patient\+\_\+id}:\+ Organization issuing ID (0010,0021)
+\item {\ttfamily patient\+\_\+sex}:\+ M/\+\+F/\+\+O/\+U (0010,0040)
+\item {\ttfamily patient\+\_\+birth\+\_\+date}:\+ DOB (0010,0030)
+\item {\ttfamily patient\+\_\+allergies}:\+ Medical allergies (0010,2110)
+\item {\ttfamily other\+\_\+patient\+\_\+id}:\+ JSON array of alternate IDs
+\end{DoxyItemize}
+
+{\bfseries{Indexes:\+}}
+\begin{DoxyItemize}
+\item Composite UNIQUE:\+ {\ttfamily (patient\+\_\+id, issuer\+\_\+of\+\_\+patient\+\_\+id)} -\/ allows same ID from different systems
+\item Non-\/unique:\+ {\ttfamily patient\+\_\+id}, {\ttfamily patient\+\_\+name} for efficient lookups
+\end{DoxyItemize}
+
+{\bfseries{Design Rationale:\+}}
+\begin{DoxyItemize}
+\item Same patient\+\_\+id can exist from multiple issuers (hospital systems)
+\item {\ttfamily issuer\+\_\+of\+\_\+patient\+\_\+id} NULL means local system
+\item JSON field for flexible alternate ID storage
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md294}{}\doxysubsubsection{\texorpdfstring{studies}{studies}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md294}
+Study-\/level DICOM metadata.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily study\+\_\+instance\+\_\+uid} (0020,000D):\+ Unique study identifier
+\item {\ttfamily study\+\_\+id} (0020,0010):\+ User-\/friendly study number
+\item {\ttfamily admission\+\_\+id} (0038,0010):\+ Hospital admission ID
+\item {\ttfamily accession\+\_\+number} (0008,0050):\+ Order/\+requisition number
+\item {\ttfamily study\+\_\+date}, {\ttfamily study\+\_\+time}:\+ When study performed
+\item {\ttfamily study\+\_\+description}:\+ Procedure description
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily patients ──\texorpdfstring{$<$}{<} studies} (One patient → many studies)
+\end{DoxyItemize}
+
+{\bfseries{Foreign Keys:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily patient\+\_\+id → patients(id)} with {\ttfamily ON DELETE RESTRICT} (protect data integrity)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md295}{}\doxysubsubsection{\texorpdfstring{series}{series}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md295}
+Series-\/level metadata (grouping of related images).
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily series\+\_\+instance\+\_\+uid} (0020,000E):\+ Unique series ID
+\item {\ttfamily series\+\_\+number}:\+ Series ordering
+\item {\ttfamily modality} (0008,0060):\+ DX, CR, CT, MR, etc.
+\item {\ttfamily series\+\_\+description}:\+ Series purpose
+\item {\ttfamily body\+\_\+part\+\_\+examined} (0018,0015)
+\item {\ttfamily patient\+\_\+position} (0018,5100):\+ Supine, Prone, Erect, Lateral
+\item {\ttfamily view\+\_\+position} (0018,5101):\+ AP, PA, LL, RL, etc.
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily studies ──\texorpdfstring{$<$}{<} series} (One study → many series)
+\end{DoxyItemize}
+
+{\bfseries{Design Notes:\+}}
+\begin{DoxyItemize}
+\item CASCADE delete:\+ Deleting study removes all series
+\item {\ttfamily acquisition\+\_\+device\+\_\+id} links to {\ttfamily general\+\_\+equipments} for device tracking
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md296}{}\doxysubsubsection{\texorpdfstring{images}{images}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md296}
+Image-\/level metadata and processing information.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily instance\+\_\+number}:\+ Image ordering within series
+\item {\ttfamily content\+\_\+date}, {\ttfamily content\+\_\+time}:\+ Image acquisition timestamp
+\item {\ttfamily image\+\_\+type} (0008,0008):\+ ORIGINAL\textbackslash{}PRIMARY, DERIVED, etc.
+\item {\ttfamily samples\+\_\+per\+\_\+pixel}, {\ttfamily photometric\+\_\+interpretation}:\+ Pixel data encoding
+\item {\ttfamily rows}, {\ttfamily columns}, {\ttfamily bits\+\_\+allocated}, {\ttfamily bits\+\_\+stored}:\+ Image dimensions
+\item {\ttfamily rescale\+\_\+intercept}, {\ttfamily rescale\+\_\+slope}:\+ Pixel value transformation
+\item {\ttfamily kvp}:\+ X-\/ray tube voltage used
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily series ──\texorpdfstring{$<$}{<} images} (One series → many images)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md297}{}\doxysubsubsection{\texorpdfstring{sop\+\_\+commons}{sop\+\_\+commons}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md297}
+SOP (Service-\/\+Object Pair) Common Module -\/ DICOM metadata.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily sop\+\_\+class\+\_\+uid} (0008,0016):\+ DICOM object type
+\item {\ttfamily sop\+\_\+instance\+\_\+uid} (0008,0018):\+ Unique instance identifier
+\item {\ttfamily instance\+\_\+creation\+\_\+date}, {\ttfamily instance\+\_\+creation\+\_\+time}:\+ When created
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily images ──\texorpdfstring{$<$}{<} sop\+\_\+commons} (One-\/to-\/one)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md298}{}\doxysubsubsection{\texorpdfstring{acquisitions}{acquisitions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md298}
+Acquisition-\/level metadata (exposure details).
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily acquisition\+\_\+uid} (0008,0017)
+\item {\ttfamily acquisition\+\_\+date}, {\ttfamily acquisition\+\_\+time}
+\item {\ttfamily radiation\+\_\+dose}:\+ Exposure dose
+\item {\ttfamily aec\+\_\+position}:\+ Auto Exposure Control position
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily studies ──\texorpdfstring{$<$}{<} acquisitions} (One study → many acquisitions)
+\item {\ttfamily series ──\texorpdfstring{$<$}{<} acquisitions}
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md299}{}\doxysubsubsection{\texorpdfstring{entity\+\_\+status}{entity\+\_\+status}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md299}
+Unified workflow status tracking for all DICOM entities.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily entity\+\_\+type}:\+ PATIENT, STUDY, SERIES, IMAGE
+\item {\ttfamily entity\+\_\+id}:\+ References the actual entity
+\item {\ttfamily status}:\+ SCHEDULED, IN\+\_\+\+PROGRESS, COMPLETED, CANCELLED, ABORTED
+\item {\ttfamily priority}:\+ URGENT, HIGH, NORMAL, LOW
+\item {\ttfamily assigned\+\_\+to}, {\ttfamily transitioned\+\_\+by}:\+ User tracking
+\end{DoxyItemize}
+
+{\bfseries{Indexes:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily (entity\+\_\+type, entity\+\_\+id, transitioned\+\_\+at DESC)} -\/ full status history
+\item {\ttfamily (assigned\+\_\+to, status)} -\/ task assignment queries
+\item {\ttfamily (entity\+\_\+type, status)} -\/ status filtering
+\end{DoxyItemize}
+
+{\bfseries{Design Pattern:\+}}
+\begin{DoxyItemize}
+\item Single table for all entity types (polymorphic)
+\item Full audit trail of status transitions
+\item Supports workflow management (task assignment, prioritization)
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md301}{}\doxysubsection{\texorpdfstring{3. Device \& Hardware Configuration}{3. Device \& Hardware Configuration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md301}
+Manages X-\/ray equipment:\+ generators, tubes, detectors, positioners.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md302}{}\doxysubsubsection{\texorpdfstring{institutions}{institutions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md302}
+Medical institutions where equipment is installed.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily name}:\+ Institution name (0008,0080)
+\item {\ttfamily department\+\_\+name}:\+ Department (0008,1040)
+\item {\ttfamily address}, {\ttfamily contact\+\_\+information}
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md303}{}\doxysubsubsection{\texorpdfstring{general\+\_\+equipments}{general\+\_\+equipments}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md303}
+X-\/ray equipment metadata.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily device\+\_\+serial\+\_\+number} (UNIQUE):\+ Equipment serial (0018,1000)
+\item {\ttfamily device\+\_\+uid} (0018,1002):\+ Unique device identifier
+\item {\ttfamily manufacturer} (0008,0070)
+\item {\ttfamily model\+\_\+name} (0008,1090)
+\item {\ttfamily station\+\_\+name} (0008,1010)
+\item {\ttfamily date\+\_\+of\+\_\+last\+\_\+calibration} (0018,1200)
+\item {\ttfamily software\+\_\+versions} (0018,1020)
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily institutions ──\texorpdfstring{$<$}{<} general\+\_\+equipments} (One institution → many devices)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md304}{}\doxysubsubsection{\texorpdfstring{generators}{generators}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md304}
+X-\/ray generator specifications.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily manufacturer}, {\ttfamily model\+\_\+number}, {\ttfamily serial\+\_\+number}
+\item {\ttfamily output1}, {\ttfamily output2}:\+ Tube output connections
+\item {\ttfamily is\+\_\+output1\+\_\+active}, {\ttfamily is\+\_\+output2\+\_\+active}:\+ Active outputs
+\item {\ttfamily calibration\+\_\+date}, {\ttfamily installation\+\_\+date}
+\end{DoxyItemize}
+
+{\bfseries{Design Notes:\+}}
+\begin{DoxyItemize}
+\item {\bfseries{Denormalized}}:\+ Combines manufacturer metadata + installation data
+\item Intentional for read/\+write simplicity
+\item Fixed list:\+ Only software provider can add entries after validation
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md305}{}\doxysubsubsection{\texorpdfstring{xray\+\_\+tubes}{xray\+\_\+tubes}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md305}
+X-\/ray tube characteristics.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily manufacturer}, {\ttfamily model\+\_\+number}, {\ttfamily serial\+\_\+number} (UNIQUE)
+\item {\ttfamily focal\+\_\+spot}:\+ "{}0.\+6mm/\+1.\+2mm"{}
+\item {\ttfamily anode\+\_\+heat\+\_\+capacity}:\+ Heat units (HU)
+\item {\ttfamily cooling\+\_\+rate}:\+ HU/\+min
+\item {\ttfamily max\+\_\+voltage}, {\ttfamily max\+\_\+current}
+\item {\ttfamily tube\+\_\+filter}:\+ "{}0.\+8 Be"{}, "{}1.\+1 AL/\+75"{}
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item Relation to {\ttfamily generators}:\+ 1 generator → 1 or 2 tubes (via {\ttfamily xray\+\_\+tube\+\_\+setup})
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md306}{}\doxysubsubsection{\texorpdfstring{detectors}{detectors}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md306}
+Detector specifications (flat-\/panel, TDI line-\/scan).
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily manufacturer}, {\ttfamily model\+\_\+name}
+\item {\ttfamily resolution}:\+ "{}8160 × 256"{}
+\item {\ttfamily pixel\+\_\+width}, {\ttfamily pixel\+\_\+height}:\+ Pixel pitch in mm
+\item {\ttfamily width}, {\ttfamily height}:\+ Pixel dimensions
+\item {\ttfamily saturation\+\_\+value}:\+ Max pixel intensity
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md307}{}\doxysubsubsection{\texorpdfstring{xray\+\_\+tube\+\_\+setup}{xray\+\_\+tube\+\_\+setup}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md307}
+Links tubes to equipment with position configuration.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily device\+\_\+id} → {\ttfamily xray\+\_\+tubes(id)}
+\item {\ttfamily equipment\+\_\+id} → {\ttfamily general\+\_\+equipments(id)}
+\item {\ttfamily tube\+\_\+order}:\+ Tube1, Tube2
+\item {\ttfamily position}:\+ Stand, Table, Motorized, Portable
+\item {\ttfamily is\+\_\+active}:\+ Only ONE active setup per (equipment, tube\+\_\+order, position)
+\end{DoxyItemize}
+
+{\bfseries{Unique Constraint:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{active\_key\ =\ CONCAT(equipment\_id,\ \textcolor{stringliteral}{'\_'},\ tube\_order,\ \textcolor{stringliteral}{'\_'},\ position)\ \textcolor{keyword}{WHEN}\ is\_active\ =\ \textcolor{stringliteral}{1}}
+\DoxyCodeLine{\textcolor{keyword}{UNIQUE}\ KEY\ uq\_active\_tube\ (active\_key)}
+
+\end{DoxyCode}
+ {\bfseries{Design Pattern:\+}}
+\begin{DoxyItemize}
+\item Generated column ensures only one active tube per configuration
+\item NULL when {\ttfamily is\+\_\+active = 0} (allows multiple inactive records)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md308}{}\doxysubsubsection{\texorpdfstring{detector\+\_\+setup}{detector\+\_\+setup}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md308}
+Links detectors to equipment with configuration.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily device\+\_\+id} → {\ttfamily detectors(id)}
+\item {\ttfamily equipment\+\_\+id} → {\ttfamily general\+\_\+equipments(id)}
+\item {\ttfamily detector\+\_\+order}:\+ Detector1, Detector2
+\item {\ttfamily position}:\+ Stand, Table, Motorized, Portable
+\item {\ttfamily horizontal\+\_\+flip}:\+ Image flip flag
+\item {\ttfamily crop\+\_\+mod}:\+ None, Software, Hardware
+\item {\ttfamily save\+\_\+raw\+\_\+data}:\+ No save, Before calibration, After calibration, All
+\end{DoxyItemize}
+
+{\bfseries{Unique Constraint:\+}} Similar active\+\_\+key pattern as {\ttfamily xray\+\_\+tube\+\_\+setup}.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md309}{}\doxysubsubsection{\texorpdfstring{positioners}{positioners}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md309}
+Motorized positioning system definitions.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily position\+\_\+name} (UNIQUE):\+ "{}\+C-\/\+Arm Rotation"{}, "{}\+Table Vertical"{}
+\item {\ttfamily description}
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md310}{}\doxysubsubsection{\texorpdfstring{positioner\+\_\+steps}{positioner\+\_\+steps}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md310}
+Motion sequences for each positioner.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily positioner\+\_\+id}
+\item {\ttfamily role}:\+ Table\+Detector, Stand\+Detector, Portable\+Detector, Primary\+Tube, Secondary\+Tube
+\item {\ttfamily motion\+\_\+code}:\+ "{}\+X-\/2331"{}, "{}\+D-\/1234"{} (device-\/specific command)
+\item {\ttfamily step\+\_\+order}:\+ Execution sequence
+\end{DoxyItemize}
+
+{\bfseries{Design Pattern:\+}}
+\begin{DoxyItemize}
+\item Supports multi-\/step motions for complex positioning
+\item Role-\/based:\+ Same positioner can move different components
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md311}{}\doxysubsubsection{\texorpdfstring{device\+\_\+connections}{device\+\_\+connections}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md311}
+Communication interfaces for devices.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily generator\+\_\+id}, {\ttfamily detector\+\_\+id}, {\ttfamily tube\+\_\+id}, {\ttfamily positioner\+\_\+id} (nullable FKs)
+\item {\ttfamily connector}:\+ Sync\+Box, Direct
+\item {\ttfamily protocol}:\+ RS\+\_\+232, RS\+\_\+485, CAN, LAN, MODBUS\+\_\+\+RTU, MODBUS\+\_\+\+TCP, WIFI, USB, ANALOG
+\item {\ttfamily interface\+\_\+name}:\+ COM port or network interface
+\item {\ttfamily parameters}:\+ JSON (baud rate, IP address, etc.)
+\end{DoxyItemize}
+
+{\bfseries{Design Pattern:\+}}
+\begin{DoxyItemize}
+\item Polymorphic:\+ One connection record can link to different device types
+\item JSON parameters for protocol-\/specific settings
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md313}{}\doxysubsection{\texorpdfstring{4. Scan Protocols \& Imaging Procedures}{4. Scan Protocols \& Imaging Procedures}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md313}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md314}{}\doxysubsubsection{\texorpdfstring{anatomic\+\_\+regions}{anatomic\+\_\+regions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md314}
+High-\/level body regions (HEAD, NECK, THORAX, ABDOMEN, PELVIS, SPINE, UPPER EXTREMITY, LOWER EXTREMITY).
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily name}:\+ UI display name
+\item {\ttfamily code\+\_\+value}, {\ttfamily coding\+\_\+scheme} (SRT/\+\+SNOMED):\+ DICOM-\/compliant coding
+\item {\ttfamily code\+\_\+meaning}:\+ Human-\/readable description
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md315}{}\doxysubsubsection{\texorpdfstring{body\+\_\+parts}{body\+\_\+parts}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md315}
+Specific anatomical structures within regions.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily name}:\+ SKULL, CLAVICLE, KNEE, etc.
+\item {\ttfamily code\+\_\+value}, {\ttfamily coding\+\_\+scheme} (ETRK custom or SNOMED)
+\item {\ttfamily anatomic\+\_\+region\+\_\+id} → {\ttfamily anatomic\+\_\+regions(id)}
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily anatomic\+\_\+regions ──\texorpdfstring{$<$}{<} body\+\_\+parts} (One region → many body parts)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md316}{}\doxysubsubsection{\texorpdfstring{technique\+\_\+parameters}{technique\+\_\+parameters}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md316}
+Exposure technique factors (kV, mA, ms) per body part and patient size. These are the {\bfseries{default values}} that populate the UI when a procedure is selected. \doxylink{requirements_The}{The} operator can override these values during examination.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily body\+\_\+part\+\_\+id} → {\ttfamily body\+\_\+parts(id)} -\/ Which body part
+\item {\ttfamily size}:\+ Fat, Medium, Thin, Paediatric -\/ Patient body habitus
+\item {\ttfamily technique\+\_\+profile}:\+ AP\texorpdfstring{$\vert$}{|}\+PA, LAT, OBL, AXIAL -\/ Projection type
+\item {\ttfamily kvp}, {\ttfamily ma}, {\ttfamily ms}:\+ Default exposure factors
+\item {\ttfamily fkvp}, {\ttfamily fma}:\+ Fine-\/tuned fallback values
+\item {\ttfamily focal\+\_\+spot}:\+ Small/\+large focal spot selection
+\item {\ttfamily sid\+\_\+min}, {\ttfamily sid\+\_\+max}:\+ Source-\/to-\/\+Image Distance range (cm)
+\item {\ttfamily grid\+\_\+type}, {\ttfamily grid\+\_\+ratio}, {\ttfamily grid\+\_\+speed}:\+ Anti-\/scatter grid settings
+\item {\ttfamily exposure\+\_\+style}:\+ Mas Mode, Time Mode, AEC Mode, Manual
+\item {\ttfamily aec\+\_\+field}, {\ttfamily aec\+\_\+density}:\+ Auto Exposure Control settings
+\end{DoxyItemize}
+
+{\bfseries{Example:\+}} 
+\begin{DoxyTable}{6}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Body Part  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Size  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Profile  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}k\+Vp  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}mA  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}ms  \\
+CHEST  &Fat  &AP$|$PA  &90  &200  &10  \\
+CHEST  &Medium  &AP$|$PA  &80  &200  &8  \\
+CHEST  &Thin  &AP$|$PA  &70  &200  &6  \\
+CHEST  &Paediatric  &AP$|$PA  &60  &100  &5  \\
+\end{DoxyTable}
+
+
+{\bfseries{Design Notes:\+}}
+\begin{DoxyItemize}
+\item Multiple techniques per body part (different sizes/\+projections)
+\item AEC (Automatic Exposure Control) parameters included
+\item These are {\bfseries{defaults only}} -\/ actual values are stored in {\ttfamily acquisitions} table after imaging
+\item Values can be overridden by operator during examination
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md317}{}\doxysubsubsection{\texorpdfstring{views}{views}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md317}
+Imaging views/\+orientations with positioning details.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily name}:\+ AP, LAT, RL, LLD, etc.
+\item {\ttfamily body\+\_\+part\+\_\+id} → {\ttfamily body\+\_\+parts(id)}
+\item {\ttfamily patient\+\_\+position} (0018,5100):\+ Supine, Prone, Erect, Lateral
+\item {\ttfamily projection\+\_\+profile}:\+ AP\texorpdfstring{$\vert$}{|}\+PA, LAT, OBL, AXIAL, DUAL
+\item {\ttfamily patient\+\_\+orientation\+\_\+row}, {\ttfamily patient\+\_\+orientation\+\_\+col} (0020,0020):\+ DICOM orientation codes
+\item {\ttfamily view\+\_\+position} (0018,5101):\+ AP, PA, LL, RL, RLD, LLD, RLO, LLO
+\item {\ttfamily image\+\_\+laterality} (0020,0062):\+ L, R, B
+\item {\ttfamily collimator\+\_\+size}, {\ttfamily image\+\_\+processing\+\_\+algorithm}
+\item {\ttfamily position\+\_\+name} → {\ttfamily positioners(position\+\_\+name)}:\+ Motorized positioning
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily body\+\_\+parts ──\texorpdfstring{$<$}{<} views} (One body part → many views)
+\item {\ttfamily views → positioners} (Optional:\+ Motorized positioning)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md318}{}\doxysubsubsection{\texorpdfstring{view\+\_\+techniques}{view\+\_\+techniques}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md318}
+Links views to technique parameters (supports multi-\/exposure views).
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily view\+\_\+id} → {\ttfamily views(id)}
+\item {\ttfamily technique\+\_\+parameter\+\_\+id} → {\ttfamily technique\+\_\+parameters(id)}
+\item {\ttfamily seq}:\+ Execution order (1, 2, ...)
+\item {\ttfamily role}:\+ PRIMARY, LOW, HIGH (for dual-\/energy imaging)
+\end{DoxyItemize}
+
+{\bfseries{Unique Constraints:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily PRIMARY KEY (view\+\_\+id, seq)} -\/ ensures sequential ordering
+\item {\ttfamily UNIQUE (view\+\_\+id, technique\+\_\+parameter\+\_\+id)} -\/ prevents duplicate techniques
+\end{DoxyItemize}
+
+{\bfseries{Design Pattern:\+}}
+\begin{DoxyItemize}
+\item Supports dual-\/energy/\+multi-\/shot imaging
+\item Example:\+ Chest PA with low/\+high kV exposures
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md319}{}\doxysubsubsection{\texorpdfstring{procedures}{procedures}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md319}
+Imaging procedures (exam types).
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily name}:\+ "{}\+CSpine AP"{}, "{}\+Chest PA"{}, "{}\+Pelvis AP"{}
+\item {\ttfamily code\+\_\+value}, {\ttfamily coding\+\_\+scheme} (SRT):\+ DICOM procedure code
+\item {\ttfamily anatomic\+\_\+region\+\_\+id}, {\ttfamily body\+\_\+part\+\_\+id} (nullable):\+ Optional classification
+\item {\ttfamily is\+\_\+true\+\_\+size}:\+ Print at 1:\+1 scale
+\item {\ttfamily print\+\_\+orientation}, {\ttfamily print\+\_\+format}:\+ Print settings
+\end{DoxyItemize}
+
+{\bfseries{Design Notes:\+}}
+\begin{DoxyItemize}
+\item Custom procedures can span multiple body parts (nullable region/\+body\+\_\+part)
+\item Standard procedures linked to specific body part
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md320}{}\doxysubsubsection{\texorpdfstring{procedure\+\_\+views}{procedure\+\_\+views}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md320}
+Associates procedures with required views (many-\/to-\/many).
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily procedures ──\texorpdfstring{$<$}{<} procedure\+\_\+views \texorpdfstring{$>$}{>}── views}
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md322}{}\doxysubsection{\texorpdfstring{5. DICOM Modality Worklist}{5. DICOM Modality Worklist}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md322}
+Implements DICOM MWL query/\+response handling with a flexible, profile-\/based design.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md323}{}\doxysubsubsection{\texorpdfstring{Design Philosophy}{Design Philosophy}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md323}
+\doxylink{requirements_The}{The} MWL system uses a {\bfseries{flexible EAV (Entity-\/\+Attribute-\/\+Value) pattern}} rather than a fixed schema because:\+
+\begin{DoxyEnumerate}
+\item Different RIS systems support different DICOM tags
+\item Some tags may not be available from certain MWL providers
+\item New tags can be added without schema changes
+\item Each MWL profile can define its own tag set
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md324}{}\doxysubsubsection{\texorpdfstring{Key Concepts}{Key Concepts}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md324}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Term  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{MWL Profile}}  &Configuration for a specific RIS/\+\+MWL connection  \\
+{\bfseries{DICOM Tag}}  &Standard DICOM attribute (e.\+g., Patient\+Name = 0010,0010)  \\
+{\bfseries{Profile Tag Association}}  &Which tags are used by which profile  \\
+{\bfseries{MWL Entry}}  &A single worklist item (scheduled procedure)  \\
+{\bfseries{MWL Attribute}}  &Actual tag value for a worklist entry  \\
+{\bfseries{Presentation Context}}  &DICOM transfer syntax for data exchange  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md325}{}\doxysubsubsection{\texorpdfstring{dicom\+\_\+tags}{dicom\+\_\+tags}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md325}
+Global DICOM tag dictionary.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily name}:\+ Tag identifier (e.\+g., \textquotesingle{}Accession\+Number\textquotesingle{})
+\item {\ttfamily display\+\_\+name}:\+ UI display
+\item {\ttfamily group\+\_\+hex}, {\ttfamily element\+\_\+hex}:\+ DICOM tag (0x0008, 0x0050)
+\item {\ttfamily pgroup\+\_\+hex}, {\ttfamily pelement\+\_\+hex}:\+ Parent tag for sequences
+\item {\ttfamily is\+\_\+active}, {\ttfamily is\+\_\+retired}:\+ Tag lifecycle
+\end{DoxyItemize}
+
+{\bfseries{Design Pattern:\+}}
+\begin{DoxyItemize}
+\item Global admin-\/managed reference table
+\item ALL foreign keys use {\ttfamily ON DELETE RESTRICT} to prevent accidental deletion
+\item Supports nested DICOM sequences (parent tags)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md326}{}\doxysubsubsection{\texorpdfstring{mwl\+\_\+profiles}{mwl\+\_\+profiles}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md326}
+MWL query profiles (Dx\+Worklist, etc.).\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md327}{}\doxysubsubsection{\texorpdfstring{mwl\+\_\+presentation\+\_\+contexts}{mwl\+\_\+presentation\+\_\+contexts}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md327}
+Transfer syntaxes per profile.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily profile\+\_\+id} → {\ttfamily mwl\+\_\+profiles(id)}
+\item {\ttfamily transfer\+\_\+syntax\+\_\+uid}:\+ "{}1.\+2.\+840.\+10008.\+1.\+2"{} (Little Endian Implicit)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md328}{}\doxysubsubsection{\texorpdfstring{profile\+\_\+tag\+\_\+association}{profile\+\_\+tag\+\_\+association}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md328}
+Links profiles to DICOM tags with identifier/\+mandatory flags.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily profile\+\_\+id} → {\ttfamily mwl\+\_\+profiles(id)}
+\item {\ttfamily tag\+\_\+id} → {\ttfamily dicom\+\_\+tags(id)} with {\ttfamily ON DELETE RESTRICT}
+\item {\ttfamily is\+\_\+identifier}:\+ Tag used for matching (Patient\+ID, Accession\+Number)
+\item {\ttfamily is\+\_\+mandatory}:\+ Must be present
+\end{DoxyItemize}
+
+{\bfseries{Design Pattern:\+}}
+\begin{DoxyItemize}
+\item Flexible MWL tag selection per profile
+\item {\ttfamily is\+\_\+mandatory = TRUE} requires {\ttfamily is\+\_\+identifier = TRUE}
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md329}{}\doxysubsubsection{\texorpdfstring{mwl\+\_\+entries}{mwl\+\_\+entries}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md329}
+Worklist queue entries.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily source}:\+ LOCAL, RIS
+\item {\ttfamily profile\+\_\+id} → {\ttfamily mwl\+\_\+profiles(id)}
+\item {\ttfamily status}:\+ SCHEDULED, PENDING, COMPLETED, CANCELLED, IN\+\_\+\+PROGRESS, ABORTED
+\item {\ttfamily study\+\_\+instance\+\_\+uid}:\+ Links to future study
+\end{DoxyItemize}
+
+{\bfseries{Relationships:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily mwl\+\_\+entries ──\texorpdfstring{$<$}{<} mwl\+\_\+attributes} (One entry → many tag values)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md330}{}\doxysubsubsection{\texorpdfstring{mwl\+\_\+attributes}{mwl\+\_\+attributes}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md330}
+Actual DICOM tag values from MWL query.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily mwl\+\_\+entry\+\_\+id} → {\ttfamily mwl\+\_\+entries(id)} with {\ttfamily CASCADE}
+\item {\ttfamily dicom\+\_\+tag\+\_\+id} → {\ttfamily dicom\+\_\+tags(id)} with {\ttfamily RESTRICT}
+\item {\ttfamily tag\+\_\+value}:\+ String representation
+\end{DoxyItemize}
+
+{\bfseries{Design Pattern:\+}}
+\begin{DoxyItemize}
+\item EAV (Entity-\/\+Attribute-\/\+Value) model for flexible DICOM data
+\item CASCADE delete:\+ Removing worklist entry removes all attributes
+\item RESTRICT delete:\+ Prevent deletion of tag definitions
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md331}{}\doxysubsubsection{\texorpdfstring{mwl\+\_\+task\+\_\+mapping}{mwl\+\_\+task\+\_\+mapping}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md331}
+Links worklist entries to created DICOM instances. This is the {\bfseries{bridge table}} between the MWL input world and the DICOM output world.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily mwl\+\_\+entry\+\_\+id} → {\ttfamily mwl\+\_\+entries(id)} -\/ \doxylink{requirements_The}{The} source worklist item
+\item {\ttfamily procedure\+\_\+id} → {\ttfamily procedures(id)} -\/ \doxylink{requirements_The}{The} procedure being performed
+\item {\ttfamily study\+\_\+id} → {\ttfamily studies(id)} -\/ Created study
+\item {\ttfamily series\+\_\+id} → {\ttfamily series(id)} -\/ Created series
+\item {\ttfamily images\+\_\+id} → {\ttfamily images(id)} -\/ Created image
+\item {\ttfamily sop\+\_\+common\+\_\+id} → {\ttfamily sop\+\_\+commons(id)} -\/ DICOM SOP instance
+\item {\ttfamily acquisition\+\_\+id} → {\ttfamily acquisitions(id)} -\/ Acquisition details
+\end{DoxyItemize}
+
+{\bfseries{Primary Key:\+}} {\ttfamily (mwl\+\_\+entry\+\_\+id, procedure\+\_\+id)}
+
+{\bfseries{Design Pattern:\+}}
+\begin{DoxyItemize}
+\item Tracks worklist fulfillment during examination
+\item Links scheduled procedure (MWL) to actual performed imaging (DICOM tables)
+\item One row per image created from a worklist item
+\item Supports multi-\/image procedures (e.\+g., Chest PA + LAT = 2 rows)
+\end{DoxyItemize}
+
+{\bfseries{Workflow:\+}}
+\begin{DoxyEnumerate}
+\item MWL entry arrives with procedure code (e.\+g., "{}\+Chest 2-\/\+View"{})
+\item Operator starts examination
+\item For each image captured:\+
+\begin{DoxyItemize}
+\item Create study/\+series/\+image/\+acquisition records
+\item Insert row into {\ttfamily mwl\+\_\+task\+\_\+mapping} linking MWL to created records
+\end{DoxyItemize}
+\item All rows share same {\ttfamily mwl\+\_\+entry\+\_\+id} but different {\ttfamily images\+\_\+id}, {\ttfamily series\+\_\+id}, etc.
+\end{DoxyEnumerate}
+
+{\bfseries{Design Rationale:\+}} When an MWL entry contains a procedure code (e.\+g., "{}\+Chest 2-\/\+View"{}), the system converts it to individual views via {\ttfamily procedure\+\_\+views}. Each view is then mapped as a separate procedure entry in this junction table. This means:\+
+\begin{DoxyItemize}
+\item MWL procedure code → Converted to multiple views
+\item Each view → Creates its own row in {\ttfamily mwl\+\_\+task\+\_\+mapping} with a distinct {\ttfamily procedure\+\_\+id}
+\item \doxylink{requirements_The}{The} PK {\ttfamily (mwl\+\_\+entry\+\_\+id, procedure\+\_\+id)} correctly ensures one mapping per view/\+procedure per MWL entry
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md332}{}\doxysubsubsection{\texorpdfstring{worklist\+\_\+field\+\_\+configurations}{worklist\+\_\+field\+\_\+configurations}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md332}
+Configurable primary key fields for MWL matching.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily field\+\_\+name}:\+ Patient\+ID, Accession\+Number, Study\+Instance\+UID, etc.
+\item {\ttfamily is\+\_\+enabled}:\+ Whether field is used for matching
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md334}{}\doxysubsection{\texorpdfstring{6. PACS \& MPPS}{6. PACS \& MPPS}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md334}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md335}{}\doxysubsubsection{\texorpdfstring{pacs\+\_\+nodes}{pacs\+\_\+nodes}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md335}
+PACS/\+\+MPPS server configurations.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily entity\+\_\+type}:\+ Archive, MPPS
+\item {\ttfamily host\+\_\+name}, {\ttfamily host\+\_\+ip}, {\ttfamily host\+\_\+port}
+\item {\ttfamily called\+\_\+aet}, {\ttfamily calling\+\_\+aet}:\+ DICOM Application Entity Titles
+\item {\ttfamily is\+\_\+default}:\+ Default node selection
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md337}{}\doxysubsection{\texorpdfstring{7. System Configuration}{7. System Configuration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md337}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md338}{}\doxysubsubsection{\texorpdfstring{environment\+\_\+settings}{environment\+\_\+settings}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md338}
+Global system settings (singleton table).
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily study\+\_\+level}:\+ Multi-\/\+Series Study, Single-\/\+Series Study
+\item {\ttfamily lookup\+\_\+table}:\+ VOI LUT, None
+\item {\ttfamily worklist\+\_\+clear\+\_\+period\+\_\+days}, {\ttfamily worklist\+\_\+refresh\+\_\+period\+\_\+seconds}
+\item {\ttfamily delete\+\_\+log\+\_\+period\+\_\+days}:\+ Log cleanup
+\item {\ttfamily auto\+\_\+refresh\+\_\+worklist}, {\ttfamily enable\+\_\+mpps}, {\ttfamily continue\+\_\+on\+\_\+echo\+\_\+fail}:\+ Feature flags
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md339}{}\doxysubsubsection{\texorpdfstring{image\+\_\+comments}{image\+\_\+comments}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md339}
+Predefined image quality comments.
+
+{\bfseries{Key Fields:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily is\+\_\+reject}:\+ Flag for rejection reasons
+\item {\ttfamily heading}, {\ttfamily comment}:\+ Display and full text
+\item Trigger:\+ {\ttfamily TRIM(comment)} before insert
+\end{DoxyItemize}
+
+{\bfseries{Use Case:\+}}
+\begin{DoxyItemize}
+\item Standardized QA/\+\+QC comments
+\item Technologist annotations
+\item Reject reason tracking
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md341}{}\doxysection{\texorpdfstring{Design Patterns \& Best Practices}{Design Patterns \& Best Practices}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md341}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md342}{}\doxysubsection{\texorpdfstring{1. DICOM Compliance}{1. DICOM Compliance}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md342}
+
+\begin{DoxyItemize}
+\item Field names match DICOM tag descriptions
+\item Tag numbers in comments:\+ {\ttfamily (0010,0020)}
+\item Supports DICOM hierarchy (Patient → Study → Series → Image)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md343}{}\doxysubsection{\texorpdfstring{2. Soft Delete Pattern}{2. Soft Delete Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md343}
+
+\begin{DoxyItemize}
+\item {\ttfamily is\+\_\+deleted} field instead of hard deletes
+\item Preserves historical data
+\item Supports audit requirements
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md344}{}\doxysubsection{\texorpdfstring{3. Audit Trail}{3. Audit Trail}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md344}
+
+\begin{DoxyItemize}
+\item {\ttfamily create\+\_\+date}, {\ttfamily update\+\_\+date} on most tables
+\item Automatic timestamp updates via {\ttfamily ON UPDATE CURRENT\+\_\+\+TIMESTAMP}
+\item {\ttfamily entity\+\_\+status} tracks state transitions with user attribution
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md345}{}\doxysubsection{\texorpdfstring{4. Generated Columns for Constraints}{4. Generated Columns for Constraints}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md345}
+
+\begin{DoxyItemize}
+\item {\ttfamily xray\+\_\+tube\+\_\+setup.\+active\+\_\+key}, {\ttfamily detector\+\_\+setup.\+active\+\_\+key}
+\item Enforces "{}only one active"{} business rule at database level
+\item NULL-\/safe uniqueness (inactive records allowed)
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md346}{}\doxysubsection{\texorpdfstring{5. Polymorphic Relationships}{5. Polymorphic Relationships}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md346}
+
+\begin{DoxyItemize}
+\item {\ttfamily entity\+\_\+status} tracks multiple entity types
+\item {\ttfamily device\+\_\+connections} links to different devices via nullable FKs
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md347}{}\doxysubsection{\texorpdfstring{6. JSON for Flexible Data}{6. JSON for Flexible Data}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md347}
+
+\begin{DoxyItemize}
+\item {\ttfamily patients.\+other\+\_\+patient\+\_\+id}:\+ Array of alternate IDs
+\item {\ttfamily device\+\_\+connections.\+parameters}:\+ Protocol-\/specific settings
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md348}{}\doxysubsection{\texorpdfstring{7. Foreign Key Policies}{7. Foreign Key Policies}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md348}
+
+\begin{DoxyItemize}
+\item {\bfseries{CASCADE}}:\+ Deleting parent removes children (DICOM hierarchy)
+\item {\bfseries{RESTRICT}}:\+ Prevent deletion of referenced data (global reference tables)
+\item {\bfseries{SET NULL}}:\+ Optional relationships (e.\+g., {\ttfamily mwl\+\_\+entries.\+profile\+\_\+id})
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md349}{}\doxysubsection{\texorpdfstring{8. Indexed for Performance}{8. Indexed for Performance}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md349}
+
+\begin{DoxyItemize}
+\item Composite indexes on common query patterns
+\item UNIQUE constraints on business keys
+\item Covering indexes for workflow queries
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md351}{}\doxysection{\texorpdfstring{Current Limitations \& Future Enhancements}{Current Limitations \& Future Enhancements}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md351}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md352}{}\doxysubsection{\texorpdfstring{Known Limitations}{Known Limitations}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md352}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Single timezone}}:\+ No timezone-\/aware timestamps
+\item {\bfseries{Limited DICOM tag history}}:\+ Tag value changes not tracked
+\item {\bfseries{No image binary storage}}:\+ Images stored in filesystem, not database
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md353}{}\doxysubsection{\texorpdfstring{Planned Enhancements}{Planned Enhancements}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_202-_database-_schema_autotoc_md353}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Audit logging table}}:\+ Comprehensive change tracking
+\item {\bfseries{DICOM SR support}}:\+ Structured reporting tables
+\item {\bfseries{Multi-\/tenancy}}:\+ Partition data by institution
+\item {\bfseries{HL7 integration}}:\+ Admission/\+discharge/\+transfer messages
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+
+
+{\bfseries{Previous}}:\+ \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_201-_architecture-_overview}{01-\/\+Architecture-\/\+Overview.md}{0} ~\newline
+ {\bfseries{Next}}:\+ (To be added -\/ Module-\/specific documentation) 

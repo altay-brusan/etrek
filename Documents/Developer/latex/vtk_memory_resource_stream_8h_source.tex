@@ -1,0 +1,123 @@
+\doxysection{vtk\+Memory\+Resource\+Stream.\+h}
+\hypertarget{vtk_memory_resource_stream_8h_source}{}\label{vtk_memory_resource_stream_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMemoryResourceStream.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMemoryResourceStream.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#ifndef\ vtkMemoryResourceStream\_h}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#define\ vtkMemoryResourceStream\_h}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}vtkBuffer.h"{}}\ \ \ \ \ \ \ \textcolor{comment}{//\ vtkBuffer}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}vtkIOCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}vtkResourceStream.h"{}}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <memory>}\ \ \textcolor{comment}{//\ for\ std::unique\_ptr}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <string>}\ \ \textcolor{comment}{//\ for\ std::basic\_string}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <utility>}\ \textcolor{comment}{//\ for\ std::forward}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <vector>}\ \ \textcolor{comment}{//\ for\ std::vector}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00024\ \textcolor{keyword}{class\ }VTKIOCORE\_EXPORT\ vtkMemoryResourceStream\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classvtk_resource_stream_a1c5908f652ac5ce2a8f9eee025e57e7e}{vtkResourceStream}}}
+\DoxyCodeLine{00025\ \{}
+\DoxyCodeLine{00029\ \ \ \textcolor{keyword}{struct\ }BasicHolder}
+\DoxyCodeLine{00030\ \ \ \{}
+\DoxyCodeLine{00031\ \ \ \ \ BasicHolder()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keyword}{virtual}\ \string~BasicHolder()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00033\ \ \ \ \ BasicHolder(\textcolor{keyword}{const}\ BasicHolder\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00034\ \ \ \ \ BasicHolder\&\ operator=(\textcolor{keyword}{const}\ BasicHolder\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00035\ \ \ \ \ BasicHolder(BasicHolder\&\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00036\ \ \ \ \ BasicHolder\&\ operator=(BasicHolder\&\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00037\ \ \ \};}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00045\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{struct\ }DataHolder\ :\ \textcolor{keyword}{public}\ BasicHolder}
+\DoxyCodeLine{00047\ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00049\ \ \ \ \ DataHolder(Args\&\&...\ args)}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ :\ Data\{\ std::forward<Args>(args)...\ \}}
+\DoxyCodeLine{00051\ \ \ \ \ \{}
+\DoxyCodeLine{00052\ \ \ \ \ \}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \string~DataHolder()\ \textcolor{keyword}{override}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00055\ \ \ \ \ DataHolder(\textcolor{keyword}{const}\ DataHolder\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00056\ \ \ \ \ DataHolder\&\ operator=(\textcolor{keyword}{const}\ DataHolder\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00057\ \ \ \ \ DataHolder(DataHolder\&\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00058\ \ \ \ \ DataHolder\&\ operator=(DataHolder\&\&)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ T\ Data;}
+\DoxyCodeLine{00061\ \ \ \};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{comment}{//\ Small\ utility\ function\ to\ easily\ create\ a\ DataHolder\ with\ type\ deduction}}
+\DoxyCodeLine{00064\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00065\ \ \ \textcolor{keyword}{static}\ std::unique\_ptr<DataHolder<T>>\ MakeHolder(T\&\&\ value)}
+\DoxyCodeLine{00066\ \ \ \{}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordflow}{return}\ std::unique\_ptr<DataHolder<T>>\{\ \textcolor{keyword}{new}\ DataHolder<T>\{\ std::forward<T>(value)\ \}\ \};}
+\DoxyCodeLine{00068\ \ \ \}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00071\ \ \ vtkTypeMacro(vtkMemoryResourceStream,\ \doxymbox{\hyperlink{classvtk_resource_stream_a1c5908f652ac5ce2a8f9eee025e57e7e}{vtkResourceStream}});}
+\DoxyCodeLine{00072\ \ \ \textcolor{keyword}{static}\ vtkMemoryResourceStream*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00073\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_adf79d6db575d72ac263a85a2b7058811}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00079\ \ \ std::size\_t\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_a228decacb25c9c7deac7517cc24eb873}{Read}}(\textcolor{keywordtype}{void}*\ buffer,\ std::size\_t\ \doxymbox{\hyperlink{structbytes}{bytes}})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_ae78bbba1cba8fb56d98e39bd89641975}{EndOfStream}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00081\ \ \ vtkTypeInt64\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_a2f454d36f6cc7cc445856a1857a1a70b}{Seek}}(vtkTypeInt64\ pos,\ SeekDirection\ dir)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00082\ \ \ vtkTypeInt64\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_a383486ad4cefcbd64c2c35602a0168d8}{Tell}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00104\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_a103873a1403e9b901f85632439e7ef0a}{SetBuffer}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ buffer,\ std::size\_t\ size,\ \textcolor{keywordtype}{bool}\ copy\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_a62c9786ed1994b7e4aedefdb18d12bf4}{SetBuffer}}(\doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer}}<\doxymbox{\hyperlink{classvtk_buffer}{vtkBuffer<T>}}>\ buffer)}
+\DoxyCodeLine{00124\ \ \ \{}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordflow}{if}\ (buffer)}
+\DoxyCodeLine{00126\ \ \ \ \ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_memory_resource_stream_a103873a1403e9b901f85632439e7ef0a}{SetBuffer}}(buffer-\/>GetBuffer(),\ buffer-\/>GetSize()\ *\ \textcolor{keyword}{sizeof}(T));}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ this-\/>Holder\ =\ MakeHolder(std::move(buffer));}
+\DoxyCodeLine{00129\ \ \ \ \ \}}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00131\ \ \ \ \ \{}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_memory_resource_stream_a103873a1403e9b901f85632439e7ef0a}{SetBuffer}}(\textcolor{keyword}{nullptr},\ 0);}
+\DoxyCodeLine{00133\ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \ \ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00152\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ Allocator>}
+\DoxyCodeLine{00153\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_a4e6b1da9aae5f09aa3f155c4103baf40}{SetBuffer}}(std::vector<T,\ Allocator>\ vec)}
+\DoxyCodeLine{00154\ \ \ \{}
+\DoxyCodeLine{00155\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_memory_resource_stream_a103873a1403e9b901f85632439e7ef0a}{SetBuffer}}(vec.data(),\ vec.size()\ *\ \textcolor{keyword}{sizeof}(T));}
+\DoxyCodeLine{00156\ \ \ \ \ this-\/>Holder\ =\ MakeHolder(std::move(vec));}
+\DoxyCodeLine{00157\ \ \ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ CharT,\ \textcolor{keyword}{typename}\ Traits,\ \textcolor{keyword}{typename}\ Allocator>}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_acd2a489119e348e58833d0fc99c23623}{SetBuffer}}(std::basic\_string<CharT,\ Traits,\ Allocator>\ str)}
+\DoxyCodeLine{00168\ \ \ \{}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{comment}{//\ unlike\ std::vector\ (and\ other\ containers),\ std::basic\_string\ does\ not\ guarantee}}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{//\ iterators\ validity\ after\ a\ move\ (mainly\ for\ SSO).}}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{comment}{//\ So\ we\ have\ to\ move\ it\ prior\ to\ getting\ the\ pointer.}}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keyword}{auto}\ holder\ =\ MakeHolder(std::move(str));}
+\DoxyCodeLine{00173\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_memory_resource_stream_a103873a1403e9b901f85632439e7ef0a}{SetBuffer}}(holder-\/>Data.data(),\ holder-\/>Data.size()\ *\ \textcolor{keyword}{sizeof}(CharT));}
+\DoxyCodeLine{00174\ \ \ \ \ this-\/>Holder\ =\ std::move(holder);}
+\DoxyCodeLine{00175\ \ \ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00185\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_memory_resource_stream_a8a5f96d16d913fd20de71562ef352605}{OwnsBuffer}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>Holder\ !=\ \textcolor{keyword}{nullptr};\ \}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00188\ \ \ \doxymbox{\hyperlink{classvtk_memory_resource_stream}{vtkMemoryResourceStream}}();}
+\DoxyCodeLine{00189\ \ \ \doxymbox{\hyperlink{classvtk_memory_resource_stream}{\string~vtkMemoryResourceStream}}()\ \textcolor{keyword}{override}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00190\ \ \ \doxymbox{\hyperlink{classvtk_memory_resource_stream}{vtkMemoryResourceStream}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_memory_resource_stream}{vtkMemoryResourceStream}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00191\ \ \ \doxymbox{\hyperlink{classvtk_memory_resource_stream}{vtkMemoryResourceStream}}\&\ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_memory_resource_stream}{vtkMemoryResourceStream}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00194\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ Buffer\ =\ \textcolor{keyword}{nullptr};\ \textcolor{comment}{//\ for\ pointer\ arithmetic}}
+\DoxyCodeLine{00195\ \ \ std::size\_t\ Size\ =\ 0;}
+\DoxyCodeLine{00196\ \ \ vtkTypeInt64\ Pos\ =\ 0;}
+\DoxyCodeLine{00197\ \ \ \textcolor{keywordtype}{bool}\ Eos\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00198\ \ \ std::unique\_ptr<BasicHolder>\ Holder;}
+\DoxyCodeLine{00199\ \};}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

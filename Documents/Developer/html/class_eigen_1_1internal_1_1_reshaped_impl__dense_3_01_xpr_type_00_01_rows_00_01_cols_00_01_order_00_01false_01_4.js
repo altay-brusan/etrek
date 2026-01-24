@@ -1,0 +1,7 @@
+var class_eigen_1_1internal_1_1_reshaped_impl__dense_3_01_xpr_type_00_01_rows_00_01_cols_00_01_order_00_01false_01_4 =
+[
+    [ "ReshapedImpl_dense", "class_eigen_1_1internal_1_1_reshaped_impl__dense_3_01_xpr_type_00_01_rows_00_01_cols_00_01_order_00_01false_01_4.html#a78fd214625a0330610158bf709a34e21", null ],
+    [ "ReshapedImpl_dense", "class_eigen_1_1internal_1_1_reshaped_impl__dense_3_01_xpr_type_00_01_rows_00_01_cols_00_01_order_00_01false_01_4.html#a2ee394e65e66ad87d5d98ff365f0ed8f", null ],
+    [ "nestedExpression", "class_eigen_1_1internal_1_1_reshaped_impl__dense_3_01_xpr_type_00_01_rows_00_01_cols_00_01_order_00_01false_01_4.html#ae7151b97e68ab054832921d237f9d808", null ],
+    [ "nestedExpression", "class_eigen_1_1internal_1_1_reshaped_impl__dense_3_01_xpr_type_00_01_rows_00_01_cols_00_01_order_00_01false_01_4.html#a6b94185bcce31c73c4c580944f212c84", null ]
+];

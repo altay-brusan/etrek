@@ -1,0 +1,231 @@
+\doxysection{stats.\+hpp}
+\hypertarget{stats_8hpp_source}{}\label{stats_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/stats.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/stats.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_STATS\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_STATS\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <unordered\_map>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}log.hpp"{}}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#if\ defined(DIY\_USE\_CALIPER)}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <caliper/cali.h>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <caliper/common/Variant.h>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00017\ \{}
+\DoxyCodeLine{00018\ \textcolor{keyword}{namespace\ }stats}
+\DoxyCodeLine{00019\ \{}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00022\ std::ostream\&}
+\DoxyCodeLine{00023\ operator<<(std::ostream\&\ out,\ \textcolor{keyword}{const}\ std::chrono::high\_resolution\_clock::duration\&\ d)}
+\DoxyCodeLine{00024\ \{}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keyword}{auto}\ time\ =\ std::chrono::duration\_cast<std::chrono::microseconds>(d).count();}
+\DoxyCodeLine{00026\ \ \ \ \ fmt::print(out,\ \textcolor{stringliteral}{"{}\{:02d\}:\{:02d\}:\{:02d\}.\{:06d\}"{}},}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ time/1000000/60/60,}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ time/1000000/60\ \%\ 60,}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ time/1000000\ \%\ 60,}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ time\ \%\ 1000000);}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordflow}{return}\ out;}
+\DoxyCodeLine{00032\ \}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1stats_1_1_duration_accumulator}{DurationAccumulator}}}
+\DoxyCodeLine{00035\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{using\ \ \ }Clock\ \ \ \ =\ std::chrono::high\_resolution\_clock;}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keyword}{using\ \ \ }Time\ \ \ \ \ =\ Clock::time\_point;}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keyword}{using\ \ \ }Duration\ =\ Clock::duration;}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ operator<<(std::string\ name)\ \ \ \ \ \ \ \ \{\ last[name]\ =\ Clock::now();\ \}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ operator>>(std::string\ name)\ \ \ \ \ \ \ \ \{\ duration[name]\ +=\ Clock::now()\ -\/\ last[name];\ \}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ clear()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ last.clear();\ duration.clear();\ \}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ std::unordered\_map<std::string,\ Time>\ \ \ \ \ \ \ last;}
+\DoxyCodeLine{00046\ \ \ \ \ std::unordered\_map<std::string,\ Duration>\ \ \ duration;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ output(std::ostream\&\ out,\ std::string\ prefix\ =\ \textcolor{stringliteral}{"{}"{}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00049\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!prefix.empty())}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ prefix\ +=\ \textcolor{stringliteral}{"{}\ "{}};}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ duration)}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ out\ <<\ prefix\ <<\ x.second\ <<\ \textcolor{charliteral}{'\ '}\ <<\ x.first\ <<\ \textcolor{charliteral}{'\(\backslash\)n'};}
+\DoxyCodeLine{00055\ \ \ \ \ \}}
+\DoxyCodeLine{00056\ \};}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Profiler>}
+\DoxyCodeLine{00059\ \textcolor{keyword}{struct\ \ }ScopedProfile}
+\DoxyCodeLine{00060\ \{}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ ScopedProfile(\doxymbox{\hyperlink{structdiy_1_1stats_1_1_profiler}{Profiler}}\&\ prof\_,\ std::string\ name\_):}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ prof(prof\_),\ name(name\_),\ active(\textcolor{keyword}{true})\ \ \{\ prof\ <<\ name;\ \}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \string~ScopedProfile()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{if}\ (active)\ prof\ >>\ name;\ \}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ ScopedProfile(ScopedProfile\&\&\ other):}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ prof(other.prof),}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ name(other.name),}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ active(other.active)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ other.active\ =\ \textcolor{keyword}{false};\ \}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ ScopedProfile\&}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ operator=(ScopedProfile\&\&\ other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ ScopedProfile(\textcolor{keyword}{const}\ ScopedProfile\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00073\ \ \ \ \ ScopedProfile\&}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ operator=(\textcolor{keyword}{const}\ ScopedProfile\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_profiler}{Profiler}}\&\ \ \ prof;}
+\DoxyCodeLine{00077\ \ \ \ \ std::string\ name;}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ active;}
+\DoxyCodeLine{00079\ \};}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#if\ !defined(DIY\_USE\_CALIPER)}}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#if\ defined(DIY\_PROFILE)}}
+\DoxyCodeLine{00084\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1stats_1_1_profiler}{Profiler}}}
+\DoxyCodeLine{00085\ \{}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keyword}{using\ \ \ }Clock\ =\ std::chrono::high\_resolution\_clock;}
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{keyword}{using\ \ \ }Time\ \ =\ Clock::time\_point;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keyword}{struct\ }Event}
+\DoxyCodeLine{00090\ \ \ \ \ \{}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ Event(\textcolor{keyword}{const}\ std::string\&\ name\_,\ \textcolor{keywordtype}{bool}\ begin\_):}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ name(name\_),}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ begin(begin\_),}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stamp(Clock::now())}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ std::string\ \ \ \ \ name;}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ begin;}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ Time\ \ \ \ \ \ \ \ \ \ \ \ stamp;}
+\DoxyCodeLine{00100\ \ \ \ \ \};}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keyword}{using\ \ \ }EventsVector\ =\ std::vector<Event>;}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keyword}{using\ \ \ }Scoped\ \ \ \ \ \ \ =\ ScopedProfile<Profiler>;}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ Profiler()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ reset\_time();\ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ reset\_time()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ start\ =\ Clock::now();\ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ operator<<(std::string\ name)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ enter(name);\ \}}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ operator>>(std::string\ name)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ exit(name);\ \}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ enter(std::string\ name)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ events.push\_back(Event(name,\ \textcolor{keyword}{true}));\ \ total\ <<\ name;\ \}}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ exit(std::string\ name)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ events.push\_back(Event(name,\ \textcolor{keyword}{false}));\ total\ >>\ name;\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ output(std::ostream\&\ out,\ std::string\ prefix\ =\ \textcolor{stringliteral}{"{}"{}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00116\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!prefix.empty())}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ prefix\ +=\ \textcolor{stringliteral}{"{}\ "{}};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ events.size();\ ++i)}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Event\&\ e\ =\ events[i];}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ out\ <<\ prefix\ <<\ (e.stamp\ -\/\ start)\ <<\ \textcolor{charliteral}{'\ '}\ <<\ (e.begin\ ?\ \textcolor{charliteral}{'<'}\ :\ \textcolor{charliteral}{'>'})\ <<\ \ e.name\ <<\ \textcolor{charliteral}{'\(\backslash\)n'};}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ out\ <<\ \textcolor{stringliteral}{"{}\#\ Total\ times:\(\backslash\)n"{}};}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ total.output(out,\ \textcolor{stringliteral}{"{}\#\ "{}});}
+\DoxyCodeLine{00128\ \ \ \ \ \}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \ \ Scoped\ \ scoped(std::string\ name)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ Scoped(*\textcolor{keyword}{this},\ name);\ \}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ clear()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ events.clear();\ total.clear();\ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{const}\ DurationAccumulator\&\ totals()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ total;\ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ Time\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ start;}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ EventsVector\ \ \ \ \ \ \ \ \ \ \ \ events;}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ DurationAccumulator\ \ \ \ \ total;}
+\DoxyCodeLine{00140\ \};}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\#else\ \ \ }\textcolor{comment}{//\ DIY\_PROFILE}}
+\DoxyCodeLine{00142\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1stats_1_1_profiler}{Profiler}}}
+\DoxyCodeLine{00143\ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keyword}{using\ \ \ }Scoped\ =\ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_scoped_profile}{ScopedProfile<Profiler>}};}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ reset\_time()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ operator<<(std::string\ name)\ \ \ \ \ \ \ \ \{\ enter(name);\ \}}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ operator>>(std::string\ name)\ \ \ \ \ \ \ \ \{\ exit(name);\ \}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ enter(std::string)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ exit(std::string)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ output(std::ostream\&\ out,\ std::string\ =\ \textcolor{stringliteral}{"{}"{}})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00155\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ out\ <<\ \textcolor{stringliteral}{"{}\#\ Total\ times:\(\backslash\)n"{}};}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ total.output(out,\ \textcolor{stringliteral}{"{}\#\ "{}});}
+\DoxyCodeLine{00158\ \ \ \ \ \}}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ clear()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ total.clear();\ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \ \ Scoped\ \ scoped(std::string\ name)\ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ Scoped(*\textcolor{keyword}{this},\ name);\ \}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_duration_accumulator}{DurationAccumulator}}\&}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ totals()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ total;\ \}}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_duration_accumulator}{DurationAccumulator}}\ total;}
+\DoxyCodeLine{00168\ \};}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{//\ DIY\_PROFILE}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{comment}{//\ Annotations\ don't\ do\ anything\ without\ Caliper}}
+\DoxyCodeLine{00172\ \textcolor{keyword}{struct\ }Annotation}
+\DoxyCodeLine{00173\ \{}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keyword}{struct\ }Guard}
+\DoxyCodeLine{00175\ \ \ \ \ \{}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Guard(Annotation\&)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00177\ \ \ \ \ \};}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Annotation(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*)\ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00182\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_annotation}{Annotation}}\&\ \ \ \ \ set(T)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00183\ \};}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{keyword}{struct\ }Variant}
+\DoxyCodeLine{00186\ \{}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Variant(T)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \};}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\#else\ \ \ }\textcolor{comment}{//\ DIY\_USE\_CALIPER}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{structdiy_1_1stats_1_1_annotation}{Annotation}}\ =\ cali::Annotation;}
+\DoxyCodeLine{00195\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{structdiy_1_1stats_1_1_variant}{Variant}}\ \ \ \ =\ cali::Variant;}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1stats_1_1_profiler}{Profiler}}}
+\DoxyCodeLine{00198\ \{}
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keyword}{using\ \ \ }Scoped\ =\ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_scoped_profile}{ScopedProfile<Profiler>}};}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ reset\_time()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ operator<<(std::string\ name)\ \ \ \ \ \ \ \ \{\ enter(name);\ \}}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ operator>>(std::string\ name)\ \ \ \ \ \ \ \ \{\ exit(name);\ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ enter(std::string\ name)\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ CALI\_MARK\_BEGIN(name.c\_str());\ \}}
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ exit(std::string\ name)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ CALI\_MARK\_END(name.c\_str());\ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ output(std::ostream\&,\ std::string\ =\ \textcolor{stringliteral}{"{}"{}})\textcolor{keyword}{\ const\ }\{\}}
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ clear()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ Scoped\ \ scoped(std::string\ name)\ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ Scoped(*\textcolor{keyword}{this},\ name);\ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \ \ \textcolor{comment}{//\ unused}}
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{keyword}{const}\ DurationAccumulator\&}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ totals()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ total;\ \}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ DurationAccumulator\ total;}
+\DoxyCodeLine{00220\ \};}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00222\ \}}
+\DoxyCodeLine{00223\ \}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

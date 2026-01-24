@@ -1,0 +1,120 @@
+\doxysection{syncpmsm.\+h}
+\hypertarget{syncpmsm_8h_source}{}\label{syncpmsm_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/oflog/thread/impl/syncpmsm.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/oflog/thread/impl/syncpmsm.h}}
+\doxymbox{\hyperlink{syncpmsm_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ -\/*-\/\ C++\ -\/*-\/}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ \ Copyright\ (C)\ 2010,\ Vaclav\ Haisman.\ All\ rights\ reserved.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ \ }}
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ \ Redistribution\ and\ use\ in\ source\ and\ binary\ forms,\ with\ or\ without\ modifica-\/}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ \ tion,\ are\ permitted\ provided\ that\ the\ following\ conditions\ are\ met:}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ \ }}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ \ 1.\ Redistributions\ of\ \ source\ code\ must\ \ retain\ the\ above\ copyright\ \ notice,}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ \ \ \ \ this\ list\ of\ conditions\ and\ the\ following\ disclaimer.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ \ }}
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ \ 2.\ Redistributions\ in\ binary\ form\ must\ reproduce\ the\ above\ copyright\ notice,}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ \ \ \ \ this\ list\ of\ conditions\ and\ the\ following\ disclaimer\ in\ the\ documentation}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ \ \ \ \ and/or\ other\ materials\ provided\ with\ the\ distribution.}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ \ }}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ \ THIS\ SOFTWARE\ IS\ PROVIDED\ \`{}\`{}AS\ IS''\ AND\ ANY\ EXPRESSED\ OR\ IMPLIED\ WARRANTIES,}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ \ INCLUDING,\ BUT\ NOT\ LIMITED\ TO,\ THE\ IMPLIED\ WARRANTIES\ OF\ MERCHANTABILITY\ AND}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ \ FITNESS\ \ FOR\ A\ PARTICULAR\ \ PURPOSE\ ARE\ \ DISCLAIMED.\ \ IN\ NO\ \ EVENT\ SHALL\ \ THE}}
+\DoxyCodeLine{00017\ \textcolor{comment}{//\ \ APACHE\ SOFTWARE\ \ FOUNDATION\ \ OR\ ITS\ CONTRIBUTORS\ \ BE\ LIABLE\ FOR\ \ ANY\ DIRECT,}}
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ \ INDIRECT,\ INCIDENTAL,\ SPECIAL,\ \ EXEMPLARY,\ OR\ CONSEQUENTIAL\ \ DAMAGES\ (INCLU-\/}}
+\DoxyCodeLine{00019\ \textcolor{comment}{//\ \ DING,\ BUT\ NOT\ LIMITED\ TO,\ PROCUREMENT\ \ OF\ SUBSTITUTE\ GOODS\ OR\ SERVICES;\ LOSS}}
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ \ OF\ USE,\ DATA,\ OR\ \ PROFITS;\ OR\ BUSINESS\ \ INTERRUPTION)\ \ HOWEVER\ CAUSED\ AND\ ON}}
+\DoxyCodeLine{00021\ \textcolor{comment}{//\ \ ANY\ \ THEORY\ OF\ LIABILITY,\ \ WHETHER\ \ IN\ CONTRACT,\ \ STRICT\ LIABILITY,\ \ OR\ TORT}}
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ \ (INCLUDING\ \ NEGLIGENCE\ OR\ \ OTHERWISE)\ ARISING\ IN\ \ ANY\ WAY\ OUT\ OF\ THE\ \ USE\ OF}}
+\DoxyCodeLine{00023\ \textcolor{comment}{//\ \ THIS\ SOFTWARE,\ EVEN\ IF\ ADVISED\ OF\ THE\ POSSIBILITY\ OF\ SUCH\ DAMAGE.}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#if\ !\ defined\ (DCMTK\_INSIDE\_LOG4CPLUS)}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#\ \ error\ "{}This\ header\ must\ not\ be\ be\ used\ outside\ log4cplus'\ implementation\ files."{}}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ This\ implements\ algorithm\ described\ in\ "{}Concurrent\ Control\ with\ "{}Readers"{}}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ and\ "{}Writers"{};\ P.J.\ Courtois,\ F.\ Heymans,\ and\ D.L.\ Parnas;}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ MBLE\ Research\ Laboratory;\ Brussels,\ Belgium"{}}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00043\ SharedMutex::SharedMutex\ ()}
+\DoxyCodeLine{00044\ \ \ \ \ :\ m1\ (log4cplus::thread::Mutex::DEFAULT)}
+\DoxyCodeLine{00045\ \ \ \ \ ,\ m2\ (log4cplus::thread::Mutex::DEFAULT)}
+\DoxyCodeLine{00046\ \ \ \ \ ,\ m3\ (log4cplus::thread::Mutex::DEFAULT)}
+\DoxyCodeLine{00047\ \ \ \ \ ,\ w\ (1,\ 1)}
+\DoxyCodeLine{00048\ \ \ \ \ ,\ writer\_count\ (0)}
+\DoxyCodeLine{00049\ \ \ \ \ ,\ r\ (1,\ 1)}
+\DoxyCodeLine{00050\ \ \ \ \ ,\ reader\_count\ (0)}
+\DoxyCodeLine{00051\ \{\ \}}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00055\ SharedMutex::\string~SharedMutex\ ()}
+\DoxyCodeLine{00056\ \{\ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00060\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00061\ SharedMutex::rdlock\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00062\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00063\ \ \ \ \ MutexGuard\ m3\_guard\ (m3);}
+\DoxyCodeLine{00064\ \ \ \ \ SemaphoreGuard\ r\_guard\ (r);}
+\DoxyCodeLine{00065\ \ \ \ \ MutexGuard\ m1\_guard\ (m1);}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordflow}{if}\ (reader\_count\ +\ 1\ ==\ 1)}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ w.lock\ ();}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ reader\_count\ +=\ 1;}
+\DoxyCodeLine{00070\ \}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00074\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00075\ SharedMutex::rdunlock\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00076\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00077\ \ \ \ \ MutexGuard\ m1\_guard\ (m1);}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{if}\ (reader\_count\ -\/\ 1\ ==\ 0)}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ w.unlock\ ();}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ reader\_count\ -\/=\ 1;}
+\DoxyCodeLine{00082\ \}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00086\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00087\ SharedMutex::wrlock\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00088\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00089\ \ \ \ \ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ MutexGuard\ m2\_guard\ (m2);}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (writer\_count\ +\ 1\ ==\ 1)}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ r.lock\ ();}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ writer\_count\ +=\ 1;}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordflow}{try}}
+\DoxyCodeLine{00097\ \ \ \ \ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ w.lock\ ();}
+\DoxyCodeLine{00099\ \ \ \ \ \}}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keywordflow}{catch}\ (...)}
+\DoxyCodeLine{00101\ \ \ \ \ \{}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ MutexGuard\ m2\_guard\ (m2);}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ writer\_count\ -\/=\ 1;}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw};}
+\DoxyCodeLine{00105\ \ \ \ \ \}}
+\DoxyCodeLine{00106\ \}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00110\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00111\ SharedMutex::wrunlock\ ()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00112\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00113\ \ \ \ \ w.unlock\ ();}
+\DoxyCodeLine{00114\ \ \ \ \ MutexGuard\ m2\_guard\ (m2);}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{if}\ (writer\_count\ -\/\ 1\ ==\ 0)}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ r.unlock\ ();}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \ \ writer\_count\ -\/=\ 1;}
+\DoxyCodeLine{00119\ \}}
+
+\end{DoxyCode}

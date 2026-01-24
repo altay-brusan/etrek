@@ -1,0 +1,467 @@
+\doxysection{System\+Tools.\+hxx}
+\hypertarget{_system_tools_8hxx_source}{}\label{_system_tools_8hxx_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtksys/SystemTools.hxx@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtksys/SystemTools.hxx}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*\ Distributed\ under\ the\ OSI-\/approved\ BSD\ 3-\/Clause\ License.\ \ See\ accompanying}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ \ \ file\ Copyright.txt\ or\ https://cmake.org/licensing\#kwsys\ for\ details.\ \ */}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#ifndef\ vtksys\_SystemTools\_hxx}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#define\ vtksys\_SystemTools\_hxx}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vtksys/Configure.hxx>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <vtksys/Status.hxx>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <iosfwd>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <sys/types.h>}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ include\ sys/stat.h\ after\ sys/types.h}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <sys/stat.h>}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#if\ !defined(\_WIN32)\ ||\ defined(\_\_CYGWIN\_\_)}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#\ \ include\ <unistd.h>}\ \textcolor{comment}{//\ For\ access\ permissions\ for\ use\ with\ access()}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ Required\ for\ va\_list}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <stdarg.h>}}
+\DoxyCodeLine{00024\ \textcolor{comment}{//\ Required\ for\ FILE*}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ <stdio.h>}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#if\ !defined(va\_list)}}
+\DoxyCodeLine{00027\ \textcolor{comment}{//\ Some\ compilers\ move\ va\_list\ into\ the\ std\ namespace\ and\ there\ is\ no\ way\ to}}
+\DoxyCodeLine{00028\ \textcolor{comment}{//\ tell\ that\ this\ has\ been\ done.\ Playing\ with\ things\ being\ included\ before\ or}}
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ after\ stdarg.h\ does\ not\ solve\ things\ because\ we\ do\ not\ have\ control\ over}}
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ what\ the\ user\ does.\ This\ hack\ solves\ this\ problem\ by\ moving\ va\_list\ to\ our}}
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ own\ namespace\ that\ is\ local\ for\ kwsys.}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{namespace\ }std\ \{}
+\DoxyCodeLine{00033\ \}\ \textcolor{comment}{//\ Required\ for\ platforms\ that\ do\ not\ have\ std\ namespace}}
+\DoxyCodeLine{00034\ \textcolor{keyword}{namespace\ }vtksys\_VA\_LIST\ \{}
+\DoxyCodeLine{00035\ \textcolor{keyword}{using\ namespace\ }std;}
+\DoxyCodeLine{00036\ \textcolor{keyword}{typedef}\ va\_list\ hack\_va\_list;}
+\DoxyCodeLine{00037\ \}}
+\DoxyCodeLine{00038\ \textcolor{keyword}{namespace\ }vtksys\ \{}
+\DoxyCodeLine{00039\ \textcolor{keyword}{typedef}\ vtksys\_VA\_LIST::hack\_va\_list\ va\_list;}
+\DoxyCodeLine{00040\ \}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ va\_list}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{keyword}{namespace\ }vtksys\ \{}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{keyword}{class\ }SystemToolsStatic;}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00051\ \textcolor{keyword}{class\ }vtksys\_EXPORT\ SystemToolsManager}
+\DoxyCodeLine{00052\ \{}
+\DoxyCodeLine{00053\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00054\ \ \ SystemToolsManager();}
+\DoxyCodeLine{00055\ \ \ \string~SystemToolsManager();}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ SystemToolsManager(\textcolor{keyword}{const}\ SystemToolsManager\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00058\ \ \ SystemToolsManager\&\ operator=(\textcolor{keyword}{const}\ SystemToolsManager\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00059\ \};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{comment}{//\ This\ instance\ will\ show\ up\ in\ any\ translation\ unit\ that\ uses}}
+\DoxyCodeLine{00062\ \textcolor{comment}{//\ SystemTools.\ It\ will\ make\ sure\ SystemTools\ is\ initialized}}
+\DoxyCodeLine{00063\ \textcolor{comment}{//\ before\ it\ is\ used\ and\ is\ the\ last\ static\ object\ destroyed.}}
+\DoxyCodeLine{00064\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_manager}{SystemToolsManager}}\ SystemToolsManagerInstance;}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{//\ Flags\ for\ use\ with\ TestFileAccess.\ \ Use\ a\ typedef\ in\ case\ any\ operating}}
+\DoxyCodeLine{00067\ \textcolor{comment}{//\ system\ in\ the\ future\ needs\ a\ special\ type.\ \ These\ are\ flags\ that\ may\ be}}
+\DoxyCodeLine{00068\ \textcolor{comment}{//\ combined\ using\ the\ |\ operator.}}
+\DoxyCodeLine{00069\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{int}\ TestFilePermissions;}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)\ \&\&\ !defined(\_\_CYGWIN\_\_)}}
+\DoxyCodeLine{00071\ \textcolor{comment}{//\ On\ Windows\ (VC),\ no\ system\ header\ defines\ these\ constants...}}
+\DoxyCodeLine{00072\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ TestFilePermissions\ TEST\_FILE\_OK\ =\ 0;}
+\DoxyCodeLine{00073\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ TestFilePermissions\ TEST\_FILE\_READ\ =\ 4;}
+\DoxyCodeLine{00074\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ TestFilePermissions\ TEST\_FILE\_WRITE\ =\ 2;}
+\DoxyCodeLine{00075\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ TestFilePermissions\ TEST\_FILE\_EXECUTE\ =\ 1;}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00077\ \textcolor{comment}{//\ Standard\ POSIX\ constants}}
+\DoxyCodeLine{00078\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ TestFilePermissions\ TEST\_FILE\_OK\ =\ F\_OK;}
+\DoxyCodeLine{00079\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ TestFilePermissions\ TEST\_FILE\_READ\ =\ R\_OK;}
+\DoxyCodeLine{00080\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ TestFilePermissions\ TEST\_FILE\_WRITE\ =\ W\_OK;}
+\DoxyCodeLine{00081\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ TestFilePermissions\ TEST\_FILE\_EXECUTE\ =\ X\_OK;}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00087\ \textcolor{keyword}{class\ }vtksys\_EXPORT\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools}{SystemTools}}}
+\DoxyCodeLine{00088\ \{}
+\DoxyCodeLine{00089\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00102\ \ \ \textcolor{keyword}{static}\ std::string\ MakeCidentifier(\textcolor{keyword}{const}\ std::string\&\ s);}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \textcolor{keyword}{static}\ std::string\ MakeCindentifier(\textcolor{keyword}{const}\ std::string\&\ s)}
+\DoxyCodeLine{00105\ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keywordflow}{return}\ MakeCidentifier(s);}
+\DoxyCodeLine{00107\ \ \ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00112\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a5390c03a00b34c331ba24088640ee12f}{ReplaceString}}(std::string\&\ source,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ replace,}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ with);}
+\DoxyCodeLine{00114\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a5390c03a00b34c331ba24088640ee12f}{ReplaceString}}(std::string\&\ source,\ \textcolor{keyword}{const}\ std::string\&\ replace,}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ with);}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a1a8fc3b1c0ef9ec6d94ca7fd870f0e14}{Capitalized}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00127\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a8f8f6d1d99e9f7c1775f02e8bc50eed2}{CapitalizedWords}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00133\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a8f468cb0a523cd62a61a6de84f40d0f4}{UnCapitalizedWords}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a3b3f47bbfba96fed888d516620afa062}{LowerCase}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00143\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aea87e4ad49a76d60c0aebf700ec65546}{UpperCase}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00148\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a45c6061f13bd68c482133acfc6165a48}{CountChar}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str,\ \textcolor{keywordtype}{char}\ c);}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00154\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ac4fc725a9e3aebbb5ec87dcefae0fe8d}{RemoveChars}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ toremove);}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aceaa82a80cf849b1b786ca875b9d38c3}{RemoveCharsButUpperHex}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str);}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a57f531450a8c379c0ce5aab5ddc9641b}{ReplaceChars}}(\textcolor{keywordtype}{char}*\ str,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ toreplace,}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ replacement);}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00172\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a65752e3a4eec69a09f75b29a1568a612}{StringStartsWith}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str2);}
+\DoxyCodeLine{00173\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a65752e3a4eec69a09f75b29a1568a612}{StringStartsWith}}(\textcolor{keyword}{const}\ std::string\&\ str1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str2);}
+\DoxyCodeLine{00174\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ StringEndsWith(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str2);}
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ StringEndsWith(\textcolor{keyword}{const}\ std::string\&\ str1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str2);}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00180\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a902f80077922440b01da693a7836b1a9}{FindLastString}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str2);}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00187\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a72c5b01e06197902f91957e11bdd4fe2}{DuplicateString}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str);}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aeabf0849629257341fd19f9e1a1e8a95}{CropString}}(\textcolor{keyword}{const}\ std::string\&,\ \textcolor{keywordtype}{size\_t}\ max\_len);}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00200\ \ \ \textcolor{keyword}{static}\ std::vector<std::string>\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aca4360e449446fb8fb11251a8e827dcf}{SplitString}}(\textcolor{keyword}{const}\ std::string\&\ s,}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ separator\ =\ \textcolor{charliteral}{'/'},}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ isPath\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a50a18bf97bc8df640ed0abd567e7169f}{Strucmp}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ s1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ s2);}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00212\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a6a1b53300ade8349ff67f846f9ee1fe2}{Split}}(\textcolor{keyword}{const}\ std::string\&\ s,\ std::vector<std::string>\&\ l);}
+\DoxyCodeLine{00213\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a6a1b53300ade8349ff67f846f9ee1fe2}{Split}}(\textcolor{keyword}{const}\ std::string\&\ s,\ std::vector<std::string>\&\ l,}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ separator);}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00220\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a3654b5bb6bba09090c004503be647fd2}{Join}}(\textcolor{keyword}{const}\ std::vector<std::string>\&\ list,}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ separator);}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00228\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a73a7af3f50eefd450fcbb395c81d63d8}{AddSpaceBetweenCapitalizedWords}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00236\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_af926a8acf7fb8652672c930c7fe770c3}{AppendStrings}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str2);}
+\DoxyCodeLine{00237\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_af926a8acf7fb8652672c930c7fe770c3}{AppendStrings}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str2,}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str3);}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00249\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a157154c43c8a4e1f632bd821136a915b}{EstimateFormatLength}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ format,\ va\_list\ ap);}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00254\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aec0b2adc35a62f17b520bab7ac1b8571}{EscapeChars}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ str,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ chars\_to\_escape,}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ escape\_char\ =\ \textcolor{charliteral}{'\(\backslash\)\(\backslash\)'});}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00265\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ada0e3df61fc9cde995bb4cd0a7273c10}{ConvertToUnixSlashes}}(std::string\&\ path);}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \textcolor{preprocessor}{\#ifdef\ \_WIN32}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00269\ \ \ \textcolor{keyword}{static}\ std::wstring\ ConvertToWindowsExtendedPath(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00270\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00276\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a52f15f9ab5d438f0088295b10af9eeba}{ConvertToOutputPath}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00282\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_afc74b55b126d829455516545b13f660c}{ConvertToUnixOutputPath}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00290\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a73515a9c83a00c899e83dbdfd9d281ff}{ConvertToWindowsOutputPath}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00295\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a96a7691d6f30c6f39dfbd18cbd0014e2}{PathExists}}(\textcolor{keyword}{const}\ std::string\&\ path);}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00305\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a33c9228ebd7cf5e6168bd36a3508c441}{FileExists}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename,\ \textcolor{keywordtype}{bool}\ isFile);}
+\DoxyCodeLine{00306\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a33c9228ebd7cf5e6168bd36a3508c441}{FileExists}}(\textcolor{keyword}{const}\ std::string\&\ filename,\ \textcolor{keywordtype}{bool}\ isFile);}
+\DoxyCodeLine{00307\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a33c9228ebd7cf5e6168bd36a3508c441}{FileExists}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename);}
+\DoxyCodeLine{00308\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a33c9228ebd7cf5e6168bd36a3508c441}{FileExists}}(\textcolor{keyword}{const}\ std::string\&\ filename);}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00320\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a2d7dd2192a64ed565a1734204b78f355}{TestFileAccess}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename,}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TestFilePermissions\ permissions);}
+\DoxyCodeLine{00322\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a2d7dd2192a64ed565a1734204b78f355}{TestFileAccess}}(\textcolor{keyword}{const}\ std::string\&\ filename,}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TestFilePermissions\ permissions);}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)\ \&\&\ !defined(\_\_CYGWIN\_\_)}}
+\DoxyCodeLine{00328\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\_stat64\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a9af8e19e95985c2db9c26044507b17ac}{Stat\_t}};}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00330\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }stat\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a9af8e19e95985c2db9c26044507b17ac}{Stat\_t}};}
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00339\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a8e2f835e9975859cb6985c8d74620e8f}{Stat}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ path,\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a9af8e19e95985c2db9c26044507b17ac}{Stat\_t}}*\ buf);}
+\DoxyCodeLine{00340\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a8e2f835e9975859cb6985c8d74620e8f}{Stat}}(\textcolor{keyword}{const}\ std::string\&\ path,\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a9af8e19e95985c2db9c26044507b17ac}{Stat\_t}}*\ buf);}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00345\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a673f2e92939527a6111dff5a207f7f26}{FileLength}}(\textcolor{keyword}{const}\ std::string\&\ filename);}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00350\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ac0a478abed7b2ae5c2bb56681fdbf42d}{Touch}}(std::string\ \textcolor{keyword}{const}\&\ filename,\ \textcolor{keywordtype}{bool}\ create);}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00358\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a0136790712ca1ce8d2043871d596a95f}{FileTimeCompare}}(std::string\ \textcolor{keyword}{const}\&\ f1,\ std::string\ \textcolor{keyword}{const}\&\ f2,}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}*\ result);}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00365\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aea7706788961ead276517b49a50c9d65}{GetExecutableExtension}}();}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00374\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ac375e6d120edeb37757c80091af606ef}{GetActualCaseForPath}}(\textcolor{keyword}{const}\ std::string\&\ path);}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00381\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a76ab3acc56cec9a610293305ab8a7362}{GetProgramPath}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00382\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ SplitProgramPath(\textcolor{keyword}{const}\ std::string\&\ in\_name,\ std::string\&\ dir,}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ file,\ \textcolor{keywordtype}{bool}\ errorReport\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00397\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aa734130463916c208eabd227f766c1c7}{FindProgramPath}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ argv0,\ std::string\&\ pathOut,}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ errorMsg,}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ exeName\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ buildDir\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ installPrefix\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00409\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ad73c6909d28eaa5ae6b729b2fb261c01}{CollapseFullPath}}(std::string\ \textcolor{keyword}{const}\&\ in\_path);}
+\DoxyCodeLine{00410\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ad73c6909d28eaa5ae6b729b2fb261c01}{CollapseFullPath}}(std::string\ \textcolor{keyword}{const}\&\ in\_path,}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ in\_base);}
+\DoxyCodeLine{00412\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ad73c6909d28eaa5ae6b729b2fb261c01}{CollapseFullPath}}(std::string\ \textcolor{keyword}{const}\&\ in\_path,}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ \textcolor{keyword}{const}\&\ in\_base);}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00422\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a74453161b8e397bc83139547cce99cb1}{GetRealPath}}(\textcolor{keyword}{const}\ std::string\&\ path,}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string*\ errorMessage\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00440\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a8389e15b948c0d92a52aa53dcb8081b8}{SplitPathRootComponent}}(\textcolor{keyword}{const}\ std::string\&\ p,}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string*\ root\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00457\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a30d99ed5aefb5e5b31030ff211f4a0a8}{SplitPath}}(\textcolor{keyword}{const}\ std::string\&\ p,}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<std::string>\&\ components,}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ expand\_home\_dir\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00469\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a80b85b66496b7253ed28752e1ecd55e3}{JoinPath}}(\textcolor{keyword}{const}\ std::vector<std::string>\&\ components);}
+\DoxyCodeLine{00470\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a80b85b66496b7253ed28752e1ecd55e3}{JoinPath}}(std::vector<std::string>::const\_iterator\ first,}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<std::string>::const\_iterator\ last);}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00476\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a8dd004e800599932aa60b74b1f312525}{ComparePath}}(\textcolor{keyword}{const}\ std::string\&\ c1,\ \textcolor{keyword}{const}\ std::string\&\ c2);}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00481\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ae667e3602cfff8a94e6b142fa60ec573}{GetFilenamePath}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00486\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a3ddc29c975f4ef439276e1e6937c2836}{GetFilenameName}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00491\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ac64fc1e96fe234edc744e02a95e7b813}{GetFilenameExtension}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00496\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a77d7df6ae94f31c87fdf6926d6060d63}{GetFilenameLastExtension}}(\textcolor{keyword}{const}\ std::string\&\ filename);}
+\DoxyCodeLine{00497\ }
+\DoxyCodeLine{00501\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a3c607ce7e1e20c21add80139a447b265}{GetFilenameWithoutExtension}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00506\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_adbaef891695ce8ba92c927bd450cf259}{GetFilenameWithoutLastExtension}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00511\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a5b73922676f0c34908fc087b988c7710}{FileIsFullPath}}(\textcolor{keyword}{const}\ std::string\&);}
+\DoxyCodeLine{00512\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a5b73922676f0c34908fc087b988c7710}{FileIsFullPath}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*);}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00518\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a836f8031e2a83bc303560f1c8509eca7}{GetShortPath}}(std::string\ \textcolor{keyword}{const}\&\ path,\ std::string\&\ result);}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00526\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a4077bbc7da53f4e6948729d6858ecfd3}{GetLineFromStream}}(}
+\DoxyCodeLine{00527\ \ \ \ \ std::istream\&\ istr,\ std::string\&\ line,\ \textcolor{keywordtype}{bool}*\ has\_newline\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{00528\ \ \ \ \ std::string::size\_type\ sizeLimit\ =\ std::string::npos);}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00533\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a9cd8667fdabe718542e65ec9d4f7b617}{GetParentDirectory}}(\textcolor{keyword}{const}\ std::string\&\ fileOrDir);}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00538\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a5340756464905dcaf818e9617153d494}{IsSubDirectory}}(\textcolor{keyword}{const}\ std::string\&\ fileOrDir,}
+\DoxyCodeLine{00539\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ dir);}
+\DoxyCodeLine{00540\ }
+\DoxyCodeLine{00545\ }
+\DoxyCodeLine{00550\ \ \ \textcolor{keyword}{static}\ FILE*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a35784dc1792963499a6d268b510cf24b}{Fopen}}(\textcolor{keyword}{const}\ std::string\&\ file,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ mode);}
+\DoxyCodeLine{00551\ }
+\DoxyCodeLine{00555\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00556\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ mode\_t;}
+\DoxyCodeLine{00557\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00558\ }
+\DoxyCodeLine{00564\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aace7555f44545b96bee77b6422ab93f5}{MakeDirectory}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ path,\ \textcolor{keyword}{const}\ mode\_t*\ mode\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00565\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aace7555f44545b96bee77b6422ab93f5}{MakeDirectory}}(std::string\ \textcolor{keyword}{const}\&\ path,}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ mode\_t*\ mode\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00567\ }
+\DoxyCodeLine{00572\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a06ad310db957b357b25f3b51332f2831}{CopyFileIfDifferent}}(std::string\ \textcolor{keyword}{const}\&\ source,}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ \textcolor{keyword}{const}\&\ destination);}
+\DoxyCodeLine{00574\ }
+\DoxyCodeLine{00578\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ad7cbe8da251f0969973e893a1458d7d3}{FilesDiffer}}(\textcolor{keyword}{const}\ std::string\&\ source,}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ destination);}
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00585\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a1aff0bb51acfbdbb3da63731fd51c6ce}{TextFilesDiffer}}(\textcolor{keyword}{const}\ std::string\&\ path1,}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ path2);}
+\DoxyCodeLine{00587\ }
+\DoxyCodeLine{00591\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a72812a264f7b96c25fdd977fcfee37d1}{CopyFileContentBlockwise}}(std::string\ \textcolor{keyword}{const}\&\ source,}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ \textcolor{keyword}{const}\&\ destination);}
+\DoxyCodeLine{00596\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ae9c775b834ea0783c5a5f9b7001aeb70}{CloneFileContent}}(std::string\ \textcolor{keyword}{const}\&\ source,}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ \textcolor{keyword}{const}\&\ destination);}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00602\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ad9635437989d5799ff5b222a27e74d24}{SameFile}}(\textcolor{keyword}{const}\ std::string\&\ file1,\ \textcolor{keyword}{const}\ std::string\&\ file2);}
+\DoxyCodeLine{00603\ }
+\DoxyCodeLine{00607\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_abc0a570eefc2a84c189041e81520ea43}{CopyFileAlways}}(std::string\ \textcolor{keyword}{const}\&\ source,}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ \textcolor{keyword}{const}\&\ destination);}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00615\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a0192371d1d94917adb76be32066304cc}{CopyAFile}}(std::string\ \textcolor{keyword}{const}\&\ source,}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ \textcolor{keyword}{const}\&\ destination,\ \textcolor{keywordtype}{bool}\ always\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00617\ }
+\DoxyCodeLine{00624\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a8ad2479e04d1fbb28bb5d01dcddd1bd3}{CopyADirectory}}(std::string\ \textcolor{keyword}{const}\&\ source,}
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ \textcolor{keyword}{const}\&\ destination,}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ always\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00631\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a821723471203e6723b4e57bb6d385cbe}{RemoveFile}}(std::string\ \textcolor{keyword}{const}\&\ source);}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00636\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a5d60619473713f0292097622215b676d}{RemoveADirectory}}(std::string\ \textcolor{keyword}{const}\&\ source);}
+\DoxyCodeLine{00637\ }
+\DoxyCodeLine{00641\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a3aa3bd113e717212ba348fd41a410b95}{GetMaximumFilePathLength}}();}
+\DoxyCodeLine{00642\ }
+\DoxyCodeLine{00646\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a294c86257f309ae9dde09e2c6c03c5e2}{FindFile}}(}
+\DoxyCodeLine{00647\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name,}
+\DoxyCodeLine{00648\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\&\ path\ =\ std::vector<std::string>(),}
+\DoxyCodeLine{00649\ \ \ \ \ \textcolor{keywordtype}{bool}\ no\_system\_path\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00650\ }
+\DoxyCodeLine{00654\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a2328f7680d162a28ef24a1065726cd89}{FindDirectory}}(}
+\DoxyCodeLine{00655\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name,}
+\DoxyCodeLine{00656\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\&\ path\ =\ std::vector<std::string>(),}
+\DoxyCodeLine{00657\ \ \ \ \ \textcolor{keywordtype}{bool}\ no\_system\_path\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00662\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a561260a324ae296491245c91a912b185}{FindProgram}}(}
+\DoxyCodeLine{00663\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name,}
+\DoxyCodeLine{00664\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\&\ path\ =\ std::vector<std::string>(),}
+\DoxyCodeLine{00665\ \ \ \ \ \textcolor{keywordtype}{bool}\ no\_system\_path\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00666\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a561260a324ae296491245c91a912b185}{FindProgram}}(}
+\DoxyCodeLine{00667\ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ name,}
+\DoxyCodeLine{00668\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\&\ path\ =\ std::vector<std::string>(),}
+\DoxyCodeLine{00669\ \ \ \ \ \textcolor{keywordtype}{bool}\ no\_system\_path\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00670\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a561260a324ae296491245c91a912b185}{FindProgram}}(}
+\DoxyCodeLine{00671\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\&\ names,}
+\DoxyCodeLine{00672\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\&\ path\ =\ std::vector<std::string>(),}
+\DoxyCodeLine{00673\ \ \ \ \ \textcolor{keywordtype}{bool}\ no\_system\_path\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00674\ }
+\DoxyCodeLine{00678\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a87e39ec25a68be6e5e2845c8dc02ea74}{FindLibrary}}(\textcolor{keyword}{const}\ std::string\&\ name,}
+\DoxyCodeLine{00679\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\&\ path);}
+\DoxyCodeLine{00680\ }
+\DoxyCodeLine{00684\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a908d87e2fd25521228057651a41b9e67}{FileIsDirectory}}(\textcolor{keyword}{const}\ std::string\&\ name);}
+\DoxyCodeLine{00685\ }
+\DoxyCodeLine{00689\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a4f22820e7b540594889b82e5cdd0d011}{FileIsExecutable}}(\textcolor{keyword}{const}\ std::string\&\ name);}
+\DoxyCodeLine{00690\ }
+\DoxyCodeLine{00691\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00697\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ FileIsSymlinkWithAttr(\textcolor{keyword}{const}\ std::wstring\&\ path,}
+\DoxyCodeLine{00698\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ attr);}
+\DoxyCodeLine{00699\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00700\ }
+\DoxyCodeLine{00704\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a5bd4d29fc4bce75f4d44d00efb82aad7}{FileIsSymlink}}(\textcolor{keyword}{const}\ std::string\&\ name);}
+\DoxyCodeLine{00705\ }
+\DoxyCodeLine{00709\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a16e3f319d86152159d9e68f4d697a30b}{FileIsFIFO}}(\textcolor{keyword}{const}\ std::string\&\ name);}
+\DoxyCodeLine{00710\ }
+\DoxyCodeLine{00714\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a6b4414f8b0100b43c79eaea2904f0364}{FileHasSignature}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ signature,}
+\DoxyCodeLine{00715\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{long}\ offset\ =\ 0);}
+\DoxyCodeLine{00716\ }
+\DoxyCodeLine{00726\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a2f6e05a17a47e4162996233ba7c7c4e7}{FileTypeEnum}}}
+\DoxyCodeLine{00727\ \ \ \{}
+\DoxyCodeLine{00728\ \ \ \ \ FileTypeUnknown,}
+\DoxyCodeLine{00729\ \ \ \ \ FileTypeBinary,}
+\DoxyCodeLine{00730\ \ \ \ \ FileTypeText}
+\DoxyCodeLine{00731\ \ \ \};}
+\DoxyCodeLine{00732\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a2f6e05a17a47e4162996233ba7c7c4e7}{SystemTools::FileTypeEnum}}\ DetectFileType(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename,}
+\DoxyCodeLine{00733\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ length\ =\ 256,}
+\DoxyCodeLine{00734\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ percent\_bin\ =\ 0.05);}
+\DoxyCodeLine{00735\ }
+\DoxyCodeLine{00740\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a93aade8956b319bde7991eb84999c4e4}{CreateSymlink}}(std::string\ \textcolor{keyword}{const}\&\ origName,}
+\DoxyCodeLine{00741\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ \textcolor{keyword}{const}\&\ newName);}
+\DoxyCodeLine{00742\ }
+\DoxyCodeLine{00747\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a081e6e70dbe40f22df4836e107d0fbd6}{ReadSymlink}}(std::string\ \textcolor{keyword}{const}\&\ newName,\ std::string\&\ origName);}
+\DoxyCodeLine{00748\ }
+\DoxyCodeLine{00764\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ab0f290ff61e815d3f2e5b506eea7797a}{LocateFileInDir}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ dir,}
+\DoxyCodeLine{00765\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ filename\_found,}
+\DoxyCodeLine{00766\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ try\_filename\_dirs\ =\ 0);}
+\DoxyCodeLine{00767\ }
+\DoxyCodeLine{00776\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ad5ae76af56aaecd259bbacd2ad11e845}{RelativePath}}(\textcolor{keyword}{const}\ std::string\&\ local,}
+\DoxyCodeLine{00777\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ remote);}
+\DoxyCodeLine{00778\ }
+\DoxyCodeLine{00782\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a525a15b228c36f6184519effcff580dd}{ModifiedTime}}(\textcolor{keyword}{const}\ std::string\&\ filename);}
+\DoxyCodeLine{00783\ }
+\DoxyCodeLine{00787\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a06151acf1aa3c1c63328c8fe9dcaed15}{CreationTime}}(\textcolor{keyword}{const}\ std::string\&\ filename);}
+\DoxyCodeLine{00788\ }
+\DoxyCodeLine{00797\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a07c8ad88c8a14ee8cd6c89ee8951fbd3}{GetPermissions}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ mode\_t\&\ mode);}
+\DoxyCodeLine{00798\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a07c8ad88c8a14ee8cd6c89ee8951fbd3}{GetPermissions}}(std::string\ \textcolor{keyword}{const}\&\ file,\ mode\_t\&\ mode);}
+\DoxyCodeLine{00799\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ SetPermissions(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ file,\ mode\_t\ mode,}
+\DoxyCodeLine{00800\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ honor\_umask\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00801\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ SetPermissions(std::string\ \textcolor{keyword}{const}\&\ file,\ mode\_t\ mode,}
+\DoxyCodeLine{00802\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ honor\_umask\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00803\ }
+\DoxyCodeLine{00808\ }
+\DoxyCodeLine{00810\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a7f8b65c75387f93e9b4243a5c9e963e4}{GetTime}}();}
+\DoxyCodeLine{00811\ }
+\DoxyCodeLine{00815\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a14db8f126639074dc83bea69bc59bfdb}{GetCurrentDateTime}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ format);}
+\DoxyCodeLine{00816\ }
+\DoxyCodeLine{00821\ }
+\DoxyCodeLine{00827\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a97429237aab30651af4d93dbc86d6c7f}{KeyWOW64}}}
+\DoxyCodeLine{00828\ \ \ \{}
+\DoxyCodeLine{00829\ \ \ \ \ KeyWOW64\_Default,}
+\DoxyCodeLine{00830\ \ \ \ \ KeyWOW64\_32,}
+\DoxyCodeLine{00831\ \ \ \ \ KeyWOW64\_64}
+\DoxyCodeLine{00832\ \ \ \};}
+\DoxyCodeLine{00833\ }
+\DoxyCodeLine{00837\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a0fd454c84e19627c1f6624d5391fd74f}{GetRegistrySubKeys}}(\textcolor{keyword}{const}\ std::string\&\ key,}
+\DoxyCodeLine{00838\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<std::string>\&\ subkeys,}
+\DoxyCodeLine{00839\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a97429237aab30651af4d93dbc86d6c7f}{KeyWOW64}}\ view\ =\ KeyWOW64\_Default);}
+\DoxyCodeLine{00840\ }
+\DoxyCodeLine{00844\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a77fbbdef07fade0ece6aa86e2977d2ee}{ReadRegistryValue}}(\textcolor{keyword}{const}\ std::string\&\ key,\ std::string\&\ value,}
+\DoxyCodeLine{00845\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a97429237aab30651af4d93dbc86d6c7f}{KeyWOW64}}\ view\ =\ KeyWOW64\_Default);}
+\DoxyCodeLine{00846\ }
+\DoxyCodeLine{00850\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_af67b30cd7eec702e38e4cfc4b9e53abc}{WriteRegistryValue}}(\textcolor{keyword}{const}\ std::string\&\ key,}
+\DoxyCodeLine{00851\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ value,}
+\DoxyCodeLine{00852\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a97429237aab30651af4d93dbc86d6c7f}{KeyWOW64}}\ view\ =\ KeyWOW64\_Default);}
+\DoxyCodeLine{00853\ }
+\DoxyCodeLine{00857\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a90fff90f6bf474faf0e7f7b7875b683a}{DeleteRegistryValue}}(\textcolor{keyword}{const}\ std::string\&\ key,}
+\DoxyCodeLine{00858\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a97429237aab30651af4d93dbc86d6c7f}{KeyWOW64}}\ view\ =\ KeyWOW64\_Default);}
+\DoxyCodeLine{00859\ }
+\DoxyCodeLine{00864\ }
+\DoxyCodeLine{00870\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a8c2096a2e7a960360d624eb89eecde93}{GetPath}}(std::vector<std::string>\&\ path,}
+\DoxyCodeLine{00871\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ env\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00872\ }
+\DoxyCodeLine{00876\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a89eccd01d0109c47c85aec1f5ad014d0}{GetEnv}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ key);}
+\DoxyCodeLine{00877\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a89eccd01d0109c47c85aec1f5ad014d0}{GetEnv}}(\textcolor{keyword}{const}\ std::string\&\ key);}
+\DoxyCodeLine{00878\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a89eccd01d0109c47c85aec1f5ad014d0}{GetEnv}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ key,\ std::string\&\ result);}
+\DoxyCodeLine{00879\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a89eccd01d0109c47c85aec1f5ad014d0}{GetEnv}}(\textcolor{keyword}{const}\ std::string\&\ key,\ std::string\&\ result);}
+\DoxyCodeLine{00880\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ HasEnv(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ key);}
+\DoxyCodeLine{00881\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ HasEnv(\textcolor{keyword}{const}\ std::string\&\ key);}
+\DoxyCodeLine{00882\ }
+\DoxyCodeLine{00885\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_adf48019e13659a8fea0a5fe526627337}{PutEnv}}(\textcolor{keyword}{const}\ std::string\&\ env);}
+\DoxyCodeLine{00886\ }
+\DoxyCodeLine{00889\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a78e019c335f68d48b1ac46fa74985246}{UnPutEnv}}(\textcolor{keyword}{const}\ std::string\&\ env);}
+\DoxyCodeLine{00890\ }
+\DoxyCodeLine{00894\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_aede64ecff23396e73fdf99fa56cd7496}{GetCurrentWorkingDirectory}}();}
+\DoxyCodeLine{00895\ }
+\DoxyCodeLine{00899\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtksys_1_1_status}{Status}}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a84ced3712d31ddeca953535f5290a780}{ChangeDirectory}}(std::string\ \textcolor{keyword}{const}\&\ dir);}
+\DoxyCodeLine{00900\ }
+\DoxyCodeLine{00904\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a002f460264bef122de2141ac611aad5f}{GetLastSystemError}}();}
+\DoxyCodeLine{00905\ }
+\DoxyCodeLine{00911\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_af6cff9f3fc10afa75402e98ec0151469}{EnableMSVCDebugHook}}();}
+\DoxyCodeLine{00912\ }
+\DoxyCodeLine{00918\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a46de32bbaf3cb35b15b8fc92f15b6c71}{GetTerminalWidth}}();}
+\DoxyCodeLine{00919\ }
+\DoxyCodeLine{00920\ \textcolor{preprocessor}{\#if\ vtksys\_SYSTEMTOOLS\_USE\_TRANSLATION\_MAP}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00924\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ AddTranslationPath(\textcolor{keyword}{const}\ std::string\&\ dir,}
+\DoxyCodeLine{00925\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\&\ refdir);}
+\DoxyCodeLine{00926\ }
+\DoxyCodeLine{00931\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ AddKeepPath(\textcolor{keyword}{const}\ std::string\&\ dir);}
+\DoxyCodeLine{00932\ }
+\DoxyCodeLine{00936\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ CheckTranslationPath(std::string\&\ path);}
+\DoxyCodeLine{00937\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00938\ }
+\DoxyCodeLine{00943\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a1b5666f57432456e790d30bb4e472874}{Delay}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ msec);}
+\DoxyCodeLine{00944\ }
+\DoxyCodeLine{00949\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a3569cd3ab129897b050d58bf1ee037ab}{GetOperatingSystemNameAndVersion}}();}
+\DoxyCodeLine{00950\ }
+\DoxyCodeLine{00955\ }
+\DoxyCodeLine{00963\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_a61590e34fdde096ba77d7dfb5b142020}{ParseURLProtocol}}(\textcolor{keyword}{const}\ std::string\&\ URL,\ std::string\&\ protocol,}
+\DoxyCodeLine{00964\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ dataglom,\ \textcolor{keywordtype}{bool}\ decode\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00965\ }
+\DoxyCodeLine{00974\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_add26a8989714ca3a297f043349a980e5}{ParseURL}}(\textcolor{keyword}{const}\ std::string\&\ URL,\ std::string\&\ protocol,}
+\DoxyCodeLine{00975\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ username,\ std::string\&\ password,}
+\DoxyCodeLine{00976\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ hostname,\ std::string\&\ dataport,}
+\DoxyCodeLine{00977\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::string\&\ datapath,\ \textcolor{keywordtype}{bool}\ decode\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00978\ }
+\DoxyCodeLine{00985\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtksys_1_1_system_tools_ac7309d6d010adab465e0253d35452289}{DecodeURL}}(\textcolor{keyword}{const}\ std::string\&\ url);}
+\DoxyCodeLine{00986\ }
+\DoxyCodeLine{00987\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00991\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ClassInitialize();}
+\DoxyCodeLine{00992\ }
+\DoxyCodeLine{00996\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ClassFinalize();}
+\DoxyCodeLine{00997\ }
+\DoxyCodeLine{01001\ \ \ SystemToolsManager*\ GetSystemToolsManager()}
+\DoxyCodeLine{01002\ \ \ \{}
+\DoxyCodeLine{01003\ \ \ \ \ \textcolor{keywordflow}{return}\ \&SystemToolsManagerInstance;}
+\DoxyCodeLine{01004\ \ \ \}}
+\DoxyCodeLine{01005\ }
+\DoxyCodeLine{01006\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }SystemToolsStatic;}
+\DoxyCodeLine{01007\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtksys_1_1_system_tools_manager}{SystemToolsManager}};}
+\DoxyCodeLine{01008\ \};}
+\DoxyCodeLine{01009\ }
+\DoxyCodeLine{01010\ \}\ \textcolor{comment}{//\ namespace\ vtksys}}
+\DoxyCodeLine{01011\ }
+\DoxyCodeLine{01012\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

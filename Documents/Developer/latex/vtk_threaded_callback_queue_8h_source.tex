@@ -1,0 +1,239 @@
+\doxysection{vtk\+Threaded\+Callback\+Queue.\+h}
+\hypertarget{vtk_threaded_callback_queue_8h_source}{}\label{vtk_threaded_callback_queue_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkThreadedCallbackQueue.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkThreadedCallbackQueue.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#ifndef\ vtkThreadedCallbackQueue\_h}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#define\ vtkThreadedCallbackQueue\_h}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}vtkCommonCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointer.h"{}}\ \textcolor{comment}{//\ For\ vtkSmartPointer}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ <atomic>}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ atomic\_bool}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ <condition\_variable>}\ \textcolor{comment}{//\ For\ condition\ variable}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ <deque>}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ deque}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ <functional>}\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ greater}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ <memory>}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ unique\_ptr}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <mutex>}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ mutex}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ <thread>}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ thread}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ <unordered\_map>}\ \ \ \ \ \ \textcolor{comment}{//\ For\ unordered\_map}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ <unordered\_set>}\ \ \ \ \ \ \textcolor{comment}{//\ For\ unordered\_set}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#include\ <vector>}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ vector}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#if\ !defined(\_\_WRAP\_\_)}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{class\ }VTKCOMMONCORE\_EXPORT\ vtkThreadedCallbackQueue\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00043\ \{}
+\DoxyCodeLine{00044\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ FT>}
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{struct\ }Signature;}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00055\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T,\ \textcolor{keyword}{class}\ DummyT\ =\ std::\textcolor{keywordtype}{nullptr}\_t>}
+\DoxyCodeLine{00056\ \ \ \textcolor{keyword}{struct\ }Dereference}
+\DoxyCodeLine{00057\ \ \ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keyword}{struct\ }Type;}
+\DoxyCodeLine{00059\ \ \ \};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00064\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00065\ \ \ \textcolor{keyword}{using\ }DereferencedType\ =\ \textcolor{keyword}{typename}\ std::decay<typename\ Dereference<T>::Type>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}};}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ FT>}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{using\ }InvokeResult\ =\ \textcolor{keyword}{typename}\ Signature<DereferencedType<FT>>::InvokeResult;}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00076\ \ \ template\ <class\ ReturnT,\ bool\ IsLValueReference\ =\ std::is\_lvalue\_reference<ReturnT>::value>}
+\DoxyCodeLine{00077\ \ \ \textcolor{keyword}{class\ }ReturnValueWrapper}
+\DoxyCodeLine{00078\ \ \ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keyword}{class\ }ReturnLValueRef;}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keyword}{class\ }ReturnConstLValueRef;}
+\DoxyCodeLine{00081\ \ \ \};}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00084\ \ \ \textcolor{keyword}{static}\ vtkThreadedCallbackQueue*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00085\ \ \ vtkTypeMacro(vtkThreadedCallbackQueue,\ vtkObject);}
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_a303e2bd804eb468ba26123c85566665a}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ vtkThreadedCallbackQueue();}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00093\ \ \ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_ad629ef39111f1b556ec97c0d015df2b5}{\string~vtkThreadedCallbackQueue}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00099\ \ \ \textcolor{keyword}{class\ }vtkSharedFutureBase\ :\ \textcolor{keyword}{public}\ vtkObjectBase}
+\DoxyCodeLine{00100\ \ \ \{}
+\DoxyCodeLine{00101\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00102\ \ \ \ \ vtkBaseTypeMacro(vtkSharedFutureBase,\ vtkObjectBase);}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ vtkSharedFutureBase()}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ :\ NumberOfPriorSharedFuturesRemaining(0)}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ ,\ Status(CONSTRUCTING)}
+\DoxyCodeLine{00107\ \ \ \ \ \{}
+\DoxyCodeLine{00108\ \ \ \ \ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_1_1vtk_shared_future_base_a6abe7a1aa4c642a279565849cf694ba1}{Wait}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00114\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>Status\ ==\ READY)}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ std::unique\_lock<std::mutex>\ lock(this-\/>Mutex);}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>Status\ !=\ READY)}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ this-\/>ConditionVariable.wait(lock,\ [\textcolor{keyword}{this}]\ \{\ \textcolor{keywordflow}{return}\ this-\/>Status\ ==\ READY;\ \});}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00124\ \ \ \ \ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }vtkThreadedCallbackQueue;}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ operator()()\ =\ 0;}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00137\ \ \ \ \ std::atomic\_int\ NumberOfPriorSharedFuturesRemaining;}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00144\ \ \ \ \ std::atomic\_int\ Status;}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00151\ \ \ \ \ vtkIdType\ InvokerIndex;}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordtype}{bool}\ IsHighPriority\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00163\ \ \ \ \ std::vector<vtkSmartPointer<vtkSharedFutureBase>>\ Dependents;}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keyword}{mutable}\ std::mutex\ Mutex;}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keyword}{mutable}\ std::condition\_variable\ ConditionVariable;}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \ \ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_1_1vtk_shared_future_base}{vtkSharedFutureBase}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_1_1vtk_shared_future_base}{vtkSharedFutureBase}}\&\ other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_1_1vtk_shared_future_base}{vtkSharedFutureBase}}\&\ other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00170\ \ \ \};}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ ReturnT>}
+\DoxyCodeLine{00176\ \ \ \textcolor{keyword}{class\ }vtkSharedFuture\ :\ \textcolor{keyword}{public}\ vtkSharedFutureBase}
+\DoxyCodeLine{00177\ \ \ \{}
+\DoxyCodeLine{00178\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00179\ \ \ \ \ vtkAbstractTypeMacro(vtkSharedFuture<ReturnT>,\ vtkSharedFutureBase);}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keyword}{using\ }ReturnLValueRef\ =\ \textcolor{keyword}{typename}\ ReturnValueWrapper<ReturnT>::ReturnLValueRef;}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keyword}{using\ }ReturnConstLValueRef\ =\ \textcolor{keyword}{typename}\ ReturnValueWrapper<ReturnT>::ReturnConstLValueRef;}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ vtkSharedFuture()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00190\ \ \ \ \ ReturnLValueRef\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_1_1vtk_shared_future_ac923427dfcd3b0237553be6b9881423e}{Get}}();}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00196\ \ \ \ \ ReturnConstLValueRef\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_1_1vtk_shared_future_aaf59bcd30c4d20b4cb2f75dda87fe7d8}{Get}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }vtkThreadedCallbackQueue;}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00201\ \ \ \ \ ReturnValueWrapper<ReturnT>\ ReturnValue;}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \ \ vtkSharedFuture(\textcolor{keyword}{const}\ vtkSharedFuture<ReturnT>\&\ other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkSharedFuture<ReturnT>\&\ other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00205\ \ \ \};}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \ \ \textcolor{keyword}{using\ }SharedFutureBasePointer\ =\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkSharedFutureBase>}};}
+\DoxyCodeLine{00208\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ ReturnT>}
+\DoxyCodeLine{00209\ \ \ \textcolor{keyword}{using\ }SharedFuturePointer\ =\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkSharedFuture<ReturnT>}}>;}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00272\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }FT,\ \textcolor{keyword}{class}...\ ArgsT>}
+\DoxyCodeLine{00273\ \ \ SharedFuturePointer<InvokeResult<FT>>\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_a4cc5949e6c5c9adbed12b724ab6bdac3}{Push}}(FT\&\&\ f,\ ArgsT\&\&...\ args);}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00283\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }SharedFutureContainerT,\ \textcolor{keyword}{class\ }FT,\ \textcolor{keyword}{class}...\ ArgsT>}
+\DoxyCodeLine{00284\ \ \ SharedFuturePointer<InvokeResult<FT>>\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_ac3644a13dc9b233a023c591afb610442}{PushDependent}}(}
+\DoxyCodeLine{00285\ \ \ \ \ SharedFutureContainerT\&\&\ priorSharedFutures,\ FT\&\&\ f,\ ArgsT\&\&...\ args);}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00301\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ SharedFutureContainerT>}
+\DoxyCodeLine{00302\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_a72da7b2fbd9b4fd8931f81c4d93ddc4f}{Wait}}(SharedFutureContainerT\&\&\ priorSharedFuture);}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00313\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ ReturnT>}
+\DoxyCodeLine{00314\ \ \ \textcolor{keyword}{typename}\ vtkSharedFuture<ReturnT>::ReturnLValueRef\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_aec5a9825c270761aea65a747ed2429b4}{Get}}(SharedFuturePointer<ReturnT>\&\ future);}
+\DoxyCodeLine{00315\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ ReturnT>}
+\DoxyCodeLine{00316\ \ \ \textcolor{keyword}{typename}\ vtkSharedFuture<ReturnT>::ReturnConstLValueRef\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_aec5a9825c270761aea65a747ed2429b4}{Get}}(}
+\DoxyCodeLine{00317\ \ \ \ \ \textcolor{keyword}{const}\ SharedFuturePointer<ReturnT>\&\ future);}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00328\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_ad19e1857511336a9ce81ac3b22b1252f}{SetNumberOfThreads}}(\textcolor{keywordtype}{int}\ numberOfThreads);}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00337\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_threaded_callback_queue_a069d0f190b252febe57b99fa3c5965b8}{GetNumberOfThreads}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>NumberOfThreads;\ \}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00339\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00345\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }FT,\ \textcolor{keyword}{class}...\ ArgsT>}
+\DoxyCodeLine{00346\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_invoker}{vtkInvoker}};}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \ \ \textcolor{keyword}{struct\ }InvokerImpl;}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }FT,\ \textcolor{keyword}{class}...\ ArgsT>}
+\DoxyCodeLine{00352\ \ \ \textcolor{keyword}{using\ }InvokerPointer\ =\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer}}<\doxymbox{\hyperlink{classvtk_invoker}{vtkInvoker}}<FT,\ ArgsT...>>;}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \ \ \textcolor{keyword}{class\ }ThreadWorker;}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }ThreadWorker;}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00363\ \ \ \textcolor{keyword}{enum}\ Status}
+\DoxyCodeLine{00364\ \ \ \{}
+\DoxyCodeLine{00371\ \ \ \ \ CONSTRUCTING\ =\ 0x00,}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00376\ \ \ \ \ ON\_HOLD\ =\ 0x01,}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00382\ \ \ \ \ ENQUEUED\ =\ 0x02,}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00387\ \ \ \ \ RUNNING\ =\ 0x04,}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00392\ \ \ \ \ READY\ =\ 0x08}
+\DoxyCodeLine{00393\ \ \ \};}
+\DoxyCodeLine{00394\ }
+\DoxyCodeLine{00401\ \ \ \textcolor{keywordtype}{void}\ Sync(\textcolor{keywordtype}{int}\ startId\ =\ 0);}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00407\ \ \ \textcolor{keywordtype}{void}\ PopFrontNullptr();}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00414\ \ \ \textcolor{keywordtype}{void}\ SignalDependentSharedFutures(vtkSharedFutureBase*\ invoker);}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00421\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ SharedFutureContainerT,\ \textcolor{keyword}{class}\ InvokerT>}
+\DoxyCodeLine{00422\ \ \ \textcolor{keywordtype}{void}\ HandleDependentInvoker(SharedFutureContainerT\&\&\ priorSharedFutures,\ InvokerT\&\&\ invoker);}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00427\ \ \ \textcolor{keywordtype}{void}\ Invoke(vtkSharedFutureBase*\ invoker);}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00433\ \ \ \textcolor{keywordtype}{bool}\ TryInvoke(vtkSharedFutureBase*\ invoker);}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00439\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }FT,\ \textcolor{keyword}{class}...\ ArgsT>}
+\DoxyCodeLine{00440\ \ \ \textcolor{keywordtype}{void}\ PushControl(FT\&\&\ f,\ ArgsT\&\&...\ args);}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00445\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ SharedFutureContainerT>}
+\DoxyCodeLine{00446\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ MustWait(SharedFutureContainerT\&\&\ priorSharedFutures);}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00451\ \ \ std::deque<SharedFutureBasePointer>\ InvokerQueue;}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00456\ \ \ std::mutex\ Mutex;}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00461\ \ \ std::mutex\ ControlMutex;}
+\DoxyCodeLine{00462\ }
+\DoxyCodeLine{00467\ \ \ std::mutex\ DestroyMutex;}
+\DoxyCodeLine{00468\ }
+\DoxyCodeLine{00472\ \ \ std::mutex\ ThreadIdToIndexMutex;}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \ \ std::condition\_variable\ ConditionVariable;}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00480\ \ \ std::atomic\_bool\ Destroying\{\ \textcolor{keyword}{false}\ \};}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00485\ \ \ std::atomic\_int\ NumberOfThreads;}
+\DoxyCodeLine{00486\ }
+\DoxyCodeLine{00487\ \ \ std::vector<std::thread>\ Threads;}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00496\ \ \ std::unordered\_map<std::thread::id,\ std::shared\_ptr<std::atomic\_int>>\ ThreadIdToIndex;}
+\DoxyCodeLine{00497\ }
+\DoxyCodeLine{00502\ \ \ std::unordered\_set<SharedFutureBasePointer>\ ControlFutures;}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ \ \ vtkThreadedCallbackQueue(\textcolor{keyword}{const}\ vtkThreadedCallbackQueue\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00505\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkThreadedCallbackQueue\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00506\ \};}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00509\ }
+\DoxyCodeLine{00510\ \textcolor{preprocessor}{\#include\ "{}vtkThreadedCallbackQueue.txx"{}}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00513\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00514\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkThreadedCallbackQueue.h}}
+
+\end{DoxyCode}

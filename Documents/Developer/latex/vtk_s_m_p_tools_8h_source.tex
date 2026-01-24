@@ -1,0 +1,372 @@
+\doxysection{vtk\+SMPTools.\+h}
+\hypertarget{vtk_s_m_p_tools_8h_source}{}\label{vtk_s_m_p_tools_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkSMPTools.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkSMPTools.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#ifndef\ vtkSMPTools\_h}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#define\ vtkSMPTools\_h}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ "{}vtkCommonCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}SMP/Common/vtkSMPToolsAPI.h"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}vtkSMPThreadLocal.h"{}}\ \textcolor{comment}{//\ For\ Initialized}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ <functional>}\ \ \textcolor{comment}{//\ For\ std::function}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ <type\_traits>}\ \textcolor{comment}{//\ For\ std:::enable\_if}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN\_SHOULD\_SKIP\_THIS}}
+\DoxyCodeLine{00031\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00034\ \{}
+\DoxyCodeLine{00035\ \textcolor{keyword}{namespace\ }smp}
+\DoxyCodeLine{00036\ \{}
+\DoxyCodeLine{00037\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00038\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00039\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___has___initialize}{vtkSMPTools\_Has\_Initialize}}}
+\DoxyCodeLine{00040\ \{}
+\DoxyCodeLine{00041\ \ \ \textcolor{keyword}{typedef}\ char\ (\&no\_type)[1];}
+\DoxyCodeLine{00042\ \ \ \textcolor{keyword}{typedef}\ char\ (\&yes\_type)[2];}
+\DoxyCodeLine{00043\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U,\ \textcolor{keywordtype}{void}\ (U::*)()>}
+\DoxyCodeLine{00044\ \ \ \textcolor{keyword}{struct\ }V}
+\DoxyCodeLine{00045\ \ \ \{}
+\DoxyCodeLine{00046\ \ \ \};}
+\DoxyCodeLine{00047\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{static}\ yes\_type\ check(V<U,\ \&U::Initialize>*);}
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00050\ \ \ \textcolor{keyword}{static}\ no\_type\ check(...);}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ value\ =\ \textcolor{keyword}{sizeof}(check<T>(\textcolor{keyword}{nullptr}))\ ==\ \textcolor{keyword}{sizeof}(yes\_type);}
+\DoxyCodeLine{00054\ \};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00057\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___has___initialize__const}{vtkSMPTools\_Has\_Initialize\_const}}}
+\DoxyCodeLine{00058\ \{}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{typedef}\ char\ (\&no\_type)[1];}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{typedef}\ char\ (\&yes\_type)[2];}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U,\ \textcolor{keywordtype}{void}\ (U::*)()\ const>}
+\DoxyCodeLine{00062\ \ \ \textcolor{keyword}{struct\ }V}
+\DoxyCodeLine{00063\ \ \ \{}
+\DoxyCodeLine{00064\ \ \ \};}
+\DoxyCodeLine{00065\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00066\ \ \ \textcolor{keyword}{static}\ yes\_type\ check(V<U,\ \&U::Initialize>*);}
+\DoxyCodeLine{00067\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00068\ \ \ \textcolor{keyword}{static}\ no\_type\ check(...);}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ value\ =\ \textcolor{keyword}{sizeof}(check<T>(0))\ ==\ \textcolor{keyword}{sizeof}(yes\_type);}
+\DoxyCodeLine{00072\ \};}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Functor,\ \textcolor{keywordtype}{bool}\ Init>}
+\DoxyCodeLine{00075\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___functor_internal}{vtkSMPTools\_FunctorInternal}};}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00078\ \textcolor{keyword}{struct\ }vtkSMPTools\_FunctorInternal<Functor,\ false>}
+\DoxyCodeLine{00079\ \{}
+\DoxyCodeLine{00080\ \ \ Functor\&\ F;}
+\DoxyCodeLine{00081\ \ \ vtkSMPTools\_FunctorInternal(Functor\&\ f)}
+\DoxyCodeLine{00082\ \ \ \ \ :\ F(f)}
+\DoxyCodeLine{00083\ \ \ \{}
+\DoxyCodeLine{00084\ \ \ \}}
+\DoxyCodeLine{00085\ \ \ \textcolor{keywordtype}{void}\ Execute(vtkIdType\ first,\ vtkIdType\ last)\ \{\ this-\/>F(first,\ last);\ \}}
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordtype}{void}\ For(vtkIdType\ first,\ vtkIdType\ last,\ vtkIdType\ grain)}
+\DoxyCodeLine{00087\ \ \ \{}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keyword}{auto}\&\ SMPToolsAPI\ =\ vtkSMPToolsAPI::GetInstance();}
+\DoxyCodeLine{00089\ \ \ \ \ SMPToolsAPI.For(first,\ last,\ grain,\ *\textcolor{keyword}{this});}
+\DoxyCodeLine{00090\ \ \ \}}
+\DoxyCodeLine{00091\ \ \ vtkSMPTools\_FunctorInternal<Functor,\ false>\&\ operator=(}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keyword}{const}\ vtkSMPTools\_FunctorInternal<Functor,\ false>\&);}
+\DoxyCodeLine{00093\ \ \ vtkSMPTools\_FunctorInternal(\textcolor{keyword}{const}\ vtkSMPTools\_FunctorInternal<Functor,\ false>\&);}
+\DoxyCodeLine{00094\ \};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00097\ \textcolor{keyword}{struct\ }vtkSMPTools\_FunctorInternal<Functor,\ true>}
+\DoxyCodeLine{00098\ \{}
+\DoxyCodeLine{00099\ \ \ Functor\&\ F;}
+\DoxyCodeLine{00100\ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_thread_local}{vtkSMPThreadLocal<unsigned\ char>}}\ Initialized;}
+\DoxyCodeLine{00101\ \ \ vtkSMPTools\_FunctorInternal(Functor\&\ f)}
+\DoxyCodeLine{00102\ \ \ \ \ :\ F(f)}
+\DoxyCodeLine{00103\ \ \ \ \ ,\ Initialized(0)}
+\DoxyCodeLine{00104\ \ \ \{}
+\DoxyCodeLine{00105\ \ \ \}}
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordtype}{void}\ Execute(vtkIdType\ first,\ vtkIdType\ last)}
+\DoxyCodeLine{00107\ \ \ \{}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\&\ inited\ =\ this-\/>Initialized.\doxymbox{\hyperlink{classvtk_s_m_p_thread_local_aabf72a6123001223433b74d2bf8ff6cf}{Local}}();}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{if}\ (!inited)}
+\DoxyCodeLine{00110\ \ \ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ this-\/>F.Initialize();}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ inited\ =\ 1;}
+\DoxyCodeLine{00113\ \ \ \ \ \}}
+\DoxyCodeLine{00114\ \ \ \ \ this-\/>F(first,\ last);}
+\DoxyCodeLine{00115\ \ \ \}}
+\DoxyCodeLine{00116\ \ \ \textcolor{keywordtype}{void}\ For(vtkIdType\ first,\ vtkIdType\ last,\ vtkIdType\ grain)}
+\DoxyCodeLine{00117\ \ \ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keyword}{auto}\&\ SMPToolsAPI\ =\ vtkSMPToolsAPI::GetInstance();}
+\DoxyCodeLine{00119\ \ \ \ \ SMPToolsAPI.For(first,\ last,\ grain,\ *\textcolor{keyword}{this});}
+\DoxyCodeLine{00120\ \ \ \ \ this-\/>F.Reduce();}
+\DoxyCodeLine{00121\ \ \ \}}
+\DoxyCodeLine{00122\ \ \ vtkSMPTools\_FunctorInternal<Functor,\ true>\&\ operator=(}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keyword}{const}\ vtkSMPTools\_FunctorInternal<Functor,\ true>\&);}
+\DoxyCodeLine{00124\ \ \ vtkSMPTools\_FunctorInternal(\textcolor{keyword}{const}\ vtkSMPTools\_FunctorInternal<Functor,\ true>\&);}
+\DoxyCodeLine{00125\ \};}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00128\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___lookup___for}{vtkSMPTools\_Lookup\_For}}}
+\DoxyCodeLine{00129\ \{}
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ init\ =\ vtkSMPTools\_Has\_Initialize<Functor>::value;}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00133\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___functor_internal}{vtkSMPTools\_FunctorInternal<Functor,\ init>}}\ type;}
+\DoxyCodeLine{00134\ \};}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00137\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___lookup___for}{vtkSMPTools\_Lookup\_For}}<Functor\ const>}
+\DoxyCodeLine{00138\ \{}
+\DoxyCodeLine{00139\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ init\ =\ vtkSMPTools\_Has\_Initialize\_const<Functor>::value;}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00142\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___functor_internal}{vtkSMPTools\_FunctorInternal<Functor\ const,\ init>}}\ type;}
+\DoxyCodeLine{00143\ \};}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iterator,\ \textcolor{keyword}{typename}\ Functor,\ \textcolor{keywordtype}{bool}\ Init>}
+\DoxyCodeLine{00146\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___range_functor}{vtkSMPTools\_RangeFunctor}};}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iterator,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00149\ \textcolor{keyword}{struct\ }vtkSMPTools\_RangeFunctor<Iterator,\ Functor,\ false>}
+\DoxyCodeLine{00150\ \{}
+\DoxyCodeLine{00151\ \ \ Functor\&\ F;}
+\DoxyCodeLine{00152\ \ \ Iterator\&\ Begin;}
+\DoxyCodeLine{00153\ \ \ vtkSMPTools\_RangeFunctor(Iterator\&\ begin,\ Functor\&\ f)}
+\DoxyCodeLine{00154\ \ \ \ \ :\ F(f)}
+\DoxyCodeLine{00155\ \ \ \ \ ,\ Begin(begin)}
+\DoxyCodeLine{00156\ \ \ \{}
+\DoxyCodeLine{00157\ \ \ \}}
+\DoxyCodeLine{00158\ \ \ \textcolor{keywordtype}{void}\ operator()(vtkIdType\ first,\ vtkIdType\ last)}
+\DoxyCodeLine{00159\ \ \ \{}
+\DoxyCodeLine{00160\ \ \ \ \ Iterator\ itFirst(Begin);}
+\DoxyCodeLine{00161\ \ \ \ \ std::advance(itFirst,\ first);}
+\DoxyCodeLine{00162\ \ \ \ \ Iterator\ itLast(itFirst);}
+\DoxyCodeLine{00163\ \ \ \ \ std::advance(itLast,\ last\ -\/\ first);}
+\DoxyCodeLine{00164\ \ \ \ \ this-\/>F(itFirst,\ itLast);}
+\DoxyCodeLine{00165\ \ \ \}}
+\DoxyCodeLine{00166\ \};}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iterator,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00169\ \textcolor{keyword}{struct\ }vtkSMPTools\_RangeFunctor<Iterator,\ Functor,\ true>}
+\DoxyCodeLine{00170\ \{}
+\DoxyCodeLine{00171\ \ \ Functor\&\ F;}
+\DoxyCodeLine{00172\ \ \ Iterator\&\ Begin;}
+\DoxyCodeLine{00173\ \ \ vtkSMPTools\_RangeFunctor(Iterator\&\ begin,\ Functor\&\ f)}
+\DoxyCodeLine{00174\ \ \ \ \ :\ F(f)}
+\DoxyCodeLine{00175\ \ \ \ \ ,\ Begin(begin)}
+\DoxyCodeLine{00176\ \ \ \{}
+\DoxyCodeLine{00177\ \ \ \}}
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordtype}{void}\ Initialize()\ \{\ this-\/>F.Initialize();\ \}}
+\DoxyCodeLine{00179\ \ \ \textcolor{keywordtype}{void}\ operator()(vtkIdType\ first,\ vtkIdType\ last)}
+\DoxyCodeLine{00180\ \ \ \{}
+\DoxyCodeLine{00181\ \ \ \ \ Iterator\ itFirst(Begin);}
+\DoxyCodeLine{00182\ \ \ \ \ std::advance(itFirst,\ first);}
+\DoxyCodeLine{00183\ \ \ \ \ Iterator\ itLast(itFirst);}
+\DoxyCodeLine{00184\ \ \ \ \ std::advance(itLast,\ last\ -\/\ first);}
+\DoxyCodeLine{00185\ \ \ \ \ this-\/>F(itFirst,\ itLast);}
+\DoxyCodeLine{00186\ \ \ \}}
+\DoxyCodeLine{00187\ \ \ \textcolor{keywordtype}{void}\ Reduce()\ \{\ this-\/>F.Reduce();\ \}}
+\DoxyCodeLine{00188\ \};}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iterator,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00191\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___lookup___range_for}{vtkSMPTools\_Lookup\_RangeFor}}}
+\DoxyCodeLine{00192\ \{}
+\DoxyCodeLine{00193\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ init\ =\ vtkSMPTools\_Has\_Initialize<Functor>::value;}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00195\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00196\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___range_functor}{vtkSMPTools\_RangeFunctor<Iterator,\ Functor,\ init>}}\ type;}
+\DoxyCodeLine{00197\ \};}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iterator,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00200\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___lookup___range_for}{vtkSMPTools\_Lookup\_RangeFor}}<Iterator,\ Functor\ const>}
+\DoxyCodeLine{00201\ \{}
+\DoxyCodeLine{00202\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \textcolor{keyword}{const}\ init\ =\ vtkSMPTools\_Has\_Initialize\_const<Functor>::value;}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools___range_functor}{vtkSMPTools\_RangeFunctor<Iterator,\ Functor\ const,\ init>}}\ type;}
+\DoxyCodeLine{00206\ \};}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00209\ \textcolor{keyword}{using\ }resolvedNotInt\ =\ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_integral<T>::value,\ \textcolor{keywordtype}{void}>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}};}
+\DoxyCodeLine{00210\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00211\ \}\ \textcolor{comment}{//\ namespace\ smp}}
+\DoxyCodeLine{00212\ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00213\ \}\ \textcolor{comment}{//\ namespace\ vtk}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DOXYGEN\_SHOULD\_SKIP\_THIS}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00217\ \textcolor{keyword}{class\ }VTKCOMMONCORE\_EXPORT\ \doxymbox{\hyperlink{classvtk_s_m_p_tools}{vtkSMPTools}}}
+\DoxyCodeLine{00218\ \{}
+\DoxyCodeLine{00219\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00230\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00231\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{For}}(vtkIdType\ first,\ vtkIdType\ last,\ vtkIdType\ grain,\ Functor\&\ f)}
+\DoxyCodeLine{00232\ \ \ \{}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keyword}{typename}\ vtk::detail::smp::vtkSMPTools\_Lookup\_For<Functor>::type\ fi(f);}
+\DoxyCodeLine{00234\ \ \ \ \ fi.For(first,\ last,\ grain);}
+\DoxyCodeLine{00235\ \ \ \}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00238\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ For(vtkIdType\ first,\ vtkIdType\ last,\ vtkIdType\ grain,\ Functor\ \textcolor{keyword}{const}\&\ f)}
+\DoxyCodeLine{00239\ \ \ \{}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{keyword}{typename}\ vtk::detail::smp::vtkSMPTools\_Lookup\_For<Functor\ const>::type\ fi(f);}
+\DoxyCodeLine{00241\ \ \ \ \ fi.For(first,\ last,\ grain);}
+\DoxyCodeLine{00242\ \ \ \}}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00256\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a9485ed97687efe48514909a3597a8324}{For}}(vtkIdType\ first,\ vtkIdType\ last,\ Functor\&\ f)}
+\DoxyCodeLine{00257\ \ \ \{}
+\DoxyCodeLine{00258\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(first,\ last,\ 0,\ f);}
+\DoxyCodeLine{00259\ \ \ \}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00262\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ For(vtkIdType\ first,\ vtkIdType\ last,\ Functor\ \textcolor{keyword}{const}\&\ f)}
+\DoxyCodeLine{00263\ \ \ \{}
+\DoxyCodeLine{00264\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(first,\ last,\ 0,\ f);}
+\DoxyCodeLine{00265\ \ \ \}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00304\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iter,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00305\ \ \ \textcolor{keyword}{static}\ vtk::detail::smp::resolvedNotInt<Iter>\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a7989a410893983f243f57689ec868a5b}{For}}(}
+\DoxyCodeLine{00306\ \ \ \ \ Iter\ begin,\ Iter\ end,\ vtkIdType\ grain,\ Functor\&\ f)}
+\DoxyCodeLine{00307\ \ \ \{}
+\DoxyCodeLine{00308\ \ \ \ \ vtkIdType\ size\ =\ std::distance(begin,\ end);}
+\DoxyCodeLine{00309\ \ \ \ \ \textcolor{keyword}{typename}\ vtk::detail::smp::vtkSMPTools\_Lookup\_RangeFor<Iter,\ Functor>::type\ fi(begin,\ f);}
+\DoxyCodeLine{00310\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(0,\ size,\ grain,\ fi);}
+\DoxyCodeLine{00311\ \ \ \}}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iter,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00314\ \ \ \textcolor{keyword}{static}\ vtk::detail::smp::resolvedNotInt<Iter>\ For(}
+\DoxyCodeLine{00315\ \ \ \ \ Iter\ begin,\ Iter\ end,\ vtkIdType\ grain,\ Functor\ \textcolor{keyword}{const}\&\ f)}
+\DoxyCodeLine{00316\ \ \ \{}
+\DoxyCodeLine{00317\ \ \ \ \ vtkIdType\ size\ =\ std::distance(begin,\ end);}
+\DoxyCodeLine{00318\ \ \ \ \ \textcolor{keyword}{typename}\ vtk::detail::smp::vtkSMPTools\_Lookup\_RangeFor<Iter,\ Functor\ const>::type\ fi(begin,\ f);}
+\DoxyCodeLine{00319\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(0,\ size,\ grain,\ fi);}
+\DoxyCodeLine{00320\ \ \ \}}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00357\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iter,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00358\ \ \ \textcolor{keyword}{static}\ vtk::detail::smp::resolvedNotInt<Iter>\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a6626fed0c172765c58c43118fd8a5f17}{For}}(Iter\ begin,\ Iter\ end,\ Functor\&\ f)}
+\DoxyCodeLine{00359\ \ \ \{}
+\DoxyCodeLine{00360\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(begin,\ end,\ 0,\ f);}
+\DoxyCodeLine{00361\ \ \ \}}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iter,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00364\ \ \ \textcolor{keyword}{static}\ vtk::detail::smp::resolvedNotInt<Iter>\ For(Iter\ begin,\ Iter\ end,\ Functor\ \textcolor{keyword}{const}\&\ f)}
+\DoxyCodeLine{00365\ \ \ \{}
+\DoxyCodeLine{00366\ \ \ \ \ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aecd87edcbd97b5fb981751d6547387b3}{vtkSMPTools::For}}(begin,\ end,\ 0,\ f);}
+\DoxyCodeLine{00367\ \ \ \}}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00373\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_acd3ac09ec9dd0befaa82bf4c483e716d}{GetBackend}}();}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00386\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a2a085b2cb617e60175b910b192f33862}{SetBackend}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ backend);}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00403\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a22c2fa7a056a963bd876c8e532e7c82f}{Initialize}}(\textcolor{keywordtype}{int}\ numThreads\ =\ 0);}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00411\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a3a581f2c2b4ad865ffb6c84917b47841}{GetEstimatedNumberOfThreads}}();}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00419\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_aff52f14f23a14119579f695fdc08f232}{GetEstimatedDefaultNumberOfThreads}}();}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00432\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a6b2efaa54b384a0aee68deb3cf1921ff}{SetNestedParallelism}}(\textcolor{keywordtype}{bool}\ isNested);}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00438\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_ac366c3b4cdfcfb256040a9170b9404ac}{GetNestedParallelism}}();}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00443\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a2b72ede2cbadb3419758d479e4492794}{IsParallelScope}}();}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00449\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a1e0d4aa64e531183ea0edc9fd9405a64}{GetSingleThread}}();}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00458\ \ \ \textcolor{keyword}{struct\ }Config}
+\DoxyCodeLine{00459\ \ \ \{}
+\DoxyCodeLine{00460\ \ \ \ \ \textcolor{keywordtype}{int}\ MaxNumberOfThreads\ =\ 0;}
+\DoxyCodeLine{00461\ \ \ \ \ std::string\ Backend\ =\ vtk::detail::smp::vtkSMPToolsAPI::GetInstance().GetBackend();}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keywordtype}{bool}\ NestedParallelism\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00463\ }
+\DoxyCodeLine{00464\ \ \ \ \ Config()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00465\ \ \ \ \ Config(\textcolor{keywordtype}{int}\ maxNumberOfThreads)}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ :\ MaxNumberOfThreads(maxNumberOfThreads)}
+\DoxyCodeLine{00467\ \ \ \ \ \{}
+\DoxyCodeLine{00468\ \ \ \ \ \}}
+\DoxyCodeLine{00469\ \ \ \ \ Config(std::string\ backend)}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ :\ Backend(backend)}
+\DoxyCodeLine{00471\ \ \ \ \ \{}
+\DoxyCodeLine{00472\ \ \ \ \ \}}
+\DoxyCodeLine{00473\ \ \ \ \ Config(\textcolor{keywordtype}{bool}\ nestedParallelism)}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ :\ NestedParallelism(nestedParallelism)}
+\DoxyCodeLine{00475\ \ \ \ \ \{}
+\DoxyCodeLine{00476\ \ \ \ \ \}}
+\DoxyCodeLine{00477\ \ \ \ \ Config(\textcolor{keywordtype}{int}\ maxNumberOfThreads,\ std::string\ backend,\ \textcolor{keywordtype}{bool}\ nestedParallelism)}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ :\ MaxNumberOfThreads(maxNumberOfThreads)}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ ,\ Backend(backend)}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ ,\ NestedParallelism(nestedParallelism)}
+\DoxyCodeLine{00481\ \ \ \ \ \{}
+\DoxyCodeLine{00482\ \ \ \ \ \}}
+\DoxyCodeLine{00483\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN\_SHOULD\_SKIP\_THIS}}
+\DoxyCodeLine{00484\ \ \ \ \ Config(\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1vtk_s_m_p_tools_a_p_i}{vtk::detail::smp::vtkSMPToolsAPI}}\&\ API)}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ :\ MaxNumberOfThreads(API.GetInternalDesiredNumberOfThread())}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ ,\ Backend(API.GetBackend())}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ ,\ NestedParallelism(API.GetNestedParallelism())}
+\DoxyCodeLine{00488\ \ \ \ \ \{}
+\DoxyCodeLine{00489\ \ \ \ \ \}}
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DOXYGEN\_SHOULD\_SKIP\_THIS}}
+\DoxyCodeLine{00491\ \ \ \};}
+\DoxyCodeLine{00515\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ vtkIdType\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_adc109e6f936f2012b8c975f0b16d58d0}{THRESHOLD}}\ =\ 100000;}
+\DoxyCodeLine{00516\ }
+\DoxyCodeLine{00528\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00529\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_ac88e6aa6d01a312ea1327ea99545d402}{LocalScope}}(\doxymbox{\hyperlink{structvtk_s_m_p_tools_1_1_config}{Config}}\ \textcolor{keyword}{const}\&\ config,\ T\&\&\ lambda)}
+\DoxyCodeLine{00530\ \ \ \{}
+\DoxyCodeLine{00531\ \ \ \ \ \textcolor{keyword}{auto}\&\ SMPToolsAPI\ =\ vtk::detail::smp::vtkSMPToolsAPI::GetInstance();}
+\DoxyCodeLine{00532\ \ \ \ \ SMPToolsAPI.LocalScope<\doxymbox{\hyperlink{structvtk_s_m_p_tools_1_1_config}{vtkSMPTools::Config}}>(config,\ lambda);}
+\DoxyCodeLine{00533\ \ \ \}}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00550\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ InputIt,\ \textcolor{keyword}{typename}\ OutputIt,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00551\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a37178ca3e74f0ae2d56e354cede58fd9}{Transform}}(InputIt\ inBegin,\ InputIt\ inEnd,\ OutputIt\ outBegin,\ Functor\ transform)}
+\DoxyCodeLine{00552\ \ \ \{}
+\DoxyCodeLine{00553\ \ \ \ \ \textcolor{keyword}{auto}\&\ SMPToolsAPI\ =\ vtk::detail::smp::vtkSMPToolsAPI::GetInstance();}
+\DoxyCodeLine{00554\ \ \ \ \ SMPToolsAPI.Transform(inBegin,\ inEnd,\ outBegin,\ transform);}
+\DoxyCodeLine{00555\ \ \ \}}
+\DoxyCodeLine{00556\ }
+\DoxyCodeLine{00573\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ InputIt1,\ \textcolor{keyword}{typename}\ InputIt2,\ \textcolor{keyword}{typename}\ OutputIt,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00574\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a16e88039a1e33aaacef235e92779c4ee}{Transform}}(}
+\DoxyCodeLine{00575\ \ \ \ \ InputIt1\ inBegin1,\ InputIt1\ inEnd,\ InputIt2\ inBegin2,\ OutputIt\ outBegin,\ Functor\ transform)}
+\DoxyCodeLine{00576\ \ \ \{}
+\DoxyCodeLine{00577\ \ \ \ \ \textcolor{keyword}{auto}\&\ SMPToolsAPI\ =\ vtk::detail::smp::vtkSMPToolsAPI::GetInstance();}
+\DoxyCodeLine{00578\ \ \ \ \ SMPToolsAPI.Transform(inBegin1,\ inEnd,\ inBegin2,\ outBegin,\ transform);}
+\DoxyCodeLine{00579\ \ \ \}}
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00595\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iterator,\ \textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00596\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a861388b9a213a090ae5acf17d66ecaeb}{Fill}}(Iterator\ begin,\ Iterator\ end,\ \textcolor{keyword}{const}\ T\&\ value)}
+\DoxyCodeLine{00597\ \ \ \{}
+\DoxyCodeLine{00598\ \ \ \ \ \textcolor{keyword}{auto}\&\ SMPToolsAPI\ =\ vtk::detail::smp::vtkSMPToolsAPI::GetInstance();}
+\DoxyCodeLine{00599\ \ \ \ \ SMPToolsAPI.Fill(begin,\ end,\ value);}
+\DoxyCodeLine{00600\ \ \ \}}
+\DoxyCodeLine{00601\ }
+\DoxyCodeLine{00607\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ RandomAccessIterator>}
+\DoxyCodeLine{00608\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_a85a2de5ce046250f3df237efb65437db}{Sort}}(RandomAccessIterator\ begin,\ RandomAccessIterator\ end)}
+\DoxyCodeLine{00609\ \ \ \{}
+\DoxyCodeLine{00610\ \ \ \ \ \textcolor{keyword}{auto}\&\ SMPToolsAPI\ =\ vtk::detail::smp::vtkSMPToolsAPI::GetInstance();}
+\DoxyCodeLine{00611\ \ \ \ \ SMPToolsAPI.Sort(begin,\ end);}
+\DoxyCodeLine{00612\ \ \ \}}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00620\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ RandomAccessIterator,\ \textcolor{keyword}{typename}\ Compare>}
+\DoxyCodeLine{00621\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_s_m_p_tools_abb34846b34785631c36c63f6c5cc4e6f}{Sort}}(RandomAccessIterator\ begin,\ RandomAccessIterator\ end,\ Compare\ comp)}
+\DoxyCodeLine{00622\ \ \ \{}
+\DoxyCodeLine{00623\ \ \ \ \ \textcolor{keyword}{auto}\&\ SMPToolsAPI\ =\ vtk::detail::smp::vtkSMPToolsAPI::GetInstance();}
+\DoxyCodeLine{00624\ \ \ \ \ SMPToolsAPI.Sort(begin,\ end,\ comp);}
+\DoxyCodeLine{00625\ \ \ \}}
+\DoxyCodeLine{00626\ \};}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00629\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00630\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkSMPTools.h}}
+
+\end{DoxyCode}

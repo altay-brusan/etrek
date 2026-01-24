@@ -1,0 +1,91 @@
+\doxysection{vtk\+Selection\+Node Class Reference}
+\hypertarget{classvtk_selection_node}{}\label{classvtk_selection_node}\index{vtkSelectionNode@{vtkSelectionNode}}
+
+
+a node in a \doxylink{classvtk_selection}{vtk\+Selection} the defines the selection criteria.  
+
+
+
+
+{\ttfamily \+\#include $<$vtk\+Selection\+Node.\+h$>$}
+
+
+
+\doxysubsection{Detailed Description}
+a node in a \doxylink{classvtk_selection}{vtk\+Selection} the defines the selection criteria. 
+
+\doxylink{classvtk_selection_node}{vtk\+Selection\+Node} helps define the selection criteria in a \doxylink{classvtk_selection}{vtk\+Selection}. \doxylink{classvtk_selection}{vtk\+Selection} can comprise of multiple such \doxylink{classvtk_selection_node}{vtk\+Selection\+Node} instances that help define the selection.
+
+\doxylink{classvtk_selection_node}{vtk\+Selection\+Node} has two components:\+ a list of properties (stored in a \doxylink{classvtk_information}{vtk\+Information}) and a selection list (a \doxylink{classvtk_abstract_array}{vtk\+Abstract\+Array} subclass). \doxylink{requirements_The}{The} properties help indicate how to interpret the values specified in a selection-\/list.
+
+\doxylink{requirements_The}{The} properties can be broadly classified into three categories:\+ core, qualifiers, and information. \doxylink{requirements_The}{The} core properties must be specified other wise the \doxylink{classvtk_selection_node}{vtk\+Selection\+Node} is not considered valid. These are {\ttfamily \doxylink{group___information_keys_ga1f3a78e69637c3ce323ab81eb3bc1294}{FIELD\+\_\+\+TYPE}} and {\ttfamily CONTENT\+\_\+\+TYPE}. {\ttfamily \doxylink{group___information_keys_ga1f3a78e69637c3ce323ab81eb3bc1294}{FIELD\+\_\+\+TYPE}} defines what kinds of entities are being selected. Since selections are used to select items in a data-\/object, these correspond to things like cells, points, nodes, edges, rows, etc. Supported FIELD\+\_\+\+TYPE values are defined in {\ttfamily vtk\+Selection\+Node::\+\+Selection\+Field}. {\ttfamily CONTENT\+\_\+\+TYPE} defines the how the selection is described. Supported values are {\ttfamily vtk\+Selection\+Node::\+\+Selection\+Content}. For example, if CONTENT\+\_\+\+TYPE is {\ttfamily INDICES}, then selection is described as ids for entities being selected. \doxylink{requirements_The}{The} ids themselves will be specified using the selection list. Thus, the CONTENT\+\_\+\+TYPE dictates what the selection list comprises.
+
+Qualifiers are used to further qualify the selection criteria. All qualifiers are optional. When present they restrict the selection. For example, when selecting elements from a composite-\/dataset, the {\ttfamily COMPOSITE\+\_\+\+INDEX} qualifier can be specified of limit the selection to a specific dataset (or subtree).
+
+Information properties are simply for informative purposes and generally used to provide information about the selection when the selection is created. For example, {\ttfamily PIXEL\+\_\+\+COUNT} is used to indicate how many screen pixels resulted in creation of this selection node.\hypertarget{classvtk_selection_node_SelectionTypes}{}\doxysubsection{\texorpdfstring{Selection Types}{Selection Types}}\label{classvtk_selection_node_SelectionTypes}
+{\ttfamily CONTENT\+\_\+\+TYPE} property is one of the required properties that helps describe how the selection is defined. To set the content type, one can access the properties store using {\ttfamily vtk\+Selection\+Node::\+\+Get\+Properties()} and then set the {\ttfamily CONTENT\+\_\+\+TYPE} using the {\ttfamily vtk\+Selection\+Node::\+\+CONTENT\+\_\+\+TYPE()} key or simply use {\ttfamily vtk\+Selection\+Node::\+\+Set\+Content\+Type}.
+
+
+\begin{DoxyItemize}
+\item {\ttfamily vtk\+Selection\+Node::\+\+GLOBALIDS}:\+ indicates that the selection is defined using global ids. In VTK data-\/object, global ids are specified an {\ttfamily \doxylink{classvtk_id_type_array}{vtk\+Id\+Type\+Array}} added to a appropriate {\ttfamily \doxylink{classvtk_data_set_attributes}{vtk\+Data\+Set\+Attributes}} and marked as global-\/ids using \doxylink{classvtk_data_set_attributes}{vtk\+Data\+Set\+Attributes} API. Since global ids are expected to be unique for that element type over the entire dataset, it\textquotesingle{}s a convenient way of defining selections. For this content-\/type, the selection list must be a single-\/component, {\ttfamily \doxylink{classvtk_id_type_array}{vtk\+Id\+Type\+Array}} that lists all the globals ids for the selected elements.
+\item {\ttfamily vtk\+Selection\+Node::\+\+PEDIGREEIDS}:\+ similar to {\ttfamily GLOBALIDS} except uses pedigree ids instead of global ids.
+\item {\ttfamily vtk\+Selection\+Node::\+\+VALUES}:\+ this type is used to define a selection based on array values. \doxylink{requirements_The}{The} selection list specifies the values to be selected. All elements with array values in the selection list are treated as selected. \doxylink{requirements_The}{The} qualifier COMPONENT\+\_\+\+NUMBER is used to indicate which component to use for the checks. Use {\ttfamily -\/1} for magnitude. Current implementation does not support checking multiple-\/components or non-\/exact matches although support for both is conceivable in future. \doxylink{requirements_The}{The} selection list array name is used to specify the name of the array from the dataset to use for the checks. Thus, for defining a selection for a dataset where all {\ttfamily TEMP} values match those specified in the selection list, ensure that the selection list array\textquotesingle{}s name is set to {\ttfamily TEMP} as well.
+\item {\ttfamily vtk\+Selection\+Node::\+\+INDICES}:\+ this is similar to global ids except in this case the selection list is simply the VTK element id which is 0-\/based index of that element in the particular dataset. Often with this type of selection, additional qualifiers such as {\ttfamily COMPOSITE\+\_\+\+INDEX}, {\ttfamily BLOCK\+\_\+\+SELECTORS}, {\ttfamily PROCESS\+\_\+\+ID} etc. are needed to correctly identify the chosen element(s) in case of composite or distributed datasets.
+\item {\ttfamily vtk\+Selection\+Node::\+\+FRUSTUM}:\+ this type is used to define a frustum in world coordinates that identifies the selected elements. In this case, the selection list is a \doxylink{classvtk_double_array}{vtk\+Double\+Array} with 32 values specifying the 8 frustum corners in homogeneous world coordinates.
+\item {\ttfamily vtk\+Selection\+Node::\+\+LOCATIONS}:\+ this is used to select points (or cells) near (or containing) specified locations. \doxylink{requirements_The}{The} selection list is a 3-\/component \doxylink{classvtk_double_array}{vtk\+Double\+Array} with coordinates for locations of interest.
+\item {\ttfamily vtk\+Selection\+Node::\+\+THRESHOLDS}:\+ this type is used to define a selection based on array value ranges. This is akin to thresholding. All elements with values in the specified ranges are to be treated as selected. For this content-\/type, the selection-\/list is a 2-\/component {\ttfamily \doxylink{classvtk_data_array}{vtk\+Data\+Array}}-\/subclass that specifies where each tuple defines the min and max values for a range. \doxylink{requirements_The}{The} selection list can have multiple tuples to define multiple ranges. Elements with values in any of the specified ranges are treated as selected. \doxylink{requirements_The}{The} selection list array name is used to specify the name of the array from the dataset to use for the checks. Thus, for defining a selection for a dataset where all {\ttfamily TEMP} values are within a range, ensure that the selection list array\textquotesingle{}s name is set to {\ttfamily TEMP} as well.
+\item {\ttfamily vtk\+Selection\+Node::\+\+BLOCKS}:\+ this type is used to select blocks in a composite dataset. \doxylink{requirements_The}{The} term blocks is used loosely here and can correspond to a block in a multiblock dataset or a partition in a partitioned-\/dataset. \doxylink{requirements_The}{The} selection list is an integral type \doxylink{classvtk_data_array}{vtk\+Data\+Array} subclass that can be 1-\/ or 2-\/ component. If 1-\/component, it\textquotesingle{}s interpreted as the composite-\/index (also called flat index) and can be applied to any composite-\/dataset to choose specific datasets. If 2-\/component, it\textquotesingle{}s typically associated with \doxylink{classvtk_uniform_grid_a_m_r}{vtk\+Uniform\+Grid\+AMR} or \doxylink{classvtk_partitioned_data_set_collection}{vtk\+Partitioned\+Data\+Set\+Collection} which support 2-\/tuple indexing to locate a dataset.
+\item {\ttfamily vtk\+Selection\+Node::\+\+BLOCK\+\_\+\+SELECTORS}:\+ this is similar to BLOCKS, however instead of using indices to select datasets, here, the selection list is a \doxylink{classvtk_string_array}{vtk\+String\+Array} which lists selector expressions to select blocks in the composite dataset. By default, the selector expressions are applied to a \doxylink{classvtk_data_assembly}{vtk\+Data\+Assembly} generated from the composite dataset that represents its hierarchy (see {\ttfamily vtk\+Data\+Assembly::\+\+Generate\+Hierarchy}). However, in case of \doxylink{classvtk_partitioned_data_set_collection}{vtk\+Partitioned\+Data\+Set\+Collection}, one can select any other data assembly associated with the \doxylink{classvtk_partitioned_data_set_collection}{vtk\+Partitioned\+Data\+Set\+Collection} by naming the array with the name of the assembly.
+
+\begin{DoxyNote}{Note}
+, currently \doxylink{classvtk_partitioned_data_set_collection}{vtk\+Partitioned\+Data\+Set\+Collection} only supports a single \doxylink{classvtk_data_assembly}{vtk\+Data\+Assembly} but this may change in the future.
+\end{DoxyNote}
+
+\item {\ttfamily vtk\+Selection\+Node::\+\+QUERY}:\+ this type is primarily added for Para\+View where selection expression is specified as a query string. This is likely to change in the future and hence applications are discouraged from using this type.
+\end{DoxyItemize}\hypertarget{classvtk_selection_node_Properties}{}\doxysubsection{\texorpdfstring{Properties}{Properties}}\label{classvtk_selection_node_Properties}
+Following a properties that can be used to qualify the selection.
+
+
+\begin{DoxyItemize}
+\item {\ttfamily vtk\+Selection\+Node::\+\+EPSILON()}:\+ this is a qualifier that can be used to indicate a fuzz-\/factor when comparing values for equality. Currently, this is only used with content-\/type LOCATIONS, however, it can be expanded to other selection types in the future.
+\item {\ttfamily vtk\+Selection\+Node::\+\+CONTAINING\+\_\+\+CELLS()}:\+ this qualifier is intended to be used with field-\/type {\ttfamily POINT}. When present, it indicates that while the selection criteria selects a collection of points the selection should be formed using cell containing the chosen points.
+\item {\ttfamily vtk\+Selection\+Node::\+\+CONNECTED\+\_\+\+LAYERS()}:\+ a qualifier used to expand the definition of selected elements to connected elements for the specified number of layers. Layers can only be positive to grow the selection.
+\item {\ttfamily vtk\+Selection\+Node::\+\+CONNECTED\+\_\+\+LAYERS\+\_\+\+REMOVE\+\_\+\+SEED()}:\+ this qualifier indicates that when using a number of CONNECTED\+\_\+\+LAYERS \texorpdfstring{$>$}{>}= 1, the initial selection will not be kept.
+\item {\ttfamily vtk\+Selection\+Node::\+\+CONNECTED\+\_\+\+LAYERS\+\_\+\+REMOVE\+\_\+\+INTERMEDIATE\+\_\+\+LAYERS()}:\+ this qualifier indicates that when using a number of CONNECTED\+\_\+\+LAYERS \texorpdfstring{$>$}{>}= 2, the intermediate layers will not be kept.
+\item {\ttfamily vtk\+Selection\+Node::\+\+INVERSE()}:\+ a qualifier that causes the selection to be inverted i.\+e. all elements not chosen by the criteria are to be treated as selected.
+\item {\ttfamily vtk\+Selection\+Node::\+\+COMPONENT\+\_\+\+NUMBER()}:\+ for VALUES and THRESHOLDS selection types, this qualifier identifies the array component of interest. -\/1 indicates magnitude.
+\item {\ttfamily vtk\+Selection\+Node::\+\+PROCESS\+\_\+\+ID()}:\+ limits the selection to a particular rank in a distributed environment.
+\item {\ttfamily vtk\+Selection\+Node::\+\+COMPOSITE\+\_\+\+INDEX()}:\+ a qualifier used to limit the selection to a specific composite index for a composite-\/dataset.
+\item {\ttfamily vtk\+Selection\+Node::\+\+ASSEMBLY\+\_\+\+NAME()}, {\ttfamily vtk\+Selection\+Node::\+\+SELECTORS()}:\+ similar to composite index, except uses data-\/assembly and selectors to limit the selection to a subset of nodes in a composite-\/dataset.
+\item {\ttfamily vtk\+Selection\+Node::\+\+HIERARCHICAL\+\_\+\+LEVEL()}, {\ttfamily vtk\+Selection\+Node::\+\+HIERARCHICAL\+\_\+\+INDEX()}:\+ similar to composite index, except uses level and index for an AMR dataset so limit the selection to a specific AMR level or dataset.
+\end{DoxyItemize}
+
+Following for properties that are primarily intended to provide additional information when the selection is created.
+
+
+\begin{DoxyItemize}
+\item {\ttfamily vtk\+Selection\+Node::\+\+ZBUFFER\+\_\+\+VALUE()}:\+ an information qualifier representing the z-\/depth for a particular selection when it was created.
+\item {\ttfamily vtk\+Selection\+Node::\+\+PIXEL\+\_\+\+COUNT()}:\+ a qualifier used to provide a count for the number of pixels that resulted in this selection.
+\item {\ttfamily vtk\+Selection\+Node::\+\+SOURCE()}, {\ttfamily vtk\+Selection\+Node::\+\+SOURCE\+\_\+\+ID()}:\+ provides information about data producer or selection originator. \doxylink{requirements_The}{The} interpretation is very specific to the creator creating the selection and varies greatly with VTK.
+\item {\ttfamily vtk\+Selection\+Node::\+\+PROP(), }vtk\+Selection\+Node::\+\+PROP\+\_\+\+ID()\`{}:\+ similar to SOURCE/\+\+SOURCE\+\_\+\+ID except is used to represent a rendering prop from which the selection was created.
+\end{DoxyItemize}
+
+\begin{DoxyWarning}{Warning}
+No Selection\+List is created by default. It should be assigned.
+\end{DoxyWarning}
+\hypertarget{classvtk_selection_node_SelectionFieldMismatch}{}\doxysubsection{\texorpdfstring{vtk\+Selection\+Node::\+\+Selection\+Field and}{vtk\+Selection\+Node::\+\+Selection\+Field and}}\label{classvtk_selection_node_SelectionFieldMismatch}
+vtk\+Data\+Set\+Attribute::\+\+Attribute\+Types
+
+Strictly speaking, vtk\+Selection\+Node::\+\+Selection\+Field maps directly to vtk\+Data\+Set\+Attribute::\+\+Attribute\+Types. However, the two enum values are not identical for historical reasons. Use {\ttfamily vtk\+Selection\+Node::\+\+Convert\+Selection\+Field\+To\+Attribute\+Type} and {\ttfamily vtk\+Selection\+Node::\+\+Convert\+Attribute\+Type\+To\+Selection\+Field} to convert between the two. \texorpdfstring{$\ast$}{*}/\+
+
+For export macro
+
+VTK\+\_\+\+ABI\+\_\+\+NAMESPACE\+\_\+\+BEGIN class \doxylink{classvtk_abstract_array}{vtk\+Abstract\+Array}; class \doxylink{classvtk_data_set_attributes}{vtk\+Data\+Set\+Attributes}; class \doxylink{classvtk_information}{vtk\+Information}; class \doxylink{classvtk_information_double_key}{vtk\+Information\+Double\+Key}; class \doxylink{classvtk_information_integer_key}{vtk\+Information\+Integer\+Key}; class \doxylink{classvtk_information_object_base_key}{vtk\+Information\+Object\+Base\+Key}; class \doxylink{classvtk_information_string_key}{vtk\+Information\+String\+Key}; class \doxylink{classvtk_information_string_vector_key}{vtk\+Information\+String\+Vector\+Key}; class \doxylink{classvtk_prop}{vtk\+Prop}; class \doxylink{classvtk_table}{vtk\+Table};
+
+class VTKCOMMONDATAMODEL\+\_\+\+EXPORT \doxylink{classvtk_selection_node}{vtk\+Selection\+Node} :\+ public \doxylink{classvtk_object}{vtk\+Object} \{ public:\+ vtk\+Type\+Macro(vtk\+Selection\+Node, vtk\+Object); void Print\+Self(ostream\& os, vtk\+Indent indent) override; static vtk\+Selection\+Node\texorpdfstring{$\ast$}{*} New();
+
+/\+\texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*} Restore data object to initial state, 
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+C:\+/\+\+Users/\+altay/\+\+One\+Drive/\+\+Projects/\+etrek/\+\+Third\+Party\+Libraries/\+vtk/\+include/\+vtk-\/9.\+5/\+vtk\+Selection\+Node.\+h\end{DoxyCompactItemize}

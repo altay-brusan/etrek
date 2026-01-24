@@ -1,0 +1,215 @@
+\doxysection{i2djpgs.\+h}
+\hypertarget{i2djpgs_8h_source}{}\label{i2djpgs_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmdata/libi2d/i2djpgs.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmdata/libi2d/i2djpgs.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2007-\/2022,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ dcmdata}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Michael\ Onken}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ Class\ to\ extract\ pixel\ data\ and\ meta\ information\ from\ JPEG\ file}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ I2DJPGS\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ I2DJPGS\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmdata/libi2d/i2dimgs.h"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/offile.h"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/oflist.h"{}}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00036\ \textcolor{keyword}{enum}\ E\_JPGMARKER}
+\DoxyCodeLine{00037\ \{}
+\DoxyCodeLine{00038\ \ \ \ \ E\_JPGMARKER\_SOF0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xC0,}
+\DoxyCodeLine{00039\ \ \ \ \ E\_JPGMARKER\_SOF1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xC1,}
+\DoxyCodeLine{00040\ \ \ \ \ E\_JPGMARKER\_SOF2\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xC2,}
+\DoxyCodeLine{00041\ \ \ \ \ E\_JPGMARKER\_SOF3\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xC3,}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{/*C4\ and\ CC\ are\ not\ SOF\ markers,*/}\ E\_JPGMARKER\_SOF5\ =\ 0xC5,}
+\DoxyCodeLine{00043\ \ \ \ \ E\_JPGMARKER\_SOF6\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xC6,}
+\DoxyCodeLine{00044\ \ \ \ \ E\_JPGMARKER\_SOF7\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xC7,}
+\DoxyCodeLine{00045\ \ \ \ \ E\_JPGMARKER\_JPG\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xC8,}
+\DoxyCodeLine{00046\ \ \ \ \ E\_JPGMARKER\_SOF9\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xC9,}
+\DoxyCodeLine{00047\ \ \ \ \ E\_JPGMARKER\_SOF10\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xCA,}
+\DoxyCodeLine{00048\ \ \ \ \ E\_JPGMARKER\_SOF11\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xCB,}
+\DoxyCodeLine{00049\ \ \ \ \ E\_JPGMARKER\_SOF13\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xCD,}
+\DoxyCodeLine{00050\ \ \ \ \ E\_JPGMARKER\_SOF14\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xCE,}
+\DoxyCodeLine{00051\ \ \ \ \ E\_JPGMARKER\_SOF15\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xCF,}
+\DoxyCodeLine{00052\ \ \ \ \ E\_JPGMARKER\_DHT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xC4,}
+\DoxyCodeLine{00053\ \ \ \ \ E\_JPGMARKER\_DAC\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xCC,}
+\DoxyCodeLine{00054\ \ \ \ \ E\_JPGMARKER\_RST0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD0,}
+\DoxyCodeLine{00055\ \ \ \ \ E\_JPGMARKER\_RST1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD1,}
+\DoxyCodeLine{00056\ \ \ \ \ E\_JPGMARKER\_RST2\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD2,}
+\DoxyCodeLine{00057\ \ \ \ \ E\_JPGMARKER\_RST3\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD3,}
+\DoxyCodeLine{00058\ \ \ \ \ E\_JPGMARKER\_RST4\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD4,}
+\DoxyCodeLine{00059\ \ \ \ \ E\_JPGMARKER\_RST5\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD5,}
+\DoxyCodeLine{00060\ \ \ \ \ E\_JPGMARKER\_RST6\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD6,}
+\DoxyCodeLine{00061\ \ \ \ \ E\_JPGMARKER\_RST7\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD7,}
+\DoxyCodeLine{00062\ \ \ \ \ E\_JPGMARKER\_SOI\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD8,}
+\DoxyCodeLine{00063\ \ \ \ \ E\_JPGMARKER\_EOI\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xD9,}
+\DoxyCodeLine{00064\ \ \ \ \ E\_JPGMARKER\_SOS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xDA,}
+\DoxyCodeLine{00065\ \ \ \ \ E\_JPGMARKER\_DQT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xDB,}
+\DoxyCodeLine{00066\ \ \ \ \ E\_JPGMARKER\_DNL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xDC,}
+\DoxyCodeLine{00067\ \ \ \ \ E\_JPGMARKER\_DRI\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xDD,}
+\DoxyCodeLine{00068\ \ \ \ \ E\_JPGMARKER\_DHP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xDE,}
+\DoxyCodeLine{00069\ \ \ \ \ E\_JPGMARKER\_EXP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xDF,}
+\DoxyCodeLine{00070\ \ \ \ \ E\_JPGMARKER\_APP0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE0,}
+\DoxyCodeLine{00071\ \ \ \ \ E\_JPGMARKER\_APP1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE1,}
+\DoxyCodeLine{00072\ \ \ \ \ E\_JPGMARKER\_APP2\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE2,}
+\DoxyCodeLine{00073\ \ \ \ \ E\_JPGMARKER\_APP3\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE3,}
+\DoxyCodeLine{00074\ \ \ \ \ E\_JPGMARKER\_APP4\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE4,}
+\DoxyCodeLine{00075\ \ \ \ \ E\_JPGMARKER\_APP5\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE5,}
+\DoxyCodeLine{00076\ \ \ \ \ E\_JPGMARKER\_APP6\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE6,}
+\DoxyCodeLine{00077\ \ \ \ \ E\_JPGMARKER\_APP7\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE7,}
+\DoxyCodeLine{00078\ \ \ \ \ E\_JPGMARKER\_APP8\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE8,}
+\DoxyCodeLine{00079\ \ \ \ \ E\_JPGMARKER\_APP9\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xE9,}
+\DoxyCodeLine{00080\ \ \ \ \ E\_JPGMARKER\_APP10\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xEA,}
+\DoxyCodeLine{00081\ \ \ \ \ E\_JPGMARKER\_APP11\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xEB,}
+\DoxyCodeLine{00082\ \ \ \ \ E\_JPGMARKER\_APP12\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xEC,}
+\DoxyCodeLine{00083\ \ \ \ \ E\_JPGMARKER\_APP13\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xED,}
+\DoxyCodeLine{00084\ \ \ \ \ E\_JPGMARKER\_APP14\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xEE,}
+\DoxyCodeLine{00085\ \ \ \ \ E\_JPGMARKER\_APP15\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xEF,}
+\DoxyCodeLine{00086\ \ \ \ \ E\_JPGMARKER\_JPGN0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF0,}
+\DoxyCodeLine{00087\ \ \ \ \ E\_JPGMARKER\_JPGN1\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF1,}
+\DoxyCodeLine{00088\ \ \ \ \ E\_JPGMARKER\_JPGN2\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF2,}
+\DoxyCodeLine{00089\ \ \ \ \ E\_JPGMARKER\_JPGN3\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF3,}
+\DoxyCodeLine{00090\ \ \ \ \ E\_JPGMARKER\_JPGN4\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF4,}
+\DoxyCodeLine{00091\ \ \ \ \ E\_JPGMARKER\_JPGN5\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF5,}
+\DoxyCodeLine{00092\ \ \ \ \ E\_JPGMARKER\_JPGN6\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF6,}
+\DoxyCodeLine{00093\ \ \ \ \ E\_JPGMARKER\_JPGN7\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF7,}
+\DoxyCodeLine{00094\ \ \ \ \ E\_JPGMARKER\_JPGN8\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF8,}
+\DoxyCodeLine{00095\ \ \ \ \ E\_JPGMARKER\_JPGN9\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xF9,}
+\DoxyCodeLine{00096\ \ \ \ \ E\_JPGMARKER\_JPGN10\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xFA,}
+\DoxyCodeLine{00097\ \ \ \ \ E\_JPGMARKER\_JPGN11\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xFB,}
+\DoxyCodeLine{00098\ \ \ \ \ E\_JPGMARKER\_JPGN12\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xFC,}
+\DoxyCodeLine{00099\ \ \ \ \ E\_JPGMARKER\_JPGN13\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xFD,}
+\DoxyCodeLine{00100\ \ \ \ \ E\_JPGMARKER\_COM\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xFE,}
+\DoxyCodeLine{00101\ \ \ \ \ E\_JPGMARKER\_TEM\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x01,}
+\DoxyCodeLine{00102\ \ \ \ \ E\_JPGMARKER\_RES0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x02,}
+\DoxyCodeLine{00103\ \ \ \ \ E\_JPGMARKER\_RESN\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0xBF}
+\DoxyCodeLine{00104\ \};}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00110\ \textcolor{keyword}{struct\ }DCMTK\_I2D\_EXPORT\ \doxymbox{\hyperlink{struct_j_p_e_g_file_map_entry}{JPEGFileMapEntry}}}
+\DoxyCodeLine{00111\ \{}
+\DoxyCodeLine{00113\ \ \ \ \ offile\_off\_t\ \doxymbox{\hyperlink{struct_j_p_e_g_file_map_entry_aaeb1492b42ba01dc208fec4b88bbf2f9}{bytePos}};}
+\DoxyCodeLine{00115\ \ \ \ \ E\_JPGMARKER\ \doxymbox{\hyperlink{struct_j_p_e_g_file_map_entry_a3160e2099af3ef8f502812e3bc3b7396}{marker}};}
+\DoxyCodeLine{00116\ \};}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00122\ \textcolor{keyword}{class\ }DCMTK\_I2D\_EXPORT\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_acb283fe62cea3039ea8c6049d8f01963}{I2DJpegSource}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i2_d_img_source_a48a2eb9228d3b340d17bcb85eef66e53}{I2DImgSource}}}
+\DoxyCodeLine{00123\ \{}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00128\ \ \ \ \ \doxymbox{\hyperlink{class_i2_d_jpeg_source_acb283fe62cea3039ea8c6049d8f01963}{I2DJpegSource}}();}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00133\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a8113e86d7f5818bbf1adcd37b56a976f}{inputFormat}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00162\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a5310cdd7d5c6c7e1d5cb60731db97cee}{readPixelData}}(Uint16\&\ rows,}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ cols,}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ samplesPerPixel,}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ photoMetrInt,}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ bitsAlloc,}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ bitsStored,}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ highBit,}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ pixelRepr,}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ planConf,}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ pixAspectH,}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ pixAspectV,}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}*\&\ pixData,}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint32\&\ length,}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dcxfer_8h_a57c81ec7abc7d9ea1a391ce50c24c95d}{E\_TransferSyntax}}\&\ ts);}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00187\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a90613566d3fc719e2ddaf44dcd954df2}{getLossyComprInfo}}(OFBool\&\ srcEncodingLossy,\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ srcLossyComprMethod)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a10df4688054733b8b5e26c0342e4e91d}{setExtSeqSupport}}(\textcolor{keyword}{const}\ OFBool\ enabled);}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a30e5dbb0e359e96feeefd5fc0701e7ff}{setProgrSupport}}(\textcolor{keyword}{const}\ OFBool\ enabled);}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_ab82ba8267eca310b672f4fd36eca47aa}{setInsistOnJFIF}}(\textcolor{keyword}{const}\ OFBool\ enabled);}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a7bf6924e8030a634dcaf0c8dbd7b26da}{setKeepAPPn}}(\textcolor{keyword}{const}\ OFBool\ enabled);}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_af3166f13be0b310511c9072d572f212b}{setKeepCOM}}(\textcolor{keyword}{const}\ OFBool\ enabled);}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00226\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_ab3e84d34ff13b7d291c1f38ec75844d9}{jpegMarkerToString}}(\textcolor{keyword}{const}\ E\_JPGMARKER\&\ marker,\ \textcolor{keyword}{const}\ OFBool\ isJPEGLS);}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00230\ \ \ \ \ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a84897fe0eb592f4597796fa52564c185}{\string~I2DJpegSource}}();}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00237\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_acefae89b4133a6d6e3cd8600a2e005e7}{openFile}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ filename);}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_aac7626eafe4a451b05409b020c6a515a}{closeFile}}();}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00247\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a4d1a7b8a797fca7831d45ef031184b37}{createJPEGFileMap}}();}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a758ead5bee37cd28c64173eddf2969fb}{debugDumpJPEGFileMap}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00264\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_abe032fc3abdc10347d0b3f36531a3bc3}{getSOFImageParameters}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_j_p_e_g_file_map_entry}{JPEGFileMapEntry}}\&\ entry,}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ imageWidth,}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ imageHeight,}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ samplesPerPixel,}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint16\&\ bitsPerSample);}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00277\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_ac8a1c558131759010779080010a8318c}{getSOSImageParameters}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_j_p_e_g_file_map_entry}{JPEGFileMapEntry}}\&\ entry,}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Uint8\&\ nearLossless);}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00286\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_ac7937f9971aaa9ef49f41f4e7d94aafc}{getAPP8ImageParameters}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_j_p_e_g_file_map_entry}{JPEGFileMapEntry}}\&\ entry,\ Uint8\&\ xform);}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00297\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_aad40bf80076d78f4e8668e5125831cb1}{getJFIFImageParameters}}(}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_j_p_e_g_file_map_entry}{JPEGFileMapEntry}}\&\ entry,\ Uint16\&\ jfifVersion,\ Uint16\&\ pixelAspectH,\ Uint16\&\ pixelAspectV,\ Uint16\&\ unit);}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00305\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_ab770140b81d2bd6f7944d61abdce3f20}{isJPEGEncodingSupported}}(\textcolor{keyword}{const}\ E\_JPGMARKER\&\ jpegEncoding)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{dcxfer_8h_a57c81ec7abc7d9ea1a391ce50c24c95d}{E\_TransferSyntax}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_aa3d3964de881e34c11a38ff360cc7b7b}{associatedTS}}(\textcolor{keyword}{const}\ E\_JPGMARKER\&\ jpegEncoding,\ OFBool\ \textcolor{keyword}{const}\ useJPEGLS,\ Uint8\ \textcolor{keyword}{const}\ nearLossless);}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00321\ \ \ \ \ \textcolor{keyword}{static}\ OFBool\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a920a2d1915b19858381c06d819994c38}{isRSTMarker}}(\textcolor{keyword}{const}\ E\_JPGMARKER\&\ jpegEncoding);}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keyword}{static}\ OFBool\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_ac8e862aff1834fdfe591623e955fab74}{isSOFMarker}}(\textcolor{keyword}{const}\ E\_JPGMARKER\&\ jpegEncoding,\ \textcolor{keyword}{const}\ OFBool\ isJPEGLS);}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00335\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_aa71bca18e4915a19d2a6f5d1ef81fd29}{extractRawJPEGStream}}(\textcolor{keywordtype}{char}*\&\ pixelData,\ Uint32\&\ pixLength);}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00340\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a0719f5e21a080201e69368befa9eefb1}{skipVariable}}();}
+\DoxyCodeLine{00341\ }
+\DoxyCodeLine{00346\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a6c3a4e26c401e53d5d5632836ccbd409}{firstMarker}}(E\_JPGMARKER\&\ result);}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00355\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a7a8681898c8c1b24db9d1fa19fdcf34b}{nextMarker}}(\textcolor{keyword}{const}\ OFBool\&\ lastWasSOSMarker,\ E\_JPGMARKER\&\ result);}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_abcbfb0d456418fbccddd6bf2ed4e2eee}{read2Bytes}}(Uint16\&\ result);}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00367\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_ab1356d18694315a26c58c44e3ca79a4a}{read1Byte}}(Uint8\&\ result);}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00371\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a377af7320fc9d7d6036929a3b95d0495}{clearMap}}();}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00375\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_list}{OFList<JPEGFileMapEntry*>}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a57178ee8c0f7078454b54feee9249ce2}{m\_jpegFileMap}};}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00378\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_file}{OFFile}}\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a9e3a6d61dc654ecfeba3a0c2cc4d14a9}{jpegFile}};}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00381\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_ad2861b7fdb8771fb62d8814f949641ee}{m\_disableProgrTs}};}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00384\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_abc172521bed1358ba3cab185e5cc7552}{m\_disableExtSeqTs}};}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00388\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_aebdb7701f5e91a175994f40d507675db}{m\_insistOnJFIF}};}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00395\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_a3c32f7963183ec812d7117af76d4878e}{m\_keepAPPn}};}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00399\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_aebfeea48961e43ac2a9c3161c481efb8}{m\_keepCOM}};}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00403\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_abcb2ae865cfa813c8a2183f861ab4c55}{m\_lossyCompressed}};}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00407\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_i2_d_jpeg_source_aadb3803123ad59d10e6586d14603fb61}{m\_isJPEGLS}};}
+\DoxyCodeLine{00408\ \};}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ I2DJPGS\_H}}
+
+\end{DoxyCode}

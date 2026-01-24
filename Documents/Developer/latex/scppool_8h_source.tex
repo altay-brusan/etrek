@@ -1,0 +1,183 @@
+\doxysection{scppool.\+h}
+\hypertarget{scppool_8h_source}{}\label{scppool_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmnet/scppool.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmnet/scppool.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2012-\/2018,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ dcmnet}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Michael\ Onken}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ Class\ listening\ for\ association\ requests\ and\ managing\ a\ pool\ of}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ worker\ threads\ that\ each\ are\ waiting\ to\ take\ over\ a\ single\ incoming}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ association.\ Thus,\ the\ pool\ can\ serve\ as\ many\ associations}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ simultaneously\ as\ the\ number\ of\ threads\ it\ is\ configured\ to\ create.}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#ifndef\ SCPPOOL\_H}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#define\ SCPPOOL\_H}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}\ \ \textcolor{comment}{/*\ make\ sure\ OS\ specific\ configuration\ is\ included\ first\ */}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#ifdef\ WITH\_THREADS\ }\textcolor{comment}{//\ Without\ threads\ this\ does\ not\ make\ sense...}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofthread.h"{}}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmnet/scpthrd.h"{}}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmnet/scpcfg.h"{}}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmnet/assoc.h"{}}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00044\ \textcolor{keyword}{class\ }DCMTK\_DCMNET\_EXPORT\ DcmBaseSCPPool}
+\DoxyCodeLine{00045\ \{}
+\DoxyCodeLine{00046\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00051\ \ \ \textcolor{keyword}{class\ }DCMTK\_DCMNET\_EXPORT\ DcmBaseSCPWorker\ :\ \textcolor{keyword}{public}\ OFThread}
+\DoxyCodeLine{00052\ \ \ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \string~DcmBaseSCPWorker();}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ OFCondition\ setAssociation(T\_ASC\_Association*\ assoc);}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ OFCondition\ setSharedConfig(\textcolor{keyword}{const}\ DcmSharedSCPConfig\&\ config)\ =\ 0;}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ OFBool\ busy()\ =\ 0;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ exit();}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00093\ \ \ \ \ \ \ DcmBaseSCPWorker(DcmBaseSCPPool\&\ pool);}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ run();}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ OFCondition\ workerListen(T\_ASC\_Association*\ \textcolor{keyword}{const}\ assoc)\ =\ 0;}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00118\ \ \ \ \ \ \ DcmBaseSCPPool\&\ m\_pool;}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00124\ \ \ \ \ \ \ T\_ASC\_Association*\ m\_assoc;}
+\DoxyCodeLine{00125\ \ \ \};}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{//\ Needed\ to\ keep\ MS\ VC6\ happy}}
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }DcmBaseSCPWorker;}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00132\ \ \ \textcolor{keyword}{virtual}\ \string~DcmBaseSCPPool();}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00137\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ setMaxThreads(\textcolor{keyword}{const}\ Uint16\ maxWorkers);}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00142\ \ \ \textcolor{keyword}{virtual}\ Uint16\ getMaxThreads();}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{size\_t}\ numThreads(\textcolor{keyword}{const}\ OFBool\ onlyBusy);}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{keyword}{virtual}\ OFCondition\ listen();}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{virtual}\ DcmSCPConfig\&\ getConfig();}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00172\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ stopAfterCurrentAssociations();}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00178\ \ \ DcmBaseSCPPool();}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{keyword}{virtual}\ DcmBaseSCPWorker*\ createSCPWorker()\ =\ 0;}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00192\ \ \ OFCondition\ runAssociation(T\_ASC\_Association*\ assoc,}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ DcmSharedSCPConfig\&\ sharedConfig);}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00198\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ dropAndDestroyAssociation(T\_ASC\_Association*\ assoc);}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00205\ \ \ \textcolor{keywordtype}{void}\ rejectAssociation(T\_ASC\_Association*\ assoc,}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ T\_ASC\_RejectParametersReason\&\ reason);}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{void}\ notifyThreadExit(DcmBaseSCPWorker*\ thread,}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OFCondition\ result);}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{virtual}\ OFCondition\ initializeNework(T\_ASC\_Network**\ network);}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00226\ \ \ \textcolor{keyword}{enum}\ runmode}
+\DoxyCodeLine{00227\ \ \ \{}
+\DoxyCodeLine{00229\ \ \ \ \ LISTEN,}
+\DoxyCodeLine{00231\ \ \ \ \ STOP,}
+\DoxyCodeLine{00233\ \ \ \ \ SHUTDOWN}
+\DoxyCodeLine{00234\ \ \ \};}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00237\ \ \ OFMutex\ m\_criticalSection;}
+\DoxyCodeLine{00239\ \ \ OFList<DcmBaseSCPWorker*>\ m\_workersBusy;}
+\DoxyCodeLine{00241\ \ \ OFList<DcmBaseSCPWorker*>\ m\_workersIdle;}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00244\ \ \ DcmSCPConfig\ m\_cfg;}
+\DoxyCodeLine{00248\ \ \ Uint16\ m\_maxWorkers;}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \textcolor{comment}{//\ Not\ implemented\ yet:\ Can\ be\ helpful\ if\ all\ workers\ are\ busy\ but\ incoming}}
+\DoxyCodeLine{00251\ \ \ \textcolor{comment}{//\ associations\ should\ then\ not\ be\ rejected\ immediately\ but\ only\ after\ a}}
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{//\ specific\ timeout}}
+\DoxyCodeLine{00253\ \ \ \textcolor{comment}{//\ Uint16\ m\_workersBusyTimeout;}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{comment}{//\ Not\ implemented\ yet:\ list\ of\ associations\ that\ are\ waiting\ for\ a\ worker}}
+\DoxyCodeLine{00256\ \ \ \textcolor{comment}{//\ becoming\ available}}
+\DoxyCodeLine{00257\ \ \ \textcolor{comment}{//\ OFList<T\_ASC\_Association*>\ m\_waiting;}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00260\ \ \ runmode\ m\_runMode;}
+\DoxyCodeLine{00261\ \};}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00280\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ SCP\ =\ DcmThreadSCP,\ \textcolor{keyword}{typename}\ SCPPool\ =\ DcmBaseSCPPool,\ \textcolor{keyword}{typename}\ BaseSCPWorker\ =\ OFTypename\ SCPPool::DcmBaseSCPWorker>}
+\DoxyCodeLine{00281\ \textcolor{keyword}{class\ }DcmSCPPool\ :\ \textcolor{keyword}{public}\ SCPPool}
+\DoxyCodeLine{00282\ \{}
+\DoxyCodeLine{00283\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00287\ \ \ \ \ DcmSCPPool()\ :\ SCPPool()}
+\DoxyCodeLine{00288\ \ \ \ \ \{}
+\DoxyCodeLine{00289\ \ \ \ \ \}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{keyword}{struct\ }SCPWorker\ :\ \textcolor{keyword}{public}\ BaseSCPWorker}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ,\ \textcolor{keyword}{private}\ SCP}
+\DoxyCodeLine{00298\ \ \ \ \ \{}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ SCPWorker(DcmSCPPool\&\ pool)}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ :\ BaseSCPWorker(pool)}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ ,\ SCP()}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ OFCondition\ setSharedConfig(\textcolor{keyword}{const}\ DcmSharedSCPConfig\&\ config)}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ SCP::setSharedConfig(config);}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ OFBool\ busy()}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ SCP::isConnected();}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ OFCondition\ workerListen(T\_ASC\_Association*\ \textcolor{keyword}{const}\ assoc)}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ SCP::run(assoc);}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00336\ \ \ \ \ \};}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00341\ \ \ \ \ \textcolor{keyword}{virtual}\ BaseSCPWorker*\ createSCPWorker()}
+\DoxyCodeLine{00342\ \ \ \ \ \{}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ SCPWorker(*\textcolor{keyword}{this});}
+\DoxyCodeLine{00344\ \ \ \ \ \}}
+\DoxyCodeLine{00345\ \};}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ WITH\_THREADS}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ SCPPOOL\_H}}
+
+\end{DoxyCode}

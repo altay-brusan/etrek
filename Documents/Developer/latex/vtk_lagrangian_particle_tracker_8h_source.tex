@@ -1,0 +1,217 @@
+\doxysection{vtk\+Lagrangian\+Particle\+Tracker.\+h}
+\hypertarget{vtk_lagrangian_particle_tracker_8h_source}{}\label{vtk_lagrangian_particle_tracker_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkLagrangianParticleTracker.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkLagrangianParticleTracker.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#ifndef\ vtkLagrangianParticleTracker\_h}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#define\ vtkLagrangianParticleTracker\_h}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\#include\ "{}vtkBoundingBox.h"{}}\ \textcolor{comment}{//\ For\ cached\ bounds}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#include\ "{}vtkDataObjectAlgorithm.h"{}}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#include\ "{}vtkFiltersFlowPathsModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointer.h"{}}\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ smart\ pointer}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#include\ <atomic>}\ \textcolor{comment}{//\ for\ atomic}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#include\ <mutex>}\ \ \textcolor{comment}{//\ for\ mutexes}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{\#include\ <queue>}\ \ \textcolor{comment}{//\ for\ particle\ queue}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00089\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}};}
+\DoxyCodeLine{00090\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_cell_array}{vtkCellArray}};}
+\DoxyCodeLine{00091\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_data_set}{vtkDataSet}};}
+\DoxyCodeLine{00092\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_double_array}{vtkDoubleArray}};}
+\DoxyCodeLine{00093\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_id_list}{vtkIdList}};}
+\DoxyCodeLine{00094\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_information}{vtkInformation}};}
+\DoxyCodeLine{00095\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_initial_value_problem_solver}{vtkInitialValueProblemSolver}};}
+\DoxyCodeLine{00096\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_lagrangian_basic_integration_model}{vtkLagrangianBasicIntegrationModel}};}
+\DoxyCodeLine{00097\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_lagrangian_particle}{vtkLagrangianParticle}};}
+\DoxyCodeLine{00098\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_block_data_set}{vtkMultiBlockDataSet}};}
+\DoxyCodeLine{00099\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_piece_data_set}{vtkMultiPieceDataSet}};}
+\DoxyCodeLine{00100\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_point_data}{vtkPointData}};}
+\DoxyCodeLine{00101\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_points}{vtkPoints}};}
+\DoxyCodeLine{00102\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}};}
+\DoxyCodeLine{00103\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_poly_line}{vtkPolyLine}};}
+\DoxyCodeLine{00104\ \textcolor{keyword}{struct\ }IntegratingFunctor;}
+\DoxyCodeLine{00105\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_lagrangian_threaded_data}{vtkLagrangianThreadedData}};}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{keyword}{class\ }VTKFILTERSFLOWPATHS\_EXPORT\ vtkLagrangianParticleTracker\ :\ \textcolor{keyword}{public}\ vtkDataObjectAlgorithm}
+\DoxyCodeLine{00108\ \{}
+\DoxyCodeLine{00109\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00110\ \ \ vtkTypeMacro(vtkLagrangianParticleTracker,\ vtkDataObjectAlgorithm);}
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a4af5e7e807b43cc28ff34a8a90d6eedb}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00112\ \ \ \textcolor{keyword}{static}\ vtkLagrangianParticleTracker*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ CellLengthComputation}
+\DoxyCodeLine{00115\ \ \ \{}
+\DoxyCodeLine{00116\ \ \ \ \ STEP\_CUR\_CELL\_LENGTH\ =\ 1,}
+\DoxyCodeLine{00117\ \ \ \ \ STEP\_CUR\_CELL\_VEL\_DIR\ =\ 3,}
+\DoxyCodeLine{00118\ \ \ \ \ STEP\_CUR\_CELL\_DIV\_THEO\ =\ 5}
+\DoxyCodeLine{00119\ \ \ \}\ CellLengthComputation;}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00126\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_aaa5a0dffb3686a4878e2111cb700ce47}{SetIntegrationModel}}(\doxymbox{\hyperlink{classvtk_lagrangian_basic_integration_model}{vtkLagrangianBasicIntegrationModel}}*\ integrationModel);}
+\DoxyCodeLine{00127\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_basic_integration_model}{vtkLagrangianBasicIntegrationModel}}*\ GetIntegrationModel();}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00135\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a94b95a021ac01055ca79524940a04aee}{SetIntegrator}}(\doxymbox{\hyperlink{classvtk_initial_value_problem_solver}{vtkInitialValueProblemSolver}}*\ integrator);}
+\DoxyCodeLine{00136\ \ \ \doxymbox{\hyperlink{classvtk_initial_value_problem_solver}{vtkInitialValueProblemSolver}}*\ GetIntegrator();}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00145\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_abd6ac9b5e82f21aa015ea5834d6f9beb}{vtkSetMacro}}(GeneratePolyVertexInteractionOutput,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00146\ \ \ vtkGetMacro(GeneratePolyVertexInteractionOutput,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00163\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_ae4017c81f3829cf2d160dc7c81c03a53}{vtkSetMacro}}(CellLengthComputationMode,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00164\ \ \ vtkGetMacro(CellLengthComputationMode,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00171\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_aef1a99ebf0982f48566cee223271f5e7}{vtkSetMacro}}(StepFactor,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00172\ \ \ vtkGetMacro(StepFactor,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00179\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a270231e51bd9b27ee0cbaa37d9d1b0df}{vtkSetMacro}}(StepFactorMin,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00180\ \ \ vtkGetMacro(StepFactorMin,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00187\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a4d525b0786f63ec1c30488ac3e1efbd8}{vtkSetMacro}}(StepFactorMax,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00188\ \ \ vtkGetMacro(StepFactorMax,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00195\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a44c666f5815c6069de733da4604cd5be}{vtkSetMacro}}(MaximumNumberOfSteps,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00196\ \ \ vtkGetMacro(MaximumNumberOfSteps,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00204\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a2a5753b6dd55a174b96860e59db0a211}{vtkSetMacro}}(MaximumIntegrationTime,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00205\ \ \ vtkGetMacro(MaximumIntegrationTime,\ \textcolor{keywordtype}{double});}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00215\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_aab9f23668edf82d3ffbc8311d6bd683c}{vtkSetMacro}}(AdaptiveStepReintegration,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00216\ \ \ vtkGetMacro(AdaptiveStepReintegration,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00217\ \ \ vtkBooleanMacro(AdaptiveStepReintegration,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00225\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a92f2a9a9983274ca50493f0810e70ec3}{vtkSetMacro}}(GenerateParticlePathsOutput,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00226\ \ \ vtkGetMacro(GenerateParticlePathsOutput,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00227\ \ \ vtkBooleanMacro(GenerateParticlePathsOutput,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00236\ \ \ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a8e10bb79f030a695550c62a14324b0e3}{vtkSetMacro}}(ForcePManualShift,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00237\ \ \ vtkGetMacro(ForcePManualShift,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00238\ \ \ vtkBooleanMacro(ForcePManualShift,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00248\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_ae1e609b8ad9a5fac36d40e746d7c5dcc}{SetSourceData}}(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ source);}
+\DoxyCodeLine{00249\ \ \ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ GetSource();}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a0cddab44af6d97ed409feccb8b5c7f0f}{SetSourceConnection}}(\doxymbox{\hyperlink{classvtk_algorithm_output}{vtkAlgorithmOutput}}*\ algOutput);}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00264\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a9851c820f22cb2774bf6e209f91aeb0a}{SetSurfaceData}}(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ source);}
+\DoxyCodeLine{00265\ \ \ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ GetSurface();}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_aa755acbafc4f61bda1566c724762b290}{SetSurfaceConnection}}(\doxymbox{\hyperlink{classvtk_algorithm_output}{vtkAlgorithmOutput}}*\ algOutput);}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00276\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a41f82f2e51ec674f32e665ca3adf973f}{FillInputPortInformation}}(\textcolor{keywordtype}{int}\ port,\ \doxymbox{\hyperlink{classvtk_information}{vtkInformation}}*\ info)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00281\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_abbc8f474d0862de6355030f7222a182d}{FillOutputPortInformation}}(\textcolor{keywordtype}{int}\ port,\ \doxymbox{\hyperlink{classvtk_information}{vtkInformation}}*\ info)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00286\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_acc77e2b3fd5b534d6568726b8dc68562}{RequestDataObject}}(\doxymbox{\hyperlink{classvtk_information}{vtkInformation}}*,\ \doxymbox{\hyperlink{classvtk_information_vector}{vtkInformationVector}}**,\ \doxymbox{\hyperlink{classvtk_information_vector}{vtkInformationVector}}*)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00291\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a50f23651d6ec690b349346a617c044dc}{RequestData}}(\doxymbox{\hyperlink{classvtk_information}{vtkInformation}}*\ request,\ \doxymbox{\hyperlink{classvtk_information_vector}{vtkInformationVector}}**\ inputVector,}
+\DoxyCodeLine{00292\ \ \ \ \ \doxymbox{\hyperlink{classvtk_information_vector}{vtkInformationVector}}*\ outputVector)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00298\ \ \ vtkMTimeType\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a9f80478325236d06df5031d4f74cb24e}{GetMTime}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00304\ \ \ \textcolor{keyword}{virtual}\ vtkIdType\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a1ee24f5ab175fb639bb216c086f4239e}{GetNewParticleId}}();}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00307\ \ \ vtkLagrangianParticleTracker();}
+\DoxyCodeLine{00308\ \ \ \string~vtkLagrangianParticleTracker()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ InitializeFlow(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ flow,\ \doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}}*\ bounds);}
+\DoxyCodeLine{00311\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ InitializeParticles(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}}*\ bounds,\ \doxymbox{\hyperlink{classvtk_data_set}{vtkDataSet}}*\ seeds,}
+\DoxyCodeLine{00312\ \ \ \ \ std::queue<vtkLagrangianParticle*>\&\ particles,\ \doxymbox{\hyperlink{classvtk_point_data}{vtkPointData}}*\ seedData);}
+\DoxyCodeLine{00313\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ GenerateParticles(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}}*\ bounds,\ \doxymbox{\hyperlink{classvtk_data_set}{vtkDataSet}}*\ seeds,}
+\DoxyCodeLine{00314\ \ \ \ \ vtkDataArray*\ initialVelocities,\ vtkDataArray*\ initialIntegrationTimes,\ \doxymbox{\hyperlink{classvtk_point_data}{vtkPointData}}*\ seedData,}
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{keywordtype}{int}\ nVar,\ std::queue<vtkLagrangianParticle*>\&\ particles);}
+\DoxyCodeLine{00316\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ UpdateSurfaceCacheIfNeeded(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\&\ surfaces);}
+\DoxyCodeLine{00317\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ InitializeSurface(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\&\ surfaces);}
+\DoxyCodeLine{00318\ }
+\DoxyCodeLine{00322\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_ad02735f10b30ef6560c506970efebcd2}{InitializePathsOutput}}(}
+\DoxyCodeLine{00323\ \ \ \ \ \doxymbox{\hyperlink{classvtk_point_data}{vtkPointData}}*\ seedData,\ vtkIdType\ numberOfSeeds,\ \doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}}*\&\ particlePathsOutput);}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00328\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_ad67557eccaf987429268d8815baa814b}{InitializeInteractionOutput}}(}
+\DoxyCodeLine{00329\ \ \ \ \ \doxymbox{\hyperlink{classvtk_point_data}{vtkPointData}}*\ seedData,\ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ surfaces,\ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\&\ interractionOutput);}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ FinalizeOutputs(\doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}}*\ particlePathsOutput,\ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ interactionOutput);}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ InsertPolyVertexCell(\doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}}*\ polydata);}
+\DoxyCodeLine{00334\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ InsertVertexCells(\doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}}*\ polydata);}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ GetParticleFeed(std::queue<vtkLagrangianParticle*>\&\ particleQueue);}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00341\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_aac03fa646e435267f0f0647258a92d94}{Integrate}}(\doxymbox{\hyperlink{classvtk_initial_value_problem_solver}{vtkInitialValueProblemSolver}}*\ integrator,\ \doxymbox{\hyperlink{classvtk_lagrangian_particle}{vtkLagrangianParticle}}*,}
+\DoxyCodeLine{00342\ \ \ \ \ std::queue<vtkLagrangianParticle*>\&,\ \doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}}*\ particlePathsOutput,}
+\DoxyCodeLine{00343\ \ \ \ \ \doxymbox{\hyperlink{classvtk_poly_line}{vtkPolyLine}}*\ particlePath,\ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ interactionOutput);}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00348\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a23175c43220d58e9142f31c87702d7e0}{InsertPathOutputPoint}}(\doxymbox{\hyperlink{classvtk_lagrangian_particle}{vtkLagrangianParticle}}*\ particle,\ \doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}}*\ particlePathsOutput,}
+\DoxyCodeLine{00349\ \ \ \ \ \doxymbox{\hyperlink{classvtk_id_list}{vtkIdList}}*\ particlePathPointId,\ \textcolor{keywordtype}{bool}\ prev\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00354\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_ae60dc9e647832349acbe2caa37637981}{InsertInteractionOutputPoint}}(\doxymbox{\hyperlink{classvtk_lagrangian_particle}{vtkLagrangianParticle}}*\ particle,}
+\DoxyCodeLine{00355\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ interactedSurfaceFlatIndex,\ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ interactionOutput);}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00361\ \ \ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a93ffeb20ac60a751a55f32ba9e347474}{ComputeCellLength}}(\doxymbox{\hyperlink{classvtk_lagrangian_particle}{vtkLagrangianParticle}}*\ particle);}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00366\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a5ddaa5b970801ea96bb409b03d1604cf}{ComputeNextStep}}(\doxymbox{\hyperlink{classvtk_initial_value_problem_solver}{vtkInitialValueProblemSolver}}*\ integrator,\ \textcolor{keywordtype}{double}*\ xprev,\ \textcolor{keywordtype}{double}*\ xnext,}
+\DoxyCodeLine{00367\ \ \ \ \ \textcolor{keywordtype}{double}\ t,\ \textcolor{keywordtype}{double}\&\ delT,\ \textcolor{keywordtype}{double}\&\ delTActual,\ \textcolor{keywordtype}{double}\ minStep,\ \textcolor{keywordtype}{double}\ maxStep,\ \textcolor{keywordtype}{double}\ cellLength,}
+\DoxyCodeLine{00368\ \ \ \ \ \textcolor{keywordtype}{int}\&\ integrationRes,\ \doxymbox{\hyperlink{classvtk_lagrangian_particle}{vtkLagrangianParticle}}*\ particle);}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00374\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_lagrangian_particle_tracker_a6a6abd8a5901b73f78a548aaf936e3fc}{DeleteParticle}}(\doxymbox{\hyperlink{classvtk_lagrangian_particle}{vtkLagrangianParticle}}*\ particle);}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkLagrangianBasicIntegrationModel>}}\ IntegrationModel;}
+\DoxyCodeLine{00377\ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkInitialValueProblemSolver>}}\ Integrator;}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \textcolor{keywordtype}{int}\ CellLengthComputationMode;}
+\DoxyCodeLine{00380\ \ \ \textcolor{keywordtype}{double}\ StepFactor;}
+\DoxyCodeLine{00381\ \ \ \textcolor{keywordtype}{double}\ StepFactorMin;}
+\DoxyCodeLine{00382\ \ \ \textcolor{keywordtype}{double}\ StepFactorMax;}
+\DoxyCodeLine{00383\ \ \ \textcolor{keywordtype}{int}\ MaximumNumberOfSteps;}
+\DoxyCodeLine{00384\ \ \ \textcolor{keywordtype}{double}\ MaximumIntegrationTime;}
+\DoxyCodeLine{00385\ \ \ \textcolor{keywordtype}{bool}\ AdaptiveStepReintegration;}
+\DoxyCodeLine{00386\ \ \ \textcolor{keywordtype}{bool}\ GenerateParticlePathsOutput\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00387\ \ \ \textcolor{keywordtype}{bool}\ GeneratePolyVertexInteractionOutput;}
+\DoxyCodeLine{00388\ \ \ \textcolor{keywordtype}{bool}\ ForcePManualShift\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00389\ \ \ std::atomic<vtkIdType>\ ParticleCounter;}
+\DoxyCodeLine{00390\ \ \ std::atomic<vtkIdType>\ IntegratedParticleCounter;}
+\DoxyCodeLine{00391\ \ \ vtkIdType\ IntegratedParticleCounterIncrement;}
+\DoxyCodeLine{00392\ \ \ \doxymbox{\hyperlink{classvtk_point_data}{vtkPointData}}*\ SeedData;}
+\DoxyCodeLine{00393\ }
+\DoxyCodeLine{00394\ \ \ \textcolor{comment}{//\ internal\ parameters\ use\ for\ step\ computation}}
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordtype}{double}\ MinimumVelocityMagnitude;}
+\DoxyCodeLine{00396\ \ \ \textcolor{keywordtype}{double}\ MinimumReductionFactor;}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \ \ \textcolor{comment}{//\ Cache\ related\ parameters}}
+\DoxyCodeLine{00399\ \ \ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ FlowCache;}
+\DoxyCodeLine{00400\ \ \ vtkMTimeType\ FlowTime;}
+\DoxyCodeLine{00401\ \ \ \doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}}\ FlowBoundsCache;}
+\DoxyCodeLine{00402\ \ \ \textcolor{keywordtype}{bool}\ FlowCacheInvalid\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00403\ \ \ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ SurfacesCache;}
+\DoxyCodeLine{00404\ \ \ vtkMTimeType\ SurfacesTime;}
+\DoxyCodeLine{00405\ \ \ \textcolor{keywordtype}{bool}\ SurfaceCacheInvalid\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \ \ std::mutex\ ProgressMutex;}
+\DoxyCodeLine{00408\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }IntegratingFunctor;}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \ \ \doxymbox{\hyperlink{structvtk_lagrangian_threaded_data}{vtkLagrangianThreadedData}}*\ SerialThreadedData;}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00413\ \ \ vtkLagrangianParticleTracker(\textcolor{keyword}{const}\ vtkLagrangianParticleTracker\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00414\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkLagrangianParticleTracker\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00415\ \};}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00418\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

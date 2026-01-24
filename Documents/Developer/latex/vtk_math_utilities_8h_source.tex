@@ -1,0 +1,98 @@
+\doxysection{vtk\+Math\+Utilities.\+h}
+\hypertarget{vtk_math_utilities_8h_source}{}\label{vtk_math_utilities_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMathUtilities.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMathUtilities.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#ifndef\ vtkMathUtilities\_h}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#define\ vtkMathUtilities\_h}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}vtkABINamespace.h"{}}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <limits>}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <tuple>}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{namespace\ }vtkMathUtilities}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00033\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ A>}
+\DoxyCodeLine{00034\ \textcolor{keywordtype}{bool}\ FuzzyCompare(A\ a,\ A\ b,\ A\ epsilon\ =\ std::numeric\_limits<A>::epsilon())}
+\DoxyCodeLine{00035\ \{}
+\DoxyCodeLine{00036\ \ \ \textcolor{keywordflow}{return}\ fabs(a\ -\/\ b)\ <\ epsilon;}
+\DoxyCodeLine{00037\ \}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ A>}
+\DoxyCodeLine{00043\ A\ SafeDivision(A\ a,\ A\ b)}
+\DoxyCodeLine{00044\ \{}
+\DoxyCodeLine{00045\ \ \ \textcolor{comment}{//\ Avoid\ overflow}}
+\DoxyCodeLine{00046\ \ \ \textcolor{keywordflow}{if}\ ((b\ <\ \textcolor{keyword}{static\_cast<}A\textcolor{keyword}{>}(1))\ \&\&\ (a\ >\ b\ *\ std::numeric\_limits<A>::max()))}
+\DoxyCodeLine{00047\ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{return}\ std::numeric\_limits<A>::max();}
+\DoxyCodeLine{00049\ \ \ \}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \textcolor{comment}{//\ Avoid\ underflow}}
+\DoxyCodeLine{00052\ \ \ \textcolor{keywordflow}{if}\ ((a\ ==\ \textcolor{keyword}{static\_cast<}A\textcolor{keyword}{>}(0))\ ||}
+\DoxyCodeLine{00053\ \ \ \ \ ((b\ >\ \textcolor{keyword}{static\_cast<}A\textcolor{keyword}{>}(1))\ \&\&\ (a\ <\ b\ *\ std::numeric\_limits<A>::min())))}
+\DoxyCodeLine{00054\ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}A\textcolor{keyword}{>}(0);}
+\DoxyCodeLine{00056\ \ \ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{//\ safe\ to\ do\ the\ division}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keywordflow}{return}\ (a\ /\ b);}
+\DoxyCodeLine{00060\ \}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00067\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ A>}
+\DoxyCodeLine{00068\ \textcolor{keywordtype}{bool}\ NearlyEqual(A\ a,\ A\ b,\ A\ tol\ =\ std::numeric\_limits<A>::epsilon())}
+\DoxyCodeLine{00069\ \{}
+\DoxyCodeLine{00070\ \ \ A\ absdiff\ =\ fabs(a\ -\/\ b);}
+\DoxyCodeLine{00071\ \ \ A\ d1\ =\ vtkMathUtilities::SafeDivision<A>(absdiff,\ fabs(a));}
+\DoxyCodeLine{00072\ \ \ A\ d2\ =\ vtkMathUtilities::SafeDivision<A>(absdiff,\ fabs(b));}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{keywordflow}{return}\ ((d1\ <=\ tol)\ ||\ (d2\ <=\ tol));}
+\DoxyCodeLine{00075\ \}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00100\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ A>}
+\DoxyCodeLine{00101\ \textcolor{keywordtype}{void}\ UpdateRangeImpl(A\&\ min0,\ A\&\ max0,\ \textcolor{keyword}{const}\ A\&\ value)}
+\DoxyCodeLine{00102\ \{}
+\DoxyCodeLine{00103\ \ \ \textcolor{comment}{//\ need\ temporaries\ to\ handle\ const/non\ const\ ref\ mismatch}}
+\DoxyCodeLine{00104\ \ \ \textcolor{keywordflow}{if}\ (value\ <\ min0)}
+\DoxyCodeLine{00105\ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ min0\ =\ value;}
+\DoxyCodeLine{00107\ \ \ \ \ max0\ =\ max0\ <\ value\ ?\ value\ :\ max0;}
+\DoxyCodeLine{00108\ \ \ \}}
+\DoxyCodeLine{00109\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (value\ >\ max0)}
+\DoxyCodeLine{00110\ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ min0\ =\ min0\ >\ value\ ?\ value\ :\ min0;}
+\DoxyCodeLine{00112\ \ \ \ \ max0\ =\ value;}
+\DoxyCodeLine{00113\ \ \ \}}
+\DoxyCodeLine{00114\ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ A>\ \textcolor{comment}{//\ Non\ floating\ point\ implementation\ not\ caring\ about\ NaN}}
+\DoxyCodeLine{00117\ \textcolor{keywordtype}{void}\ UpdateRange(A\&\ min0,\ A\&\ max0,\ \textcolor{keyword}{const}\ A\&\ value,}
+\DoxyCodeLine{00118\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_floating\_point<A>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}*\ =\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00119\ \{}
+\DoxyCodeLine{00120\ \ \ UpdateRangeImpl<A>(min0,\ max0,\ value);}
+\DoxyCodeLine{00121\ \}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ A>\ \textcolor{comment}{//\ Floating\ point\ implementation\ specifically\ considering\ NaN}}
+\DoxyCodeLine{00124\ \textcolor{keywordtype}{void}\ UpdateRange(A\&\ min0,\ A\&\ max0,\ \textcolor{keyword}{const}\ A\&\ value,}
+\DoxyCodeLine{00125\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<std::is\_floating\_point<A>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}*\ =\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00126\ \{}
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordflow}{if}\ (!std::isnan(value))}
+\DoxyCodeLine{00128\ \ \ \{}
+\DoxyCodeLine{00129\ \ \ \ \ UpdateRangeImpl<A>(min0,\ max0,\ value);}
+\DoxyCodeLine{00130\ \ \ \}}
+\DoxyCodeLine{00131\ \}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00134\ \}\ \textcolor{comment}{//\ End\ vtkMathUtilities\ namespace.}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkMathUtilities\_h}}
+\DoxyCodeLine{00137\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkMathUtilities.h}}
+
+\end{DoxyCode}

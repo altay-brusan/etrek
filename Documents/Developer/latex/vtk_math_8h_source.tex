@@ -1,0 +1,1385 @@
+\doxysection{vtk\+Math.\+h}
+\hypertarget{vtk_math_8h_source}{}\label{vtk_math_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMath.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMath.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ 2011\ Sandia\ Corporation}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ LicenseRef-\/BSD-\/3-\/Clause-\/Sandia-\/USGov}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#ifndef\ vtkMath\_h}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#define\ vtkMath\_h}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ "{}vtkCommonCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ "{}vtkMathPrivate.hxx"{}}\ \ \ \ \textcolor{comment}{//\ For\ Matrix\ meta-\/class\ helpers}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}vtkMatrixUtilities.h"{}}\ \ \textcolor{comment}{//\ For\ Matrix\ wrapping\ /\ mapping}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointer.h"{}}\ \textcolor{comment}{//\ For\ vtkSmartPointer.}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}vtkTypeTraits.h"{}}\ \ \ \textcolor{comment}{//\ For\ type\ traits}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}vtkMathConfigure.h"{}}\ \textcolor{comment}{//\ For\ <cmath>\ and\ VTK\_HAS\_ISNAN\ etc.}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ <algorithm>}\ \ \ \textcolor{comment}{//\ for\ std::clamp}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ <cassert>}\ \ \ \ \ \textcolor{comment}{//\ assert()\ in\ inline\ implementations.}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <type\_traits>}\ \textcolor{comment}{//\ for\ type\_traits}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#ifndef\ DBL\_MIN}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#define\ VTK\_DBL\_MIN\ 2.2250738585072014e-\/308}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ DBL\_MIN}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#define\ VTK\_DBL\_MIN\ DBL\_MIN}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DBL\_MIN}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#ifndef\ DBL\_EPSILON}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ VTK\_DBL\_EPSILON\ 2.2204460492503131e-\/16}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ DBL\_EPSILON}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#define\ VTK\_DBL\_EPSILON\ DBL\_EPSILON}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DBL\_EPSILON}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#ifndef\ VTK\_DBL\_EPSILON}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#ifndef\ DBL\_EPSILON}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#define\ VTK\_DBL\_EPSILON\ 2.2204460492503131e-\/16}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ DBL\_EPSILON}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#define\ VTK\_DBL\_EPSILON\ DBL\_EPSILON}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DBL\_EPSILON}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ VTK\_DBL\_EPSILON}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00055\ \textcolor{keyword}{class\ }vtkDataArray;}
+\DoxyCodeLine{00056\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_points}{vtkPoints}};}
+\DoxyCodeLine{00057\ \textcolor{keyword}{class\ }vtkMathInternal;}
+\DoxyCodeLine{00058\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_minimal_standard_random_sequence}{vtkMinimalStandardRandomSequence}};}
+\DoxyCodeLine{00059\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_box_mueller_random_sequence}{vtkBoxMuellerRandomSequence}};}
+\DoxyCodeLine{00060\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{keyword}{namespace\ }vtk\_detail}
+\DoxyCodeLine{00063\ \{}
+\DoxyCodeLine{00064\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00065\ \textcolor{comment}{//\ forward\ declaration}}
+\DoxyCodeLine{00066\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OutT>}
+\DoxyCodeLine{00067\ \textcolor{keywordtype}{void}\ RoundDoubleToIntegralIfNecessary(\textcolor{keywordtype}{double}\ val,\ OutT*\ ret);}
+\DoxyCodeLine{00068\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00069\ \}\ \textcolor{comment}{//\ end\ namespace\ vtk\_detail}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00072\ \textcolor{keyword}{class\ }VTKCOMMONCORE\_EXPORT\ vtkMath\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00073\ \{}
+\DoxyCodeLine{00074\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{static}\ vtkMath*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00076\ \ \ vtkTypeMacro(vtkMath,\ vtkObject);}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a264f4fe79c4137b698402813fcfb8864}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00080\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ VectorT,\ \textcolor{keyword}{class}\ =\ \textcolor{keywordtype}{void}>}
+\DoxyCodeLine{00081\ \ \ \textcolor{keyword}{struct\ }VectorImplementsSize\ :\ std::false\_type}
+\DoxyCodeLine{00082\ \ \ \{}
+\DoxyCodeLine{00083\ \ \ \};}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ VectorT>}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{struct\ }VectorImplementsSize<VectorT,\ decltype((void)std::declval<VectorT>().size(),\ void())>}
+\DoxyCodeLine{00087\ \ \ \ \ :\ std::true\_type}
+\DoxyCodeLine{00088\ \ \ \{}
+\DoxyCodeLine{00089\ \ \ \};}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00094\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ VectorT>}
+\DoxyCodeLine{00095\ \ \ \textcolor{keyword}{using\ }EnableIfVectorImplementsSize\ =}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keyword}{typename}\ std::enable\_if<VectorImplementsSize<VectorT>::value>::type;}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00107\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a63298839d7c46cf85c344b6afa8826ce}{DYNAMIC\_VECTOR\_SIZE}}()\ \{\ \textcolor{keywordflow}{return}\ 0;\ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00112\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a89b816871404e5b2ff3c36aef6818621}{Pi}}()\ \{\ \textcolor{keywordflow}{return}\ 3.141592653589793;\ \}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00118\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ RadiansFromDegrees(\textcolor{keywordtype}{float}\ degrees);}
+\DoxyCodeLine{00119\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ RadiansFromDegrees(\textcolor{keywordtype}{double}\ degrees);}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00126\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ DegreesFromRadians(\textcolor{keywordtype}{float}\ radians);}
+\DoxyCodeLine{00127\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ DegreesFromRadians(\textcolor{keywordtype}{double}\ radians);}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#if\ 1}}
+\DoxyCodeLine{00134\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a0c5b0cdf8d3a4d7b3b266d7070d984ad}{Round}}(\textcolor{keywordtype}{float}\ f)\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(f\ +\ (f\ >=\ 0.0\ ?\ 0.5\ :\ -\/0.5));\ \}}
+\DoxyCodeLine{00135\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ Round(\textcolor{keywordtype}{double}\ f)\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(f\ +\ (f\ >=\ 0.0\ ?\ 0.5\ :\ -\/0.5));\ \}}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00142\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OutT>}
+\DoxyCodeLine{00143\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_abbede1e5add0d6f0631e777594505d5e}{RoundDoubleToIntegralIfNecessary}}(\textcolor{keywordtype}{double}\ val,\ OutT*\ ret)}
+\DoxyCodeLine{00144\ \ \ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{comment}{//\ Can't\ specialize\ template\ methods\ in\ a\ template\ class,\ so\ we\ move\ the}}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{comment}{//\ implementations\ to\ a\ external\ namespace.}}
+\DoxyCodeLine{00147\ \ \ \ \ vtk\_detail::RoundDoubleToIntegralIfNecessary(val,\ ret);}
+\DoxyCodeLine{00148\ \ \ \}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00155\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ Floor(\textcolor{keywordtype}{double}\ x);}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ Ceil(\textcolor{keywordtype}{double}\ x);}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00169\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a79478b393d426a3a72daeb1080e3ce6b}{CeilLog2}}(vtkTypeUInt64\ x);}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00176\ \ \ \textcolor{keyword}{static}\ T\ \doxymbox{\hyperlink{classvtk_math_ade925e1f16b4f1866f3faa53390ef89a}{Min}}(\textcolor{keyword}{const}\ T\&\ a,\ \textcolor{keyword}{const}\ T\&\ b);}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00182\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00183\ \ \ \textcolor{keyword}{static}\ T\ \doxymbox{\hyperlink{classvtk_math_a4670878d320602ee778e978150e4caa9}{Max}}(\textcolor{keyword}{const}\ T\&\ a,\ \textcolor{keyword}{const}\ T\&\ b);}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00188\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_math_abf191031a0c8c0c2a6ec085038b0c578}{IsPowerOfTwo}}(vtkTypeUInt64\ x);}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00195\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a5fa915f8a21d86527ddb31c6187e4b33}{NearestPowerOfTwo}}(\textcolor{keywordtype}{int}\ x);}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00201\ \ \ \textcolor{keyword}{static}\ vtkTypeInt64\ \doxymbox{\hyperlink{classvtk_math_a2896b93fe1ac5a8042c8c4e888c6558a}{Factorial}}(\textcolor{keywordtype}{int}\ N);}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00208\ \ \ \textcolor{keyword}{static}\ vtkTypeInt64\ \doxymbox{\hyperlink{classvtk_math_a28c8eeb2a5b250ce2472d24ce95e0f56}{Binomial}}(\textcolor{keywordtype}{int}\ m,\ \textcolor{keywordtype}{int}\ n);}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}*\ \doxymbox{\hyperlink{classvtk_math_abb6885e1b0aef33bd0ad49396ed9aa8c}{BeginCombination}}(\textcolor{keywordtype}{int}\ m,\ \textcolor{keywordtype}{int}\ n);}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00233\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a8694828e970a8530060db5506cfa558d}{NextCombination}}(\textcolor{keywordtype}{int}\ m,\ \textcolor{keywordtype}{int}\ n,\ \textcolor{keywordtype}{int}*\ combination);}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00238\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a33b21b73814eb5d1ddb624fa3a6c6185}{FreeCombination}}(\textcolor{keywordtype}{int}*\ combination);}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a484718ecd91ec2faf6909c3f441a44f4}{RandomSeed}}(\textcolor{keywordtype}{int}\ s);}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00268\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a70fa646498a3604200e91e9dd61d4bdf}{GetSeed}}();}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00283\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a29e4885c5d94003640f2ba7988bc107d}{Random}}();}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00297\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a3711c58c98ffad8d59eeaa5e3d05bd95}{Random}}(\textcolor{keywordtype}{double}\ min,\ \textcolor{keywordtype}{double}\ max);}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00311\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a4d1bb789d5df1cf259b268ff4af90a72}{Gaussian}}();}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00325\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a3008a520292c5764aeb06e9c96350df7}{Gaussian}}(\textcolor{keywordtype}{double}\ mean,\ \textcolor{keywordtype}{double}\ std);}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00331\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ VectorT1,\ \textcolor{keyword}{class}\ VectorT2>}
+\DoxyCodeLine{00332\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a7323be23574cb72ab34c67d8bc7adc3b}{Assign}}(\textcolor{keyword}{const}\ VectorT1\&\ a,\ VectorT2\&\&\ b)}
+\DoxyCodeLine{00333\ \ \ \{}
+\DoxyCodeLine{00334\ \ \ \ \ b[0]\ =\ a[0];}
+\DoxyCodeLine{00335\ \ \ \ \ b[1]\ =\ a[1];}
+\DoxyCodeLine{00336\ \ \ \ \ b[2]\ =\ a[2];}
+\DoxyCodeLine{00337\ \ \ \}}
+\DoxyCodeLine{00338\ }
+\DoxyCodeLine{00342\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a43335b73616a7597bff6c8b49a34e7ed}{Assign}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ a[3],\ \textcolor{keywordtype}{double}\ b[3])\ \{\ \doxymbox{\hyperlink{classvtk_math_a7323be23574cb72ab34c67d8bc7adc3b}{vtkMath::Assign<>}}(a,\ b);\ \}}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00347\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a78ec2663b395231e0a9218d58f9f958e}{Add}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ b[3],\ \textcolor{keywordtype}{float}\ c[3])}
+\DoxyCodeLine{00348\ \ \ \{}
+\DoxyCodeLine{00349\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{00350\ \ \ \ \ \{}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ c[i]\ =\ a[i]\ +\ b[i];}
+\DoxyCodeLine{00352\ \ \ \ \ \}}
+\DoxyCodeLine{00353\ \ \ \}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00358\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a1d069beec5748ae14b3102deed8e15cd}{Add}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ b[3],\ \textcolor{keywordtype}{double}\ c[3])}
+\DoxyCodeLine{00359\ \ \ \{}
+\DoxyCodeLine{00360\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{00361\ \ \ \ \ \{}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ c[i]\ =\ a[i]\ +\ b[i];}
+\DoxyCodeLine{00363\ \ \ \ \ \}}
+\DoxyCodeLine{00364\ \ \ \}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00371\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ VectorT1,\ \textcolor{keyword}{class}\ VectorT2,\ \textcolor{keyword}{class}\ VectorT3>}
+\DoxyCodeLine{00372\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ad201b2c55811ddb3d397ec03772e5f5a}{Add}}(VectorT1\&\&\ a,\ VectorT2\&\&\ b,\ VectorT3\&\ c)}
+\DoxyCodeLine{00373\ \ \ \{}
+\DoxyCodeLine{00374\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{00375\ \ \ \ \ \{}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ c[i]\ =\ a[i]\ +\ b[i];}
+\DoxyCodeLine{00377\ \ \ \ \ \}}
+\DoxyCodeLine{00378\ \ \ \}}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00383\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a153028e251950dd8cc1eeb9fac5c58e7}{Subtract}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ b[3],\ \textcolor{keywordtype}{float}\ c[3])}
+\DoxyCodeLine{00384\ \ \ \{}
+\DoxyCodeLine{00385\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{00386\ \ \ \ \ \{}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ c[i]\ =\ a[i]\ -\/\ b[i];}
+\DoxyCodeLine{00388\ \ \ \ \ \}}
+\DoxyCodeLine{00389\ \ \ \}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00394\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a8eb3679557d0c1219fd10ca697210cf1}{Subtract}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ b[3],\ \textcolor{keywordtype}{double}\ c[3])}
+\DoxyCodeLine{00395\ \ \ \{}
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{00397\ \ \ \ \ \{}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ c[i]\ =\ a[i]\ -\/\ b[i];}
+\DoxyCodeLine{00399\ \ \ \ \ \}}
+\DoxyCodeLine{00400\ \ \ \}}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00407\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ VectorT1,\ \textcolor{keyword}{class}\ VectorT2,\ \textcolor{keyword}{class}\ VectorT3>}
+\DoxyCodeLine{00408\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_aa6bd446ac52f68ca0ea6ad53f99c3d28}{Subtract}}(\textcolor{keyword}{const}\ VectorT1\&\ a,\ \textcolor{keyword}{const}\ VectorT2\&\ b,\ VectorT3\&\&\ c)}
+\DoxyCodeLine{00409\ \ \ \{}
+\DoxyCodeLine{00410\ \ \ \ \ c[0]\ =\ a[0]\ -\/\ b[0];}
+\DoxyCodeLine{00411\ \ \ \ \ c[1]\ =\ a[1]\ -\/\ b[1];}
+\DoxyCodeLine{00412\ \ \ \ \ c[2]\ =\ a[2]\ -\/\ b[2];}
+\DoxyCodeLine{00413\ \ \ \}}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00419\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ade6a05249f519b8f4980ee961c7ca861}{MultiplyScalar}}(\textcolor{keywordtype}{float}\ a[3],\ \textcolor{keywordtype}{float}\ s)}
+\DoxyCodeLine{00420\ \ \ \{}
+\DoxyCodeLine{00421\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{00422\ \ \ \ \ \{}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ a[i]\ *=\ s;}
+\DoxyCodeLine{00424\ \ \ \ \ \}}
+\DoxyCodeLine{00425\ \ \ \}}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00431\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a430750c7ff81968e4e285365cf006fc1}{MultiplyScalar2D}}(\textcolor{keywordtype}{float}\ a[2],\ \textcolor{keywordtype}{float}\ s)}
+\DoxyCodeLine{00432\ \ \ \{}
+\DoxyCodeLine{00433\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 2;\ ++i)}
+\DoxyCodeLine{00434\ \ \ \ \ \{}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ a[i]\ *=\ s;}
+\DoxyCodeLine{00436\ \ \ \ \ \}}
+\DoxyCodeLine{00437\ \ \ \}}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00443\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a96026ad85cf54c99c5f01f9daf782272}{MultiplyScalar}}(\textcolor{keywordtype}{double}\ a[3],\ \textcolor{keywordtype}{double}\ s)}
+\DoxyCodeLine{00444\ \ \ \{}
+\DoxyCodeLine{00445\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{00446\ \ \ \ \ \{}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ a[i]\ *=\ s;}
+\DoxyCodeLine{00448\ \ \ \ \ \}}
+\DoxyCodeLine{00449\ \ \ \}}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00455\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a4be242ae44ba3fc8c4180bc35c7b36ac}{MultiplyScalar2D}}(\textcolor{keywordtype}{double}\ a[2],\ \textcolor{keywordtype}{double}\ s)}
+\DoxyCodeLine{00456\ \ \ \{}
+\DoxyCodeLine{00457\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 2;\ ++i)}
+\DoxyCodeLine{00458\ \ \ \ \ \{}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ a[i]\ *=\ s;}
+\DoxyCodeLine{00460\ \ \ \ \ \}}
+\DoxyCodeLine{00461\ \ \ \}}
+\DoxyCodeLine{00462\ }
+\DoxyCodeLine{00466\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_a3e6e00ade1747b2f8965ecd9e4a8eb96}{Dot}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ b[3])}
+\DoxyCodeLine{00467\ \ \ \{}
+\DoxyCodeLine{00468\ \ \ \ \ \textcolor{keywordflow}{return}\ a[0]\ *\ b[0]\ +\ a[1]\ *\ b[1]\ +\ a[2]\ *\ b[2];}
+\DoxyCodeLine{00469\ \ \ \}}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00474\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a058696cac35c2964262f6c3d977c62f4}{Dot}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ b[3])}
+\DoxyCodeLine{00475\ \ \ \{}
+\DoxyCodeLine{00476\ \ \ \ \ \textcolor{keywordflow}{return}\ a[0]\ *\ b[0]\ +\ a[1]\ *\ b[1]\ +\ a[2]\ *\ b[2];}
+\DoxyCodeLine{00477\ \ \ \}}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00494\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ReturnTypeT\ =\ double,\ \textcolor{keyword}{typename}\ TupleRangeT1,\ \textcolor{keyword}{typename}\ TupleRangeT2,}
+\DoxyCodeLine{00495\ \ \ \ \ \textcolor{keyword}{typename}\ EnableT\ =\ \textcolor{keyword}{typename}\ std::conditional<!std::is\_pointer<TupleRangeT1>::value\ \&\&}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ !std::is\_array<TupleRangeT1>::value,}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ TupleRangeT1,\ TupleRangeT2>::type::value\_type>}
+\DoxyCodeLine{00498\ \ \ \textcolor{keyword}{static}\ ReturnTypeT\ \doxymbox{\hyperlink{classvtk_math_a230d15072b6288f30cb13556c2bd569b}{Dot}}(\textcolor{keyword}{const}\ TupleRangeT1\&\ a,\ \textcolor{keyword}{const}\ TupleRangeT2\&\ b)}
+\DoxyCodeLine{00499\ \ \ \{}
+\DoxyCodeLine{00500\ \ \ \ \ \textcolor{keywordflow}{return}\ a[0]\ *\ b[0]\ +\ a[1]\ *\ b[1]\ +\ a[2]\ *\ b[2];}
+\DoxyCodeLine{00501\ \ \ \}}
+\DoxyCodeLine{00502\ }
+\DoxyCodeLine{00506\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_abae4f3f819422fc6bfa7771a82c992fa}{Outer}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ b[3],\ \textcolor{keywordtype}{float}\ c[3][3])}
+\DoxyCodeLine{00507\ \ \ \{}
+\DoxyCodeLine{00508\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{00509\ \ \ \ \ \{}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ 3;\ ++j)}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ c[i][j]\ =\ a[i]\ *\ b[j];}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00514\ \ \ \ \ \}}
+\DoxyCodeLine{00515\ \ \ \}}
+\DoxyCodeLine{00516\ }
+\DoxyCodeLine{00520\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a663a5cc1334b82df5ba45215da25c540}{Outer}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ b[3],\ \textcolor{keywordtype}{double}\ c[3][3])}
+\DoxyCodeLine{00521\ \ \ \{}
+\DoxyCodeLine{00522\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{00523\ \ \ \ \ \{}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ 3;\ ++j)}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ c[i][j]\ =\ a[i]\ *\ b[j];}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00528\ \ \ \ \ \}}
+\DoxyCodeLine{00529\ \ \ \}}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00536\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ VectorT1,\ \textcolor{keyword}{class}\ VectorT2,\ \textcolor{keyword}{class}\ VectorT3>}
+\DoxyCodeLine{00537\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ Cross(VectorT1\&\&\ a,\ VectorT2\&\&\ b,\ VectorT3\&\ c);}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00543\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ Cross(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ b[3],\ \textcolor{keywordtype}{float}\ c[3]);}
+\DoxyCodeLine{00544\ }
+\DoxyCodeLine{00549\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ Cross(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ b[3],\ \textcolor{keywordtype}{double}\ c[3]);}
+\DoxyCodeLine{00550\ }
+\DoxyCodeLine{00552\ }
+\DoxyCodeLine{00555\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_a1b75dcac2e5f0f1ddb9d05c611919541}{Norm}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ x,\ \textcolor{keywordtype}{int}\ n);}
+\DoxyCodeLine{00556\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a1b75dcac2e5f0f1ddb9d05c611919541}{Norm}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ x,\ \textcolor{keywordtype}{int}\ n);}
+\DoxyCodeLine{00558\ }
+\DoxyCodeLine{00562\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_a1dada4b4c3c6bcd53c786e593b1cb719}{Norm}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ v[3])\ \{\ \textcolor{keywordflow}{return}\ std::sqrt(v[0]\ *\ v[0]\ +\ v[1]\ *\ v[1]\ +\ v[2]\ *\ v[2]);\ \}}
+\DoxyCodeLine{00563\ }
+\DoxyCodeLine{00567\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_abbe95ecc050007d7bc6f855e98b8ba28}{Norm}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ v[3])}
+\DoxyCodeLine{00568\ \ \ \{}
+\DoxyCodeLine{00569\ \ \ \ \ \textcolor{keywordflow}{return}\ std::sqrt(v[0]\ *\ v[0]\ +\ v[1]\ *\ v[1]\ +\ v[2]\ *\ v[2]);}
+\DoxyCodeLine{00570\ \ \ \}}
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00581\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ReturnTypeT\ =\ \textcolor{keywordtype}{double},\ \textcolor{keyword}{typename}\ TupleRangeT>}
+\DoxyCodeLine{00582\ \ \ \textcolor{keyword}{static}\ ReturnTypeT\ \doxymbox{\hyperlink{classvtk_math_ac6b262c17161070483ac1c39749568b8}{SquaredNorm}}(\textcolor{keyword}{const}\ TupleRangeT\&\ v)}
+\DoxyCodeLine{00583\ \ \ \{}
+\DoxyCodeLine{00584\ \ \ \ \ \textcolor{keywordflow}{return}\ v[0]\ *\ v[0]\ +\ v[1]\ *\ v[1]\ +\ v[2]\ *\ v[2];}
+\DoxyCodeLine{00585\ \ \ \}}
+\DoxyCodeLine{00586\ }
+\DoxyCodeLine{00591\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ Normalize(\textcolor{keywordtype}{float}\ v[3]);}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00597\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ Normalize(\textcolor{keywordtype}{double}\ v[3]);}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00607\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ae5a58e4dc624cc11c1cf6f56447f1c2b}{Perpendiculars}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ v1[3],\ \textcolor{keywordtype}{double}\ v2[3],\ \textcolor{keywordtype}{double}\ v3[3],\ \textcolor{keywordtype}{double}\ theta);}
+\DoxyCodeLine{00608\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ae5a58e4dc624cc11c1cf6f56447f1c2b}{Perpendiculars}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ v1[3],\ \textcolor{keywordtype}{float}\ v2[3],\ \textcolor{keywordtype}{float}\ v3[3],\ \textcolor{keywordtype}{double}\ theta);}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00612\ }
+\DoxyCodeLine{00617\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_math_a411adc4d828eb6dd919fb1d9c42f8bba}{ProjectVector}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ b[3],\ \textcolor{keywordtype}{float}\ projection[3]);}
+\DoxyCodeLine{00618\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_math_a411adc4d828eb6dd919fb1d9c42f8bba}{ProjectVector}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ b[3],\ \textcolor{keywordtype}{double}\ projection[3]);}
+\DoxyCodeLine{00620\ }
+\DoxyCodeLine{00622\ }
+\DoxyCodeLine{00628\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_math_ad27e0fe789dadbd29a01d3efd55b4a02}{ProjectVector2D}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ a[2],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ b[2],\ \textcolor{keywordtype}{float}\ projection[2]);}
+\DoxyCodeLine{00629\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_math_ad27e0fe789dadbd29a01d3efd55b4a02}{ProjectVector2D}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ a[2],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ b[2],\ \textcolor{keywordtype}{double}\ projection[2]);}
+\DoxyCodeLine{00631\ }
+\DoxyCodeLine{00647\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ReturnTypeT\ =\ double,\ \textcolor{keyword}{typename}\ TupleRangeT1,\ \textcolor{keyword}{typename}\ TupleRangeT2,}
+\DoxyCodeLine{00648\ \ \ \ \ \textcolor{keyword}{typename}\ EnableT\ =\ \textcolor{keyword}{typename}\ std::conditional<!std::is\_pointer<TupleRangeT1>::value\ \&\&}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \ \ !std::is\_array<TupleRangeT1>::value,}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ TupleRangeT1,\ TupleRangeT2>::type::value\_type>}
+\DoxyCodeLine{00651\ \ \ \textcolor{keyword}{static}\ ReturnTypeT\ \doxymbox{\hyperlink{classvtk_math_a000d8e6a04c58d960ed9115aa1b82fee}{Distance2BetweenPoints}}(\textcolor{keyword}{const}\ TupleRangeT1\&\ p1,\ \textcolor{keyword}{const}\ TupleRangeT2\&\ p2);}
+\DoxyCodeLine{00652\ }
+\DoxyCodeLine{00657\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_a000d8e6a04c58d960ed9115aa1b82fee}{Distance2BetweenPoints}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ p1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ p2[3]);}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00663\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a000d8e6a04c58d960ed9115aa1b82fee}{Distance2BetweenPoints}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ p1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ p2[3]);}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00668\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_aaec7c2c8dcb9d7ab117aea72c9b7ac27}{AngleBetweenVectors}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ v1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ v2[3]);}
+\DoxyCodeLine{00669\ }
+\DoxyCodeLine{00673\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a61f7cabfc404452506d09066f5acaace}{SignedAngleBetweenVectors}}(}
+\DoxyCodeLine{00674\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ v1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ v2[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ vn[3]);}
+\DoxyCodeLine{00675\ }
+\DoxyCodeLine{00680\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a109a60fe9a9edc3bb0b53e8235d3ac65}{GaussianAmplitude}}(\textcolor{keywordtype}{double}\ variance,\ \textcolor{keywordtype}{double}\ distanceFromMean);}
+\DoxyCodeLine{00681\ }
+\DoxyCodeLine{00686\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a1cc086ee33e5fff584e877108b2dadbf}{GaussianAmplitude}}(\textcolor{keywordtype}{double}\ mean,\ \textcolor{keywordtype}{double}\ variance,\ \textcolor{keywordtype}{double}\ position);}
+\DoxyCodeLine{00687\ }
+\DoxyCodeLine{00693\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_af9f12233bd6c7dd33ce589bf7f8a7d00}{GaussianWeight}}(\textcolor{keywordtype}{double}\ variance,\ \textcolor{keywordtype}{double}\ distanceFromMean);}
+\DoxyCodeLine{00694\ }
+\DoxyCodeLine{00700\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ab5eff6c27a31a1cb7d2f66b17187c904}{GaussianWeight}}(\textcolor{keywordtype}{double}\ mean,\ \textcolor{keywordtype}{double}\ variance,\ \textcolor{keywordtype}{double}\ position);}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00705\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_ac869aa4a18b8fe092bfee76a0ede054e}{Dot2D}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ x[2],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ y[2])\ \{\ \textcolor{keywordflow}{return}\ x[0]\ *\ y[0]\ +\ x[1]\ *\ y[1];\ \}}
+\DoxyCodeLine{00706\ }
+\DoxyCodeLine{00710\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a9768724b2689533784f721122d2f2abd}{Dot2D}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ x[2],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ y[2])\ \{\ \textcolor{keywordflow}{return}\ x[0]\ *\ y[0]\ +\ x[1]\ *\ y[1];\ \}}
+\DoxyCodeLine{00711\ }
+\DoxyCodeLine{00715\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a18e97911f3c7551ce191fce546bf7b20}{Outer2D}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ x[2],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ y[2],\ \textcolor{keywordtype}{float}\ A[2][2])}
+\DoxyCodeLine{00716\ \ \ \{}
+\DoxyCodeLine{00717\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 2;\ ++i)}
+\DoxyCodeLine{00718\ \ \ \ \ \{}
+\DoxyCodeLine{00719\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ 2;\ ++j)}
+\DoxyCodeLine{00720\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00721\ \ \ \ \ \ \ \ \ A[i][j]\ =\ x[i]\ *\ y[j];}
+\DoxyCodeLine{00722\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00723\ \ \ \ \ \}}
+\DoxyCodeLine{00724\ \ \ \}}
+\DoxyCodeLine{00725\ }
+\DoxyCodeLine{00729\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a46baf0528a4354a9728feb5bb4270460}{Outer2D}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ x[2],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ y[2],\ \textcolor{keywordtype}{double}\ A[2][2])}
+\DoxyCodeLine{00730\ \ \ \{}
+\DoxyCodeLine{00731\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 2;\ ++i)}
+\DoxyCodeLine{00732\ \ \ \ \ \{}
+\DoxyCodeLine{00733\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ 2;\ ++j)}
+\DoxyCodeLine{00734\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00735\ \ \ \ \ \ \ \ \ A[i][j]\ =\ x[i]\ *\ y[j];}
+\DoxyCodeLine{00736\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00737\ \ \ \ \ \}}
+\DoxyCodeLine{00738\ \ \ \}}
+\DoxyCodeLine{00739\ }
+\DoxyCodeLine{00744\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_ad6f0efbee869a3060d3817e49e061a2d}{Norm2D}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ x[2])\ \{\ \textcolor{keywordflow}{return}\ std::sqrt(x[0]\ *\ x[0]\ +\ x[1]\ *\ x[1]);\ \}}
+\DoxyCodeLine{00745\ }
+\DoxyCodeLine{00750\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a0e405aec9837464b1e1301e37851a55c}{Norm2D}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ x[2])\ \{\ \textcolor{keywordflow}{return}\ std::sqrt(x[0]\ *\ x[0]\ +\ x[1]\ *\ x[1]);\ \}}
+\DoxyCodeLine{00751\ }
+\DoxyCodeLine{00756\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ Normalize2D(\textcolor{keywordtype}{float}\ v[2]);}
+\DoxyCodeLine{00757\ }
+\DoxyCodeLine{00762\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ Normalize2D(\textcolor{keywordtype}{double}\ v[2]);}
+\DoxyCodeLine{00763\ }
+\DoxyCodeLine{00767\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_ab040d14bf00607680a62850b05f5faac}{Determinant2x2}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ c1[2],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ c2[2])}
+\DoxyCodeLine{00768\ \ \ \{}
+\DoxyCodeLine{00769\ \ \ \ \ \textcolor{keywordflow}{return}\ c1[0]\ *\ c2[1]\ -\/\ c2[0]\ *\ c1[1];}
+\DoxyCodeLine{00770\ \ \ \}}
+\DoxyCodeLine{00771\ }
+\DoxyCodeLine{00773\ }
+\DoxyCodeLine{00776\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_aab048d50c28584033221d2fe3e2e874d}{Determinant2x2}}(\textcolor{keywordtype}{double}\ a,\ \textcolor{keywordtype}{double}\ b,\ \textcolor{keywordtype}{double}\ c,\ \textcolor{keywordtype}{double}\ d)\ \{\ \textcolor{keywordflow}{return}\ a\ *\ d\ -\/\ b\ *\ c;\ \}}
+\DoxyCodeLine{00777\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ Determinant2x2(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ c1[2],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ c2[2])}
+\DoxyCodeLine{00778\ \ \ \{}
+\DoxyCodeLine{00779\ \ \ \ \ \textcolor{keywordflow}{return}\ c1[0]\ *\ c2[1]\ -\/\ c2[0]\ *\ c1[1];}
+\DoxyCodeLine{00780\ \ \ \}}
+\DoxyCodeLine{00782\ }
+\DoxyCodeLine{00784\ }
+\DoxyCodeLine{00787\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a320f7bb9ad826750f1a08e66ad849a61}{LUFactor3x3}}(\textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keywordtype}{int}\ index[3]);}
+\DoxyCodeLine{00788\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a320f7bb9ad826750f1a08e66ad849a61}{LUFactor3x3}}(\textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keywordtype}{int}\ index[3]);}
+\DoxyCodeLine{00790\ }
+\DoxyCodeLine{00792\ }
+\DoxyCodeLine{00795\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a6d8183ab9eacea7417c098e913443667}{LUSolve3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ index[3],\ \textcolor{keywordtype}{float}\ x[3]);}
+\DoxyCodeLine{00796\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a6d8183ab9eacea7417c098e913443667}{LUSolve3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ index[3],\ \textcolor{keywordtype}{double}\ x[3]);}
+\DoxyCodeLine{00798\ }
+\DoxyCodeLine{00800\ }
+\DoxyCodeLine{00804\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a9af561884b7554963898c7d3906b6718}{LinearSolve3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ x[3],\ \textcolor{keywordtype}{float}\ y[3]);}
+\DoxyCodeLine{00805\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a9af561884b7554963898c7d3906b6718}{LinearSolve3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ x[3],\ \textcolor{keywordtype}{double}\ y[3]);}
+\DoxyCodeLine{00807\ }
+\DoxyCodeLine{00809\ }
+\DoxyCodeLine{00812\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a8ba3943dc5583905bde0abd86f91e68c}{Multiply3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ v[3],\ \textcolor{keywordtype}{float}\ u[3]);}
+\DoxyCodeLine{00813\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a8ba3943dc5583905bde0abd86f91e68c}{Multiply3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ v[3],\ \textcolor{keywordtype}{double}\ u[3]);}
+\DoxyCodeLine{00815\ }
+\DoxyCodeLine{00817\ }
+\DoxyCodeLine{00820\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a0449d32094295df29a46eece31e1d168}{Multiply3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ B[3][3],\ \textcolor{keywordtype}{float}\ C[3][3]);}
+\DoxyCodeLine{00821\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a8ba3943dc5583905bde0abd86f91e68c}{Multiply3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ B[3][3],\ \textcolor{keywordtype}{double}\ C[3][3]);}
+\DoxyCodeLine{00823\ }
+\DoxyCodeLine{00847\ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{int}\ RowsT,\ \textcolor{keywordtype}{int}\ MidDimT,\ \textcolor{keywordtype}{int}\ ColsT,}
+\DoxyCodeLine{00848\ \ \ \ \ \textcolor{keyword}{class\ }LayoutT1\ =\ vtkMatrixUtilities::Layout::Identity,}
+\DoxyCodeLine{00849\ \ \ \ \ \textcolor{keyword}{class\ }LayoutT2\ =\ vtkMatrixUtilities::Layout::Identity,\ \textcolor{keyword}{class\ }MatrixT1,\ \textcolor{keyword}{class\ }MatrixT2,}
+\DoxyCodeLine{00850\ \ \ \ \ \textcolor{keyword}{class\ }MatrixT3>}
+\DoxyCodeLine{00851\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ae3dc523fbca15f701f21dabe3e474d8c}{MultiplyMatrix}}(MatrixT1\&\&\ M1,\ MatrixT2\&\&\ M2,\ MatrixT3\&\&\ M3)}
+\DoxyCodeLine{00852\ \ \ \{}
+\DoxyCodeLine{00853\ \ \ \ \ vtkMathPrivate::MultiplyMatrix<RowsT,\ MidDimT,\ ColsT,\ LayoutT1,\ LayoutT2>::Compute(}
+\DoxyCodeLine{00854\ \ \ \ \ \ \ std::forward<MatrixT1>(M1),\ std::forward<MatrixT2>(M2),\ std::forward<MatrixT3>(M3));}
+\DoxyCodeLine{00855\ \ \ \}}
+\DoxyCodeLine{00856\ }
+\DoxyCodeLine{00877\ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{int}\ RowsT,\ \textcolor{keywordtype}{int}\ ColsT,\ \textcolor{keyword}{class\ }LayoutT\ =\ vtkMatrixUtilities::Layout::Identity,}
+\DoxyCodeLine{00878\ \ \ \ \ \textcolor{keyword}{class\ }MatrixT,\ \textcolor{keyword}{class\ }VectorT1,\ \textcolor{keyword}{class\ }VectorT2>}
+\DoxyCodeLine{00879\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_aff4b56959d4d6ef6faf011aa72db288f}{MultiplyMatrixWithVector}}(MatrixT\&\&\ M,\ VectorT1\&\&\ X,\ VectorT2\&\&\ Y)}
+\DoxyCodeLine{00880\ \ \ \{}
+\DoxyCodeLine{00881\ \ \ \ \ vtkMathPrivate::MultiplyMatrix<RowsT,\ ColsT,\ 1,\ LayoutT>::Compute(}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ std::forward<MatrixT>(M),\ std::forward<VectorT1>(X),\ std::forward<VectorT2>(Y));}
+\DoxyCodeLine{00883\ \ \ \}}
+\DoxyCodeLine{00884\ }
+\DoxyCodeLine{00890\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }ScalarT,\ \textcolor{keywordtype}{int}\ SizeT,\ \textcolor{keyword}{class\ }VectorT1,\ \textcolor{keyword}{class\ }VectorT2,}
+\DoxyCodeLine{00891\ \ \ \ \ \textcolor{keyword}{class\ }=\ \textcolor{keyword}{typename}\ std::enable\_if<SizeT\ !=\ DYNAMIC\_VECTOR\_SIZE()>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}>}
+\DoxyCodeLine{00892\ \ \ \textcolor{keyword}{static}\ ScalarT\ \doxymbox{\hyperlink{classvtk_math_a5c8b84e2cc37fc2159d3b683cf3a8edb}{Dot}}(VectorT1\&\&\ x,\ VectorT2\&\&\ y)}
+\DoxyCodeLine{00893\ \ \ \{}
+\DoxyCodeLine{00894\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_math_private_1_1_contract_row_with_col}{vtkMathPrivate::ContractRowWithCol}}<ScalarT,\ 1,\ SizeT,\ 1,\ 0,\ 0,}
+\DoxyCodeLine{00895\ \ \ \ \ \ \ vtkMatrixUtilities::Layout::Identity,}
+\DoxyCodeLine{00896\ \ \ \ \ \ \ vtkMatrixUtilities::Layout::Transpose>::Compute(std::forward<VectorT1>(x),}
+\DoxyCodeLine{00897\ \ \ \ \ \ \ std::forward<VectorT2>(y));}
+\DoxyCodeLine{00898\ \ \ \}}
+\DoxyCodeLine{00899\ }
+\DoxyCodeLine{00906\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }ScalarT,\ \textcolor{keywordtype}{int}\ SizeT,\ \textcolor{keyword}{class\ }VectorT1,\ \textcolor{keyword}{class\ }VectorT2,}
+\DoxyCodeLine{00907\ \ \ \ \ \textcolor{keyword}{class\ }=\ \textcolor{keyword}{typename}\ std::enable\_if<SizeT\ ==\ DYNAMIC\_VECTOR\_SIZE()>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}},}
+\DoxyCodeLine{00908\ \ \ \ \ \textcolor{keyword}{class\ }=\ EnableIfVectorImplementsSize<VectorT1>>}
+\DoxyCodeLine{00909\ \ \ \textcolor{keyword}{static}\ ScalarT\ \doxymbox{\hyperlink{classvtk_math_a24a4a093bb7cfbeb11af94638d190e4a}{Dot}}(VectorT1\&\&\ x,\ VectorT2\&\&\ y)}
+\DoxyCodeLine{00910\ \ \ \{}
+\DoxyCodeLine{00911\ \ \ \ \ ScalarT\ dot\ =\ 0.0;}
+\DoxyCodeLine{00912\ \ \ \ \ \textcolor{keyword}{using\ }SizeType\ =\ \textcolor{keyword}{decltype}(std::declval<VectorT1>().size());}
+\DoxyCodeLine{00913\ \ \ \ \ \textcolor{keywordflow}{for}\ (SizeType\ dim\ =\ 0;\ dim\ <\ x.size();\ ++dim)}
+\DoxyCodeLine{00914\ \ \ \ \ \{}
+\DoxyCodeLine{00915\ \ \ \ \ \ \ dot\ +=\ x[dim]\ *\ y[dim];}
+\DoxyCodeLine{00916\ \ \ \ \ \}}
+\DoxyCodeLine{00917\ \ \ \ \ \textcolor{keywordflow}{return}\ dot;}
+\DoxyCodeLine{00918\ \ \ \}}
+\DoxyCodeLine{00919\ }
+\DoxyCodeLine{00927\ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{int}\ SizeT,\ \textcolor{keyword}{class}\ VectorT>}
+\DoxyCodeLine{00928\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{structvtk_matrix_utilities_1_1_scalar_type_extractor_a4d50d954304d0a71df552bc8510ba6c6}{vtkMatrixUtilities::ScalarTypeExtractor<VectorT>::value\_type}}\ \doxymbox{\hyperlink{classvtk_math_afdb7885574eff1b5087fe2fcd42ca001}{SquaredNorm}}(}
+\DoxyCodeLine{00929\ \ \ \ \ VectorT\&\&\ x)}
+\DoxyCodeLine{00930\ \ \ \{}
+\DoxyCodeLine{00931\ \ \ \ \ \textcolor{keyword}{using\ }Scalar\ =\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{structvtk_matrix_utilities_1_1_scalar_type_extractor_a4d50d954304d0a71df552bc8510ba6c6}{vtkMatrixUtilities::ScalarTypeExtractor<VectorT>::value\_type}};}
+\DoxyCodeLine{00932\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_math_a3e6e00ade1747b2f8965ecd9e4a8eb96}{vtkMath::Dot<Scalar,\ SizeT>}}(std::forward<VectorT>(x),\ std::forward<VectorT>(x));}
+\DoxyCodeLine{00933\ \ \ \}}
+\DoxyCodeLine{00934\ }
+\DoxyCodeLine{00951\ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{int}\ SizeT,\ \textcolor{keyword}{class}\ LayoutT\ =\ vtkMatrixUtilities::Layout::Identity,\ \textcolor{keyword}{class}\ MatrixT>}
+\DoxyCodeLine{00952\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{structvtk_matrix_utilities_1_1_scalar_type_extractor_a4d50d954304d0a71df552bc8510ba6c6}{vtkMatrixUtilities::ScalarTypeExtractor<MatrixT>::value\_type}}\ \doxymbox{\hyperlink{classvtk_math_ad3a86c1873d3bdcf9d04eccb510fd32b}{Determinant}}(}
+\DoxyCodeLine{00953\ \ \ \ \ MatrixT\&\&\ M)}
+\DoxyCodeLine{00954\ \ \ \{}
+\DoxyCodeLine{00955\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_math_private_1_1_determinant}{vtkMathPrivate::Determinant<SizeT,\ LayoutT>::Compute}}(std::forward<MatrixT>(M));}
+\DoxyCodeLine{00956\ \ \ \}}
+\DoxyCodeLine{00957\ }
+\DoxyCodeLine{00973\ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{int}\ SizeT,\ \textcolor{keyword}{class\ }LayoutT\ =\ vtkMatrixUtilities::Layout::Identity,\ \textcolor{keyword}{class\ }MatrixT1,}
+\DoxyCodeLine{00974\ \ \ \ \ \textcolor{keyword}{class\ }MatrixT2>}
+\DoxyCodeLine{00975\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_adf35ef6607ee27e36e84cf7d712f2e26}{InvertMatrix}}(MatrixT1\&\&\ M1,\ MatrixT2\&\&\ M2)}
+\DoxyCodeLine{00976\ \ \ \{}
+\DoxyCodeLine{00977\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_private_1_1_invert_matrix}{vtkMathPrivate::InvertMatrix<SizeT,\ LayoutT>::Compute}}(}
+\DoxyCodeLine{00978\ \ \ \ \ \ \ std::forward<MatrixT1>(M1),\ std::forward<MatrixT2>(M2));}
+\DoxyCodeLine{00979\ \ \ \}}
+\DoxyCodeLine{00980\ }
+\DoxyCodeLine{00994\ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{int}\ RowsT,\ \textcolor{keywordtype}{int}\ ColsT,\ \textcolor{keyword}{class\ }LayoutT\ =\ vtkMatrixUtilities::Layout::Identity,}
+\DoxyCodeLine{00995\ \ \ \ \ \textcolor{keyword}{class\ }MatrixT,\ \textcolor{keyword}{class\ }VectorT1,\ \textcolor{keyword}{class\ }VectorT2>}
+\DoxyCodeLine{00996\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a32f255883cca33fcd9dbe0e0f21a1b63}{LinearSolve}}(MatrixT\&\&\ M,\ VectorT1\&\&\ x,\ VectorT2\&\&\ y)}
+\DoxyCodeLine{00997\ \ \ \{}
+\DoxyCodeLine{00998\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_private_1_1_linear_solve}{vtkMathPrivate::LinearSolve<RowsT,\ ColsT,\ LayoutT>::Compute}}(}
+\DoxyCodeLine{00999\ \ \ \ \ \ \ std::forward<MatrixT>(M),\ std::forward<VectorT1>(x),\ std::forward<VectorT2>(y));}
+\DoxyCodeLine{01000\ \ \ \}}
+\DoxyCodeLine{01001\ }
+\DoxyCodeLine{01016\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }ScalarT,\ \textcolor{keywordtype}{int}\ SizeT,\ \textcolor{keyword}{class\ }LayoutT\ =\ vtkMatrixUtilities::Layout::Identity,}
+\DoxyCodeLine{01017\ \ \ \ \ \textcolor{keyword}{class\ }VectorT1,\ \textcolor{keyword}{class\ }MatrixT,\ \textcolor{keyword}{class\ }VectorT2,}
+\DoxyCodeLine{01018\ \ \ \ \ \textcolor{keyword}{class\ }=\ \textcolor{keyword}{typename}\ std::enable\_if<SizeT\ !=\ DYNAMIC\_VECTOR\_SIZE()>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}>}
+\DoxyCodeLine{01019\ \ \ \textcolor{keyword}{static}\ ScalarT\ \doxymbox{\hyperlink{classvtk_math_a6294e1bd66626ccdc7b4f7e06459c0f4}{Dot}}(VectorT1\&\&\ x,\ MatrixT\&\&\ M,\ VectorT2\&\&\ y)}
+\DoxyCodeLine{01020\ \ \ \{}
+\DoxyCodeLine{01021\ \ \ \ \ ScalarT\ tmp[SizeT];}
+\DoxyCodeLine{01022\ \ \ \ \ vtkMathPrivate::MultiplyMatrix<SizeT,\ SizeT,\ 1,\ LayoutT>::Compute(}
+\DoxyCodeLine{01023\ \ \ \ \ \ \ std::forward<MatrixT>(M),\ std::forward<VectorT2>(y),\ tmp);}
+\DoxyCodeLine{01024\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_math_private_1_1_contract_row_with_col}{vtkMathPrivate::ContractRowWithCol}}<ScalarT,\ 1,\ SizeT,\ 1,\ 0,\ 0,}
+\DoxyCodeLine{01025\ \ \ \ \ \ \ vtkMatrixUtilities::Layout::Identity,}
+\DoxyCodeLine{01026\ \ \ \ \ \ \ vtkMatrixUtilities::Layout::Transpose>::Compute(std::forward<VectorT1>(x),\ tmp);}
+\DoxyCodeLine{01027\ \ \ \}}
+\DoxyCodeLine{01028\ }
+\DoxyCodeLine{01034\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_aafb3704aabe3ef08b9f08d6cd9200bdb}{MultiplyMatrix}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ \textcolor{keyword}{const}*\ A,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ \textcolor{keyword}{const}*\ B,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ rowA,}
+\DoxyCodeLine{01035\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ colA,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ rowB,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ colB,\ \textcolor{keywordtype}{double}**\ C);}
+\DoxyCodeLine{01036\ }
+\DoxyCodeLine{01038\ }
+\DoxyCodeLine{01042\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_afa8f6dc85de34d0c27337f65bcbbaf11}{Transpose3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keywordtype}{float}\ AT[3][3]);}
+\DoxyCodeLine{01043\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_afa8f6dc85de34d0c27337f65bcbbaf11}{Transpose3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keywordtype}{double}\ AT[3][3]);}
+\DoxyCodeLine{01045\ }
+\DoxyCodeLine{01047\ }
+\DoxyCodeLine{01051\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ac1cb54b3ca30596c4bc54d13bdda300e}{Invert3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keywordtype}{float}\ AI[3][3]);}
+\DoxyCodeLine{01052\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ac1cb54b3ca30596c4bc54d13bdda300e}{Invert3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keywordtype}{double}\ AI[3][3]);}
+\DoxyCodeLine{01054\ }
+\DoxyCodeLine{01056\ }
+\DoxyCodeLine{01059\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a2b3dbf82e624c9ae1bf1d8803ecf245d}{Identity3x3}}(\textcolor{keywordtype}{float}\ A[3][3]);}
+\DoxyCodeLine{01060\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a2b3dbf82e624c9ae1bf1d8803ecf245d}{Identity3x3}}(\textcolor{keywordtype}{double}\ A[3][3]);}
+\DoxyCodeLine{01062\ }
+\DoxyCodeLine{01064\ }
+\DoxyCodeLine{01067\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{Determinant3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3]);}
+\DoxyCodeLine{01068\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{Determinant3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3]);}
+\DoxyCodeLine{01070\ }
+\DoxyCodeLine{01074\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{Determinant3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ c1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ c2[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ c3[3]);}
+\DoxyCodeLine{01075\ }
+\DoxyCodeLine{01079\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{Determinant3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ c1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ c2[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ c3[3]);}
+\DoxyCodeLine{01080\ }
+\DoxyCodeLine{01087\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{Determinant3x3}}(\textcolor{keywordtype}{double}\ a1,\ \textcolor{keywordtype}{double}\ a2,\ \textcolor{keywordtype}{double}\ a3,\ \textcolor{keywordtype}{double}\ b1,\ \textcolor{keywordtype}{double}\ b2,\ \textcolor{keywordtype}{double}\ b3,}
+\DoxyCodeLine{01088\ \ \ \ \ \textcolor{keywordtype}{double}\ c1,\ \textcolor{keywordtype}{double}\ c2,\ \textcolor{keywordtype}{double}\ c3);}
+\DoxyCodeLine{01089\ }
+\DoxyCodeLine{01091\ }
+\DoxyCodeLine{01098\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a97a3288a26e89cdefd526c23bedb02a2}{QuaternionToMatrix3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ quat[4],\ \textcolor{keywordtype}{float}\ A[3][3]);}
+\DoxyCodeLine{01099\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a97a3288a26e89cdefd526c23bedb02a2}{QuaternionToMatrix3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ quat[4],\ \textcolor{keywordtype}{double}\ A[3][3]);}
+\DoxyCodeLine{01100\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }QuaternionT,\ \textcolor{keyword}{class\ }MatrixT,}
+\DoxyCodeLine{01101\ \ \ \ \ \textcolor{keyword}{class\ }EnableT\ =\ \textcolor{keyword}{typename}\ std::enable\_if<!vtkMatrixUtilities::MatrixIs2DArray<MatrixT>()>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}>}
+\DoxyCodeLine{01102\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a97a3288a26e89cdefd526c23bedb02a2}{QuaternionToMatrix3x3}}(QuaternionT\&\&\ q,\ MatrixT\&\&\ A);}
+\DoxyCodeLine{01104\ }
+\DoxyCodeLine{01106\ }
+\DoxyCodeLine{01115\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a6d4068211f5392e1f1622a7b7fcba338}{Matrix3x3ToQuaternion}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keywordtype}{float}\ quat[4]);}
+\DoxyCodeLine{01116\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a6d4068211f5392e1f1622a7b7fcba338}{Matrix3x3ToQuaternion}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keywordtype}{double}\ quat[4]);}
+\DoxyCodeLine{01117\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }MatrixT,\ \textcolor{keyword}{class\ }QuaternionT,}
+\DoxyCodeLine{01118\ \ \ \ \ \textcolor{keyword}{class\ }EnableT\ =\ \textcolor{keyword}{typename}\ std::enable\_if<!vtkMatrixUtilities::MatrixIs2DArray<MatrixT>()>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}>}
+\DoxyCodeLine{01119\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a6d4068211f5392e1f1622a7b7fcba338}{Matrix3x3ToQuaternion}}(MatrixT\&\&\ A,\ QuaternionT\&\&\ q);}
+\DoxyCodeLine{01121\ }
+\DoxyCodeLine{01123\ }
+\DoxyCodeLine{01129\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_af41762cb9e1eb186c20631922b7246e7}{MultiplyQuaternion}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ q1[4],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ q2[4],\ \textcolor{keywordtype}{float}\ q[4]);}
+\DoxyCodeLine{01130\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_af41762cb9e1eb186c20631922b7246e7}{MultiplyQuaternion}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ q1[4],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ q2[4],\ \textcolor{keywordtype}{double}\ q[4]);}
+\DoxyCodeLine{01132\ }
+\DoxyCodeLine{01134\ }
+\DoxyCodeLine{01138\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_acadd36d7eb9277fcd853f94595d75f2b}{RotateVectorByNormalizedQuaternion}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ v[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ q[4],\ \textcolor{keywordtype}{float}\ r[3]);}
+\DoxyCodeLine{01139\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_acadd36d7eb9277fcd853f94595d75f2b}{RotateVectorByNormalizedQuaternion}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ v[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ q[4],\ \textcolor{keywordtype}{double}\ r[3]);}
+\DoxyCodeLine{01141\ }
+\DoxyCodeLine{01143\ }
+\DoxyCodeLine{01147\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_abbfdd504dfaf0a997752380fe3721b6f}{RotateVectorByWXYZ}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ v[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ q[4],\ \textcolor{keywordtype}{float}\ r[3]);}
+\DoxyCodeLine{01148\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_abbfdd504dfaf0a997752380fe3721b6f}{RotateVectorByWXYZ}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ v[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ q[4],\ \textcolor{keywordtype}{double}\ r[3]);}
+\DoxyCodeLine{01150\ }
+\DoxyCodeLine{01152\ }
+\DoxyCodeLine{01157\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ad204cfd0803e5f81fb8bc91e7e434bf1}{Orthogonalize3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keywordtype}{float}\ B[3][3]);}
+\DoxyCodeLine{01158\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ad204cfd0803e5f81fb8bc91e7e434bf1}{Orthogonalize3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keywordtype}{double}\ B[3][3]);}
+\DoxyCodeLine{01160\ }
+\DoxyCodeLine{01162\ }
+\DoxyCodeLine{01168\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a3ea20fb606b9b4b2b338cda5eda20b16}{Diagonalize3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keywordtype}{float}\ w[3],\ \textcolor{keywordtype}{float}\ V[3][3]);}
+\DoxyCodeLine{01169\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a3ea20fb606b9b4b2b338cda5eda20b16}{Diagonalize3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keywordtype}{double}\ w[3],\ \textcolor{keywordtype}{double}\ V[3][3]);}
+\DoxyCodeLine{01171\ }
+\DoxyCodeLine{01173\ }
+\DoxyCodeLine{01182\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a2c03ea7eae8adc2e0e49aa33fae2f357}{SingularValueDecomposition3x3}}(}
+\DoxyCodeLine{01183\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keywordtype}{float}\ U[3][3],\ \textcolor{keywordtype}{float}\ w[3],\ \textcolor{keywordtype}{float}\ VT[3][3]);}
+\DoxyCodeLine{01184\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a2c03ea7eae8adc2e0e49aa33fae2f357}{SingularValueDecomposition3x3}}(}
+\DoxyCodeLine{01185\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keywordtype}{double}\ U[3][3],\ \textcolor{keywordtype}{double}\ w[3],\ \textcolor{keywordtype}{double}\ VT[3][3]);}
+\DoxyCodeLine{01187\ }
+\DoxyCodeLine{01195\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_ad390f74bc885e8b4b4b9838086ad3354}{SolveLinearSystemGEPP2x2}}(}
+\DoxyCodeLine{01196\ \ \ \ \ \textcolor{keywordtype}{double}\ a00,\ \textcolor{keywordtype}{double}\ a01,\ \textcolor{keywordtype}{double}\ a10,\ \textcolor{keywordtype}{double}\ a11,\ \textcolor{keywordtype}{double}\ b0,\ \textcolor{keywordtype}{double}\ b1,\ \textcolor{keywordtype}{double}\&\ x0,\ \textcolor{keywordtype}{double}\&\ x1);}
+\DoxyCodeLine{01197\ }
+\DoxyCodeLine{01206\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_ad4f784bd572f863aadc7561091ab7b31}{SolveLinearSystem}}(\textcolor{keywordtype}{double}**\ A,\ \textcolor{keywordtype}{double}*\ x,\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{01207\ }
+\DoxyCodeLine{01214\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a6d19f9ad53837249ddc2bb40c0371554}{InvertMatrix}}(\textcolor{keywordtype}{double}**\ A,\ \textcolor{keywordtype}{double}**\ AI,\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{01215\ }
+\DoxyCodeLine{01221\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a691db5beb86a5949ba1ce28bf52ae69c}{InvertMatrix}}(}
+\DoxyCodeLine{01222\ \ \ \ \ \textcolor{keywordtype}{double}**\ A,\ \textcolor{keywordtype}{double}**\ AI,\ \textcolor{keywordtype}{int}\ size,\ \textcolor{keywordtype}{int}*\ tmp1Size,\ \textcolor{keywordtype}{double}*\ tmp2Size);}
+\DoxyCodeLine{01223\ }
+\DoxyCodeLine{01246\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_af1080098999b7b6ea1882cadd0025ecf}{LUFactorLinearSystem}}(\textcolor{keywordtype}{double}**\ A,\ \textcolor{keywordtype}{int}*\ index,\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{01247\ }
+\DoxyCodeLine{01253\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_ad853367cb591c1bbd327e0134176742b}{LUFactorLinearSystem}}(\textcolor{keywordtype}{double}**\ A,\ \textcolor{keywordtype}{int}*\ index,\ \textcolor{keywordtype}{int}\ size,\ \textcolor{keywordtype}{double}*\ tmpSize);}
+\DoxyCodeLine{01254\ }
+\DoxyCodeLine{01263\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a307f01592c63f5986048e270e52c3a77}{LUSolveLinearSystem}}(\textcolor{keywordtype}{double}**\ A,\ \textcolor{keywordtype}{int}*\ index,\ \textcolor{keywordtype}{double}*\ x,\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{01264\ }
+\DoxyCodeLine{01273\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a30ef57352b481aef4d0fb74cdd88fe5b}{EstimateMatrixCondition}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ \textcolor{keyword}{const}*\ A,\ \textcolor{keywordtype}{int}\ size);}
+\DoxyCodeLine{01274\ }
+\DoxyCodeLine{01276\ }
+\DoxyCodeLine{01284\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a5b53a1915a10363a37b7abd6c93c1ce9}{Jacobi}}(\textcolor{keywordtype}{float}**\ a,\ \textcolor{keywordtype}{float}*\ w,\ \textcolor{keywordtype}{float}**\ v);}
+\DoxyCodeLine{01285\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a5b53a1915a10363a37b7abd6c93c1ce9}{Jacobi}}(\textcolor{keywordtype}{double}**\ a,\ \textcolor{keywordtype}{double}*\ w,\ \textcolor{keywordtype}{double}**\ v);}
+\DoxyCodeLine{01287\ }
+\DoxyCodeLine{01289\ }
+\DoxyCodeLine{01298\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a81ee2d4ba77eee38879be1c03372cfd7}{JacobiN}}(\textcolor{keywordtype}{float}**\ a,\ \textcolor{keywordtype}{int}\ n,\ \textcolor{keywordtype}{float}*\ w,\ \textcolor{keywordtype}{float}**\ v);}
+\DoxyCodeLine{01299\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a81ee2d4ba77eee38879be1c03372cfd7}{JacobiN}}(\textcolor{keywordtype}{double}**\ a,\ \textcolor{keywordtype}{int}\ n,\ \textcolor{keywordtype}{double}*\ w,\ \textcolor{keywordtype}{double}**\ v);}
+\DoxyCodeLine{01301\ }
+\DoxyCodeLine{01315\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a18d75ec3bd20597ee0104039663ae635}{SolveHomogeneousLeastSquares}}(}
+\DoxyCodeLine{01316\ \ \ \ \ \textcolor{keywordtype}{int}\ numberOfSamples,\ \textcolor{keywordtype}{double}**\ xt,\ \textcolor{keywordtype}{int}\ xOrder,\ \textcolor{keywordtype}{double}**\ mt);}
+\DoxyCodeLine{01317\ }
+\DoxyCodeLine{01332\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_aece06f21f14d246510981d18a620a79c}{SolveLeastSquares}}(\textcolor{keywordtype}{int}\ numberOfSamples,\ \textcolor{keywordtype}{double}**\ xt,\ \textcolor{keywordtype}{int}\ xOrder,\ \textcolor{keywordtype}{double}**\ yt,}
+\DoxyCodeLine{01333\ \ \ \ \ \textcolor{keywordtype}{int}\ yOrder,\ \textcolor{keywordtype}{double}**\ mt,\ \textcolor{keywordtype}{int}\ checkHomogeneous\ =\ 1);}
+\DoxyCodeLine{01334\ }
+\DoxyCodeLine{01336\ }
+\DoxyCodeLine{01343\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_acda272197c6723e3ff6e72822b1e1d79}{RGBToHSV}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3],\ \textcolor{keywordtype}{float}\ hsv[3])}
+\DoxyCodeLine{01344\ \ \ \{}
+\DoxyCodeLine{01345\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_acda272197c6723e3ff6e72822b1e1d79}{RGBToHSV}}(\doxymbox{\hyperlink{structrgb}{rgb}}[0],\ \doxymbox{\hyperlink{structrgb}{rgb}}[1],\ \doxymbox{\hyperlink{structrgb}{rgb}}[2],\ hsv,\ hsv\ +\ 1,\ hsv\ +\ 2);}
+\DoxyCodeLine{01346\ \ \ \}}
+\DoxyCodeLine{01347\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ RGBToHSV(\textcolor{keywordtype}{float}\ r,\ \textcolor{keywordtype}{float}\ g,\ \textcolor{keywordtype}{float}\ b,\ \textcolor{keywordtype}{float}*\ \doxymbox{\hyperlink{classvtk_en_sight_gold_combined_reader_1_1h}{h}},\ \textcolor{keywordtype}{float}*\ s,\ \textcolor{keywordtype}{float}*\ v);}
+\DoxyCodeLine{01348\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ RGBToHSV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3],\ \textcolor{keywordtype}{double}\ hsv[3])}
+\DoxyCodeLine{01349\ \ \ \{}
+\DoxyCodeLine{01350\ \ \ \ \ RGBToHSV(\doxymbox{\hyperlink{structrgb}{rgb}}[0],\ \doxymbox{\hyperlink{structrgb}{rgb}}[1],\ \doxymbox{\hyperlink{structrgb}{rgb}}[2],\ hsv,\ hsv\ +\ 1,\ hsv\ +\ 2);}
+\DoxyCodeLine{01351\ \ \ \}}
+\DoxyCodeLine{01352\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ RGBToHSV(\textcolor{keywordtype}{double}\ r,\ \textcolor{keywordtype}{double}\ g,\ \textcolor{keywordtype}{double}\ b,\ \textcolor{keywordtype}{double}*\ h,\ \textcolor{keywordtype}{double}*\ s,\ \textcolor{keywordtype}{double}*\ v);}
+\DoxyCodeLine{01354\ }
+\DoxyCodeLine{01356\ }
+\DoxyCodeLine{01363\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a432c7d56d981a3030cb0d6f4a8789b79}{HSVToRGB}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ hsv[3],\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3])}
+\DoxyCodeLine{01364\ \ \ \{}
+\DoxyCodeLine{01365\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a432c7d56d981a3030cb0d6f4a8789b79}{HSVToRGB}}(hsv[0],\ hsv[1],\ hsv[2],\ \doxymbox{\hyperlink{structrgb}{rgb}},\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 1,\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 2);}
+\DoxyCodeLine{01366\ \ \ \}}
+\DoxyCodeLine{01367\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ HSVToRGB(\textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_en_sight_gold_combined_reader_1_1h}{h}},\ \textcolor{keywordtype}{float}\ s,\ \textcolor{keywordtype}{float}\ v,\ \textcolor{keywordtype}{float}*\ r,\ \textcolor{keywordtype}{float}*\ g,\ \textcolor{keywordtype}{float}*\ b);}
+\DoxyCodeLine{01368\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ HSVToRGB(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ hsv[3],\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3])}
+\DoxyCodeLine{01369\ \ \ \{}
+\DoxyCodeLine{01370\ \ \ \ \ HSVToRGB(hsv[0],\ hsv[1],\ hsv[2],\ \doxymbox{\hyperlink{structrgb}{rgb}},\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 1,\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 2);}
+\DoxyCodeLine{01371\ \ \ \}}
+\DoxyCodeLine{01372\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ HSVToRGB(\textcolor{keywordtype}{double}\ h,\ \textcolor{keywordtype}{double}\ s,\ \textcolor{keywordtype}{double}\ v,\ \textcolor{keywordtype}{double}*\ r,\ \textcolor{keywordtype}{double}*\ g,\ \textcolor{keywordtype}{double}*\ b);}
+\DoxyCodeLine{01374\ }
+\DoxyCodeLine{01376\ }
+\DoxyCodeLine{01380\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a7e3fb083a02a6b2945ed67c9b0d27a3c}{ProLabToXYZ}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ prolab[3],\ \textcolor{keywordtype}{double}\ xyz[3])}
+\DoxyCodeLine{01381\ \ \ \{}
+\DoxyCodeLine{01382\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a7e3fb083a02a6b2945ed67c9b0d27a3c}{ProLabToXYZ}}(prolab[0],\ prolab[1],\ prolab[2],\ xyz\ +\ 0,\ xyz\ +\ 1,\ xyz\ +\ 2);}
+\DoxyCodeLine{01383\ \ \ \}}
+\DoxyCodeLine{01384\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ProLabToXYZ(\textcolor{keywordtype}{double}\ L,\ \textcolor{keywordtype}{double}\ a,\ \textcolor{keywordtype}{double}\ b,\ \textcolor{keywordtype}{double}*\ x,\ \textcolor{keywordtype}{double}*\ y,\ \textcolor{keywordtype}{double}*\ z);}
+\DoxyCodeLine{01386\ }
+\DoxyCodeLine{01388\ }
+\DoxyCodeLine{01392\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a0d6e38965b966b8711d4e5ad5aeb4c56}{XYZToProLab}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ xyz[3],\ \textcolor{keywordtype}{double}\ prolab[3])}
+\DoxyCodeLine{01393\ \ \ \{}
+\DoxyCodeLine{01394\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a0d6e38965b966b8711d4e5ad5aeb4c56}{XYZToProLab}}(xyz[0],\ xyz[1],\ xyz[2],\ prolab\ +\ 0,\ prolab\ +\ 1,\ prolab\ +\ 2);}
+\DoxyCodeLine{01395\ \ \ \}}
+\DoxyCodeLine{01396\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ XYZToProLab(\textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y,\ \textcolor{keywordtype}{double}\ z,\ \textcolor{keywordtype}{double}*\ L,\ \textcolor{keywordtype}{double}*\ a,\ \textcolor{keywordtype}{double}*\ b);}
+\DoxyCodeLine{01398\ }
+\DoxyCodeLine{01400\ }
+\DoxyCodeLine{01403\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a3879c122cefb1c449ce918e5f1b1d911}{LabToXYZ}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ lab[3],\ \textcolor{keywordtype}{double}\ xyz[3])}
+\DoxyCodeLine{01404\ \ \ \{}
+\DoxyCodeLine{01405\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a3879c122cefb1c449ce918e5f1b1d911}{LabToXYZ}}(lab[0],\ lab[1],\ lab[2],\ xyz\ +\ 0,\ xyz\ +\ 1,\ xyz\ +\ 2);}
+\DoxyCodeLine{01406\ \ \ \}}
+\DoxyCodeLine{01407\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ LabToXYZ(\textcolor{keywordtype}{double}\ L,\ \textcolor{keywordtype}{double}\ a,\ \textcolor{keywordtype}{double}\ b,\ \textcolor{keywordtype}{double}*\ x,\ \textcolor{keywordtype}{double}*\ y,\ \textcolor{keywordtype}{double}*\ z);}
+\DoxyCodeLine{01409\ }
+\DoxyCodeLine{01411\ }
+\DoxyCodeLine{01414\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a257737dce7bd7f2b2a1de57fecfe2db3}{XYZToLab}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ xyz[3],\ \textcolor{keywordtype}{double}\ lab[3])}
+\DoxyCodeLine{01415\ \ \ \{}
+\DoxyCodeLine{01416\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a257737dce7bd7f2b2a1de57fecfe2db3}{XYZToLab}}(xyz[0],\ xyz[1],\ xyz[2],\ lab\ +\ 0,\ lab\ +\ 1,\ lab\ +\ 2);}
+\DoxyCodeLine{01417\ \ \ \}}
+\DoxyCodeLine{01418\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ XYZToLab(\textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y,\ \textcolor{keywordtype}{double}\ z,\ \textcolor{keywordtype}{double}*\ L,\ \textcolor{keywordtype}{double}*\ a,\ \textcolor{keywordtype}{double}*\ b);}
+\DoxyCodeLine{01420\ }
+\DoxyCodeLine{01422\ }
+\DoxyCodeLine{01425\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a9402083868ca56b82156d150fb5bcfb7}{XYZToRGB}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ xyz[3],\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3])}
+\DoxyCodeLine{01426\ \ \ \{}
+\DoxyCodeLine{01427\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a9402083868ca56b82156d150fb5bcfb7}{XYZToRGB}}(xyz[0],\ xyz[1],\ xyz[2],\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 0,\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 1,\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 2);}
+\DoxyCodeLine{01428\ \ \ \}}
+\DoxyCodeLine{01429\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ XYZToRGB(\textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y,\ \textcolor{keywordtype}{double}\ z,\ \textcolor{keywordtype}{double}*\ r,\ \textcolor{keywordtype}{double}*\ g,\ \textcolor{keywordtype}{double}*\ b);}
+\DoxyCodeLine{01431\ }
+\DoxyCodeLine{01433\ }
+\DoxyCodeLine{01436\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a5f11627927934251fc6010a76befec10}{RGBToXYZ}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3],\ \textcolor{keywordtype}{double}\ xyz[3])}
+\DoxyCodeLine{01437\ \ \ \{}
+\DoxyCodeLine{01438\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a5f11627927934251fc6010a76befec10}{RGBToXYZ}}(\doxymbox{\hyperlink{structrgb}{rgb}}[0],\ \doxymbox{\hyperlink{structrgb}{rgb}}[1],\ \doxymbox{\hyperlink{structrgb}{rgb}}[2],\ xyz\ +\ 0,\ xyz\ +\ 1,\ xyz\ +\ 2);}
+\DoxyCodeLine{01439\ \ \ \}}
+\DoxyCodeLine{01440\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ RGBToXYZ(\textcolor{keywordtype}{double}\ r,\ \textcolor{keywordtype}{double}\ g,\ \textcolor{keywordtype}{double}\ b,\ \textcolor{keywordtype}{double}*\ x,\ \textcolor{keywordtype}{double}*\ y,\ \textcolor{keywordtype}{double}*\ z);}
+\DoxyCodeLine{01442\ }
+\DoxyCodeLine{01444\ }
+\DoxyCodeLine{01450\ }
+\DoxyCodeLine{01451\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a9ec1201a0065fcd63bf78c02e24ad7c0}{RGBToLab}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3],\ \textcolor{keywordtype}{double}\ lab[3])}
+\DoxyCodeLine{01452\ \ \ \{}
+\DoxyCodeLine{01453\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a9ec1201a0065fcd63bf78c02e24ad7c0}{RGBToLab}}(\doxymbox{\hyperlink{structrgb}{rgb}}[0],\ \doxymbox{\hyperlink{structrgb}{rgb}}[1],\ \doxymbox{\hyperlink{structrgb}{rgb}}[2],\ lab\ +\ 0,\ lab\ +\ 1,\ lab\ +\ 2);}
+\DoxyCodeLine{01454\ \ \ \}}
+\DoxyCodeLine{01455\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ RGBToLab(\textcolor{keywordtype}{double}\ red,\ \textcolor{keywordtype}{double}\ green,\ \textcolor{keywordtype}{double}\ blue,\ \textcolor{keywordtype}{double}*\ L,\ \textcolor{keywordtype}{double}*\ a,\ \textcolor{keywordtype}{double}*\ b);}
+\DoxyCodeLine{01457\ }
+\DoxyCodeLine{01459\ }
+\DoxyCodeLine{01462\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_aa2c27b260a4def0232a67d4a3d7a4b2b}{ProLabToRGB}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ prolab[3],\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3])}
+\DoxyCodeLine{01463\ \ \ \{}
+\DoxyCodeLine{01464\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_aa2c27b260a4def0232a67d4a3d7a4b2b}{ProLabToRGB}}(prolab[0],\ prolab[1],\ prolab[2],\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 0,\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 1,\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 2);}
+\DoxyCodeLine{01465\ \ \ \}}
+\DoxyCodeLine{01466\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ProLabToRGB(\textcolor{keywordtype}{double}\ L,\ \textcolor{keywordtype}{double}\ a,\ \textcolor{keywordtype}{double}\ b,\ \textcolor{keywordtype}{double}*\ red,\ \textcolor{keywordtype}{double}*\ green,\ \textcolor{keywordtype}{double}*\ blue);}
+\DoxyCodeLine{01468\ }
+\DoxyCodeLine{01470\ }
+\DoxyCodeLine{01477\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a8f940851f99ffadf0340d00e7fecd499}{RGBToProLab}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3],\ \textcolor{keywordtype}{double}\ prolab[3])}
+\DoxyCodeLine{01478\ \ \ \{}
+\DoxyCodeLine{01479\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_a8f940851f99ffadf0340d00e7fecd499}{RGBToProLab}}(\doxymbox{\hyperlink{structrgb}{rgb}}[0],\ \doxymbox{\hyperlink{structrgb}{rgb}}[1],\ \doxymbox{\hyperlink{structrgb}{rgb}}[2],\ prolab\ +\ 0,\ prolab\ +\ 1,\ prolab\ +\ 2);}
+\DoxyCodeLine{01480\ \ \ \}}
+\DoxyCodeLine{01481\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ RGBToProLab(\textcolor{keywordtype}{double}\ red,\ \textcolor{keywordtype}{double}\ green,\ \textcolor{keywordtype}{double}\ blue,\ \textcolor{keywordtype}{double}*\ L,\ \textcolor{keywordtype}{double}*\ a,\ \textcolor{keywordtype}{double}*\ b);}
+\DoxyCodeLine{01483\ }
+\DoxyCodeLine{01485\ }
+\DoxyCodeLine{01488\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ad6939030cf36bbcda58590a1ed2d5804}{LabToRGB}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ lab[3],\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{structrgb}{rgb}}[3])}
+\DoxyCodeLine{01489\ \ \ \{}
+\DoxyCodeLine{01490\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_ad6939030cf36bbcda58590a1ed2d5804}{LabToRGB}}(lab[0],\ lab[1],\ lab[2],\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 0,\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 1,\ \doxymbox{\hyperlink{structrgb}{rgb}}\ +\ 2);}
+\DoxyCodeLine{01491\ \ \ \}}
+\DoxyCodeLine{01492\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ LabToRGB(\textcolor{keywordtype}{double}\ L,\ \textcolor{keywordtype}{double}\ a,\ \textcolor{keywordtype}{double}\ b,\ \textcolor{keywordtype}{double}*\ red,\ \textcolor{keywordtype}{double}*\ green,\ \textcolor{keywordtype}{double}*\ blue);}
+\DoxyCodeLine{01494\ }
+\DoxyCodeLine{01496\ }
+\DoxyCodeLine{01499\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ab82dc2a06348b1041bd62a1eb9aea06c}{UninitializeBounds}}(\textcolor{keywordtype}{double}\ bounds[6])}
+\DoxyCodeLine{01500\ \ \ \{}
+\DoxyCodeLine{01501\ \ \ \ \ bounds[0]\ =\ 1.0;}
+\DoxyCodeLine{01502\ \ \ \ \ bounds[1]\ =\ -\/1.0;}
+\DoxyCodeLine{01503\ \ \ \ \ bounds[2]\ =\ 1.0;}
+\DoxyCodeLine{01504\ \ \ \ \ bounds[3]\ =\ -\/1.0;}
+\DoxyCodeLine{01505\ \ \ \ \ bounds[4]\ =\ 1.0;}
+\DoxyCodeLine{01506\ \ \ \ \ bounds[5]\ =\ -\/1.0;}
+\DoxyCodeLine{01507\ \ \ \}}
+\DoxyCodeLine{01509\ }
+\DoxyCodeLine{01511\ }
+\DoxyCodeLine{01514\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a7f23950b8fe585d325e0170fadd35ea7}{AreBoundsInitialized}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ bounds[6])}
+\DoxyCodeLine{01515\ \ \ \{}
+\DoxyCodeLine{01516\ \ \ \ \ \textcolor{keywordflow}{if}\ (bounds[1]\ -\/\ bounds[0]\ <\ 0.0)}
+\DoxyCodeLine{01517\ \ \ \ \ \{}
+\DoxyCodeLine{01518\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01519\ \ \ \ \ \}}
+\DoxyCodeLine{01520\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{01521\ \ \ \}}
+\DoxyCodeLine{01523\ }
+\DoxyCodeLine{01528\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{01529\ \ \ \textcolor{keyword}{static}\ T\ ClampValue(\textcolor{keyword}{const}\ T\&\ value,\ \textcolor{keyword}{const}\ T\&\ min,\ \textcolor{keyword}{const}\ T\&\ max);}
+\DoxyCodeLine{01530\ }
+\DoxyCodeLine{01532\ }
+\DoxyCodeLine{01536\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ClampValue(\textcolor{keywordtype}{double}*\ value,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ range[2]);}
+\DoxyCodeLine{01537\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ClampValue(\textcolor{keywordtype}{double}\ value,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ range[2],\ \textcolor{keywordtype}{double}*\ clamped\_value);}
+\DoxyCodeLine{01538\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ClampValues(\textcolor{keywordtype}{double}*\ values,\ \textcolor{keywordtype}{int}\ nb\_values,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ range[2]);}
+\DoxyCodeLine{01539\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ ClampValues(}
+\DoxyCodeLine{01540\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ values,\ \textcolor{keywordtype}{int}\ nb\_values,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ range[2],\ \textcolor{keywordtype}{double}*\ clamped\_values);}
+\DoxyCodeLine{01542\ }
+\DoxyCodeLine{01549\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ ClampAndNormalizeValue(\textcolor{keywordtype}{double}\ value,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ range[2]);}
+\DoxyCodeLine{01550\ }
+\DoxyCodeLine{01555\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T1,\ \textcolor{keyword}{class}\ T2>}
+\DoxyCodeLine{01556\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a3740c9c0d2e088d6c50b22969b800dc4}{TensorFromSymmetricTensor}}(\textcolor{keyword}{const}\ T1\ symmTensor[6],\ T2\ tensor[9]);}
+\DoxyCodeLine{01557\ }
+\DoxyCodeLine{01563\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{01564\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a3740c9c0d2e088d6c50b22969b800dc4}{TensorFromSymmetricTensor}}(T\ tensor[9]);}
+\DoxyCodeLine{01565\ }
+\DoxyCodeLine{01574\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a097ad00b5fe640503d8a410f55d04d6a}{GetScalarTypeFittingRange}}(}
+\DoxyCodeLine{01575\ \ \ \ \ \textcolor{keywordtype}{double}\ range\_min,\ \textcolor{keywordtype}{double}\ range\_max,\ \textcolor{keywordtype}{double}\ scale\ =\ 1.0,\ \textcolor{keywordtype}{double}\ shift\ =\ 0.0);}
+\DoxyCodeLine{01576\ }
+\DoxyCodeLine{01585\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a4106814c694d9bc6db003d0eeb7d9639}{GetAdjustedScalarRange}}(vtkDataArray*\ array,\ \textcolor{keywordtype}{int}\ comp,\ \textcolor{keywordtype}{double}\ range[2]);}
+\DoxyCodeLine{01586\ }
+\DoxyCodeLine{01591\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a1c55f9a6ed87200d4604a4dbaae5ecf6}{ExtentIsWithinOtherExtent}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ extent1[6],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ extent2[6]);}
+\DoxyCodeLine{01592\ }
+\DoxyCodeLine{01598\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_aa75ac7c86035bf605439d49016c55d48}{BoundsIsWithinOtherBounds}}(}
+\DoxyCodeLine{01599\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ bounds1[6],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ bounds2[6],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ delta[3]);}
+\DoxyCodeLine{01600\ }
+\DoxyCodeLine{01606\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a3b1c77b09d3b599814b7bf52acbb8187}{PointIsWithinBounds}}(}
+\DoxyCodeLine{01607\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ point[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ bounds[6],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ delta[3]);}
+\DoxyCodeLine{01608\ }
+\DoxyCodeLine{01618\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a5c8555832d2ab2d303b32c5e4810ac5e}{PlaneIntersectsAABB}}(}
+\DoxyCodeLine{01619\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ bounds[6],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ normal[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ point[3]);}
+\DoxyCodeLine{01620\ }
+\DoxyCodeLine{01630\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a39d74b9f1f1610d5ee3a60366ec29334}{Solve3PointCircle}}(}
+\DoxyCodeLine{01631\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ p1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ p2[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ p3[3],\ \textcolor{keywordtype}{double}\ center[3]);}
+\DoxyCodeLine{01632\ }
+\DoxyCodeLine{01636\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a54193733c61913fb566e47ba284ca7e8}{Inf}}();}
+\DoxyCodeLine{01637\ }
+\DoxyCodeLine{01641\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a49c88083ce2b8ed50d41fc4ebd9868af}{NegInf}}();}
+\DoxyCodeLine{01642\ }
+\DoxyCodeLine{01646\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a2c21b947acfd9157815cbd2bdb9f7b5e}{Nan}}();}
+\DoxyCodeLine{01647\ }
+\DoxyCodeLine{01651\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a88489813fd3aafed1a5674a8b33c6a66}{IsInf}}(\textcolor{keywordtype}{double}\ x);}
+\DoxyCodeLine{01652\ }
+\DoxyCodeLine{01656\ \ \ \textcolor{keyword}{static}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_aa82e9f3fb78e94b4891f400901124757}{IsNan}}(\textcolor{keywordtype}{double}\ x);}
+\DoxyCodeLine{01657\ }
+\DoxyCodeLine{01662\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_math_a6a943e3912dccecbe54962575a7ea23e}{IsFinite}}(\textcolor{keywordtype}{double}\ x);}
+\DoxyCodeLine{01663\ }
+\DoxyCodeLine{01668\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_afee0b516938473d2159d9ca86a04f3c1}{QuadraticRoot}}(\textcolor{keywordtype}{double}\ a,\ \textcolor{keywordtype}{double}\ b,\ \textcolor{keywordtype}{double}\ c,\ \textcolor{keywordtype}{double}\ min,\ \textcolor{keywordtype}{double}\ max,\ \textcolor{keywordtype}{double}*\ u);}
+\DoxyCodeLine{01669\ }
+\DoxyCodeLine{01675\ \ \ \textcolor{keyword}{static}\ vtkIdType\ \doxymbox{\hyperlink{classvtk_math_a0d6adffb5f500245a2996b529e391759}{ComputeGCD}}(vtkIdType\ m,\ vtkIdType\ n)\ \{\ \textcolor{keywordflow}{return}\ (n\ ?\ \doxymbox{\hyperlink{classvtk_math_a0d6adffb5f500245a2996b529e391759}{ComputeGCD}}(n,\ m\ \%\ n)\ :\ m);\ \}}
+\DoxyCodeLine{01676\ }
+\DoxyCodeLine{01680\ \ \ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{classvtk_math_acaa2e5d9b83a9a0f4ac24d103367505a}{ConvolutionMode}}}
+\DoxyCodeLine{01681\ \ \ \{}
+\DoxyCodeLine{01682\ \ \ \ \ FULL,}
+\DoxyCodeLine{01683\ \ \ \ \ SAME,}
+\DoxyCodeLine{01684\ \ \ \ \ VALID}
+\DoxyCodeLine{01685\ \ \ \};}
+\DoxyCodeLine{01686\ }
+\DoxyCodeLine{01709\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Iter1,\ \textcolor{keyword}{class}\ Iter2,\ \textcolor{keyword}{class}\ Iter3>}
+\DoxyCodeLine{01710\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a73b80f26890bd93c4eb7cbd3f6e2af44}{Convolve1D}}(Iter1\ beginSample,\ Iter1\ endSample,\ Iter2\ beginKernel,\ Iter2\ endKernel,}
+\DoxyCodeLine{01711\ \ \ \ \ Iter3\ beginOut,\ Iter3\ endOut,\ \doxymbox{\hyperlink{classvtk_math_acaa2e5d9b83a9a0f4ac24d103367505a}{ConvolutionMode}}\ mode\ =\ ConvolutionMode::FULL)}
+\DoxyCodeLine{01712\ \ \ \{}
+\DoxyCodeLine{01713\ \ \ \ \ \textcolor{keywordtype}{int}\ sampleSize\ =\ std::distance(beginSample,\ endSample);}
+\DoxyCodeLine{01714\ \ \ \ \ \textcolor{keywordtype}{int}\ kernelSize\ =\ std::distance(beginKernel,\ endKernel);}
+\DoxyCodeLine{01715\ \ \ \ \ \textcolor{keywordtype}{int}\ outSize\ =\ std::distance(beginOut,\ endOut);}
+\DoxyCodeLine{01716\ }
+\DoxyCodeLine{01717\ \ \ \ \ \textcolor{keywordflow}{if}\ (sampleSize\ <=\ 0\ ||\ kernelSize\ <=\ 0\ ||\ outSize\ <=\ 0)}
+\DoxyCodeLine{01718\ \ \ \ \ \{}
+\DoxyCodeLine{01719\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{01720\ \ \ \ \ \}}
+\DoxyCodeLine{01721\ }
+\DoxyCodeLine{01722\ \ \ \ \ \textcolor{keywordtype}{int}\ begin\ =\ 0;}
+\DoxyCodeLine{01723\ \ \ \ \ \textcolor{keywordtype}{int}\ end\ =\ outSize;}
+\DoxyCodeLine{01724\ }
+\DoxyCodeLine{01725\ \ \ \ \ \textcolor{keywordflow}{switch}\ (mode)}
+\DoxyCodeLine{01726\ \ \ \ \ \{}
+\DoxyCodeLine{01727\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ ConvolutionMode::SAME:}
+\DoxyCodeLine{01728\ \ \ \ \ \ \ \ \ begin\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(std::ceil((std::min)(sampleSize,\ kernelSize)\ /\ 2.0))\ -\/\ 1;}
+\DoxyCodeLine{01729\ \ \ \ \ \ \ \ \ end\ =\ begin\ +\ (std::max)(sampleSize,\ kernelSize);}
+\DoxyCodeLine{01730\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01731\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ ConvolutionMode::VALID:}
+\DoxyCodeLine{01732\ \ \ \ \ \ \ \ \ begin\ =\ (std::min)(sampleSize,\ kernelSize)\ -\/\ 1;}
+\DoxyCodeLine{01733\ \ \ \ \ \ \ \ \ end\ =\ begin\ +\ std::abs(sampleSize\ -\/\ kernelSize)\ +\ 1;}
+\DoxyCodeLine{01734\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01735\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ ConvolutionMode::FULL:}
+\DoxyCodeLine{01736\ \ \ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{01737\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{01738\ \ \ \ \ \}}
+\DoxyCodeLine{01739\ }
+\DoxyCodeLine{01740\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ begin;\ i\ <\ end;\ i++)}
+\DoxyCodeLine{01741\ \ \ \ \ \{}
+\DoxyCodeLine{01742\ \ \ \ \ \ \ Iter3\ out\ =\ beginOut\ +\ i\ -\/\ begin;}
+\DoxyCodeLine{01743\ \ \ \ \ \ \ *out\ =\ 0;}
+\DoxyCodeLine{01744\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ (std::max)(i\ -\/\ sampleSize\ +\ 1,\ 0);\ j\ <=\ (std::min)(i,\ kernelSize\ -\/\ 1);\ j++)}
+\DoxyCodeLine{01745\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01746\ \ \ \ \ \ \ \ \ *out\ +=\ *(beginSample\ +\ (i\ -\/\ j))\ *\ *(beginKernel\ +\ j);}
+\DoxyCodeLine{01747\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01748\ \ \ \ \ \}}
+\DoxyCodeLine{01749\ \ \ \}}
+\DoxyCodeLine{01750\ }
+\DoxyCodeLine{01755\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a149da695d5564a1816f474aaac328e19}{GetPointAlongLine}}(\textcolor{keywordtype}{double}\ result[3],\ \textcolor{keywordtype}{double}\ p1[3],\ \textcolor{keywordtype}{double}\ p2[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ offset)}
+\DoxyCodeLine{01756\ \ \ \{}
+\DoxyCodeLine{01757\ \ \ \ \ \textcolor{keywordtype}{double}\ directionVector[3]\ =\ \{\ p2[0]\ -\/\ p1[0],\ p2[1]\ -\/\ p1[1],\ p2[2]\ -\/\ p1[2]\ \};}
+\DoxyCodeLine{01758\ \ \ \ \ \doxymbox{\hyperlink{classvtk_math_ac3d8b506fee1ee391647f16cd7661b90}{vtkMath::Normalize}}(directionVector);}
+\DoxyCodeLine{01759\ \ \ \ \ result[0]\ =\ p2[0]\ +\ (offset\ *\ directionVector[0]);}
+\DoxyCodeLine{01760\ \ \ \ \ result[1]\ =\ p2[1]\ +\ (offset\ *\ directionVector[1]);}
+\DoxyCodeLine{01761\ \ \ \ \ result[2]\ =\ p2[2]\ +\ (offset\ *\ directionVector[2]);}
+\DoxyCodeLine{01762\ \ \ \}}
+\DoxyCodeLine{01763\ }
+\DoxyCodeLine{01764\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{01765\ \ \ \doxymbox{\hyperlink{classvtk_math}{vtkMath}}()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{01766\ \ \ \doxymbox{\hyperlink{classvtk_math}{\string~vtkMath}}()\ \textcolor{keyword}{override}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{01767\ }
+\DoxyCodeLine{01768\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkMathInternal>}}\ Internal;}
+\DoxyCodeLine{01769\ }
+\DoxyCodeLine{01770\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01771\ \ \ \doxymbox{\hyperlink{classvtk_math}{vtkMath}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_math}{vtkMath}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{01772\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_math}{vtkMath}}\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{01773\ \};}
+\DoxyCodeLine{01774\ }
+\DoxyCodeLine{01775\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01776\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_a734ec2b6974e84e3378726a4ab0a30b0}{vtkMath::RadiansFromDegrees}}(\textcolor{keywordtype}{float}\ x)}
+\DoxyCodeLine{01777\ \{}
+\DoxyCodeLine{01778\ \ \ \textcolor{keywordflow}{return}\ x\ *\ 0.017453292f;}
+\DoxyCodeLine{01779\ \}}
+\DoxyCodeLine{01780\ }
+\DoxyCodeLine{01781\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01782\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a734ec2b6974e84e3378726a4ab0a30b0}{vtkMath::RadiansFromDegrees}}(\textcolor{keywordtype}{double}\ x)}
+\DoxyCodeLine{01783\ \{}
+\DoxyCodeLine{01784\ \ \ \textcolor{keywordflow}{return}\ x\ *\ 0.017453292519943295;}
+\DoxyCodeLine{01785\ \}}
+\DoxyCodeLine{01786\ }
+\DoxyCodeLine{01787\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01788\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_aaff0b6642695cb538b38145eaa46821a}{vtkMath::DegreesFromRadians}}(\textcolor{keywordtype}{float}\ x)}
+\DoxyCodeLine{01789\ \{}
+\DoxyCodeLine{01790\ \ \ \textcolor{keywordflow}{return}\ x\ *\ 57.2957795131f;}
+\DoxyCodeLine{01791\ \}}
+\DoxyCodeLine{01792\ }
+\DoxyCodeLine{01793\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01794\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_aaff0b6642695cb538b38145eaa46821a}{vtkMath::DegreesFromRadians}}(\textcolor{keywordtype}{double}\ x)}
+\DoxyCodeLine{01795\ \{}
+\DoxyCodeLine{01796\ \ \ \textcolor{keywordflow}{return}\ x\ *\ 57.29577951308232;}
+\DoxyCodeLine{01797\ \}}
+\DoxyCodeLine{01798\ }
+\DoxyCodeLine{01799\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01800\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_math_abf191031a0c8c0c2a6ec085038b0c578}{vtkMath::IsPowerOfTwo}}(vtkTypeUInt64\ x)}
+\DoxyCodeLine{01801\ \{}
+\DoxyCodeLine{01802\ \ \ \textcolor{keywordflow}{return}\ ((x\ !=\ 0)\ \&\ ((x\ \&\ (x\ -\/\ 1))\ ==\ 0));}
+\DoxyCodeLine{01803\ \}}
+\DoxyCodeLine{01804\ }
+\DoxyCodeLine{01805\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01806\ \textcolor{comment}{//\ Credit\ goes\ to\ Peter\ Hart\ and\ William\ Lewis\ on\ comp.lang.python\ 1997}}
+\DoxyCodeLine{01807\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a5fa915f8a21d86527ddb31c6187e4b33}{vtkMath::NearestPowerOfTwo}}(\textcolor{keywordtype}{int}\ x)}
+\DoxyCodeLine{01808\ \{}
+\DoxyCodeLine{01809\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ z\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(((x\ >\ 0)\ ?\ x\ -\/\ 1\ :\ 0));}
+\DoxyCodeLine{01810\ \ \ z\ |=\ z\ >>\ 1;}
+\DoxyCodeLine{01811\ \ \ z\ |=\ z\ >>\ 2;}
+\DoxyCodeLine{01812\ \ \ z\ |=\ z\ >>\ 4;}
+\DoxyCodeLine{01813\ \ \ z\ |=\ z\ >>\ 8;}
+\DoxyCodeLine{01814\ \ \ z\ |=\ z\ >>\ 16;}
+\DoxyCodeLine{01815\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(z\ +\ 1);}
+\DoxyCodeLine{01816\ \}}
+\DoxyCodeLine{01817\ }
+\DoxyCodeLine{01818\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01819\ \textcolor{comment}{//\ Modify\ the\ trunc()\ operation\ provided\ by\ static\_cast<int>()\ to\ get\ floor(),}}
+\DoxyCodeLine{01820\ \textcolor{comment}{//\ Note\ that\ in\ C++\ conditions\ evaluate\ to\ values\ of\ 1\ or\ 0\ (true\ or\ false).}}
+\DoxyCodeLine{01821\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_aa32a872d29227bb04a59fd60b0a96076}{vtkMath::Floor}}(\textcolor{keywordtype}{double}\ x)}
+\DoxyCodeLine{01822\ \{}
+\DoxyCodeLine{01823\ \ \ \textcolor{keywordtype}{int}\ i\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(x);}
+\DoxyCodeLine{01824\ \ \ \textcolor{keywordflow}{return}\ i\ -\/\ (i\ >\ x);}
+\DoxyCodeLine{01825\ \}}
+\DoxyCodeLine{01826\ }
+\DoxyCodeLine{01827\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01828\ \textcolor{comment}{//\ Modify\ the\ trunc()\ operation\ provided\ by\ static\_cast<int>()\ to\ get\ ceil(),}}
+\DoxyCodeLine{01829\ \textcolor{comment}{//\ Note\ that\ in\ C++\ conditions\ evaluate\ to\ values\ of\ 1\ or\ 0\ (true\ or\ false).}}
+\DoxyCodeLine{01830\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_math_a4e00075890a17ca6398b859d59413c9a}{vtkMath::Ceil}}(\textcolor{keywordtype}{double}\ x)}
+\DoxyCodeLine{01831\ \{}
+\DoxyCodeLine{01832\ \ \ \textcolor{keywordtype}{int}\ i\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(x);}
+\DoxyCodeLine{01833\ \ \ \textcolor{keywordflow}{return}\ i\ +\ (i\ <\ x);}
+\DoxyCodeLine{01834\ \}}
+\DoxyCodeLine{01835\ }
+\DoxyCodeLine{01836\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01837\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{01838\ \textcolor{keyword}{inline}\ T\ \doxymbox{\hyperlink{classvtk_math_ade925e1f16b4f1866f3faa53390ef89a}{vtkMath::Min}}(\textcolor{keyword}{const}\ T\&\ a,\ \textcolor{keyword}{const}\ T\&\ b)}
+\DoxyCodeLine{01839\ \{}
+\DoxyCodeLine{01840\ \ \ \textcolor{keywordflow}{return}\ (b\ <=\ a\ ?\ b\ :\ a);}
+\DoxyCodeLine{01841\ \}}
+\DoxyCodeLine{01842\ }
+\DoxyCodeLine{01843\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01844\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{01845\ \textcolor{keyword}{inline}\ T\ \doxymbox{\hyperlink{classvtk_math_a4670878d320602ee778e978150e4caa9}{vtkMath::Max}}(\textcolor{keyword}{const}\ T\&\ a,\ \textcolor{keyword}{const}\ T\&\ b)}
+\DoxyCodeLine{01846\ \{}
+\DoxyCodeLine{01847\ \ \ \textcolor{keywordflow}{return}\ (b\ >\ a\ ?\ b\ :\ a);}
+\DoxyCodeLine{01848\ \}}
+\DoxyCodeLine{01849\ }
+\DoxyCodeLine{01850\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01851\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_ac3d8b506fee1ee391647f16cd7661b90}{vtkMath::Normalize}}(\textcolor{keywordtype}{float}\ v[3])}
+\DoxyCodeLine{01852\ \{}
+\DoxyCodeLine{01853\ \ \ \textcolor{keywordtype}{float}\ den\ =\ \doxymbox{\hyperlink{classvtk_math_a1b75dcac2e5f0f1ddb9d05c611919541}{vtkMath::Norm}}(v);}
+\DoxyCodeLine{01854\ \ \ \textcolor{keywordflow}{if}\ (den\ !=\ 0.0)}
+\DoxyCodeLine{01855\ \ \ \{}
+\DoxyCodeLine{01856\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{01857\ \ \ \ \ \{}
+\DoxyCodeLine{01858\ \ \ \ \ \ \ v[i]\ /=\ den;}
+\DoxyCodeLine{01859\ \ \ \ \ \}}
+\DoxyCodeLine{01860\ \ \ \}}
+\DoxyCodeLine{01861\ \ \ \textcolor{keywordflow}{return}\ den;}
+\DoxyCodeLine{01862\ \}}
+\DoxyCodeLine{01863\ }
+\DoxyCodeLine{01864\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01865\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ac3d8b506fee1ee391647f16cd7661b90}{vtkMath::Normalize}}(\textcolor{keywordtype}{double}\ v[3])}
+\DoxyCodeLine{01866\ \{}
+\DoxyCodeLine{01867\ \ \ \textcolor{keywordtype}{double}\ den\ =\ \doxymbox{\hyperlink{classvtk_math_a1b75dcac2e5f0f1ddb9d05c611919541}{vtkMath::Norm}}(v);}
+\DoxyCodeLine{01868\ \ \ \textcolor{keywordflow}{if}\ (den\ !=\ 0.0)}
+\DoxyCodeLine{01869\ \ \ \{}
+\DoxyCodeLine{01870\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{01871\ \ \ \ \ \{}
+\DoxyCodeLine{01872\ \ \ \ \ \ \ v[i]\ /=\ den;}
+\DoxyCodeLine{01873\ \ \ \ \ \}}
+\DoxyCodeLine{01874\ \ \ \}}
+\DoxyCodeLine{01875\ \ \ \textcolor{keywordflow}{return}\ den;}
+\DoxyCodeLine{01876\ \}}
+\DoxyCodeLine{01877\ }
+\DoxyCodeLine{01878\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01879\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_a62dd145b0d47df2fe0ce80236fa63647}{vtkMath::Normalize2D}}(\textcolor{keywordtype}{float}\ v[2])}
+\DoxyCodeLine{01880\ \{}
+\DoxyCodeLine{01881\ \ \ \textcolor{keywordtype}{float}\ den\ =\ \doxymbox{\hyperlink{classvtk_math_ad6f0efbee869a3060d3817e49e061a2d}{vtkMath::Norm2D}}(v);}
+\DoxyCodeLine{01882\ \ \ \textcolor{keywordflow}{if}\ (den\ !=\ 0.0)}
+\DoxyCodeLine{01883\ \ \ \{}
+\DoxyCodeLine{01884\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 2;\ ++i)}
+\DoxyCodeLine{01885\ \ \ \ \ \{}
+\DoxyCodeLine{01886\ \ \ \ \ \ \ v[i]\ /=\ den;}
+\DoxyCodeLine{01887\ \ \ \ \ \}}
+\DoxyCodeLine{01888\ \ \ \}}
+\DoxyCodeLine{01889\ \ \ \textcolor{keywordflow}{return}\ den;}
+\DoxyCodeLine{01890\ \}}
+\DoxyCodeLine{01891\ }
+\DoxyCodeLine{01892\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01893\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a62dd145b0d47df2fe0ce80236fa63647}{vtkMath::Normalize2D}}(\textcolor{keywordtype}{double}\ v[2])}
+\DoxyCodeLine{01894\ \{}
+\DoxyCodeLine{01895\ \ \ \textcolor{keywordtype}{double}\ den\ =\ \doxymbox{\hyperlink{classvtk_math_ad6f0efbee869a3060d3817e49e061a2d}{vtkMath::Norm2D}}(v);}
+\DoxyCodeLine{01896\ \ \ \textcolor{keywordflow}{if}\ (den\ !=\ 0.0)}
+\DoxyCodeLine{01897\ \ \ \{}
+\DoxyCodeLine{01898\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 2;\ ++i)}
+\DoxyCodeLine{01899\ \ \ \ \ \{}
+\DoxyCodeLine{01900\ \ \ \ \ \ \ v[i]\ /=\ den;}
+\DoxyCodeLine{01901\ \ \ \ \ \}}
+\DoxyCodeLine{01902\ \ \ \}}
+\DoxyCodeLine{01903\ \ \ \textcolor{keywordflow}{return}\ den;}
+\DoxyCodeLine{01904\ \}}
+\DoxyCodeLine{01905\ }
+\DoxyCodeLine{01906\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01907\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{vtkMath::Determinant3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ c1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ c2[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ c3[3])}
+\DoxyCodeLine{01908\ \{}
+\DoxyCodeLine{01909\ \ \ \textcolor{keywordflow}{return}\ c1[0]\ *\ c2[1]\ *\ c3[2]\ +\ c2[0]\ *\ c3[1]\ *\ c1[2]\ +\ c3[0]\ *\ c1[1]\ *\ c2[2]\ -\/}
+\DoxyCodeLine{01910\ \ \ \ \ c1[0]\ *\ c3[1]\ *\ c2[2]\ -\/\ c2[0]\ *\ c1[1]\ *\ c3[2]\ -\/\ c3[0]\ *\ c2[1]\ *\ c1[2];}
+\DoxyCodeLine{01911\ \}}
+\DoxyCodeLine{01912\ }
+\DoxyCodeLine{01913\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01914\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{vtkMath::Determinant3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ c1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ c2[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ c3[3])}
+\DoxyCodeLine{01915\ \{}
+\DoxyCodeLine{01916\ \ \ \textcolor{keywordflow}{return}\ c1[0]\ *\ c2[1]\ *\ c3[2]\ +\ c2[0]\ *\ c3[1]\ *\ c1[2]\ +\ c3[0]\ *\ c1[1]\ *\ c2[2]\ -\/}
+\DoxyCodeLine{01917\ \ \ \ \ c1[0]\ *\ c3[1]\ *\ c2[2]\ -\/\ c2[0]\ *\ c1[1]\ *\ c3[2]\ -\/\ c3[0]\ *\ c2[1]\ *\ c1[2];}
+\DoxyCodeLine{01918\ \}}
+\DoxyCodeLine{01919\ }
+\DoxyCodeLine{01920\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01921\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{vtkMath::Determinant3x3}}(}
+\DoxyCodeLine{01922\ \ \ \textcolor{keywordtype}{double}\ a1,\ \textcolor{keywordtype}{double}\ a2,\ \textcolor{keywordtype}{double}\ a3,\ \textcolor{keywordtype}{double}\ b1,\ \textcolor{keywordtype}{double}\ b2,\ \textcolor{keywordtype}{double}\ b3,\ \textcolor{keywordtype}{double}\ c1,\ \textcolor{keywordtype}{double}\ c2,\ \textcolor{keywordtype}{double}\ c3)}
+\DoxyCodeLine{01923\ \{}
+\DoxyCodeLine{01924\ \ \ \textcolor{keywordflow}{return}\ (a1\ *\ \doxymbox{\hyperlink{classvtk_math_ab040d14bf00607680a62850b05f5faac}{vtkMath::Determinant2x2}}(b2,\ b3,\ c2,\ c3)\ -\/}
+\DoxyCodeLine{01925\ \ \ \ \ b1\ *\ \doxymbox{\hyperlink{classvtk_math_ab040d14bf00607680a62850b05f5faac}{vtkMath::Determinant2x2}}(a2,\ a3,\ c2,\ c3)\ +\ c1\ *\ \doxymbox{\hyperlink{classvtk_math_ab040d14bf00607680a62850b05f5faac}{vtkMath::Determinant2x2}}(a2,\ a3,\ b2,\ b3));}
+\DoxyCodeLine{01926\ \}}
+\DoxyCodeLine{01927\ }
+\DoxyCodeLine{01928\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01929\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{float}\ \doxymbox{\hyperlink{classvtk_math_a000d8e6a04c58d960ed9115aa1b82fee}{vtkMath::Distance2BetweenPoints}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ p1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ p2[3])}
+\DoxyCodeLine{01930\ \{}
+\DoxyCodeLine{01931\ \ \ \textcolor{keywordflow}{return}\ ((p1[0]\ -\/\ p2[0])\ *\ (p1[0]\ -\/\ p2[0])\ +\ (p1[1]\ -\/\ p2[1])\ *\ (p1[1]\ -\/\ p2[1])\ +}
+\DoxyCodeLine{01932\ \ \ \ \ (p1[2]\ -\/\ p2[2])\ *\ (p1[2]\ -\/\ p2[2]));}
+\DoxyCodeLine{01933\ \}}
+\DoxyCodeLine{01934\ }
+\DoxyCodeLine{01935\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01936\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a000d8e6a04c58d960ed9115aa1b82fee}{vtkMath::Distance2BetweenPoints}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ p1[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ p2[3])}
+\DoxyCodeLine{01937\ \{}
+\DoxyCodeLine{01938\ \ \ \textcolor{keywordflow}{return}\ ((p1[0]\ -\/\ p2[0])\ *\ (p1[0]\ -\/\ p2[0])\ +\ (p1[1]\ -\/\ p2[1])\ *\ (p1[1]\ -\/\ p2[1])\ +}
+\DoxyCodeLine{01939\ \ \ \ \ (p1[2]\ -\/\ p2[2])\ *\ (p1[2]\ -\/\ p2[2]));}
+\DoxyCodeLine{01940\ \}}
+\DoxyCodeLine{01941\ }
+\DoxyCodeLine{01942\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01943\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ReturnTypeT,\ \textcolor{keyword}{typename}\ TupleRangeT1,\ \textcolor{keyword}{typename}\ TupleRangeT2,\ \textcolor{keyword}{typename}\ EnableT>}
+\DoxyCodeLine{01944\ \textcolor{keyword}{inline}\ ReturnTypeT\ \doxymbox{\hyperlink{classvtk_math_a000d8e6a04c58d960ed9115aa1b82fee}{vtkMath::Distance2BetweenPoints}}(\textcolor{keyword}{const}\ TupleRangeT1\&\ p1,\ \textcolor{keyword}{const}\ TupleRangeT2\&\ p2)}
+\DoxyCodeLine{01945\ \{}
+\DoxyCodeLine{01946\ \ \ \textcolor{keywordflow}{return}\ ((p1[0]\ -\/\ p2[0])\ *\ (p1[0]\ -\/\ p2[0])\ +\ (p1[1]\ -\/\ p2[1])\ *\ (p1[1]\ -\/\ p2[1])\ +}
+\DoxyCodeLine{01947\ \ \ \ \ (p1[2]\ -\/\ p2[2])\ *\ (p1[2]\ -\/\ p2[2]));}
+\DoxyCodeLine{01948\ \}}
+\DoxyCodeLine{01949\ }
+\DoxyCodeLine{01950\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01951\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ VectorT1,\ \textcolor{keyword}{class}\ VectorT2,\ \textcolor{keyword}{class}\ VectorT3>}
+\DoxyCodeLine{01952\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ae169837084fdccd39b90e7be6f4f6ae2}{vtkMath::Cross}}(VectorT1\&\&\ a,\ VectorT2\&\&\ b,\ VectorT3\&\ c)}
+\DoxyCodeLine{01953\ \{}
+\DoxyCodeLine{01954\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{structvtk_matrix_utilities_1_1_scalar_type_extractor_a4d50d954304d0a71df552bc8510ba6c6}{vtkMatrixUtilities::ScalarTypeExtractor<VectorT3>::value\_type}}\ ValueType;}
+\DoxyCodeLine{01955\ \ \ ValueType\ Cx\ =\ a[1]\ *\ b[2]\ -\/\ a[2]\ *\ b[1];}
+\DoxyCodeLine{01956\ \ \ ValueType\ Cy\ =\ a[2]\ *\ b[0]\ -\/\ a[0]\ *\ b[2];}
+\DoxyCodeLine{01957\ \ \ ValueType\ Cz\ =\ a[0]\ *\ b[1]\ -\/\ a[1]\ *\ b[0];}
+\DoxyCodeLine{01958\ \ \ c[0]\ =\ Cx;}
+\DoxyCodeLine{01959\ \ \ c[1]\ =\ Cy;}
+\DoxyCodeLine{01960\ \ \ c[2]\ =\ Cz;}
+\DoxyCodeLine{01961\ \}}
+\DoxyCodeLine{01962\ }
+\DoxyCodeLine{01963\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01964\ \textcolor{comment}{//\ Cross\ product\ of\ two\ 3-\/vectors.\ Result\ (a\ x\ b)\ is\ stored\ in\ c[3].}}
+\DoxyCodeLine{01965\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ae169837084fdccd39b90e7be6f4f6ae2}{vtkMath::Cross}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ b[3],\ \textcolor{keywordtype}{float}\ c[3])}
+\DoxyCodeLine{01966\ \{}
+\DoxyCodeLine{01967\ \ \ \textcolor{keywordtype}{float}\ Cx\ =\ a[1]\ *\ b[2]\ -\/\ a[2]\ *\ b[1];}
+\DoxyCodeLine{01968\ \ \ \textcolor{keywordtype}{float}\ Cy\ =\ a[2]\ *\ b[0]\ -\/\ a[0]\ *\ b[2];}
+\DoxyCodeLine{01969\ \ \ \textcolor{keywordtype}{float}\ Cz\ =\ a[0]\ *\ b[1]\ -\/\ a[1]\ *\ b[0];}
+\DoxyCodeLine{01970\ \ \ c[0]\ =\ Cx;}
+\DoxyCodeLine{01971\ \ \ c[1]\ =\ Cy;}
+\DoxyCodeLine{01972\ \ \ c[2]\ =\ Cz;}
+\DoxyCodeLine{01973\ \}}
+\DoxyCodeLine{01974\ }
+\DoxyCodeLine{01975\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01976\ \textcolor{comment}{//\ Cross\ product\ of\ two\ 3-\/vectors.\ Result\ (a\ x\ b)\ is\ stored\ in\ c[3].}}
+\DoxyCodeLine{01977\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_ae169837084fdccd39b90e7be6f4f6ae2}{vtkMath::Cross}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ a[3],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ b[3],\ \textcolor{keywordtype}{double}\ c[3])}
+\DoxyCodeLine{01978\ \{}
+\DoxyCodeLine{01979\ \ \ \textcolor{keywordtype}{double}\ Cx\ =\ a[1]\ *\ b[2]\ -\/\ a[2]\ *\ b[1];}
+\DoxyCodeLine{01980\ \ \ \textcolor{keywordtype}{double}\ Cy\ =\ a[2]\ *\ b[0]\ -\/\ a[0]\ *\ b[2];}
+\DoxyCodeLine{01981\ \ \ \textcolor{keywordtype}{double}\ Cz\ =\ a[0]\ *\ b[1]\ -\/\ a[1]\ *\ b[0];}
+\DoxyCodeLine{01982\ \ \ c[0]\ =\ Cx;}
+\DoxyCodeLine{01983\ \ \ c[1]\ =\ Cy;}
+\DoxyCodeLine{01984\ \ \ c[2]\ =\ Cz;}
+\DoxyCodeLine{01985\ \}}
+\DoxyCodeLine{01986\ }
+\DoxyCodeLine{01987\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01988\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{01989\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ vtkDeterminant3x3(\textcolor{keyword}{const}\ T\ A[3][3])}
+\DoxyCodeLine{01990\ \{}
+\DoxyCodeLine{01991\ \ \ \textcolor{keywordflow}{return}\ A[0][0]\ *\ A[1][1]\ *\ A[2][2]\ +\ A[1][0]\ *\ A[2][1]\ *\ A[0][2]\ +\ A[2][0]\ *\ A[0][1]\ *\ A[1][2]\ -\/}
+\DoxyCodeLine{01992\ \ \ \ \ A[0][0]\ *\ A[2][1]\ *\ A[1][2]\ -\/\ A[1][0]\ *\ A[0][1]\ *\ A[2][2]\ -\/\ A[2][0]\ *\ A[1][1]\ *\ A[0][2];}
+\DoxyCodeLine{01993\ \}}
+\DoxyCodeLine{01994\ }
+\DoxyCodeLine{01995\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01996\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{vtkMath::Determinant3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3])}
+\DoxyCodeLine{01997\ \{}
+\DoxyCodeLine{01998\ \ \ \textcolor{keywordflow}{return}\ vtkDeterminant3x3(A);}
+\DoxyCodeLine{01999\ \}}
+\DoxyCodeLine{02000\ }
+\DoxyCodeLine{02001\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02002\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_ac82ea5d05b477d0f0cb16def0d5beb71}{vtkMath::Determinant3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3])}
+\DoxyCodeLine{02003\ \{}
+\DoxyCodeLine{02004\ \ \ \textcolor{keywordflow}{return}\ vtkDeterminant3x3(A);}
+\DoxyCodeLine{02005\ \}}
+\DoxyCodeLine{02006\ }
+\DoxyCodeLine{02007\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02008\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{02009\ \textcolor{keyword}{inline}\ T\ \doxymbox{\hyperlink{classvtk_math_aeb6eb6eb4f5b7688874c4b81a361c4c6}{vtkMath::ClampValue}}(\textcolor{keyword}{const}\ T\&\ value,\ \textcolor{keyword}{const}\ T\&\ min,\ \textcolor{keyword}{const}\ T\&\ max)}
+\DoxyCodeLine{02010\ \{}
+\DoxyCodeLine{02011\ \ \ assert(\textcolor{stringliteral}{"{}pre:\ valid\_range"{}}\ \&\&\ min\ <=\ max);}
+\DoxyCodeLine{02012\ }
+\DoxyCodeLine{02013\ \textcolor{preprocessor}{\#if\ \_\_cplusplus\ >=\ 201703L}}
+\DoxyCodeLine{02014\ \ \ \textcolor{keywordflow}{return}\ std::clamp(value,\ min,\ max);}
+\DoxyCodeLine{02015\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{02016\ \ \ \textcolor{comment}{//\ compilers\ are\ good\ at\ optimizing\ the\ ternary\ operator,}}
+\DoxyCodeLine{02017\ \ \ \textcolor{comment}{//\ use\ '<'\ since\ it\ is\ preferred\ by\ STL\ for\ custom\ types}}
+\DoxyCodeLine{02018\ \ \ T\ v\ =\ (min\ <\ value\ ?\ value\ :\ min);}
+\DoxyCodeLine{02019\ \ \ \textcolor{keywordflow}{return}\ (v\ <\ max\ ?\ v\ :\ max);}
+\DoxyCodeLine{02020\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02021\ \}}
+\DoxyCodeLine{02022\ }
+\DoxyCodeLine{02023\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02024\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_aeb6eb6eb4f5b7688874c4b81a361c4c6}{vtkMath::ClampValue}}(\textcolor{keywordtype}{double}*\ value,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ range[2])}
+\DoxyCodeLine{02025\ \{}
+\DoxyCodeLine{02026\ \ \ \textcolor{keywordflow}{if}\ (value\ \&\&\ range)}
+\DoxyCodeLine{02027\ \ \ \{}
+\DoxyCodeLine{02028\ \ \ \ \ assert(\textcolor{stringliteral}{"{}pre:\ valid\_range"{}}\ \&\&\ range[0]\ <=\ range[1]);}
+\DoxyCodeLine{02029\ }
+\DoxyCodeLine{02030\ \ \ \ \ *value\ =\ \doxymbox{\hyperlink{classvtk_math_aeb6eb6eb4f5b7688874c4b81a361c4c6}{vtkMath::ClampValue}}(*value,\ range[0],\ range[1]);}
+\DoxyCodeLine{02031\ \ \ \}}
+\DoxyCodeLine{02032\ \}}
+\DoxyCodeLine{02033\ }
+\DoxyCodeLine{02034\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02035\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_aeb6eb6eb4f5b7688874c4b81a361c4c6}{vtkMath::ClampValue}}(\textcolor{keywordtype}{double}\ value,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ range[2],\ \textcolor{keywordtype}{double}*\ clamped\_value)}
+\DoxyCodeLine{02036\ \{}
+\DoxyCodeLine{02037\ \ \ \textcolor{keywordflow}{if}\ (range\ \&\&\ clamped\_value)}
+\DoxyCodeLine{02038\ \ \ \{}
+\DoxyCodeLine{02039\ \ \ \ \ assert(\textcolor{stringliteral}{"{}pre:\ valid\_range"{}}\ \&\&\ range[0]\ <=\ range[1]);}
+\DoxyCodeLine{02040\ }
+\DoxyCodeLine{02041\ \ \ \ \ *clamped\_value\ =\ \doxymbox{\hyperlink{classvtk_math_aeb6eb6eb4f5b7688874c4b81a361c4c6}{vtkMath::ClampValue}}(value,\ range[0],\ range[1]);}
+\DoxyCodeLine{02042\ \ \ \}}
+\DoxyCodeLine{02043\ \}}
+\DoxyCodeLine{02044\ }
+\DoxyCodeLine{02045\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02046\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ \doxymbox{\hyperlink{classvtk_math_a95e4d9d6928d49b88408cc5f4595c5da}{vtkMath::ClampAndNormalizeValue}}(\textcolor{keywordtype}{double}\ value,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ range[2])}
+\DoxyCodeLine{02047\ \{}
+\DoxyCodeLine{02048\ \ \ assert(\textcolor{stringliteral}{"{}pre:\ valid\_range"{}}\ \&\&\ range[0]\ <=\ range[1]);}
+\DoxyCodeLine{02049\ }
+\DoxyCodeLine{02050\ \ \ \textcolor{keywordtype}{double}\ result;}
+\DoxyCodeLine{02051\ \ \ \textcolor{keywordflow}{if}\ (range[0]\ ==\ range[1])}
+\DoxyCodeLine{02052\ \ \ \{}
+\DoxyCodeLine{02053\ \ \ \ \ result\ =\ 0.0;}
+\DoxyCodeLine{02054\ \ \ \}}
+\DoxyCodeLine{02055\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02056\ \ \ \{}
+\DoxyCodeLine{02057\ \ \ \ \ \textcolor{comment}{//\ clamp}}
+\DoxyCodeLine{02058\ \ \ \ \ result\ =\ \doxymbox{\hyperlink{classvtk_math_aeb6eb6eb4f5b7688874c4b81a361c4c6}{vtkMath::ClampValue}}(value,\ range[0],\ range[1]);}
+\DoxyCodeLine{02059\ }
+\DoxyCodeLine{02060\ \ \ \ \ \textcolor{comment}{//\ normalize}}
+\DoxyCodeLine{02061\ \ \ \ \ result\ =\ (result\ -\/\ range[0])\ /\ (range[1]\ -\/\ range[0]);}
+\DoxyCodeLine{02062\ \ \ \}}
+\DoxyCodeLine{02063\ }
+\DoxyCodeLine{02064\ \ \ assert(\textcolor{stringliteral}{"{}post:\ valid\_result"{}}\ \&\&\ result\ >=\ 0.0\ \&\&\ result\ <=\ 1.0);}
+\DoxyCodeLine{02065\ }
+\DoxyCodeLine{02066\ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{02067\ \}}
+\DoxyCodeLine{02068\ }
+\DoxyCodeLine{02069\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02070\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T1,\ \textcolor{keyword}{class}\ T2>}
+\DoxyCodeLine{02071\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a3740c9c0d2e088d6c50b22969b800dc4}{vtkMath::TensorFromSymmetricTensor}}(\textcolor{keyword}{const}\ T1\ symmTensor[9],\ T2\ tensor[9])}
+\DoxyCodeLine{02072\ \{}
+\DoxyCodeLine{02073\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 3;\ ++i)}
+\DoxyCodeLine{02074\ \ \ \{}
+\DoxyCodeLine{02075\ \ \ \ \ tensor[4\ *\ i]\ =\ symmTensor[i];}
+\DoxyCodeLine{02076\ \ \ \}}
+\DoxyCodeLine{02077\ \ \ tensor[1]\ =\ tensor[3]\ =\ symmTensor[3];}
+\DoxyCodeLine{02078\ \ \ tensor[2]\ =\ tensor[6]\ =\ symmTensor[5];}
+\DoxyCodeLine{02079\ \ \ tensor[5]\ =\ tensor[7]\ =\ symmTensor[4];}
+\DoxyCodeLine{02080\ \}}
+\DoxyCodeLine{02081\ }
+\DoxyCodeLine{02082\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02083\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{02084\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a3740c9c0d2e088d6c50b22969b800dc4}{vtkMath::TensorFromSymmetricTensor}}(T\ tensor[9])}
+\DoxyCodeLine{02085\ \{}
+\DoxyCodeLine{02086\ \ \ tensor[6]\ =\ tensor[5];\ \textcolor{comment}{//\ XZ}}
+\DoxyCodeLine{02087\ \ \ tensor[7]\ =\ tensor[4];\ \textcolor{comment}{//\ YZ}}
+\DoxyCodeLine{02088\ \ \ tensor[8]\ =\ tensor[2];\ \textcolor{comment}{//\ ZZ}}
+\DoxyCodeLine{02089\ \ \ tensor[4]\ =\ tensor[1];\ \textcolor{comment}{//\ YY}}
+\DoxyCodeLine{02090\ \ \ tensor[5]\ =\ tensor[7];\ \textcolor{comment}{//\ YZ}}
+\DoxyCodeLine{02091\ \ \ tensor[2]\ =\ tensor[6];\ \textcolor{comment}{//\ XZ}}
+\DoxyCodeLine{02092\ \ \ tensor[1]\ =\ tensor[3];\ \textcolor{comment}{//\ XY}}
+\DoxyCodeLine{02093\ \}}
+\DoxyCodeLine{02094\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{02095\ }
+\DoxyCodeLine{02096\ \textcolor{keyword}{namespace}}
+\DoxyCodeLine{02097\ \{}
+\DoxyCodeLine{02098\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ QuaternionT,\ \textcolor{keyword}{class}\ MatrixT>}
+\DoxyCodeLine{02099\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkQuaternionToMatrix3x3(QuaternionT\&\&\ quat,\ MatrixT\&\&\ A)}
+\DoxyCodeLine{02100\ \{}
+\DoxyCodeLine{02101\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{structvtk_matrix_utilities_1_1_scalar_type_extractor_a4d50d954304d0a71df552bc8510ba6c6}{vtkMatrixUtilities::ScalarTypeExtractor<MatrixT>::value\_type}}\ Scalar;}
+\DoxyCodeLine{02102\ }
+\DoxyCodeLine{02103\ \ \ Scalar\ ww\ =\ quat[0]\ *\ quat[0];}
+\DoxyCodeLine{02104\ \ \ Scalar\ wx\ =\ quat[0]\ *\ quat[1];}
+\DoxyCodeLine{02105\ \ \ Scalar\ wy\ =\ quat[0]\ *\ quat[2];}
+\DoxyCodeLine{02106\ \ \ Scalar\ wz\ =\ quat[0]\ *\ quat[3];}
+\DoxyCodeLine{02107\ }
+\DoxyCodeLine{02108\ \ \ Scalar\ xx\ =\ quat[1]\ *\ quat[1];}
+\DoxyCodeLine{02109\ \ \ Scalar\ yy\ =\ quat[2]\ *\ quat[2];}
+\DoxyCodeLine{02110\ \ \ Scalar\ zz\ =\ quat[3]\ *\ quat[3];}
+\DoxyCodeLine{02111\ }
+\DoxyCodeLine{02112\ \ \ Scalar\ xy\ =\ quat[1]\ *\ quat[2];}
+\DoxyCodeLine{02113\ \ \ Scalar\ xz\ =\ quat[1]\ *\ quat[3];}
+\DoxyCodeLine{02114\ \ \ Scalar\ yz\ =\ quat[2]\ *\ quat[3];}
+\DoxyCodeLine{02115\ }
+\DoxyCodeLine{02116\ \ \ Scalar\ rr\ =\ xx\ +\ yy\ +\ zz;}
+\DoxyCodeLine{02117\ \ \ \textcolor{comment}{//\ normalization\ factor,\ just\ in\ case\ quaternion\ was\ not\ normalized}}
+\DoxyCodeLine{02118\ \ \ Scalar\ f\ =\ 1\ /\ (ww\ +\ rr);}
+\DoxyCodeLine{02119\ \ \ Scalar\ s\ =\ (ww\ -\/\ rr)\ *\ f;}
+\DoxyCodeLine{02120\ \ \ f\ *=\ 2;}
+\DoxyCodeLine{02121\ }
+\DoxyCodeLine{02122\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classvtk_matrix_utilities_1_1_wrapper}{vtkMatrixUtilities::Wrapper<3,\ 3,\ MatrixT>}}\ Wrapper;}
+\DoxyCodeLine{02123\ }
+\DoxyCodeLine{02124\ \ \ Wrapper::template\ Get<0,\ 0>(std::forward<MatrixT>(A))\ =\ xx\ *\ f\ +\ s;}
+\DoxyCodeLine{02125\ \ \ Wrapper::template\ Get<1,\ 0>(std::forward<MatrixT>(A))\ =\ (xy\ +\ wz)\ *\ f;}
+\DoxyCodeLine{02126\ \ \ Wrapper::template\ Get<2,\ 0>(std::forward<MatrixT>(A))\ =\ (xz\ -\/\ wy)\ *\ f;}
+\DoxyCodeLine{02127\ }
+\DoxyCodeLine{02128\ \ \ Wrapper::template\ Get<0,\ 1>(std::forward<MatrixT>(A))\ =\ (xy\ -\/\ wz)\ *\ f;}
+\DoxyCodeLine{02129\ \ \ Wrapper::template\ Get<1,\ 1>(std::forward<MatrixT>(A))\ =\ yy\ *\ f\ +\ s;}
+\DoxyCodeLine{02130\ \ \ Wrapper::template\ Get<2,\ 1>(std::forward<MatrixT>(A))\ =\ (yz\ +\ wx)\ *\ f;}
+\DoxyCodeLine{02131\ }
+\DoxyCodeLine{02132\ \ \ Wrapper::template\ Get<0,\ 2>(std::forward<MatrixT>(A))\ =\ (xz\ +\ wy)\ *\ f;}
+\DoxyCodeLine{02133\ \ \ Wrapper::template\ Get<1,\ 2>(std::forward<MatrixT>(A))\ =\ (yz\ -\/\ wx)\ *\ f;}
+\DoxyCodeLine{02134\ \ \ Wrapper::template\ Get<2,\ 2>(std::forward<MatrixT>(A))\ =\ zz\ *\ f\ +\ s;}
+\DoxyCodeLine{02135\ \}}
+\DoxyCodeLine{02136\ \}\ \textcolor{comment}{//\ anonymous\ namespace}}
+\DoxyCodeLine{02137\ }
+\DoxyCodeLine{02138\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{02139\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02140\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a97a3288a26e89cdefd526c23bedb02a2}{vtkMath::QuaternionToMatrix3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ quat[4],\ \textcolor{keywordtype}{float}\ A[3][3])}
+\DoxyCodeLine{02141\ \{}
+\DoxyCodeLine{02142\ \ \ vtkQuaternionToMatrix3x3(quat,\ A);}
+\DoxyCodeLine{02143\ \}}
+\DoxyCodeLine{02144\ }
+\DoxyCodeLine{02145\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02146\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a97a3288a26e89cdefd526c23bedb02a2}{vtkMath::QuaternionToMatrix3x3}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ quat[4],\ \textcolor{keywordtype}{double}\ A[3][3])}
+\DoxyCodeLine{02147\ \{}
+\DoxyCodeLine{02148\ \ \ vtkQuaternionToMatrix3x3(quat,\ A);}
+\DoxyCodeLine{02149\ \}}
+\DoxyCodeLine{02150\ }
+\DoxyCodeLine{02151\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02152\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ QuaternionT,\ \textcolor{keyword}{class}\ MatrixT,\ \textcolor{keyword}{class}\ EnableT>}
+\DoxyCodeLine{02153\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a97a3288a26e89cdefd526c23bedb02a2}{vtkMath::QuaternionToMatrix3x3}}(QuaternionT\&\&\ q,\ MatrixT\&\&\ A)}
+\DoxyCodeLine{02154\ \{}
+\DoxyCodeLine{02155\ \ \ vtkQuaternionToMatrix3x3(std::forward<QuaternionT>(q),\ std::forward<MatrixT>(A));}
+\DoxyCodeLine{02156\ \}}
+\DoxyCodeLine{02157\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{02158\ }
+\DoxyCodeLine{02159\ \textcolor{keyword}{namespace}}
+\DoxyCodeLine{02160\ \{}
+\DoxyCodeLine{02161\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02162\ \textcolor{comment}{//\ \ The\ solution\ is\ based\ on}}
+\DoxyCodeLine{02163\ \textcolor{comment}{//\ \ Berthold\ K.\ P.\ Horn\ (1987),}}
+\DoxyCodeLine{02164\ \textcolor{comment}{//\ \ "{}Closed-\/form\ solution\ of\ absolute\ orientation\ using\ unit\ quaternions,"{}}}
+\DoxyCodeLine{02165\ \textcolor{comment}{//\ \ Journal\ of\ the\ Optical\ Society\ of\ America\ A,\ 4:629-\/642}}
+\DoxyCodeLine{02166\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ MatrixT,\ \textcolor{keyword}{class}\ QuaternionT>}
+\DoxyCodeLine{02167\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ vtkMatrix3x3ToQuaternion(MatrixT\&\&\ A,\ QuaternionT\&\&\ quat)}
+\DoxyCodeLine{02168\ \{}
+\DoxyCodeLine{02169\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{structvtk_matrix_utilities_1_1_scalar_type_extractor_a4d50d954304d0a71df552bc8510ba6c6}{vtkMatrixUtilities::ScalarTypeExtractor<QuaternionT>::value\_type}}\ Scalar;}
+\DoxyCodeLine{02170\ }
+\DoxyCodeLine{02171\ \ \ Scalar\ N[4][4];}
+\DoxyCodeLine{02172\ }
+\DoxyCodeLine{02173\ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{classvtk_matrix_utilities_1_1_wrapper}{vtkMatrixUtilities::Wrapper<3,\ 3,\ MatrixT>}}\ Wrapper;}
+\DoxyCodeLine{02174\ }
+\DoxyCodeLine{02175\ \ \ \textcolor{comment}{//\ on-\/diagonal\ elements}}
+\DoxyCodeLine{02176\ \ \ N[0][0]\ =\ Wrapper::template\ Get<0,\ 0>(std::forward<MatrixT>(A))\ +}
+\DoxyCodeLine{02177\ \ \ \ \ Wrapper::template\ Get<1,\ 1>(std::forward<MatrixT>(A))\ +}
+\DoxyCodeLine{02178\ \ \ \ \ Wrapper::template\ Get<2,\ 2>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02179\ \ \ N[1][1]\ =\ Wrapper::template\ Get<0,\ 0>(std::forward<MatrixT>(A))\ -\/}
+\DoxyCodeLine{02180\ \ \ \ \ Wrapper::template\ Get<1,\ 1>(std::forward<MatrixT>(A))\ -\/}
+\DoxyCodeLine{02181\ \ \ \ \ Wrapper::template\ Get<2,\ 2>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02182\ \ \ N[2][2]\ =\ -\/Wrapper::template\ Get<0,\ 0>(std::forward<MatrixT>(A))\ +}
+\DoxyCodeLine{02183\ \ \ \ \ Wrapper::template\ Get<1,\ 1>(std::forward<MatrixT>(A))\ -\/}
+\DoxyCodeLine{02184\ \ \ \ \ Wrapper::template\ Get<2,\ 2>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02185\ \ \ N[3][3]\ =\ -\/Wrapper::template\ Get<0,\ 0>(std::forward<MatrixT>(A))\ -\/}
+\DoxyCodeLine{02186\ \ \ \ \ Wrapper::template\ Get<1,\ 1>(std::forward<MatrixT>(A))\ +}
+\DoxyCodeLine{02187\ \ \ \ \ Wrapper::template\ Get<2,\ 2>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02188\ }
+\DoxyCodeLine{02189\ \ \ \textcolor{comment}{//\ off-\/diagonal\ elements}}
+\DoxyCodeLine{02190\ \ \ N[0][1]\ =\ N[1][0]\ =\ Wrapper::template\ Get<2,\ 1>(std::forward<MatrixT>(A))\ -\/}
+\DoxyCodeLine{02191\ \ \ \ \ Wrapper::template\ Get<1,\ 2>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02192\ \ \ N[0][2]\ =\ N[2][0]\ =\ Wrapper::template\ Get<0,\ 2>(std::forward<MatrixT>(A))\ -\/}
+\DoxyCodeLine{02193\ \ \ \ \ Wrapper::template\ Get<2,\ 0>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02194\ \ \ N[0][3]\ =\ N[3][0]\ =\ Wrapper::template\ Get<1,\ 0>(std::forward<MatrixT>(A))\ -\/}
+\DoxyCodeLine{02195\ \ \ \ \ Wrapper::template\ Get<0,\ 1>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02196\ }
+\DoxyCodeLine{02197\ \ \ N[1][2]\ =\ N[2][1]\ =\ Wrapper::template\ Get<1,\ 0>(std::forward<MatrixT>(A))\ +}
+\DoxyCodeLine{02198\ \ \ \ \ Wrapper::template\ Get<0,\ 1>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02199\ \ \ N[1][3]\ =\ N[3][1]\ =\ Wrapper::template\ Get<0,\ 2>(std::forward<MatrixT>(A))\ +}
+\DoxyCodeLine{02200\ \ \ \ \ Wrapper::template\ Get<2,\ 0>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02201\ \ \ N[2][3]\ =\ N[3][2]\ =\ Wrapper::template\ Get<2,\ 1>(std::forward<MatrixT>(A))\ +}
+\DoxyCodeLine{02202\ \ \ \ \ Wrapper::template\ Get<1,\ 2>(std::forward<MatrixT>(A));}
+\DoxyCodeLine{02203\ }
+\DoxyCodeLine{02204\ \ \ Scalar\ eigenvectors[4][4],\ eigenvalues[4];}
+\DoxyCodeLine{02205\ }
+\DoxyCodeLine{02206\ \ \ \textcolor{comment}{//\ convert\ into\ format\ that\ JacobiN\ can\ use,}}
+\DoxyCodeLine{02207\ \ \ \textcolor{comment}{//\ then\ use\ Jacobi\ to\ find\ eigenvalues\ and\ eigenvectors}}
+\DoxyCodeLine{02208\ \ \ Scalar\ *NTemp[4],\ *eigenvectorsTemp[4];}
+\DoxyCodeLine{02209\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ 4;\ ++i)}
+\DoxyCodeLine{02210\ \ \ \{}
+\DoxyCodeLine{02211\ \ \ \ \ NTemp[i]\ =\ N[i];}
+\DoxyCodeLine{02212\ \ \ \ \ eigenvectorsTemp[i]\ =\ eigenvectors[i];}
+\DoxyCodeLine{02213\ \ \ \}}
+\DoxyCodeLine{02214\ \ \ \doxymbox{\hyperlink{classvtk_math_a81ee2d4ba77eee38879be1c03372cfd7}{vtkMath::JacobiN}}(NTemp,\ 4,\ eigenvalues,\ eigenvectorsTemp);}
+\DoxyCodeLine{02215\ }
+\DoxyCodeLine{02216\ \ \ \textcolor{comment}{//\ the\ first\ eigenvector\ is\ the\ one\ we\ want}}
+\DoxyCodeLine{02217\ \ \ quat[0]\ =\ eigenvectors[0][0];}
+\DoxyCodeLine{02218\ \ \ quat[1]\ =\ eigenvectors[1][0];}
+\DoxyCodeLine{02219\ \ \ quat[2]\ =\ eigenvectors[2][0];}
+\DoxyCodeLine{02220\ \ \ quat[3]\ =\ eigenvectors[3][0];}
+\DoxyCodeLine{02221\ \}}
+\DoxyCodeLine{02222\ \}\ \textcolor{comment}{//\ anonymous\ namespace}}
+\DoxyCodeLine{02223\ }
+\DoxyCodeLine{02224\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{02225\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02226\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a6d4068211f5392e1f1622a7b7fcba338}{vtkMath::Matrix3x3ToQuaternion}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ A[3][3],\ \textcolor{keywordtype}{float}\ quat[4])}
+\DoxyCodeLine{02227\ \{}
+\DoxyCodeLine{02228\ \ \ vtkMatrix3x3ToQuaternion(A,\ quat);}
+\DoxyCodeLine{02229\ \}}
+\DoxyCodeLine{02230\ }
+\DoxyCodeLine{02231\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02232\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a6d4068211f5392e1f1622a7b7fcba338}{vtkMath::Matrix3x3ToQuaternion}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ A[3][3],\ \textcolor{keywordtype}{double}\ quat[4])}
+\DoxyCodeLine{02233\ \{}
+\DoxyCodeLine{02234\ \ \ vtkMatrix3x3ToQuaternion(A,\ quat);}
+\DoxyCodeLine{02235\ \}}
+\DoxyCodeLine{02236\ }
+\DoxyCodeLine{02237\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02238\ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ MatrixT,\ \textcolor{keyword}{class}\ QuaternionT,\ \textcolor{keyword}{class}\ EnableT>}
+\DoxyCodeLine{02239\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_math_a6d4068211f5392e1f1622a7b7fcba338}{vtkMath::Matrix3x3ToQuaternion}}(MatrixT\&\&\ A,\ QuaternionT\&\&\ q)}
+\DoxyCodeLine{02240\ \{}
+\DoxyCodeLine{02241\ \ \ vtkMatrix3x3ToQuaternion(std::forward<MatrixT>(A),\ std::forward<QuaternionT>(q));}
+\DoxyCodeLine{02242\ \}}
+\DoxyCodeLine{02243\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{02244\ }
+\DoxyCodeLine{02245\ \textcolor{keyword}{namespace\ }vtk\_detail}
+\DoxyCodeLine{02246\ \{}
+\DoxyCodeLine{02247\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{02248\ \textcolor{comment}{//\ Can't\ specialize\ templates\ inside\ a\ template\ class,\ so\ we\ move\ the\ impl\ here.}}
+\DoxyCodeLine{02249\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OutT>}
+\DoxyCodeLine{02250\ \textcolor{keywordtype}{void}\ RoundDoubleToIntegralIfNecessary(\textcolor{keywordtype}{double}\ val,\ OutT*\ ret)}
+\DoxyCodeLine{02251\ \{\ \textcolor{comment}{//\ OutT\ is\ integral\ -\/-\/\ clamp\ and\ round}}
+\DoxyCodeLine{02252\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvtk_math_aa82e9f3fb78e94b4891f400901124757}{vtkMath::IsNan}}(val))}
+\DoxyCodeLine{02253\ \ \ \{}
+\DoxyCodeLine{02254\ \ \ \ \ \textcolor{keywordtype}{double}\ min\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(vtkTypeTraits<OutT>::Min());}
+\DoxyCodeLine{02255\ \ \ \ \ \textcolor{keywordtype}{double}\ max\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(vtkTypeTraits<OutT>::Max());}
+\DoxyCodeLine{02256\ \ \ \ \ val\ =\ \doxymbox{\hyperlink{classvtk_math_aeb6eb6eb4f5b7688874c4b81a361c4c6}{vtkMath::ClampValue}}(val,\ min,\ max);}
+\DoxyCodeLine{02257\ \ \ \ \ *ret\ =\ \textcolor{keyword}{static\_cast<}OutT\textcolor{keyword}{>}((val\ >=\ 0.0)\ ?\ (val\ +\ 0.5)\ :\ (val\ -\/\ 0.5));}
+\DoxyCodeLine{02258\ \ \ \}}
+\DoxyCodeLine{02259\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{02260\ \ \ \ \ *ret\ =\ 0;}
+\DoxyCodeLine{02261\ \}}
+\DoxyCodeLine{02262\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{02263\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ RoundDoubleToIntegralIfNecessary(\textcolor{keywordtype}{double}\ val,\ \textcolor{keywordtype}{double}*\ retVal)}
+\DoxyCodeLine{02264\ \{\ \textcolor{comment}{//\ OutT\ is\ double:\ passthrough}}
+\DoxyCodeLine{02265\ \ \ *retVal\ =\ val;}
+\DoxyCodeLine{02266\ \}}
+\DoxyCodeLine{02267\ \textcolor{keyword}{template}\ <>}
+\DoxyCodeLine{02268\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ RoundDoubleToIntegralIfNecessary(\textcolor{keywordtype}{double}\ val,\ \textcolor{keywordtype}{float}*\ retVal)}
+\DoxyCodeLine{02269\ \{\ \textcolor{comment}{//\ OutT\ is\ float\ -\/-\/\ just\ clamp\ (as\ doubles,\ then\ the\ cast\ to\ float\ is\ well-\/defined.)}}
+\DoxyCodeLine{02270\ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{classvtk_math_aa82e9f3fb78e94b4891f400901124757}{vtkMath::IsNan}}(val))}
+\DoxyCodeLine{02271\ \ \ \{}
+\DoxyCodeLine{02272\ \ \ \ \ \textcolor{keywordtype}{double}\ min\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(vtkTypeTraits<float>::Min());}
+\DoxyCodeLine{02273\ \ \ \ \ \textcolor{keywordtype}{double}\ max\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{double}\textcolor{keyword}{>}(vtkTypeTraits<float>::Max());}
+\DoxyCodeLine{02274\ \ \ \ \ val\ =\ \doxymbox{\hyperlink{classvtk_math_aeb6eb6eb4f5b7688874c4b81a361c4c6}{vtkMath::ClampValue}}(val,\ min,\ max);}
+\DoxyCodeLine{02275\ \ \ \}}
+\DoxyCodeLine{02276\ }
+\DoxyCodeLine{02277\ \ \ *retVal\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(val);}
+\DoxyCodeLine{02278\ \}}
+\DoxyCodeLine{02279\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{02280\ \}\ \textcolor{comment}{//\ end\ namespace\ vtk\_detail}}
+\DoxyCodeLine{02281\ }
+\DoxyCodeLine{02282\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{02283\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02284\ \textcolor{preprocessor}{\#if\ defined(VTK\_HAS\_ISINF)\ ||\ defined(VTK\_HAS\_STD\_ISINF)}}
+\DoxyCodeLine{02285\ \textcolor{preprocessor}{\#define\ VTK\_MATH\_ISINF\_IS\_INLINE}}
+\DoxyCodeLine{02286\ \textcolor{keyword}{inline}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_a88489813fd3aafed1a5674a8b33c6a66}{vtkMath::IsInf}}(\textcolor{keywordtype}{double}\ x)}
+\DoxyCodeLine{02287\ \{}
+\DoxyCodeLine{02288\ \textcolor{preprocessor}{\#if\ defined(VTK\_HAS\_STD\_ISINF)}}
+\DoxyCodeLine{02289\ \ \ \textcolor{keywordflow}{return}\ std::isinf(x);}
+\DoxyCodeLine{02290\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{02291\ \ \ \textcolor{keywordflow}{return}\ (isinf(x)\ !=\ 0);\ \ \ \ \textcolor{comment}{//\ Force\ conversion\ to\ bool}}
+\DoxyCodeLine{02292\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02293\ \}}
+\DoxyCodeLine{02294\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02295\ }
+\DoxyCodeLine{02296\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02297\ \textcolor{preprocessor}{\#if\ defined(VTK\_HAS\_ISNAN)\ ||\ defined(VTK\_HAS\_STD\_ISNAN)}}
+\DoxyCodeLine{02298\ \textcolor{preprocessor}{\#define\ VTK\_MATH\_ISNAN\_IS\_INLINE}}
+\DoxyCodeLine{02299\ \textcolor{keyword}{inline}\ vtkTypeBool\ \doxymbox{\hyperlink{classvtk_math_aa82e9f3fb78e94b4891f400901124757}{vtkMath::IsNan}}(\textcolor{keywordtype}{double}\ x)}
+\DoxyCodeLine{02300\ \{}
+\DoxyCodeLine{02301\ \textcolor{preprocessor}{\#if\ defined(VTK\_HAS\_STD\_ISNAN)}}
+\DoxyCodeLine{02302\ \ \ \textcolor{keywordflow}{return}\ std::isnan(x);}
+\DoxyCodeLine{02303\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{02304\ \ \ \textcolor{keywordflow}{return}\ (isnan(x)\ !=\ 0);\ \ \ \ \textcolor{comment}{//\ Force\ conversion\ to\ bool}}
+\DoxyCodeLine{02305\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02306\ \}}
+\DoxyCodeLine{02307\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02308\ }
+\DoxyCodeLine{02309\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{02310\ \textcolor{preprocessor}{\#if\ defined(VTK\_HAS\_ISFINITE)\ ||\ defined(VTK\_HAS\_STD\_ISFINITE)\ ||\ defined(VTK\_HAS\_FINITE)}}
+\DoxyCodeLine{02311\ \textcolor{preprocessor}{\#define\ VTK\_MATH\_ISFINITE\_IS\_INLINE}}
+\DoxyCodeLine{02312\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_math_a6a943e3912dccecbe54962575a7ea23e}{vtkMath::IsFinite}}(\textcolor{keywordtype}{double}\ x)}
+\DoxyCodeLine{02313\ \{}
+\DoxyCodeLine{02314\ \textcolor{preprocessor}{\#if\ defined(VTK\_HAS\_STD\_ISFINITE)}}
+\DoxyCodeLine{02315\ \ \ \textcolor{keywordflow}{return}\ std::isfinite(x);}
+\DoxyCodeLine{02316\ \textcolor{preprocessor}{\#elif\ defined(VTK\_HAS\_ISFINITE)}}
+\DoxyCodeLine{02317\ \ \ \textcolor{keywordflow}{return}\ (isfinite(x)\ !=\ 0);\ \textcolor{comment}{//\ Force\ conversion\ to\ bool}}
+\DoxyCodeLine{02318\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{02319\ \ \ \textcolor{keywordflow}{return}\ (finite(x)\ !=\ 0);\ \textcolor{comment}{//\ Force\ conversion\ to\ bool}}
+\DoxyCodeLine{02320\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02321\ \}}
+\DoxyCodeLine{02322\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{02323\ }
+\DoxyCodeLine{02324\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{02325\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,27 @@
+var class_d_v_p_s_text_object =
+[
+    [ "DVPSTextObject", "class_d_v_p_s_text_object.html#a02ae4dd74dfffb870eff85fb74cb5469", null ],
+    [ "DVPSTextObject", "class_d_v_p_s_text_object.html#a4820e4cfaed3f9c2020826fc333a56b1", null ],
+    [ "~DVPSTextObject", "class_d_v_p_s_text_object.html#a7d50c86aebd4d6e4af7773d1623ed85d", null ],
+    [ "anchorPointIsVisible", "class_d_v_p_s_text_object.html#a61e02f26f881a457494d87c68341a941", null ],
+    [ "clone", "class_d_v_p_s_text_object.html#a08a31d5f43d81f5cd33a87da8853bc47", null ],
+    [ "getAnchorPoint_x", "class_d_v_p_s_text_object.html#abda6455c67279c096fc87a7abb880550", null ],
+    [ "getAnchorPoint_y", "class_d_v_p_s_text_object.html#aaefb9f6722ba3fedba056e646358d7ac", null ],
+    [ "getAnchorPointAnnotationUnits", "class_d_v_p_s_text_object.html#aed1d71a45131b2758deeef4591138ce7", null ],
+    [ "getBoundingBoxAnnotationUnits", "class_d_v_p_s_text_object.html#a6610295888d8fe489bf723791b8ea888", null ],
+    [ "getBoundingBoxBRHC_x", "class_d_v_p_s_text_object.html#ae840e2042de63cb72e0a6b01d203c166", null ],
+    [ "getBoundingBoxBRHC_y", "class_d_v_p_s_text_object.html#ab4e1e6d3699c0d58064617965ab1e9c0", null ],
+    [ "getBoundingBoxHorizontalJustification", "class_d_v_p_s_text_object.html#a3f8aa9cf14dd81a39395316b8470abee", null ],
+    [ "getBoundingBoxTLHC_x", "class_d_v_p_s_text_object.html#a5efef06bc521be0aacdd3f09787b0f18", null ],
+    [ "getBoundingBoxTLHC_y", "class_d_v_p_s_text_object.html#a90f305afa37be846a0b54a1bd4702644", null ],
+    [ "getText", "class_d_v_p_s_text_object.html#ada03304790122877a2e14e98b89c85f9", null ],
+    [ "haveAnchorPoint", "class_d_v_p_s_text_object.html#ac74510e93d53f6a56a59818052c971f7", null ],
+    [ "haveBoundingBox", "class_d_v_p_s_text_object.html#ab80c04f24c3073a2d7d3e569dd3e5b1b", null ],
+    [ "read", "class_d_v_p_s_text_object.html#ad1635e4b99f7354889ce054bc8a595eb", null ],
+    [ "removeAnchorPoint", "class_d_v_p_s_text_object.html#a790ccd43db5b3693f2e4241de06385d5", null ],
+    [ "removeBoundingBox", "class_d_v_p_s_text_object.html#ac3c0ca63c9c08639770df109863fb84a", null ],
+    [ "setAnchorPoint", "class_d_v_p_s_text_object.html#a40580f6cf67b900e1543683eca422091", null ],
+    [ "setBoundingBox", "class_d_v_p_s_text_object.html#a22411d858a6fd4cec8ed44cb7535780e", null ],
+    [ "setText", "class_d_v_p_s_text_object.html#a6255cb4f4735e2901a6efc1fe2bf0deb", null ],
+    [ "write", "class_d_v_p_s_text_object.html#a41277545c9b4710d60df9ee6b1c27692", null ]
+];

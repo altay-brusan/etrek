@@ -1,0 +1,393 @@
+\doxysection{nn.\+hpp}
+\hypertarget{nn_8hpp_source}{}\label{nn_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibproj/include/proj/nn.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibproj/include/proj/nn.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ (c)\ 2015\ Dropbox,\ Inc.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ Licensed\ under\ the\ Apache\ License,\ Version\ 2.0\ (the\ "{}License"{});}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ you\ may\ not\ use\ this\ file\ except\ in\ compliance\ with\ the\ License.}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ You\ may\ obtain\ a\ copy\ of\ the\ License\ at}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ \ http://www.apache.org/licenses/LICENSE-\/2.0}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *\ Unless\ required\ by\ applicable\ law\ or\ agreed\ to\ in\ writing,\ software}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *\ distributed\ under\ the\ License\ is\ distributed\ on\ an\ "{}AS\ IS"{}\ BASIS,}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ WITHOUT\ WARRANTIES\ OR\ CONDITIONS\ OF\ ANY\ KIND,\ either\ express\ or\ implied.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *\ See\ the\ License\ for\ the\ specific\ language\ governing\ permissions\ and}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ limitations\ under\ the\ License.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <cstdlib>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}vtk\_libproj\_mangle.h"{}}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{keyword}{namespace\ }dropbox\ \{}
+\DoxyCodeLine{00028\ \textcolor{keyword}{namespace\ }oxygen\ \{}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ Marker\ type\ and\ value\ for\ use\ by\ nn\ below.}}
+\DoxyCodeLine{00031\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdropbox_1_1oxygen_1_1i__promise__i__checked__for__null__t}{i\_promise\_i\_checked\_for\_null\_t}}\ \{\};}
+\DoxyCodeLine{00032\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \doxymbox{\hyperlink{structdropbox_1_1oxygen_1_1i__promise__i__checked__for__null__t}{i\_promise\_i\_checked\_for\_null\_t}}\ i\_promise\_i\_checked\_for\_null\{\};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ Helper\ to\ get\ the\ type\ pointed\ to\ by\ a\ raw\ or\ smart\ pointer.\ This\ can\ be}}
+\DoxyCodeLine{00035\ \textcolor{comment}{//\ explicitly}}
+\DoxyCodeLine{00036\ \textcolor{comment}{//\ specialized\ if\ need\ be\ to\ provide\ compatibility\ with\ user-\/defined\ smart}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ pointers.}}
+\DoxyCodeLine{00038\ \textcolor{keyword}{namespace\ }nn\_detail\ \{}
+\DoxyCodeLine{00039\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdropbox_1_1oxygen_1_1nn__detail_1_1element__type}{element\_type}}\ \{}
+\DoxyCodeLine{00040\ \ \ \textcolor{keyword}{using\ }type\ =\ \textcolor{keyword}{typename}\ T::element\_type;}
+\DoxyCodeLine{00041\ \};}
+\DoxyCodeLine{00042\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Po\textcolor{keywordtype}{int}ee>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdropbox_1_1oxygen_1_1nn__detail_1_1element__type}{element\_type}}<Pointee\ *>\ \{}
+\DoxyCodeLine{00043\ \ \ \textcolor{keyword}{using\ }type\ =\ Pointee;}
+\DoxyCodeLine{00044\ \};}
+\DoxyCodeLine{00045\ \}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ PtrType>\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdropbox_1_1oxygen_1_1nn}{nn}};}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{comment}{//\ Trait\ to\ check\ whether\ a\ given\ type\ is\ a\ non-\/nullable\ pointer}}
+\DoxyCodeLine{00050\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdropbox_1_1oxygen_1_1is__nn}{is\_nn}}\ :\ \textcolor{keyword}{public}\ std::false\_type\ \{\};}
+\DoxyCodeLine{00051\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ PtrType>}
+\DoxyCodeLine{00052\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdropbox_1_1oxygen_1_1is__nn}{is\_nn}}<\doxymbox{\hyperlink{classdropbox_1_1oxygen_1_1nn}{nn}}<PtrType>>\ :\ \textcolor{keyword}{public}\ std::true\_type\ \{\};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{comment}{/*\ nn<PtrType>}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ *\ Wrapper\ around\ a\ pointer\ that\ is\ guaranteed\ to\ not\ be\ null.\ This\ works\ with}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ *\ raw\ pointers}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *\ as\ well\ as\ any\ smart\ pointer:\ nn<int\ *>,\ nn<shared\_ptr<DbxTable>>,}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ nn<unique\_ptr<Foo>>,}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *\ etc.\ An\ nn<PtrType>\ can\ be\ used\ just\ like\ a\ PtrType.}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *\ An\ nn<PtrType>\ can\ be\ constructed\ from\ another\ nn<PtrType>,\ if\ the\ underlying}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ *\ type\ would}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ *\ allow\ such\ construction.\ For\ example,\ nn<shared\_ptr<PtrType>>\ can\ be\ copied}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ *\ and\ moved,\ but}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *\ nn<unique\_ptr<PtrType>>\ can\ only\ be\ moved;\ an\ nn<unique\_ptr<PtrType>>\ can\ be}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ explicitly}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *\ (but\ not\ implicitly)\ created\ from\ an\ nn<PtrType*>;\ implicit\ upcasts\ are}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ *\ allowed;\ and\ so\ on.}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ *\ Similarly,\ non-\/nullable\ pointers\ can\ be\ compared\ with\ regular\ or\ other}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ *\ non-\/nullable}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ *\ pointers,\ using\ the\ same\ rules\ as\ the\ underlying\ pointer\ types.}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ *\ This\ module\ also\ provides\ helpers\ for\ creating\ an\ nn<PtrType>\ from\ operations}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ *\ that\ would}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ *\ always\ return\ a\ non-\/null\ pointer:\ nn\_make\_unique,\ nn\_make\_shared,}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ *\ nn\_shared\_from\_this,\ and}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ *\ nn\_addr\ (a\ replacement\ for\ operator\&).}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ *\ We\ abbreviate\ nn<unique\_ptr>\ as\ nn\_unique\_ptr\ -\/\ it's\ a\ little\ more\ readable.}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ *\ Likewise,}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ *\ nn<shared\_ptr>\ can\ be\ written\ as\ nn\_shared\_ptr.}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ *\ Finally,\ we\ define\ macros\ NN\_CHECK\_ASSERT\ and\ NN\_CHECK\_THROW,\ to\ convert\ a}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ *\ nullable\ pointer}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ *\ to\ a\ non-\/nullable\ pointer.\ At\ Dropbox,\ these\ use\ customized\ error-\/handling}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ *\ infrastructure}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ *\ and\ are\ in\ a\ separate\ file.\ We've\ included\ sample\ implementations\ here.}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00091\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ PtrType>\ \textcolor{keyword}{class\ }nn\ \{}
+\DoxyCodeLine{00092\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00093\ \ \ \textcolor{keyword}{static\_assert}(!\doxymbox{\hyperlink{structdropbox_1_1oxygen_1_1is__nn}{is\_nn<PtrType>::value}},\ \textcolor{stringliteral}{"{}nn<nn<T>>\ is\ disallowed"{}});}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \textcolor{keyword}{using\ }element\_type\ =\ \textcolor{keyword}{typename}\ nn\_detail::element\_type<PtrType>::type;}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \textcolor{comment}{//\ Pass\ through\ calls\ to\ operator*\ and\ operator-\/>\ transparently}}
+\DoxyCodeLine{00098\ \ \ element\_type\ \&operator*()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ *ptr;\ \}}
+\DoxyCodeLine{00099\ \ \ element\_type\ *operator-\/>()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \&*ptr;\ \}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \textcolor{comment}{//\ Expose\ the\ underlying\ PtrType}}
+\DoxyCodeLine{00102\ \ \ \textcolor{keyword}{operator}\ \textcolor{keyword}{const}\ PtrType\ \&()\ \textcolor{keyword}{const}\ \&\ \{\ \textcolor{keywordflow}{return}\ ptr;\ \}}
+\DoxyCodeLine{00103\ \ \ \textcolor{keyword}{operator}\ PtrType\ \&\&()\ \&\&\ \{\ \textcolor{keywordflow}{return}\ std::move(ptr);\ \}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{comment}{//\ Trying\ to\ use\ the\ assignment\ operator\ to\ assign\ a\ nn<PtrType>\ to\ a\ PtrType}}
+\DoxyCodeLine{00106\ \ \ \textcolor{comment}{//\ using\ the}}
+\DoxyCodeLine{00107\ \ \ \textcolor{comment}{//\ above\ conversion\ functions\ hits\ an\ ambiguous\ resolution\ bug\ in\ clang:}}
+\DoxyCodeLine{00108\ \ \ \textcolor{comment}{//\ http://llvm.org/bugs/show\_bug.cgi?id=18359}}
+\DoxyCodeLine{00109\ \ \ \textcolor{comment}{//\ While\ that\ exists,\ we\ can\ use\ these\ as\ simple\ ways\ of\ accessing\ the}}
+\DoxyCodeLine{00110\ \ \ \textcolor{comment}{//\ underlying\ type}}
+\DoxyCodeLine{00111\ \ \ \textcolor{comment}{//\ (instead\ of\ workarounds\ calling\ the\ operators\ explicitly\ or\ adding\ a}}
+\DoxyCodeLine{00112\ \ \ \textcolor{comment}{//\ constructor\ call).}}
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{const}\ PtrType\ \&as\_nullable()\ \textcolor{keyword}{const}\ \&\ \{\ \textcolor{keywordflow}{return}\ ptr;\ \}}
+\DoxyCodeLine{00114\ \ \ PtrType\ \&\&as\_nullable()\ \&\&\ \{\ \textcolor{keywordflow}{return}\ std::move(ptr);\ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \textcolor{comment}{//\ Can't\ convert\ to\ bool\ (that\ would\ be\ silly).\ The\ explicit\ delete\ results\ in}}
+\DoxyCodeLine{00117\ \ \ \textcolor{comment}{//\ "{}value\ of\ type\ 'nn<...>'\ is\ not\ contextually\ convertible\ to\ 'bool'"{},\ rather}}
+\DoxyCodeLine{00118\ \ \ \textcolor{comment}{//\ than}}
+\DoxyCodeLine{00119\ \ \ \textcolor{comment}{//\ "{}no\ viable\ conversion"{},\ which\ is\ a\ bit\ more\ clear.}}
+\DoxyCodeLine{00120\ \ \ \textcolor{keyword}{operator}\ bool()\ \textcolor{keyword}{const}\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{comment}{//\ Explicitly\ deleted\ constructors.\ These\ help\ produce\ clearer\ error\ messages,}}
+\DoxyCodeLine{00123\ \ \ \textcolor{comment}{//\ as\ trying}}
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{//\ to\ use\ them\ will\ result\ in\ clang\ printing\ the\ whole\ line,\ including\ the}}
+\DoxyCodeLine{00125\ \ \ \textcolor{comment}{//\ comment.}}
+\DoxyCodeLine{00126\ \ \ nn(std::nullptr\_t)\ =\ \textcolor{keyword}{delete};\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ nullptr\ is\ not\ allowed\ here}}
+\DoxyCodeLine{00127\ \ \ nn\ \&operator=(std::nullptr\_t)\ =\ \textcolor{keyword}{delete};\ \textcolor{comment}{//\ nullptr\ is\ not\ allowed\ here}}
+\DoxyCodeLine{00128\ \ \ nn(PtrType)\ =\ \textcolor{keyword}{delete};\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ must\ use\ NN\_CHECK\_ASSERT\ or\ NN\_CHECK\_THROW}}
+\DoxyCodeLine{00129\ \ \ nn\ \&operator=(PtrType)\ =\ \textcolor{keyword}{delete};\ \textcolor{comment}{//\ must\ use\ NN\_CHECK\_ASSERT\ or\ NN\_CHECK\_THROW}}
+\DoxyCodeLine{00130\ \ \ \textcolor{comment}{//PROJ\_DLL\ \string~nn();}}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \textcolor{comment}{//\ Semi-\/private\ constructor\ for\ use\ by\ NN\_CHECK\_\ macros.}}
+\DoxyCodeLine{00133\ \ \ \textcolor{keyword}{explicit}\ nn(\doxymbox{\hyperlink{structdropbox_1_1oxygen_1_1i__promise__i__checked__for__null__t}{i\_promise\_i\_checked\_for\_null\_t}},\ \textcolor{keyword}{const}\ PtrType\ \&arg)\ noexcept\ :\ ptr(arg)\ \{}
+\DoxyCodeLine{00134\ \ \ \}}
+\DoxyCodeLine{00135\ \ \ \textcolor{keyword}{explicit}\ nn(\doxymbox{\hyperlink{structdropbox_1_1oxygen_1_1i__promise__i__checked__for__null__t}{i\_promise\_i\_checked\_for\_null\_t}},\ PtrType\ \&\&arg)\ noexcept}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ :\ ptr(std::move(arg))\ \{}
+\DoxyCodeLine{00137\ \ \ \}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \textcolor{comment}{//\ Type-\/converting\ move\ and\ copy\ constructor.\ We\ have\ four\ separate\ cases}}
+\DoxyCodeLine{00140\ \ \ \textcolor{comment}{//\ here,\ for}}
+\DoxyCodeLine{00141\ \ \ \textcolor{comment}{//\ implicit\ and\ explicit\ move\ and\ copy.}}
+\DoxyCodeLine{00142\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OtherType,}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ std::enable\_if<}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::is\_constructible<PtrType,\ OtherType>::value\ \&\&}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !std::is\_convertible<OtherType,\ PtrType>::value,}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ =\ 0>}
+\DoxyCodeLine{00147\ \ \ \textcolor{keyword}{explicit}\ nn(\textcolor{keyword}{const}\ nn<OtherType>\ \&other)}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ :\ ptr(other.operator\ \textcolor{keyword}{const}\ OtherType\ \&())\ \{\}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OtherType,}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ std::enable\_if<}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::is\_constructible<PtrType,\ OtherType>::value\ \&\&}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !std::is\_convertible<OtherType,\ PtrType>::value\ \&\&}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !std::is\_pointer<OtherType>::value,}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ =\ 0>}
+\DoxyCodeLine{00156\ \ \ \textcolor{keyword}{explicit}\ nn(nn<OtherType>\ \&\&other)}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ :\ ptr(std::move(other).\textcolor{keyword}{operator}\ OtherType\ \&\&())\ \{\}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OtherType,}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ std::enable\_if<}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::is\_convertible<OtherType,\ PtrType>::value,\ \textcolor{keywordtype}{int}>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ =\ 0>}
+\DoxyCodeLine{00162\ \ \ nn(\textcolor{keyword}{const}\ nn<OtherType>\ \&other)\ :\ ptr(other.operator\ \textcolor{keyword}{const}\ OtherType\ \&())\ \{\}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \textcolor{keyword}{template}\ <}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \textcolor{keyword}{typename}\ OtherType,}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \textcolor{keyword}{typename}\ std::enable\_if<std::is\_convertible<OtherType,\ PtrType>::value\ \&\&}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !std::is\_pointer<OtherType>::value,}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ =\ 0>}
+\DoxyCodeLine{00169\ \ \ nn(nn<OtherType>\ \&\&other)\ :\ ptr(std::move(other).\textcolor{keyword}{operator}\ OtherType\ \&\&())\ \{\}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \textcolor{comment}{//\ A\ type-\/converting\ move\ and\ copy\ assignment\ operator\ aren't\ necessary;}}
+\DoxyCodeLine{00172\ \ \ \textcolor{comment}{//\ writing}}
+\DoxyCodeLine{00173\ \ \ \textcolor{comment}{//\ "{}base\_ptr\ =\ derived\_ptr;"{}\ will\ run\ the\ type-\/converting\ constructor\ followed}}
+\DoxyCodeLine{00174\ \ \ \textcolor{comment}{//\ by\ the}}
+\DoxyCodeLine{00175\ \ \ \textcolor{comment}{//\ implicit\ move\ assignment\ operator.}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \textcolor{comment}{//\ Two-\/argument\ constructor,\ designed\ for\ use\ with\ the\ shared\_ptr\ aliasing}}
+\DoxyCodeLine{00178\ \ \ \textcolor{comment}{//\ constructor.}}
+\DoxyCodeLine{00179\ \ \ \textcolor{comment}{//\ This\ will\ not\ be\ instantiated\ if\ PtrType\ doesn't\ have\ a\ suitable}}
+\DoxyCodeLine{00180\ \ \ \textcolor{comment}{//\ constructor.}}
+\DoxyCodeLine{00181\ \ \ \textcolor{keyword}{template}\ <}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \textcolor{keyword}{typename}\ OtherType,}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \textcolor{keyword}{typename}\ std::enable\_if<}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ std::is\_constructible<PtrType,\ OtherType,\ element\_type\ *>::value,}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ =\ 0>}
+\DoxyCodeLine{00186\ \ \ nn(\textcolor{keyword}{const}\ nn<OtherType>\ \&ownership\_ptr,\ nn<element\_type\ *>\ target\_ptr)}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ :\ ptr(ownership\_ptr.operator\ \textcolor{keyword}{const}\ OtherType\ \&(),\ target\_ptr)\ \{\}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{comment}{//\ Comparisons.\ Other\ comparisons\ are\ implemented\ in\ terms\ of\ these.}}
+\DoxyCodeLine{00190\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00191\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ nn<L>\ \&,\ \textcolor{keyword}{const}\ R\ \&);}
+\DoxyCodeLine{00192\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00193\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ L\ \&,\ \textcolor{keyword}{const}\ nn<R>\ \&);}
+\DoxyCodeLine{00194\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00195\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ nn<L>\ \&,\ \textcolor{keyword}{const}\ nn<R>\ \&);}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00198\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ operator<(\textcolor{keyword}{const}\ nn<L>\ \&,\ \textcolor{keyword}{const}\ R\ \&);}
+\DoxyCodeLine{00199\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00200\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ operator<(\textcolor{keyword}{const}\ L\ \&,\ \textcolor{keyword}{const}\ nn<R>\ \&);}
+\DoxyCodeLine{00201\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00202\ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ operator<(\textcolor{keyword}{const}\ nn<L>\ \&,\ \textcolor{keyword}{const}\ nn<R>\ \&);}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \textcolor{comment}{//\ ostream\ operator}}
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{friend}\ std::ostream\ \&operator<<(std::ostream\ \&,\ \textcolor{keyword}{const}\ nn<T>\ \&);}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T\ =\ PtrType>\ element\_type\ *get()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00209\ \ \ \ \ \textcolor{keywordflow}{return}\ ptr.get();}
+\DoxyCodeLine{00210\ \ \ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00213\ \ \ \textcolor{comment}{//\ Backing\ pointer}}
+\DoxyCodeLine{00214\ \ \ PtrType\ ptr;}
+\DoxyCodeLine{00215\ \};}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{comment}{//\ Base\ comparisons\ -\/\ these\ are\ friends\ of\ nn<PtrType>,\ so\ they\ can\ access\ .ptr}}
+\DoxyCodeLine{00218\ \textcolor{comment}{//\ directly.}}
+\DoxyCodeLine{00219\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdropbox_1_1oxygen_1_1nn}{nn<L>}}\ \&l,\ \textcolor{keyword}{const}\ R\ \&r)\ \{}
+\DoxyCodeLine{00220\ \ \ \textcolor{keywordflow}{return}\ l.ptr\ ==\ r;}
+\DoxyCodeLine{00221\ \}}
+\DoxyCodeLine{00222\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ L\ \&l,\ \textcolor{keyword}{const}\ nn<R>\ \&r)\ \{}
+\DoxyCodeLine{00223\ \ \ \textcolor{keywordflow}{return}\ l\ ==\ r.ptr;}
+\DoxyCodeLine{00224\ \}}
+\DoxyCodeLine{00225\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00226\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ nn<L>\ \&l,\ \textcolor{keyword}{const}\ nn<R>\ \&r)\ \{}
+\DoxyCodeLine{00227\ \ \ \textcolor{keywordflow}{return}\ l.ptr\ ==\ r.ptr;}
+\DoxyCodeLine{00228\ \}}
+\DoxyCodeLine{00229\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>\ \textcolor{keywordtype}{bool}\ operator<(\textcolor{keyword}{const}\ nn<L>\ \&l,\ \textcolor{keyword}{const}\ R\ \&r)\ \{}
+\DoxyCodeLine{00230\ \ \ \textcolor{keywordflow}{return}\ l.ptr\ <\ r;}
+\DoxyCodeLine{00231\ \}}
+\DoxyCodeLine{00232\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>\ \textcolor{keywordtype}{bool}\ operator<(\textcolor{keyword}{const}\ L\ \&l,\ \textcolor{keyword}{const}\ nn<R>\ \&r)\ \{}
+\DoxyCodeLine{00233\ \ \ \textcolor{keywordflow}{return}\ l\ <\ r.ptr;}
+\DoxyCodeLine{00234\ \}}
+\DoxyCodeLine{00235\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ L,\ \textcolor{keyword}{typename}\ R>}
+\DoxyCodeLine{00236\ \textcolor{keywordtype}{bool}\ operator<(\textcolor{keyword}{const}\ nn<L>\ \&l,\ \textcolor{keyword}{const}\ nn<R>\ \&r)\ \{}
+\DoxyCodeLine{00237\ \ \ \textcolor{keywordflow}{return}\ l.ptr\ <\ r.ptr;}
+\DoxyCodeLine{00238\ \}}
+\DoxyCodeLine{00239\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00240\ std::ostream\ \&operator<<(std::ostream\ \&os,\ \textcolor{keyword}{const}\ nn<T>\ \&p)\ \{}
+\DoxyCodeLine{00241\ \ \ \textcolor{keywordflow}{return}\ os\ <<\ p.ptr;}
+\DoxyCodeLine{00242\ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\#define\ NN\_DERIVED\_OPERATORS(op,\ base)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\ \ template\ <typename\ L,\ typename\ R>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\ \ bool\ operator\ op(const\ nn<L>\ \&l,\ const\ R\ \&r)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\ \ \ \ return\ base;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{\ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00249\ \textcolor{preprocessor}{\ \ template\ <typename\ L,\ typename\ R>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\ \ bool\ operator\ op(const\ L\ \&l,\ const\ nn<R>\ \&r)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\ \ \ \ return\ base;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00252\ \textcolor{preprocessor}{\ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\ \ template\ <typename\ L,\ typename\ R>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\ \ bool\ operator\ op(const\ nn<L>\ \&l,\ const\ nn<R>\ \&r)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\ \ \ \ return\ base;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\ \ \}}}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ NN\_DERIVED\_OPERATORS(>,\ r\ <\ l)}
+\DoxyCodeLine{00259\ NN\_DERIVED\_OPERATORS(<=,\ !(l\ >\ r))}
+\DoxyCodeLine{00260\ NN\_DERIVED\_OPERATORS(>=,\ !(l\ <\ r))}
+\DoxyCodeLine{00261\ NN\_DERIVED\_OPERATORS(!=,\ !(l\ ==\ r))}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \textcolor{preprocessor}{\#undef\ NN\_DERIVED\_OPERATORS}}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00265\ \textcolor{comment}{//\ Convenience\ typedefs}}
+\DoxyCodeLine{00266\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{using\ }nn\_unique\_ptr\ =\ nn<std::unique\_ptr<T>>;}
+\DoxyCodeLine{00267\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{using\ }nn\_shared\_ptr\ =\ nn<std::shared\_ptr<T>>;}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00270\ nn\_unique\_ptr<T>\ nn\_make\_unique(Args\ \&\&...\ args)\ \{}
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordflow}{return}\ nn\_unique\_ptr<T>(}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ i\_promise\_i\_checked\_for\_null,}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ std::unique\_ptr<T>(\textcolor{keyword}{new}\ T(std::forward<Args>(args)...)));}
+\DoxyCodeLine{00274\ \}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00277\ nn\_shared\_ptr<T>\ nn\_make\_shared(Args\ \&\&...\ args)\ \{}
+\DoxyCodeLine{00278\ \ \ \textcolor{keywordflow}{return}\ nn\_shared\_ptr<T>(i\_promise\_i\_checked\_for\_null,}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::make\_shared<T>(std::forward<Args>(args)...));}
+\DoxyCodeLine{00280\ \}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00283\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdropbox_1_1oxygen_1_1nn__enable__shared__from__this}{nn\_enable\_shared\_from\_this}}\ :\ \textcolor{keyword}{public}\ std::enable\_shared\_from\_this<T>\ \{}
+\DoxyCodeLine{00284\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00285\ \ \ \textcolor{keyword}{using\ }std::enable\_shared\_from\_this<T>::enable\_shared\_from\_this;}
+\DoxyCodeLine{00286\ \ \ nn\_shared\_ptr<T>\ nn\_shared\_from\_this()\ \{}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{keywordflow}{return}\ nn\_shared\_ptr<T>(i\_promise\_i\_checked\_for\_null,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>shared\_from\_this());}
+\DoxyCodeLine{00289\ \ \ \}}
+\DoxyCodeLine{00290\ \ \ nn\_shared\_ptr<const\ T>\ nn\_shared\_from\_this()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keywordflow}{return}\ nn\_shared\_ptr<const\ T>(i\_promise\_i\_checked\_for\_null,}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>shared\_from\_this());}
+\DoxyCodeLine{00293\ \ \ \}}
+\DoxyCodeLine{00294\ \};}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \doxymbox{\hyperlink{classdropbox_1_1oxygen_1_1nn}{nn<T\ *>}}\ nn\_addr(T\ \&\textcolor{keywordtype}{object})\ \{}
+\DoxyCodeLine{00297\ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classdropbox_1_1oxygen_1_1nn}{nn<T\ *>}}(i\_promise\_i\_checked\_for\_null,\ \&\textcolor{keywordtype}{object});}
+\DoxyCodeLine{00298\ \}}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ nn<const\ T\ *>\ nn\_addr(\textcolor{keyword}{const}\ T\ \&\textcolor{keywordtype}{object})\ \{}
+\DoxyCodeLine{00301\ \ \ \textcolor{keywordflow}{return}\ nn<const\ T\ *>(i\_promise\_i\_checked\_for\_null,\ \&\textcolor{keywordtype}{object});}
+\DoxyCodeLine{00302\ \}}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \textcolor{comment}{/*\ Non-\/nullable\ equivalents\ of\ shared\_ptr's\ specialized\ casting\ functions.}}
+\DoxyCodeLine{00305\ \textcolor{comment}{\ *\ These\ convert\ through\ a\ shared\_ptr\ since\ nn<shared\_ptr<T>>\ lacks\ the}}
+\DoxyCodeLine{00306\ \textcolor{comment}{\ *\ ref-\/count-\/sharing\ cast}}
+\DoxyCodeLine{00307\ \textcolor{comment}{\ *\ constructor,\ but\ thanks\ to\ moves\ there\ shouldn't\ be\ any\ significant\ extra}}
+\DoxyCodeLine{00308\ \textcolor{comment}{\ *\ cost.\ */}}
+\DoxyCodeLine{00309\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00310\ nn\_shared\_ptr<T>\ nn\_static\_pointer\_cast(\textcolor{keyword}{const}\ nn\_shared\_ptr<U>\ \&org\_ptr)\ \{}
+\DoxyCodeLine{00311\ \ \ \textcolor{keyword}{auto}\ raw\_ptr\ =}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}typename\ nn\_shared\_ptr<T>::element\_type\ *\textcolor{keyword}{>}(org\_ptr.get());}
+\DoxyCodeLine{00313\ \ \ std::shared\_ptr<T>\ nullable\_ptr(org\_ptr.as\_nullable(),\ raw\_ptr);}
+\DoxyCodeLine{00314\ \ \ \textcolor{keywordflow}{return}\ nn\_shared\_ptr<T>(i\_promise\_i\_checked\_for\_null,}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::move(nullable\_ptr));}
+\DoxyCodeLine{00316\ \}}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00319\ std::shared\_ptr<T>\ nn\_dynamic\_pointer\_cast(\textcolor{keyword}{const}\ nn\_shared\_ptr<U>\ \&org\_ptr)\ \{}
+\DoxyCodeLine{00320\ \ \ \textcolor{keyword}{auto}\ raw\_ptr\ =}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \textcolor{keyword}{dynamic\_cast<}typename\ std::shared\_ptr<T>::element\_type\ *\textcolor{keyword}{>}(org\_ptr.get());}
+\DoxyCodeLine{00322\ \ \ \textcolor{keywordflow}{if}\ (!raw\_ptr)\ \{}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00324\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00325\ \ \ \ \ \textcolor{keywordflow}{return}\ std::shared\_ptr<T>(org\_ptr.as\_nullable(),\ raw\_ptr);}
+\DoxyCodeLine{00326\ \ \ \}}
+\DoxyCodeLine{00327\ \}}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ U>}
+\DoxyCodeLine{00330\ nn\_shared\_ptr<T>\ nn\_const\_pointer\_cast(\textcolor{keyword}{const}\ nn\_shared\_ptr<U>\ \&org\_ptr)\ \{}
+\DoxyCodeLine{00331\ \ \ \textcolor{keyword}{auto}\ raw\_ptr\ =}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \textcolor{keyword}{const\_cast<}typename\ nn\_shared\_ptr<T>::element\_type\ *\textcolor{keyword}{>}(org\_ptr.get());}
+\DoxyCodeLine{00333\ \ \ std::shared\_ptr<T>\ nullable\_ptr(org\_ptr.as\_nullable(),\ raw\_ptr);}
+\DoxyCodeLine{00334\ \ \ \textcolor{keywordflow}{return}\ nn\_shared\_ptr<T>(i\_promise\_i\_checked\_for\_null,}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::move(nullable\_ptr));}
+\DoxyCodeLine{00336\ \}}
+\DoxyCodeLine{00337\ \}}
+\DoxyCodeLine{00338\ \}\ \textcolor{comment}{/*\ end\ namespace\ dropbox::oxygen\ */}}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \textcolor{keyword}{namespace\ }std\ \{}
+\DoxyCodeLine{00341\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>\ \textcolor{keyword}{struct\ }hash<::dropbox::oxygen::nn<T>>\ \{}
+\DoxyCodeLine{00342\ \ \ \textcolor{keyword}{using\ }argument\_type\ =\ ::dropbox::oxygen::nn<T>;}
+\DoxyCodeLine{00343\ \ \ \textcolor{keyword}{using\ }result\_type\ =\ size\_t;}
+\DoxyCodeLine{00344\ \ \ result\_type\ operator()(\textcolor{keyword}{const}\ argument\_type\ \&obj)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00345\ \ \ \ \ \textcolor{keywordflow}{return}\ std::hash<T>\{\}(obj.as\_nullable());}
+\DoxyCodeLine{00346\ \ \ \}}
+\DoxyCodeLine{00347\ \};}
+\DoxyCodeLine{00348\ \}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \textcolor{comment}{/*\ These\ have\ to\ be\ macros\ because\ our\ internal\ versions\ invoke\ other\ macros}}
+\DoxyCodeLine{00351\ \textcolor{comment}{\ *\ that\ use}}
+\DoxyCodeLine{00352\ \textcolor{comment}{\ *\ \_\_FILE\_\_\ and\ \_\_LINE\_\_,\ which\ we\ want\ to\ correctly\ point\ to\ the\ call\ site.}}
+\DoxyCodeLine{00353\ \textcolor{comment}{\ *\ We're\ looking}}
+\DoxyCodeLine{00354\ \textcolor{comment}{\ *\ forward\ to\ std::source\_location\ :)}}
+\DoxyCodeLine{00355\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00356\ \textcolor{comment}{\ *\ The\ lambdas\ ensure\ that\ we\ only\ evaluate\ \_e\ once.}}
+\DoxyCodeLine{00357\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00358\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \textcolor{comment}{//\ NN\_CHECK\_ASSERT\ takes\ a\ pointer\ of\ type\ PT\ (e.g.\ raw\ pointer,\ std::shared\_ptr}}
+\DoxyCodeLine{00361\ \textcolor{comment}{//\ or\ std::unique\_ptr)}}
+\DoxyCodeLine{00362\ \textcolor{comment}{//\ and\ returns\ a\ non-\/nullable\ pointer\ of\ type\ nn<PT>.}}
+\DoxyCodeLine{00363\ \textcolor{comment}{//\ Triggers\ an\ assertion\ if\ expression\ evaluates\ to\ null.}}
+\DoxyCodeLine{00364\ \textcolor{preprocessor}{\#define\ NN\_CHECK\_ASSERT(\_e)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00365\ \textcolor{preprocessor}{\ \ (([\&](typename\ std::remove\_reference<decltype(\_e)>::type\ p)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00366\ \textcolor{preprocessor}{\ \ \ \ }\textcolor{comment}{/*\ note:\ assert()\ alone\ is\ not\ sufficient\ here,\ because\ it\ might\ be\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00367\ \textcolor{comment}{\ \ \ \ \ *\ compiled\ out.\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\ \ \ \ assert(p\ \&\&\#\_e\ "{}\ must\ not\ be\ null"{});\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00369\ \textcolor{preprocessor}{\ \ \ \ if\ (!p)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00370\ \textcolor{preprocessor}{\ \ \ \ \ \ std::abort();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00371\ \textcolor{preprocessor}{\ \ \ \ return\ dropbox::oxygen::nn<\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ typename\ std::remove\_reference<decltype(p)>::type>(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00373\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ dropbox::oxygen::i\_promise\_i\_checked\_for\_null,\ std::move(p));\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00374\ \textcolor{preprocessor}{\ \ \})(\_e))}}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \textcolor{comment}{//\ NN\_CHECK\_THROW\ takes\ a\ pointer\ of\ type\ PT\ (e.g.\ raw\ pointer,\ std::shared\_ptr}}
+\DoxyCodeLine{00377\ \textcolor{comment}{//\ or\ std::unique\_ptr)}}
+\DoxyCodeLine{00378\ \textcolor{comment}{//\ and\ returns\ a\ non-\/nullable\ pointer\ of\ type\ nn<PT>.}}
+\DoxyCodeLine{00379\ \textcolor{comment}{//\ Throws\ if\ expression\ evaluates\ to\ null.}}
+\DoxyCodeLine{00380\ \textcolor{preprocessor}{\#define\ NN\_CHECK\_THROW(\_e)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00381\ \textcolor{preprocessor}{\ \ (([\&](typename\ std::remove\_reference<decltype(\_e)>::type\ p)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00382\ \textcolor{preprocessor}{\ \ \ \ if\ (!p)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00383\ \textcolor{preprocessor}{\ \ \ \ \ \ throw\ std::runtime\_error(\#\_e\ "{}\ must\ not\ be\ null"{});\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00384\ \textcolor{preprocessor}{\ \ \ \ return\ dropbox::oxygen::nn<\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ typename\ std::remove\_reference<decltype(p)>::type>(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00386\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ dropbox::oxygen::i\_promise\_i\_checked\_for\_null,\ std::move(p));\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\ \ \})(\_e))}}
+
+\end{DoxyCode}

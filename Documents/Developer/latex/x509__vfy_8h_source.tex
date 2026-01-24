@@ -1,0 +1,909 @@
+\doxysection{x509\+\_\+vfy.\+h}
+\hypertarget{x509__vfy_8h_source}{}\label{x509__vfy_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/x509\_vfy.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/x509\_vfy.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ WARNING:\ do\ not\ edit!}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ Generated\ by\ makefile\ from\ include\(\backslash\)openssl\(\backslash\)x509\_vfy.h.in}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ Copyright\ 1995-\/2025\ The\ OpenSSL\ Project\ Authors.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ Licensed\ under\ the\ Apache\ License\ 2.0\ (the\ "{}License"{}).\ \ You\ may\ not\ use}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ this\ file\ except\ in\ compliance\ with\ the\ License.\ \ You\ can\ obtain\ a\ copy}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ in\ the\ file\ LICENSE\ in\ the\ source\ distribution\ or\ at}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ https://www.openssl.org/source/license.html}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_X509\_VFY\_H}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#\ define\ OPENSSL\_X509\_VFY\_H}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#\ pragma\ once}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#\ include\ <openssl/macros.h>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_3\_0}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#\ \ define\ HEADER\_X509\_VFY\_H}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ Protect\ against\ recursion,\ x509.h\ and\ x509\_vfy.h\ each\ include\ the\ other.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_X509\_H}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#\ \ include\ <openssl/x509.h>}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#\ include\ <openssl/opensslconf.h>}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#\ include\ <openssl/lhash.h>}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#\ include\ <openssl/bio.h>}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#\ include\ <openssl/crypto.h>}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#\ include\ <openssl/symhacks.h>}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00038\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00042\ \textcolor{comment}{SSL\_CTX\ -\/>\ X509\_STORE}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/>\ X509\_LOOKUP}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/>X509\_LOOKUP\_METHOD}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/>\ X509\_LOOKUP}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/>X509\_LOOKUP\_METHOD}}
+\DoxyCodeLine{00047\ \textcolor{comment}{}}
+\DoxyCodeLine{00048\ \textcolor{comment}{SSL\ \ \ \ \ -\/>\ X509\_STORE\_CTX}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/>X509\_STORE}}
+\DoxyCodeLine{00050\ \textcolor{comment}{}}
+\DoxyCodeLine{00051\ \textcolor{comment}{The\ X509\_STORE\ holds\ the\ tables\ etc\ for\ verification\ stuff.}}
+\DoxyCodeLine{00052\ \textcolor{comment}{A\ X509\_STORE\_CTX\ is\ used\ while\ validating\ a\ single\ certificate.}}
+\DoxyCodeLine{00053\ \textcolor{comment}{The\ X509\_STORE\ has\ X509\_LOOKUPs\ for\ looking\ up\ certs.}}
+\DoxyCodeLine{00054\ \textcolor{comment}{The\ X509\_STORE\ then\ calls\ a\ function\ to\ actually\ verify\ the}}
+\DoxyCodeLine{00055\ \textcolor{comment}{certificate\ chain.}}
+\DoxyCodeLine{00056\ \textcolor{comment}{*/}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00059\ \ \ \ \ X509\_LU\_NONE\ =\ 0,}
+\DoxyCodeLine{00060\ \ \ \ \ X509\_LU\_X509,\ X509\_LU\_CRL}
+\DoxyCodeLine{00061\ \}\ X509\_LOOKUP\_TYPE;}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_NO\_DEPRECATED\_1\_1\_0}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#define\ X509\_LU\_RETRY\ \ \ -\/1}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#define\ X509\_LU\_FAIL\ \ \ \ 0}}
+\DoxyCodeLine{00066\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(X509\_LOOKUP,\ X509\_LOOKUP,\ X509\_LOOKUP)}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_X509\_LOOKUP\_sk\_type(sk))}}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_value(sk,\ idx)\ ((X509\_LOOKUP\ *)OPENSSL\_sk\_value(ossl\_check\_const\_X509\_LOOKUP\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_new(cmp)\ ((STACK\_OF(X509\_LOOKUP)\ *)OPENSSL\_sk\_new(ossl\_check\_X509\_LOOKUP\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_new\_null()\ ((STACK\_OF(X509\_LOOKUP)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00073\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_new\_reserve(cmp,\ n)\ ((STACK\_OF(X509\_LOOKUP)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_X509\_LOOKUP\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_X509\_LOOKUP\_sk\_type(sk))}}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_X509\_LOOKUP\_sk\_type(sk))}}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_delete(sk,\ i)\ ((X509\_LOOKUP\ *)OPENSSL\_sk\_delete(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_delete\_ptr(sk,\ ptr)\ ((X509\_LOOKUP\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ ossl\_check\_X509\_LOOKUP\_type(ptr)))}}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ ossl\_check\_X509\_LOOKUP\_type(ptr))}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ ossl\_check\_X509\_LOOKUP\_type(ptr))}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_pop(sk)\ ((X509\_LOOKUP\ *)OPENSSL\_sk\_pop(ossl\_check\_X509\_LOOKUP\_sk\_type(sk)))}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_shift(sk)\ ((X509\_LOOKUP\ *)OPENSSL\_sk\_shift(ossl\_check\_X509\_LOOKUP\_sk\_type(sk)))}}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),ossl\_check\_X509\_LOOKUP\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ ossl\_check\_X509\_LOOKUP\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_set(sk,\ idx,\ ptr)\ ((X509\_LOOKUP\ *)OPENSSL\_sk\_set(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ (idx),\ ossl\_check\_X509\_LOOKUP\_type(ptr)))}}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ ossl\_check\_X509\_LOOKUP\_type(ptr))}}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ ossl\_check\_X509\_LOOKUP\_type(ptr))}}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ ossl\_check\_X509\_LOOKUP\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_X509\_LOOKUP\_sk\_type(sk))}}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_X509\_LOOKUP\_sk\_type(sk))}}
+\DoxyCodeLine{00091\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_dup(sk)\ ((STACK\_OF(X509\_LOOKUP)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_X509\_LOOKUP\_sk\_type(sk)))}}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(X509\_LOOKUP)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_X509\_LOOKUP\_sk\_type(sk),\ ossl\_check\_X509\_LOOKUP\_copyfunc\_type(copyfunc),\ ossl\_check\_X509\_LOOKUP\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\#define\ sk\_X509\_LOOKUP\_set\_cmp\_func(sk,\ cmp)\ ((sk\_X509\_LOOKUP\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_X509\_LOOKUP\_sk\_type(sk),\ ossl\_check\_X509\_LOOKUP\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00094\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(X509\_OBJECT,\ X509\_OBJECT,\ X509\_OBJECT)}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_X509\_OBJECT\_sk\_type(sk))}}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_value(sk,\ idx)\ ((X509\_OBJECT\ *)OPENSSL\_sk\_value(ossl\_check\_const\_X509\_OBJECT\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_new(cmp)\ ((STACK\_OF(X509\_OBJECT)\ *)OPENSSL\_sk\_new(ossl\_check\_X509\_OBJECT\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_new\_null()\ ((STACK\_OF(X509\_OBJECT)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_new\_reserve(cmp,\ n)\ ((STACK\_OF(X509\_OBJECT)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_X509\_OBJECT\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_X509\_OBJECT\_sk\_type(sk))}}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_X509\_OBJECT\_sk\_type(sk))}}
+\DoxyCodeLine{00103\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_delete(sk,\ i)\ ((X509\_OBJECT\ *)OPENSSL\_sk\_delete(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_delete\_ptr(sk,\ ptr)\ ((X509\_OBJECT\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ ossl\_check\_X509\_OBJECT\_type(ptr)))}}
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ ossl\_check\_X509\_OBJECT\_type(ptr))}}
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ ossl\_check\_X509\_OBJECT\_type(ptr))}}
+\DoxyCodeLine{00107\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_pop(sk)\ ((X509\_OBJECT\ *)OPENSSL\_sk\_pop(ossl\_check\_X509\_OBJECT\_sk\_type(sk)))}}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_shift(sk)\ ((X509\_OBJECT\ *)OPENSSL\_sk\_shift(ossl\_check\_X509\_OBJECT\_sk\_type(sk)))}}
+\DoxyCodeLine{00109\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_X509\_OBJECT\_sk\_type(sk),ossl\_check\_X509\_OBJECT\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00110\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ ossl\_check\_X509\_OBJECT\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_set(sk,\ idx,\ ptr)\ ((X509\_OBJECT\ *)OPENSSL\_sk\_set(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ (idx),\ ossl\_check\_X509\_OBJECT\_type(ptr)))}}
+\DoxyCodeLine{00112\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ ossl\_check\_X509\_OBJECT\_type(ptr))}}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ ossl\_check\_X509\_OBJECT\_type(ptr))}}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ ossl\_check\_X509\_OBJECT\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_X509\_OBJECT\_sk\_type(sk))}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_X509\_OBJECT\_sk\_type(sk))}}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_dup(sk)\ ((STACK\_OF(X509\_OBJECT)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_X509\_OBJECT\_sk\_type(sk)))}}
+\DoxyCodeLine{00118\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(X509\_OBJECT)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_X509\_OBJECT\_sk\_type(sk),\ ossl\_check\_X509\_OBJECT\_copyfunc\_type(copyfunc),\ ossl\_check\_X509\_OBJECT\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#define\ sk\_X509\_OBJECT\_set\_cmp\_func(sk,\ cmp)\ ((sk\_X509\_OBJECT\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_X509\_OBJECT\_sk\_type(sk),\ ossl\_check\_X509\_OBJECT\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00120\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(X509\_VERIFY\_PARAM,\ X509\_VERIFY\_PARAM,\ X509\_VERIFY\_PARAM)}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_X509\_VERIFY\_PARAM\_sk\_type(sk))}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_value(sk,\ idx)\ ((X509\_VERIFY\_PARAM\ *)OPENSSL\_sk\_value(ossl\_check\_const\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_new(cmp)\ ((STACK\_OF(X509\_VERIFY\_PARAM)\ *)OPENSSL\_sk\_new(ossl\_check\_X509\_VERIFY\_PARAM\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_new\_null()\ ((STACK\_OF(X509\_VERIFY\_PARAM)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_new\_reserve(cmp,\ n)\ ((STACK\_OF(X509\_VERIFY\_PARAM)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_X509\_VERIFY\_PARAM\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk))}}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk))}}
+\DoxyCodeLine{00129\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_delete(sk,\ i)\ ((X509\_VERIFY\_PARAM\ *)OPENSSL\_sk\_delete(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00130\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_delete\_ptr(sk,\ ptr)\ ((X509\_VERIFY\_PARAM\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ ossl\_check\_X509\_VERIFY\_PARAM\_type(ptr)))}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ ossl\_check\_X509\_VERIFY\_PARAM\_type(ptr))}}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ ossl\_check\_X509\_VERIFY\_PARAM\_type(ptr))}}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_pop(sk)\ ((X509\_VERIFY\_PARAM\ *)OPENSSL\_sk\_pop(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk)))}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_shift(sk)\ ((X509\_VERIFY\_PARAM\ *)OPENSSL\_sk\_shift(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk)))}}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),ossl\_check\_X509\_VERIFY\_PARAM\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00136\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ ossl\_check\_X509\_VERIFY\_PARAM\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00137\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_set(sk,\ idx,\ ptr)\ ((X509\_VERIFY\_PARAM\ *)OPENSSL\_sk\_set(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ (idx),\ ossl\_check\_X509\_VERIFY\_PARAM\_type(ptr)))}}
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ ossl\_check\_X509\_VERIFY\_PARAM\_type(ptr))}}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ ossl\_check\_X509\_VERIFY\_PARAM\_type(ptr))}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ ossl\_check\_X509\_VERIFY\_PARAM\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk))}}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_X509\_VERIFY\_PARAM\_sk\_type(sk))}}
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_dup(sk)\ ((STACK\_OF(X509\_VERIFY\_PARAM)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_X509\_VERIFY\_PARAM\_sk\_type(sk)))}}
+\DoxyCodeLine{00144\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(X509\_VERIFY\_PARAM)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ ossl\_check\_X509\_VERIFY\_PARAM\_copyfunc\_type(copyfunc),\ ossl\_check\_X509\_VERIFY\_PARAM\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#define\ sk\_X509\_VERIFY\_PARAM\_set\_cmp\_func(sk,\ cmp)\ ((sk\_X509\_VERIFY\_PARAM\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_X509\_VERIFY\_PARAM\_sk\_type(sk),\ ossl\_check\_X509\_VERIFY\_PARAM\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \textcolor{comment}{/*\ This\ is\ used\ for\ a\ table\ of\ trust\ checking\ functions\ */}}
+\DoxyCodeLine{00149\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structx509__trust__st}{x509\_trust\_st}}\ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordtype}{int}\ trust;}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordtype}{int}\ flags;}
+\DoxyCodeLine{00152\ \ \ \ \ int\ (*check\_trust)\ (\textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structx509__trust__st}{x509\_trust\_st}}\ *,\ X509\ *,\ int);}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordtype}{char}\ *name;}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordtype}{int}\ arg1;}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordtype}{void}\ *arg2;}
+\DoxyCodeLine{00156\ \}\ X509\_TRUST;}
+\DoxyCodeLine{00157\ SKM\_DEFINE\_STACK\_OF\_INTERNAL(X509\_TRUST,\ X509\_TRUST,\ X509\_TRUST)}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_num(sk)\ OPENSSL\_sk\_num(ossl\_check\_const\_X509\_TRUST\_sk\_type(sk))}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_value(sk,\ idx)\ ((X509\_TRUST\ *)OPENSSL\_sk\_value(ossl\_check\_const\_X509\_TRUST\_sk\_type(sk),\ (idx)))}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_new(cmp)\ ((STACK\_OF(X509\_TRUST)\ *)OPENSSL\_sk\_new(ossl\_check\_X509\_TRUST\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_new\_null()\ ((STACK\_OF(X509\_TRUST)\ *)OPENSSL\_sk\_new\_null())}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_new\_reserve(cmp,\ n)\ ((STACK\_OF(X509\_TRUST)\ *)OPENSSL\_sk\_new\_reserve(ossl\_check\_X509\_TRUST\_compfunc\_type(cmp),\ (n)))}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_reserve(sk,\ n)\ OPENSSL\_sk\_reserve(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ (n))}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_free(sk)\ OPENSSL\_sk\_free(ossl\_check\_X509\_TRUST\_sk\_type(sk))}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_zero(sk)\ OPENSSL\_sk\_zero(ossl\_check\_X509\_TRUST\_sk\_type(sk))}}
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_delete(sk,\ i)\ ((X509\_TRUST\ *)OPENSSL\_sk\_delete(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ (i)))}}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_delete\_ptr(sk,\ ptr)\ ((X509\_TRUST\ *)OPENSSL\_sk\_delete\_ptr(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ ossl\_check\_X509\_TRUST\_type(ptr)))}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_push(sk,\ ptr)\ OPENSSL\_sk\_push(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ ossl\_check\_X509\_TRUST\_type(ptr))}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_unshift(sk,\ ptr)\ OPENSSL\_sk\_unshift(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ ossl\_check\_X509\_TRUST\_type(ptr))}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_pop(sk)\ ((X509\_TRUST\ *)OPENSSL\_sk\_pop(ossl\_check\_X509\_TRUST\_sk\_type(sk)))}}
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_shift(sk)\ ((X509\_TRUST\ *)OPENSSL\_sk\_shift(ossl\_check\_X509\_TRUST\_sk\_type(sk)))}}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_pop\_free(sk,\ freefunc)\ OPENSSL\_sk\_pop\_free(ossl\_check\_X509\_TRUST\_sk\_type(sk),ossl\_check\_X509\_TRUST\_freefunc\_type(freefunc))}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_insert(sk,\ ptr,\ idx)\ OPENSSL\_sk\_insert(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ ossl\_check\_X509\_TRUST\_type(ptr),\ (idx))}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_set(sk,\ idx,\ ptr)\ ((X509\_TRUST\ *)OPENSSL\_sk\_set(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ (idx),\ ossl\_check\_X509\_TRUST\_type(ptr)))}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_find(sk,\ ptr)\ OPENSSL\_sk\_find(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ ossl\_check\_X509\_TRUST\_type(ptr))}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_find\_ex(sk,\ ptr)\ OPENSSL\_sk\_find\_ex(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ ossl\_check\_X509\_TRUST\_type(ptr))}}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_find\_all(sk,\ ptr,\ pnum)\ OPENSSL\_sk\_find\_all(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ ossl\_check\_X509\_TRUST\_type(ptr),\ pnum)}}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_sort(sk)\ OPENSSL\_sk\_sort(ossl\_check\_X509\_TRUST\_sk\_type(sk))}}
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_is\_sorted(sk)\ OPENSSL\_sk\_is\_sorted(ossl\_check\_const\_X509\_TRUST\_sk\_type(sk))}}
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_dup(sk)\ ((STACK\_OF(X509\_TRUST)\ *)OPENSSL\_sk\_dup(ossl\_check\_const\_X509\_TRUST\_sk\_type(sk)))}}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_deep\_copy(sk,\ copyfunc,\ freefunc)\ ((STACK\_OF(X509\_TRUST)\ *)OPENSSL\_sk\_deep\_copy(ossl\_check\_const\_X509\_TRUST\_sk\_type(sk),\ ossl\_check\_X509\_TRUST\_copyfunc\_type(copyfunc),\ ossl\_check\_X509\_TRUST\_freefunc\_type(freefunc)))}}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\#define\ sk\_X509\_TRUST\_set\_cmp\_func(sk,\ cmp)\ ((sk\_X509\_TRUST\_compfunc)OPENSSL\_sk\_set\_cmp\_func(ossl\_check\_X509\_TRUST\_sk\_type(sk),\ ossl\_check\_X509\_TRUST\_compfunc\_type(cmp)))}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \textcolor{comment}{/*\ standard\ trust\ ids\ */}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_DEFAULT\ \ \ \ \ \ 0\ }\textcolor{comment}{/*\ Only\ valid\ in\ purpose\ settings\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_COMPAT\ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_SSL\_CLIENT\ \ \ 2}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_SSL\_SERVER\ \ \ 3}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_EMAIL\ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_OBJECT\_SIGN\ \ 5}}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_OCSP\_SIGN\ \ \ \ 6}}
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_OCSP\_REQUEST\ 7}}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_TSA\ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00195\ \textcolor{comment}{/*\ Keep\ these\ up\ to\ date!\ */}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_MIN\ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_MAX\ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{comment}{/*\ trust\_flags\ values\ */}}
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_DYNAMIC\ \ \ \ \ \ (1U\ <<\ 0)}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_DYNAMIC\_NAME\ (1U\ <<\ 1)}}
+\DoxyCodeLine{00202\ \textcolor{comment}{/*\ No\ compat\ trust\ if\ self-\/signed,\ preempts\ "{}DO\_SS"{}\ */}}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_NO\_SS\_COMPAT\ (1U\ <<\ 2)}}
+\DoxyCodeLine{00204\ \textcolor{comment}{/*\ Compat\ trust\ if\ no\ explicit\ accepted\ trust\ EKUs\ */}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_DO\_SS\_COMPAT\ (1U\ <<\ 3)}}
+\DoxyCodeLine{00206\ \textcolor{comment}{/*\ Accept\ "{}anyEKU"{}\ as\ a\ wildcard\ rejection\ OID\ and\ as\ a\ wildcard\ trust\ OID\ */}}
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_OK\_ANY\_EKU\ \ \ (1U\ <<\ 4)}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{comment}{/*\ check\_trust\ return\ codes\ */}}
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_TRUSTED\ \ \ \ \ \ 1}}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_REJECTED\ \ \ \ \ 2}}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#\ define\ X509\_TRUST\_UNTRUSTED\ \ \ \ 3}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{keywordtype}{int}\ X509\_TRUST\_set(\textcolor{keywordtype}{int}\ *t,\ \textcolor{keywordtype}{int}\ trust);}
+\DoxyCodeLine{00215\ \textcolor{keywordtype}{int}\ X509\_TRUST\_get\_count(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00216\ X509\_TRUST\ *X509\_TRUST\_get0(\textcolor{keywordtype}{int}\ idx);}
+\DoxyCodeLine{00217\ \textcolor{keywordtype}{int}\ X509\_TRUST\_get\_by\_id(\textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00218\ \textcolor{keywordtype}{int}\ X509\_TRUST\_add(\textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id},\ \textcolor{keywordtype}{int}\ flags,\ \textcolor{keywordtype}{int}\ (*ck)\ (X509\_TRUST\ *,\ X509\ *,\ \textcolor{keywordtype}{int}),}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name,\ \textcolor{keywordtype}{int}\ arg1,\ \textcolor{keywordtype}{void}\ *arg2);}
+\DoxyCodeLine{00220\ \textcolor{keywordtype}{void}\ X509\_TRUST\_cleanup(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00221\ \textcolor{keywordtype}{int}\ X509\_TRUST\_get\_flags(\textcolor{keyword}{const}\ X509\_TRUST\ *xp);}
+\DoxyCodeLine{00222\ \textcolor{keywordtype}{char}\ *X509\_TRUST\_get0\_name(\textcolor{keyword}{const}\ X509\_TRUST\ *xp);}
+\DoxyCodeLine{00223\ \textcolor{keywordtype}{int}\ X509\_TRUST\_get\_trust(\textcolor{keyword}{const}\ X509\_TRUST\ *xp);}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \textcolor{keywordtype}{int}\ X509\_trusted(\textcolor{keyword}{const}\ X509\ *x);}
+\DoxyCodeLine{00226\ \textcolor{keywordtype}{int}\ X509\_add1\_trust\_object(X509\ *x,\ \textcolor{keyword}{const}\ ASN1\_OBJECT\ *obj);}
+\DoxyCodeLine{00227\ \textcolor{keywordtype}{int}\ X509\_add1\_reject\_object(X509\ *x,\ \textcolor{keyword}{const}\ ASN1\_OBJECT\ *obj);}
+\DoxyCodeLine{00228\ \textcolor{keywordtype}{void}\ X509\_trust\_clear(X509\ *x);}
+\DoxyCodeLine{00229\ \textcolor{keywordtype}{void}\ X509\_reject\_clear(X509\ *x);}
+\DoxyCodeLine{00230\ STACK\_OF(ASN1\_OBJECT)\ *X509\_get0\_trust\_objects(X509\ *x);}
+\DoxyCodeLine{00231\ STACK\_OF(ASN1\_OBJECT)\ *X509\_get0\_reject\_objects(X509\ *x);}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ int\ (*X509\_TRUST\_set\_default(\textcolor{keywordtype}{int}\ (*trust)\ (\textcolor{keywordtype}{int},\ X509\ *,\ \textcolor{keywordtype}{int})))\ (int,\ X509\ *,}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ int);}
+\DoxyCodeLine{00235\ \textcolor{keywordtype}{int}\ X509\_check\_trust(X509\ *x,\ \textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id},\ \textcolor{keywordtype}{int}\ flags);}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{keywordtype}{int}\ X509\_verify\_cert(X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00238\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_verify(X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00239\ STACK\_OF(X509)\ *X509\_build\_chain(X509\ *target,\ STACK\_OF(X509)\ *certs,}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\ *store,\ \textcolor{keywordtype}{int}\ with\_self\_signed,}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \textcolor{keywordtype}{int}\ X509\_STORE\_set\_depth(X509\_STORE\ *store,\ \textcolor{keywordtype}{int}\ depth);}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00245\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_verify\_cb)(int,\ X509\_STORE\_CTX\ *);}
+\DoxyCodeLine{00246\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_print\_verify\_cb(\textcolor{keywordtype}{int}\ ok,\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00247\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_verify\_fn)(X509\_STORE\_CTX\ *);}
+\DoxyCodeLine{00248\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_get\_issuer\_fn)(X509\ **issuer,}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\ *ctx,\ X509\ *x);}
+\DoxyCodeLine{00250\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_check\_issued\_fn)(X509\_STORE\_CTX\ *ctx,}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\ *x,\ X509\ *issuer);}
+\DoxyCodeLine{00252\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_check\_revocation\_fn)(X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00253\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_get\_crl\_fn)(X509\_STORE\_CTX\ *ctx,}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_CRL\ **crl,\ X509\ *x);}
+\DoxyCodeLine{00255\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_check\_crl\_fn)(X509\_STORE\_CTX\ *ctx,\ X509\_CRL\ *crl);}
+\DoxyCodeLine{00256\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_cert\_crl\_fn)(X509\_STORE\_CTX\ *ctx,}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_CRL\ *crl,\ X509\ *x);}
+\DoxyCodeLine{00258\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_check\_policy\_fn)(X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00259\ \textcolor{keyword}{typedef}\ STACK\_OF(X509)}
+\DoxyCodeLine{00260\ \ \ \ \ *(*X509\_STORE\_CTX\_lookup\_certs\_fn)(X509\_STORE\_CTX\ *ctx,}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *nm);}
+\DoxyCodeLine{00262\ \textcolor{keyword}{typedef}\ STACK\_OF(X509\_CRL)}
+\DoxyCodeLine{00263\ \ \ \ \ *(*X509\_STORE\_CTX\_lookup\_crls\_fn)(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx,}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *nm);}
+\DoxyCodeLine{00265\ \textcolor{keyword}{typedef}\ int\ (*X509\_STORE\_CTX\_cleanup\_fn)(X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_depth(X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ depth);}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_CTX\_set\_app\_data(ctx,data)\ \(\backslash\)}}
+\DoxyCodeLine{00270\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ X509\_STORE\_CTX\_set\_ex\_data(ctx,0,data)}}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_CTX\_get\_app\_data(ctx)\ \(\backslash\)}}
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ X509\_STORE\_CTX\_get\_ex\_data(ctx,0)}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\#\ define\ X509\_L\_FILE\_LOAD\ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\#\ define\ X509\_L\_ADD\_DIR\ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\#\ define\ X509\_L\_ADD\_STORE\ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\#\ define\ X509\_L\_LOAD\_STORE\ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\#\ define\ X509\_LOOKUP\_load\_file(x,name,type)\ \(\backslash\)}}
+\DoxyCodeLine{00280\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_ctrl((x),X509\_L\_FILE\_LOAD,(name),(long)(type),NULL)}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{preprocessor}{\#\ define\ X509\_LOOKUP\_add\_dir(x,name,type)\ \(\backslash\)}}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_ctrl((x),X509\_L\_ADD\_DIR,(name),(long)(type),NULL)}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\#\ define\ X509\_LOOKUP\_add\_store(x,name)\ \(\backslash\)}}
+\DoxyCodeLine{00286\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_ctrl((x),X509\_L\_ADD\_STORE,(name),0,NULL)}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \textcolor{preprocessor}{\#\ define\ X509\_LOOKUP\_load\_store(x,name)\ \(\backslash\)}}
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_ctrl((x),X509\_L\_LOAD\_STORE,(name),0,NULL)}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \textcolor{preprocessor}{\#\ define\ X509\_LOOKUP\_load\_file\_ex(x,\ name,\ type,\ libctx,\ propq)\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00292\ \textcolor{preprocessor}{X509\_LOOKUP\_ctrl\_ex((x),\ X509\_L\_FILE\_LOAD,\ (name),\ (long)(type),\ NULL,\(\backslash\)}}
+\DoxyCodeLine{00293\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (libctx),\ (propq))}}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\#\ define\ X509\_LOOKUP\_load\_store\_ex(x,\ name,\ libctx,\ propq)\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00296\ \textcolor{preprocessor}{X509\_LOOKUP\_ctrl\_ex((x),\ X509\_L\_LOAD\_STORE,\ (name),\ 0,\ NULL,\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (libctx),\ (propq))}}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\#\ define\ X509\_LOOKUP\_add\_store\_ex(x,\ name,\ libctx,\ propq)\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00300\ \textcolor{preprocessor}{X509\_LOOKUP\_ctrl\_ex((x),\ X509\_L\_ADD\_STORE,\ (name),\ 0,\ NULL,\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (libctx),\ (propq))}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\#\ define\ X509\_V\_OK\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0}}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNSPECIFIED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNABLE\_TO\_GET\_ISSUER\_CERT\ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNABLE\_TO\_GET\_CRL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNABLE\_TO\_DECRYPT\_CERT\_SIGNATURE\ \ \ \ \ 4}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNABLE\_TO\_DECRYPT\_CRL\_SIGNATURE\ \ \ \ \ \ 5}}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNABLE\_TO\_DECODE\_ISSUER\_PUBLIC\_KEY\ \ \ 6}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CERT\_SIGNATURE\_FAILURE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CRL\_SIGNATURE\_FAILURE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CERT\_NOT\_YET\_VALID\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 9}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CERT\_HAS\_EXPIRED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CRL\_NOT\_YET\_VALID\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CRL\_HAS\_EXPIRED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_ERROR\_IN\_CERT\_NOT\_BEFORE\_FIELD\ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_ERROR\_IN\_CERT\_NOT\_AFTER\_FIELD\ \ \ \ \ \ \ \ 14}}
+\DoxyCodeLine{00318\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_ERROR\_IN\_CRL\_LAST\_UPDATE\_FIELD\ \ \ \ \ \ \ 15}}
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_ERROR\_IN\_CRL\_NEXT\_UPDATE\_FIELD\ \ \ \ \ \ \ 16}}
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_OUT\_OF\_MEM\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 17}}
+\DoxyCodeLine{00321\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_DEPTH\_ZERO\_SELF\_SIGNED\_CERT\ \ \ \ \ \ \ \ \ \ 18}}
+\DoxyCodeLine{00322\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SELF\_SIGNED\_CERT\_IN\_CHAIN\ \ \ \ \ \ \ \ \ \ \ \ 19}}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNABLE\_TO\_GET\_ISSUER\_CERT\_LOCALLY\ \ \ \ 20}}
+\DoxyCodeLine{00324\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNABLE\_TO\_VERIFY\_LEAF\_SIGNATURE\ \ \ \ \ \ 21}}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CERT\_CHAIN\_TOO\_LONG\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 22}}
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CERT\_REVOKED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 23}}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_NO\_ISSUER\_PUBLIC\_KEY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 24}}
+\DoxyCodeLine{00328\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_PATH\_LENGTH\_EXCEEDED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 25}}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_INVALID\_PURPOSE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 26}}
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CERT\_UNTRUSTED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 27}}
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CERT\_REJECTED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 28}}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00333\ \textcolor{comment}{/*\ These\ are\ 'informational'\ when\ looking\ for\ issuer\ cert\ */}}
+\DoxyCodeLine{00334\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUBJECT\_ISSUER\_MISMATCH\ \ \ \ \ \ \ \ \ \ \ \ \ \ 29}}
+\DoxyCodeLine{00335\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_AKID\_SKID\_MISMATCH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 30}}
+\DoxyCodeLine{00336\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_AKID\_ISSUER\_SERIAL\_MISMATCH\ \ \ \ \ \ \ \ \ \ 31}}
+\DoxyCodeLine{00337\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_KEYUSAGE\_NO\_CERTSIGN\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 32}}
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNABLE\_TO\_GET\_CRL\_ISSUER\ \ \ \ \ \ \ \ \ \ \ \ \ 33}}
+\DoxyCodeLine{00339\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNHANDLED\_CRITICAL\_EXTENSION\ \ \ \ \ \ \ \ \ 34}}
+\DoxyCodeLine{00340\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_KEYUSAGE\_NO\_CRL\_SIGN\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 35}}
+\DoxyCodeLine{00341\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNHANDLED\_CRITICAL\_CRL\_EXTENSION\ \ \ \ \ 36}}
+\DoxyCodeLine{00342\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_INVALID\_NON\_CA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 37}}
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_PROXY\_PATH\_LENGTH\_EXCEEDED\ \ \ \ \ \ \ \ \ \ \ 38}}
+\DoxyCodeLine{00344\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_KEYUSAGE\_NO\_DIGITAL\_SIGNATURE\ \ \ \ \ \ \ \ 39}}
+\DoxyCodeLine{00345\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_PROXY\_CERTIFICATES\_NOT\_ALLOWED\ \ \ \ \ \ \ 40}}
+\DoxyCodeLine{00346\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_INVALID\_EXTENSION\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 41}}
+\DoxyCodeLine{00347\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_INVALID\_POLICY\_EXTENSION\ \ \ \ \ \ \ \ \ \ \ \ \ 42}}
+\DoxyCodeLine{00348\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_NO\_EXPLICIT\_POLICY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 43}}
+\DoxyCodeLine{00349\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_DIFFERENT\_CRL\_SCOPE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 44}}
+\DoxyCodeLine{00350\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNSUPPORTED\_EXTENSION\_FEATURE\ \ \ \ \ \ \ \ 45}}
+\DoxyCodeLine{00351\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNNESTED\_RESOURCE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 46}}
+\DoxyCodeLine{00352\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_PERMITTED\_VIOLATION\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 47}}
+\DoxyCodeLine{00353\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_EXCLUDED\_VIOLATION\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 48}}
+\DoxyCodeLine{00354\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUBTREE\_MINMAX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 49}}
+\DoxyCodeLine{00355\ \textcolor{comment}{/*\ The\ application\ is\ not\ happy\ */}}
+\DoxyCodeLine{00356\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_APPLICATION\_VERIFICATION\ \ \ \ \ \ \ \ \ \ \ \ \ 50}}
+\DoxyCodeLine{00357\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNSUPPORTED\_CONSTRAINT\_TYPE\ \ \ \ \ \ \ \ \ \ 51}}
+\DoxyCodeLine{00358\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNSUPPORTED\_CONSTRAINT\_SYNTAX\ \ \ \ \ \ \ \ 52}}
+\DoxyCodeLine{00359\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNSUPPORTED\_NAME\_SYNTAX\ \ \ \ \ \ \ \ \ \ \ \ \ \ 53}}
+\DoxyCodeLine{00360\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CRL\_PATH\_VALIDATION\_ERROR\ \ \ \ \ \ \ \ \ \ \ \ 54}}
+\DoxyCodeLine{00361\ \textcolor{comment}{/*\ Another\ issuer\ check\ debug\ option\ */}}
+\DoxyCodeLine{00362\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_PATH\_LOOP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 55}}
+\DoxyCodeLine{00363\ \textcolor{comment}{/*\ Suite\ B\ mode\ algorithm\ violation\ */}}
+\DoxyCodeLine{00364\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUITE\_B\_INVALID\_VERSION\ \ \ \ \ \ \ \ \ \ \ \ \ \ 56}}
+\DoxyCodeLine{00365\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUITE\_B\_INVALID\_ALGORITHM\ \ \ \ \ \ \ \ \ \ \ \ 57}}
+\DoxyCodeLine{00366\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUITE\_B\_INVALID\_CURVE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 58}}
+\DoxyCodeLine{00367\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUITE\_B\_INVALID\_SIGNATURE\_ALGORITHM\ \ 59}}
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUITE\_B\_LOS\_NOT\_ALLOWED\ \ \ \ \ \ \ \ \ \ \ \ \ \ 60}}
+\DoxyCodeLine{00369\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUITE\_B\_CANNOT\_SIGN\_P\_384\_WITH\_P\_256\ 61}}
+\DoxyCodeLine{00370\ \textcolor{comment}{/*\ Host,\ email\ and\ IP\ check\ errors\ */}}
+\DoxyCodeLine{00371\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_HOSTNAME\_MISMATCH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 62}}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_EMAIL\_MISMATCH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 63}}
+\DoxyCodeLine{00373\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_IP\_ADDRESS\_MISMATCH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 64}}
+\DoxyCodeLine{00374\ \textcolor{comment}{/*\ DANE\ TLSA\ errors\ */}}
+\DoxyCodeLine{00375\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_DANE\_NO\_MATCH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 65}}
+\DoxyCodeLine{00376\ \textcolor{comment}{/*\ security\ level\ errors\ */}}
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_EE\_KEY\_TOO\_SMALL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 66}}
+\DoxyCodeLine{00378\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CA\_KEY\_TOO\_SMALL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 67}}
+\DoxyCodeLine{00379\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CA\_MD\_TOO\_WEAK\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 68}}
+\DoxyCodeLine{00380\ \textcolor{comment}{/*\ Caller\ error\ */}}
+\DoxyCodeLine{00381\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_INVALID\_CALL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 69}}
+\DoxyCodeLine{00382\ \textcolor{comment}{/*\ Issuer\ lookup\ error\ */}}
+\DoxyCodeLine{00383\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_STORE\_LOOKUP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 70}}
+\DoxyCodeLine{00384\ \textcolor{comment}{/*\ Certificate\ transparency\ */}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_NO\_VALID\_SCTS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 71}}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_PROXY\_SUBJECT\_NAME\_VIOLATION\ \ \ \ \ \ \ \ \ 72}}
+\DoxyCodeLine{00388\ \textcolor{comment}{/*\ OCSP\ status\ errors\ */}}
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_OCSP\_VERIFY\_NEEDED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 73\ \ }\textcolor{comment}{/*\ Need\ OCSP\ verification\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00390\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_OCSP\_VERIFY\_FAILED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 74\ \ }\textcolor{comment}{/*\ Couldn't\ verify\ cert\ through\ OCSP\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00391\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_OCSP\_CERT\_UNKNOWN\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 75\ \ }\textcolor{comment}{/*\ Certificate\ wasn't\ recognized\ by\ the\ OCSP\ responder\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_UNSUPPORTED\_SIGNATURE\_ALGORITHM\ \ \ \ \ \ 76}}
+\DoxyCodeLine{00394\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SIGNATURE\_ALGORITHM\_MISMATCH\ \ \ \ \ \ \ \ \ 77}}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \textcolor{comment}{/*\ Errors\ in\ case\ a\ check\ in\ X509\_V\_FLAG\_X509\_STRICT\ mode\ fails\ */}}
+\DoxyCodeLine{00397\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SIGNATURE\_ALGORITHM\_INCONSISTENCY\ \ \ \ 78}}
+\DoxyCodeLine{00398\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_INVALID\_CA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 79}}
+\DoxyCodeLine{00399\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_PATHLEN\_INVALID\_FOR\_NON\_CA\ \ \ \ \ \ \ \ \ \ \ 80}}
+\DoxyCodeLine{00400\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_PATHLEN\_WITHOUT\_KU\_KEY\_CERT\_SIGN\ \ \ \ \ 81}}
+\DoxyCodeLine{00401\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_KU\_KEY\_CERT\_SIGN\_INVALID\_FOR\_NON\_CA\ \ 82}}
+\DoxyCodeLine{00402\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_ISSUER\_NAME\_EMPTY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 83}}
+\DoxyCodeLine{00403\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUBJECT\_NAME\_EMPTY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 84}}
+\DoxyCodeLine{00404\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_MISSING\_AUTHORITY\_KEY\_IDENTIFIER\ \ \ \ \ 85}}
+\DoxyCodeLine{00405\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_MISSING\_SUBJECT\_KEY\_IDENTIFIER\ \ \ \ \ \ \ 86}}
+\DoxyCodeLine{00406\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_EMPTY\_SUBJECT\_ALT\_NAME\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 87}}
+\DoxyCodeLine{00407\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_EMPTY\_SUBJECT\_SAN\_NOT\_CRITICAL\ \ \ \ \ \ \ 88}}
+\DoxyCodeLine{00408\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CA\_BCONS\_NOT\_CRITICAL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 89}}
+\DoxyCodeLine{00409\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_AUTHORITY\_KEY\_IDENTIFIER\_CRITICAL\ \ \ \ 90}}
+\DoxyCodeLine{00410\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_SUBJECT\_KEY\_IDENTIFIER\_CRITICAL\ \ \ \ \ \ 91}}
+\DoxyCodeLine{00411\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_CA\_CERT\_MISSING\_KEY\_USAGE\ \ \ \ \ \ \ \ \ \ \ \ 92}}
+\DoxyCodeLine{00412\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_EXTENSIONS\_REQUIRE\_VERSION\_3\ \ \ \ \ \ \ \ \ 93}}
+\DoxyCodeLine{00413\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_EC\_KEY\_EXPLICIT\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 94}}
+\DoxyCodeLine{00414\ \textcolor{preprocessor}{\#\ define\ X509\_V\_ERR\_RPK\_UNTRUSTED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 95}}
+\DoxyCodeLine{00415\ }
+\DoxyCodeLine{00416\ \textcolor{comment}{/*\ Certificate\ verify\ flags\ */}}
+\DoxyCodeLine{00417\ \textcolor{preprocessor}{\#\ ifndef\ OPENSSL\_NO\_DEPRECATED\_1\_1\_0}}
+\DoxyCodeLine{00418\ \textcolor{preprocessor}{\#\ \ define\ X509\_V\_FLAG\_CB\_ISSUER\_CHECK\ \ \ \ \ \ \ \ \ \ \ \ \ 0x0\ \ \ }\textcolor{comment}{/*\ Deprecated\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00419\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00420\ \textcolor{comment}{/*\ Use\ check\ time\ instead\ of\ current\ time\ */}}
+\DoxyCodeLine{00421\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_USE\_CHECK\_TIME\ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x2}}
+\DoxyCodeLine{00422\ \textcolor{comment}{/*\ Lookup\ CRLs\ */}}
+\DoxyCodeLine{00423\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_CRL\_CHECK\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x4}}
+\DoxyCodeLine{00424\ \textcolor{comment}{/*\ Lookup\ CRLs\ for\ whole\ chain\ */}}
+\DoxyCodeLine{00425\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_CRL\_CHECK\_ALL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x8}}
+\DoxyCodeLine{00426\ \textcolor{comment}{/*\ Ignore\ unhandled\ critical\ extensions\ */}}
+\DoxyCodeLine{00427\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_IGNORE\_CRITICAL\ \ \ \ \ \ \ \ \ \ \ \ \ 0x10}}
+\DoxyCodeLine{00428\ \textcolor{comment}{/*\ Disable\ workarounds\ for\ broken\ certificates\ */}}
+\DoxyCodeLine{00429\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_X509\_STRICT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x20}}
+\DoxyCodeLine{00430\ \textcolor{comment}{/*\ Enable\ proxy\ certificate\ validation\ */}}
+\DoxyCodeLine{00431\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_ALLOW\_PROXY\_CERTS\ \ \ \ \ \ \ \ \ \ \ 0x40}}
+\DoxyCodeLine{00432\ \textcolor{comment}{/*\ Enable\ policy\ checking\ */}}
+\DoxyCodeLine{00433\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_POLICY\_CHECK\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x80}}
+\DoxyCodeLine{00434\ \textcolor{comment}{/*\ Policy\ variable\ require-\/explicit-\/policy\ */}}
+\DoxyCodeLine{00435\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_EXPLICIT\_POLICY\ \ \ \ \ \ \ \ \ \ \ \ \ 0x100}}
+\DoxyCodeLine{00436\ \textcolor{comment}{/*\ Policy\ variable\ inhibit-\/any-\/policy\ */}}
+\DoxyCodeLine{00437\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_INHIBIT\_ANY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x200}}
+\DoxyCodeLine{00438\ \textcolor{comment}{/*\ Policy\ variable\ inhibit-\/policy-\/mapping\ */}}
+\DoxyCodeLine{00439\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_INHIBIT\_MAP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x400}}
+\DoxyCodeLine{00440\ \textcolor{comment}{/*\ Notify\ callback\ that\ policy\ is\ OK\ */}}
+\DoxyCodeLine{00441\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_NOTIFY\_POLICY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x800}}
+\DoxyCodeLine{00442\ \textcolor{comment}{/*\ Extended\ CRL\ features\ such\ as\ indirect\ CRLs,\ alternate\ CRL\ signing\ keys\ */}}
+\DoxyCodeLine{00443\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_EXTENDED\_CRL\_SUPPORT\ \ \ \ \ \ \ \ 0x1000}}
+\DoxyCodeLine{00444\ \textcolor{comment}{/*\ Delta\ CRL\ support\ */}}
+\DoxyCodeLine{00445\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_USE\_DELTAS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x2000}}
+\DoxyCodeLine{00446\ \textcolor{comment}{/*\ Check\ self-\/signed\ CA\ signature\ */}}
+\DoxyCodeLine{00447\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_CHECK\_SS\_SIGNATURE\ \ \ \ \ \ \ \ \ \ 0x4000}}
+\DoxyCodeLine{00448\ \textcolor{comment}{/*\ Use\ trusted\ store\ first\ */}}
+\DoxyCodeLine{00449\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_TRUSTED\_FIRST\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x8000}}
+\DoxyCodeLine{00450\ \textcolor{comment}{/*\ Suite\ B\ 128\ bit\ only\ mode:\ not\ normally\ used\ */}}
+\DoxyCodeLine{00451\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_SUITEB\_128\_LOS\_ONLY\ \ \ \ \ \ \ \ \ 0x10000}}
+\DoxyCodeLine{00452\ \textcolor{comment}{/*\ Suite\ B\ 192\ bit\ only\ mode\ */}}
+\DoxyCodeLine{00453\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_SUITEB\_192\_LOS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x20000}}
+\DoxyCodeLine{00454\ \textcolor{comment}{/*\ Suite\ B\ 128\ bit\ mode\ allowing\ 192\ bit\ algorithms\ */}}
+\DoxyCodeLine{00455\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_SUITEB\_128\_LOS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x30000}}
+\DoxyCodeLine{00456\ \textcolor{comment}{/*\ Allow\ partial\ chains\ if\ at\ least\ one\ certificate\ is\ in\ trusted\ store\ */}}
+\DoxyCodeLine{00457\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_PARTIAL\_CHAIN\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x80000}}
+\DoxyCodeLine{00458\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00459\ \textcolor{comment}{\ *\ If\ the\ initial\ chain\ is\ not\ trusted,\ do\ not\ attempt\ to\ build\ an\ alternative}}
+\DoxyCodeLine{00460\ \textcolor{comment}{\ *\ chain.\ Alternate\ chain\ checking\ was\ introduced\ in\ 1.1.0.\ Setting\ this\ flag}}
+\DoxyCodeLine{00461\ \textcolor{comment}{\ *\ will\ force\ the\ behaviour\ to\ match\ that\ of\ previous\ versions.}}
+\DoxyCodeLine{00462\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00463\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_NO\_ALT\_CHAINS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x100000}}
+\DoxyCodeLine{00464\ \textcolor{comment}{/*\ Do\ not\ check\ certificate/CRL\ validity\ against\ current\ time\ */}}
+\DoxyCodeLine{00465\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_NO\_CHECK\_TIME\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x200000}}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \textcolor{preprocessor}{\#\ define\ X509\_VP\_FLAG\_DEFAULT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x1}}
+\DoxyCodeLine{00468\ \textcolor{preprocessor}{\#\ define\ X509\_VP\_FLAG\_OVERWRITE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x2}}
+\DoxyCodeLine{00469\ \textcolor{preprocessor}{\#\ define\ X509\_VP\_FLAG\_RESET\_FLAGS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x4}}
+\DoxyCodeLine{00470\ \textcolor{preprocessor}{\#\ define\ X509\_VP\_FLAG\_LOCKED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x8}}
+\DoxyCodeLine{00471\ \textcolor{preprocessor}{\#\ define\ X509\_VP\_FLAG\_ONCE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 0x10}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \textcolor{comment}{/*\ Internal\ use:\ mask\ of\ policy\ related\ options\ */}}
+\DoxyCodeLine{00474\ \textcolor{preprocessor}{\#\ define\ X509\_V\_FLAG\_POLICY\_MASK\ (X509\_V\_FLAG\_POLICY\_CHECK\ \(\backslash\)}}
+\DoxyCodeLine{00475\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ X509\_V\_FLAG\_EXPLICIT\_POLICY\ \(\backslash\)}}
+\DoxyCodeLine{00476\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ X509\_V\_FLAG\_INHIBIT\_ANY\ \(\backslash\)}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ X509\_V\_FLAG\_INHIBIT\_MAP)}}
+\DoxyCodeLine{00478\ }
+\DoxyCodeLine{00479\ \textcolor{keywordtype}{int}\ X509\_OBJECT\_idx\_by\_subject(STACK\_OF(X509\_OBJECT)\ *\doxymbox{\hyperlink{classvtk_en_sight_gold_combined_reader_1_1h}{h}},\ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name);}
+\DoxyCodeLine{00481\ X509\_OBJECT\ *X509\_OBJECT\_retrieve\_by\_subject(STACK\_OF(X509\_OBJECT)\ *\doxymbox{\hyperlink{classvtk_en_sight_gold_combined_reader_1_1h}{h}},}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name);}
+\DoxyCodeLine{00484\ X509\_OBJECT\ *X509\_OBJECT\_retrieve\_match(STACK\_OF(X509\_OBJECT)\ *\doxymbox{\hyperlink{classvtk_en_sight_gold_combined_reader_1_1h}{h}},}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_OBJECT\ *x);}
+\DoxyCodeLine{00486\ \textcolor{keywordtype}{int}\ X509\_OBJECT\_up\_ref\_count(X509\_OBJECT\ *a);}
+\DoxyCodeLine{00487\ X509\_OBJECT\ *X509\_OBJECT\_new(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00488\ \textcolor{keywordtype}{void}\ X509\_OBJECT\_free(X509\_OBJECT\ *a);}
+\DoxyCodeLine{00489\ X509\_LOOKUP\_TYPE\ X509\_OBJECT\_get\_type(\textcolor{keyword}{const}\ X509\_OBJECT\ *a);}
+\DoxyCodeLine{00490\ X509\ *X509\_OBJECT\_get0\_X509(\textcolor{keyword}{const}\ X509\_OBJECT\ *a);}
+\DoxyCodeLine{00491\ \textcolor{keywordtype}{int}\ X509\_OBJECT\_set1\_X509(X509\_OBJECT\ *a,\ X509\ *obj);}
+\DoxyCodeLine{00492\ X509\_CRL\ *X509\_OBJECT\_get0\_X509\_CRL(\textcolor{keyword}{const}\ X509\_OBJECT\ *a);}
+\DoxyCodeLine{00493\ \textcolor{keywordtype}{int}\ X509\_OBJECT\_set1\_X509\_CRL(X509\_OBJECT\ *a,\ X509\_CRL\ *obj);}
+\DoxyCodeLine{00494\ X509\_STORE\ *X509\_STORE\_new(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00495\ \textcolor{keywordtype}{void}\ X509\_STORE\_free(X509\_STORE\ *xs);}
+\DoxyCodeLine{00496\ \textcolor{keywordtype}{int}\ X509\_STORE\_lock(X509\_STORE\ *xs);}
+\DoxyCodeLine{00497\ \textcolor{keywordtype}{int}\ X509\_STORE\_unlock(X509\_STORE\ *xs);}
+\DoxyCodeLine{00498\ \textcolor{keywordtype}{int}\ X509\_STORE\_up\_ref(X509\_STORE\ *xs);}
+\DoxyCodeLine{00499\ STACK\_OF(X509\_OBJECT)\ *X509\_STORE\_get0\_objects(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00500\ STACK\_OF(X509\_OBJECT)\ *X509\_STORE\_get1\_objects(X509\_STORE\ *xs);}
+\DoxyCodeLine{00501\ STACK\_OF(X509)\ *X509\_STORE\_get1\_all\_certs(X509\_STORE\ *xs);}
+\DoxyCodeLine{00502\ STACK\_OF(X509)\ *X509\_STORE\_CTX\_get1\_certs(X509\_STORE\_CTX\ *xs,}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *nm);}
+\DoxyCodeLine{00504\ STACK\_OF(X509\_CRL)\ *X509\_STORE\_CTX\_get1\_crls(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *st,}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *nm);}
+\DoxyCodeLine{00506\ \textcolor{keywordtype}{int}\ X509\_STORE\_set\_flags(X509\_STORE\ *xs,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ flags);}
+\DoxyCodeLine{00507\ \textcolor{keywordtype}{int}\ X509\_STORE\_set\_purpose(X509\_STORE\ *xs,\ \textcolor{keywordtype}{int}\ purpose);}
+\DoxyCodeLine{00508\ \textcolor{keywordtype}{int}\ X509\_STORE\_set\_trust(X509\_STORE\ *xs,\ \textcolor{keywordtype}{int}\ trust);}
+\DoxyCodeLine{00509\ \textcolor{keywordtype}{int}\ X509\_STORE\_set1\_param(X509\_STORE\ *xs,\ \textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *pm);}
+\DoxyCodeLine{00510\ X509\_VERIFY\_PARAM\ *X509\_STORE\_get0\_param(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_verify(X509\_STORE\ *xs,\ X509\_STORE\_CTX\_verify\_fn\ verify);}
+\DoxyCodeLine{00513\ \textcolor{preprocessor}{\#define\ X509\_STORE\_set\_verify\_func(ctx,\ func)\ \(\backslash\)}}
+\DoxyCodeLine{00514\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_set\_verify((ctx),(func))}}
+\DoxyCodeLine{00515\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_verify(X509\_STORE\_CTX\ *ctx,}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_verify\_fn\ verify);}
+\DoxyCodeLine{00517\ X509\_STORE\_CTX\_verify\_fn\ X509\_STORE\_get\_verify(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00518\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_verify\_cb(X509\_STORE\ *xs,}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_verify\_cb\ verify\_cb);}
+\DoxyCodeLine{00520\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_set\_verify\_cb\_func(ctx,func)\ \(\backslash\)}}
+\DoxyCodeLine{00521\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_set\_verify\_cb((ctx),(func))}}
+\DoxyCodeLine{00522\ X509\_STORE\_CTX\_verify\_cb\ X509\_STORE\_get\_verify\_cb(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00523\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_get\_issuer(X509\_STORE\ *xs,}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_get\_issuer\_fn\ get\_issuer);}
+\DoxyCodeLine{00525\ X509\_STORE\_CTX\_get\_issuer\_fn\ X509\_STORE\_get\_get\_issuer(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00526\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_check\_issued(X509\_STORE\ *xs,}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_check\_issued\_fn\ check\_issued);}
+\DoxyCodeLine{00528\ X509\_STORE\_CTX\_check\_issued\_fn\ X509\_STORE\_get\_check\_issued(\textcolor{keyword}{const}\ X509\_STORE\ *s);}
+\DoxyCodeLine{00529\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_check\_revocation(X509\_STORE\ *xs,}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_check\_revocation\_fn\ check\_revocation);}
+\DoxyCodeLine{00531\ X509\_STORE\_CTX\_check\_revocation\_fn}
+\DoxyCodeLine{00532\ \ \ \ \ X509\_STORE\_get\_check\_revocation(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00533\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_get\_crl(X509\_STORE\ *xs,}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_get\_crl\_fn\ get\_crl);}
+\DoxyCodeLine{00535\ X509\_STORE\_CTX\_get\_crl\_fn\ X509\_STORE\_get\_get\_crl(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00536\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_check\_crl(X509\_STORE\ *xs,}
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_check\_crl\_fn\ check\_crl);}
+\DoxyCodeLine{00538\ X509\_STORE\_CTX\_check\_crl\_fn\ X509\_STORE\_get\_check\_crl(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00539\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_cert\_crl(X509\_STORE\ *xs,}
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_cert\_crl\_fn\ cert\_crl);}
+\DoxyCodeLine{00541\ X509\_STORE\_CTX\_cert\_crl\_fn\ X509\_STORE\_get\_cert\_crl(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00542\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_check\_policy(X509\_STORE\ *xs,}
+\DoxyCodeLine{00543\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_check\_policy\_fn\ check\_policy);}
+\DoxyCodeLine{00544\ X509\_STORE\_CTX\_check\_policy\_fn\ X509\_STORE\_get\_check\_policy(\textcolor{keyword}{const}\ X509\_STORE\ *s);}
+\DoxyCodeLine{00545\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_lookup\_certs(X509\_STORE\ *xs,}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_lookup\_certs\_fn\ lookup\_certs);}
+\DoxyCodeLine{00547\ X509\_STORE\_CTX\_lookup\_certs\_fn\ X509\_STORE\_get\_lookup\_certs(\textcolor{keyword}{const}\ X509\_STORE\ *s);}
+\DoxyCodeLine{00548\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_lookup\_crls(X509\_STORE\ *xs,}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_lookup\_crls\_fn\ lookup\_crls);}
+\DoxyCodeLine{00550\ \textcolor{preprocessor}{\#define\ X509\_STORE\_set\_lookup\_crls\_cb(ctx,\ func)\ \(\backslash\)}}
+\DoxyCodeLine{00551\ \textcolor{preprocessor}{\ \ \ \ X509\_STORE\_set\_lookup\_crls((ctx),\ (func))}}
+\DoxyCodeLine{00552\ X509\_STORE\_CTX\_lookup\_crls\_fn\ X509\_STORE\_get\_lookup\_crls(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00553\ \textcolor{keywordtype}{void}\ X509\_STORE\_set\_cleanup(X509\_STORE\ *xs,}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_cleanup\_fn\ cleanup);}
+\DoxyCodeLine{00555\ X509\_STORE\_CTX\_cleanup\_fn\ X509\_STORE\_get\_cleanup(\textcolor{keyword}{const}\ X509\_STORE\ *xs);}
+\DoxyCodeLine{00556\ }
+\DoxyCodeLine{00557\ \textcolor{preprocessor}{\#define\ X509\_STORE\_get\_ex\_new\_index(l,\ p,\ newf,\ dupf,\ freef)\ \(\backslash\)}}
+\DoxyCodeLine{00558\ \textcolor{preprocessor}{\ \ \ \ CRYPTO\_get\_ex\_new\_index(CRYPTO\_EX\_INDEX\_X509\_STORE,\ l,\ p,\ newf,\ dupf,\ freef)}}
+\DoxyCodeLine{00559\ \textcolor{keywordtype}{int}\ X509\_STORE\_set\_ex\_data(X509\_STORE\ *xs,\ \textcolor{keywordtype}{int}\ idx,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00560\ \textcolor{keywordtype}{void}\ *X509\_STORE\_get\_ex\_data(\textcolor{keyword}{const}\ X509\_STORE\ *xs,\ \textcolor{keywordtype}{int}\ idx);}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ X509\_STORE\_CTX\ *X509\_STORE\_CTX\_new\_ex(OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00563\ X509\_STORE\_CTX\ *X509\_STORE\_CTX\_new(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00564\ }
+\DoxyCodeLine{00565\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_get1\_issuer(X509\ **issuer,\ X509\_STORE\_CTX\ *ctx,\ X509\ *x);}
+\DoxyCodeLine{00566\ }
+\DoxyCodeLine{00567\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_free(X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00568\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_init(X509\_STORE\_CTX\ *ctx,\ X509\_STORE\ *trust\_store,}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\ *target,\ STACK\_OF(X509)\ *untrusted);}
+\DoxyCodeLine{00570\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_init\_rpk(X509\_STORE\_CTX\ *ctx,\ X509\_STORE\ *trust\_store,}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ EVP\_PKEY*\ rpk);}
+\DoxyCodeLine{00572\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set0\_trusted\_stack(X509\_STORE\_CTX\ *ctx,\ STACK\_OF(X509)\ *sk);}
+\DoxyCodeLine{00573\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_cleanup(X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00574\ }
+\DoxyCodeLine{00575\ X509\_STORE\ *X509\_STORE\_CTX\_get0\_store(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00576\ X509\ *X509\_STORE\_CTX\_get0\_cert(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00577\ EVP\_PKEY\ *X509\_STORE\_CTX\_get0\_rpk(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00578\ STACK\_OF(X509)*\ X509\_STORE\_CTX\_get0\_untrusted(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00579\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set0\_untrusted(X509\_STORE\_CTX\ *ctx,\ STACK\_OF(X509)\ *sk);}
+\DoxyCodeLine{00580\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_verify\_cb(X509\_STORE\_CTX\ *ctx,}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_verify\_cb\ verify);}
+\DoxyCodeLine{00582\ X509\_STORE\_CTX\_verify\_cb\ X509\_STORE\_CTX\_get\_verify\_cb(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00583\ X509\_STORE\_CTX\_verify\_fn\ X509\_STORE\_CTX\_get\_verify(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00584\ X509\_STORE\_CTX\_get\_issuer\_fn\ X509\_STORE\_CTX\_get\_get\_issuer(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00585\ X509\_STORE\_CTX\_check\_issued\_fn\ X509\_STORE\_CTX\_get\_check\_issued(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00586\ X509\_STORE\_CTX\_check\_revocation\_fn\ X509\_STORE\_CTX\_get\_check\_revocation(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00587\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_get\_crl(X509\_STORE\_CTX\ *ctx,}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_STORE\_CTX\_get\_crl\_fn\ get\_crl);}
+\DoxyCodeLine{00589\ X509\_STORE\_CTX\_get\_crl\_fn\ X509\_STORE\_CTX\_get\_get\_crl(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00590\ X509\_STORE\_CTX\_check\_crl\_fn\ X509\_STORE\_CTX\_get\_check\_crl(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00591\ X509\_STORE\_CTX\_cert\_crl\_fn\ X509\_STORE\_CTX\_get\_cert\_crl(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00592\ X509\_STORE\_CTX\_check\_policy\_fn\ X509\_STORE\_CTX\_get\_check\_policy(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00593\ X509\_STORE\_CTX\_lookup\_certs\_fn\ X509\_STORE\_CTX\_get\_lookup\_certs(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00594\ X509\_STORE\_CTX\_lookup\_crls\_fn\ X509\_STORE\_CTX\_get\_lookup\_crls(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00595\ X509\_STORE\_CTX\_cleanup\_fn\ X509\_STORE\_CTX\_get\_cleanup(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00596\ }
+\DoxyCodeLine{00597\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_NO\_DEPRECATED\_1\_1\_0}}
+\DoxyCodeLine{00598\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_CTX\_get\_chain\ X509\_STORE\_CTX\_get0\_chain}}
+\DoxyCodeLine{00599\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_CTX\_set\_chain\ X509\_STORE\_CTX\_set0\_untrusted}}
+\DoxyCodeLine{00600\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_CTX\_trusted\_stack\ X509\_STORE\_CTX\_set0\_trusted\_stack}}
+\DoxyCodeLine{00601\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_get\_by\_subject\ X509\_STORE\_CTX\_get\_by\_subject}}
+\DoxyCodeLine{00602\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_get1\_certs\ X509\_STORE\_CTX\_get1\_certs}}
+\DoxyCodeLine{00603\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_get1\_crls\ X509\_STORE\_CTX\_get1\_crls}}
+\DoxyCodeLine{00604\ \textcolor{comment}{/*\ the\ following\ macro\ is\ misspelled;\ use\ X509\_STORE\_get1\_certs\ instead\ */}}
+\DoxyCodeLine{00605\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_get1\_cert\ X509\_STORE\_CTX\_get1\_certs}}
+\DoxyCodeLine{00606\ \textcolor{comment}{/*\ the\ following\ macro\ is\ misspelled;\ use\ X509\_STORE\_get1\_crls\ instead\ */}}
+\DoxyCodeLine{00607\ \textcolor{preprocessor}{\#\ define\ X509\_STORE\_get1\_crl\ X509\_STORE\_CTX\_get1\_crls}}
+\DoxyCodeLine{00608\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00610\ X509\_LOOKUP\ *X509\_STORE\_add\_lookup(X509\_STORE\ *xs,\ X509\_LOOKUP\_METHOD\ *m);}
+\DoxyCodeLine{00611\ X509\_LOOKUP\_METHOD\ *X509\_LOOKUP\_hash\_dir(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00612\ X509\_LOOKUP\_METHOD\ *X509\_LOOKUP\_file(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00613\ X509\_LOOKUP\_METHOD\ *X509\_LOOKUP\_store(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \textcolor{keyword}{typedef}\ int\ (*X509\_LOOKUP\_ctrl\_fn)(X509\_LOOKUP\ *ctx,\ \textcolor{keywordtype}{int}\ cmd,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *argc,}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{long}\ argl,\ \textcolor{keywordtype}{char}\ **ret);}
+\DoxyCodeLine{00617\ \textcolor{keyword}{typedef}\ int\ (*X509\_LOOKUP\_ctrl\_ex\_fn)(}
+\DoxyCodeLine{00618\ \ \ \ \ X509\_LOOKUP\ *ctx,\ \textcolor{keywordtype}{int}\ cmd,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *argc,\ \textcolor{keywordtype}{long}\ argl,\ \textcolor{keywordtype}{char}\ **ret,}
+\DoxyCodeLine{00619\ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00620\ }
+\DoxyCodeLine{00621\ \textcolor{keyword}{typedef}\ int\ (*X509\_LOOKUP\_get\_by\_subject\_fn)(X509\_LOOKUP\ *ctx,}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name,}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_OBJECT\ *ret);}
+\DoxyCodeLine{00625\ \textcolor{keyword}{typedef}\ int\ (*X509\_LOOKUP\_get\_by\_subject\_ex\_fn)(X509\_LOOKUP\ *ctx,}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name,}
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_OBJECT\ *ret,}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00631\ \textcolor{keyword}{typedef}\ int\ (*X509\_LOOKUP\_get\_by\_issuer\_serial\_fn)(X509\_LOOKUP\ *ctx,}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name,}
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *serial,}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_OBJECT\ *ret);}
+\DoxyCodeLine{00636\ \textcolor{keyword}{typedef}\ int\ (*X509\_LOOKUP\_get\_by\_fingerprint\_fn)(X509\_LOOKUP\ *ctx,}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{structbytes}{bytes}},}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ len,}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_OBJECT\ *ret);}
+\DoxyCodeLine{00641\ \textcolor{keyword}{typedef}\ int\ (*X509\_LOOKUP\_get\_by\_alias\_fn)(X509\_LOOKUP\ *ctx,}
+\DoxyCodeLine{00642\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *str,}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ len,}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_OBJECT\ *ret);}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ X509\_LOOKUP\_METHOD\ *X509\_LOOKUP\_meth\_new(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00648\ \textcolor{keywordtype}{void}\ X509\_LOOKUP\_meth\_free(X509\_LOOKUP\_METHOD\ *method);}
+\DoxyCodeLine{00649\ }
+\DoxyCodeLine{00650\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_meth\_set\_new\_item(X509\_LOOKUP\_METHOD\ *method,}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ (*new\_item)\ (X509\_LOOKUP\ *ctx));}
+\DoxyCodeLine{00652\ int\ (*X509\_LOOKUP\_meth\_get\_new\_item(\textcolor{keyword}{const}\ X509\_LOOKUP\_METHOD*\ method))}
+\DoxyCodeLine{00653\ \ \ \ \ (X509\_LOOKUP\ *ctx);}
+\DoxyCodeLine{00654\ }
+\DoxyCodeLine{00655\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_meth\_set\_free(X509\_LOOKUP\_METHOD\ *method,}
+\DoxyCodeLine{00656\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ (*free\_fn)\ (X509\_LOOKUP\ *ctx));}
+\DoxyCodeLine{00657\ void\ (*X509\_LOOKUP\_meth\_get\_free(\textcolor{keyword}{const}\ X509\_LOOKUP\_METHOD*\ method))}
+\DoxyCodeLine{00658\ \ \ \ \ (X509\_LOOKUP\ *ctx);}
+\DoxyCodeLine{00659\ }
+\DoxyCodeLine{00660\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_meth\_set\_init(X509\_LOOKUP\_METHOD\ *method,}
+\DoxyCodeLine{00661\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ (*init)\ (X509\_LOOKUP\ *ctx));}
+\DoxyCodeLine{00662\ int\ (*X509\_LOOKUP\_meth\_get\_init(\textcolor{keyword}{const}\ X509\_LOOKUP\_METHOD*\ method))}
+\DoxyCodeLine{00663\ \ \ \ \ (X509\_LOOKUP\ *ctx);}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_meth\_set\_shutdown(X509\_LOOKUP\_METHOD\ *method,}
+\DoxyCodeLine{00666\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ (*shutdown)\ (X509\_LOOKUP\ *ctx));}
+\DoxyCodeLine{00667\ int\ (*X509\_LOOKUP\_meth\_get\_shutdown(\textcolor{keyword}{const}\ X509\_LOOKUP\_METHOD*\ method))}
+\DoxyCodeLine{00668\ \ \ \ \ (X509\_LOOKUP\ *ctx);}
+\DoxyCodeLine{00669\ }
+\DoxyCodeLine{00670\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_meth\_set\_ctrl(X509\_LOOKUP\_METHOD\ *method,}
+\DoxyCodeLine{00671\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_ctrl\_fn\ ctrl\_fn);}
+\DoxyCodeLine{00672\ X509\_LOOKUP\_ctrl\_fn\ X509\_LOOKUP\_meth\_get\_ctrl(\textcolor{keyword}{const}\ X509\_LOOKUP\_METHOD\ *method);}
+\DoxyCodeLine{00673\ }
+\DoxyCodeLine{00674\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_meth\_set\_get\_by\_subject(X509\_LOOKUP\_METHOD\ *method,}
+\DoxyCodeLine{00675\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_get\_by\_subject\_fn\ fn);}
+\DoxyCodeLine{00676\ X509\_LOOKUP\_get\_by\_subject\_fn\ X509\_LOOKUP\_meth\_get\_get\_by\_subject(}
+\DoxyCodeLine{00677\ \ \ \ \ \textcolor{keyword}{const}\ X509\_LOOKUP\_METHOD\ *method);}
+\DoxyCodeLine{00678\ }
+\DoxyCodeLine{00679\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_meth\_set\_get\_by\_issuer\_serial(X509\_LOOKUP\_METHOD\ *method,}
+\DoxyCodeLine{00680\ \ \ \ \ X509\_LOOKUP\_get\_by\_issuer\_serial\_fn\ fn);}
+\DoxyCodeLine{00681\ X509\_LOOKUP\_get\_by\_issuer\_serial\_fn\ X509\_LOOKUP\_meth\_get\_get\_by\_issuer\_serial(}
+\DoxyCodeLine{00682\ \ \ \ \ \textcolor{keyword}{const}\ X509\_LOOKUP\_METHOD\ *method);}
+\DoxyCodeLine{00683\ }
+\DoxyCodeLine{00684\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_meth\_set\_get\_by\_fingerprint(X509\_LOOKUP\_METHOD\ *method,}
+\DoxyCodeLine{00685\ \ \ \ \ X509\_LOOKUP\_get\_by\_fingerprint\_fn\ fn);}
+\DoxyCodeLine{00686\ X509\_LOOKUP\_get\_by\_fingerprint\_fn\ X509\_LOOKUP\_meth\_get\_get\_by\_fingerprint(}
+\DoxyCodeLine{00687\ \ \ \ \ \textcolor{keyword}{const}\ X509\_LOOKUP\_METHOD\ *method);}
+\DoxyCodeLine{00688\ }
+\DoxyCodeLine{00689\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_meth\_set\_get\_by\_alias(X509\_LOOKUP\_METHOD\ *method,}
+\DoxyCodeLine{00690\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_get\_by\_alias\_fn\ fn);}
+\DoxyCodeLine{00691\ X509\_LOOKUP\_get\_by\_alias\_fn\ X509\_LOOKUP\_meth\_get\_get\_by\_alias(}
+\DoxyCodeLine{00692\ \ \ \ \ \textcolor{keyword}{const}\ X509\_LOOKUP\_METHOD\ *method);}
+\DoxyCodeLine{00693\ }
+\DoxyCodeLine{00694\ }
+\DoxyCodeLine{00695\ \textcolor{keywordtype}{int}\ X509\_STORE\_add\_cert(X509\_STORE\ *xs,\ X509\ *x);}
+\DoxyCodeLine{00696\ \textcolor{keywordtype}{int}\ X509\_STORE\_add\_crl(X509\_STORE\ *xs,\ X509\_CRL\ *x);}
+\DoxyCodeLine{00697\ }
+\DoxyCodeLine{00698\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_get\_by\_subject(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *vs,}
+\DoxyCodeLine{00699\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00700\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name,\ X509\_OBJECT\ *ret);}
+\DoxyCodeLine{00701\ X509\_OBJECT\ *X509\_STORE\_CTX\_get\_obj\_by\_subject(X509\_STORE\_CTX\ *vs,}
+\DoxyCodeLine{00702\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00703\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name);}
+\DoxyCodeLine{00704\ }
+\DoxyCodeLine{00705\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_ctrl(X509\_LOOKUP\ *ctx,\ \textcolor{keywordtype}{int}\ cmd,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *argc,}
+\DoxyCodeLine{00706\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{long}\ argl,\ \textcolor{keywordtype}{char}\ **ret);}
+\DoxyCodeLine{00707\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_ctrl\_ex(X509\_LOOKUP\ *ctx,\ \textcolor{keywordtype}{int}\ cmd,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *argc,\ \textcolor{keywordtype}{long}\ argl,}
+\DoxyCodeLine{00708\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}\ **ret,\ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00709\ }
+\DoxyCodeLine{00710\ \textcolor{keywordtype}{int}\ X509\_load\_cert\_file(X509\_LOOKUP\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00711\ \textcolor{keywordtype}{int}\ X509\_load\_cert\_file\_ex(X509\_LOOKUP\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00712\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00713\ \textcolor{keywordtype}{int}\ X509\_load\_crl\_file(X509\_LOOKUP\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00714\ \textcolor{keywordtype}{int}\ X509\_load\_cert\_crl\_file(X509\_LOOKUP\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00715\ \textcolor{keywordtype}{int}\ X509\_load\_cert\_crl\_file\_ex(X509\_LOOKUP\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00716\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00717\ }
+\DoxyCodeLine{00718\ X509\_LOOKUP\ *X509\_LOOKUP\_new(X509\_LOOKUP\_METHOD\ *method);}
+\DoxyCodeLine{00719\ \textcolor{keywordtype}{void}\ X509\_LOOKUP\_free(X509\_LOOKUP\ *ctx);}
+\DoxyCodeLine{00720\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_init(X509\_LOOKUP\ *ctx);}
+\DoxyCodeLine{00721\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_by\_subject(X509\_LOOKUP\ *ctx,\ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00722\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name,\ X509\_OBJECT\ *ret);}
+\DoxyCodeLine{00723\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_by\_subject\_ex(X509\_LOOKUP\ *ctx,\ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00724\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name,\ X509\_OBJECT\ *ret,}
+\DoxyCodeLine{00725\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00726\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_by\_issuer\_serial(X509\_LOOKUP\ *ctx,\ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00727\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_NAME\ *name,}
+\DoxyCodeLine{00728\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ASN1\_INTEGER\ *serial,}
+\DoxyCodeLine{00729\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_OBJECT\ *ret);}
+\DoxyCodeLine{00730\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_by\_fingerprint(X509\_LOOKUP\ *ctx,\ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00731\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{structbytes}{bytes}},\ \textcolor{keywordtype}{int}\ len,}
+\DoxyCodeLine{00732\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ X509\_OBJECT\ *ret);}
+\DoxyCodeLine{00733\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_by\_alias(X509\_LOOKUP\ *ctx,\ X509\_LOOKUP\_TYPE\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}},}
+\DoxyCodeLine{00734\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *str,\ \textcolor{keywordtype}{int}\ len,\ X509\_OBJECT\ *ret);}
+\DoxyCodeLine{00735\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_set\_method\_data(X509\_LOOKUP\ *ctx,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00736\ \textcolor{keywordtype}{void}\ *X509\_LOOKUP\_get\_method\_data(\textcolor{keyword}{const}\ X509\_LOOKUP\ *ctx);}
+\DoxyCodeLine{00737\ X509\_STORE\ *X509\_LOOKUP\_get\_store(\textcolor{keyword}{const}\ X509\_LOOKUP\ *ctx);}
+\DoxyCodeLine{00738\ \textcolor{keywordtype}{int}\ X509\_LOOKUP\_shutdown(X509\_LOOKUP\ *ctx);}
+\DoxyCodeLine{00739\ }
+\DoxyCodeLine{00740\ \textcolor{keywordtype}{int}\ X509\_STORE\_load\_file(X509\_STORE\ *xs,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file);}
+\DoxyCodeLine{00741\ \textcolor{keywordtype}{int}\ X509\_STORE\_load\_path(X509\_STORE\ *xs,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *path);}
+\DoxyCodeLine{00742\ \textcolor{keywordtype}{int}\ X509\_STORE\_load\_store(X509\_STORE\ *xs,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *store);}
+\DoxyCodeLine{00743\ \textcolor{keywordtype}{int}\ X509\_STORE\_load\_locations(X509\_STORE\ *s,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dir);}
+\DoxyCodeLine{00744\ \textcolor{keywordtype}{int}\ X509\_STORE\_set\_default\_paths(X509\_STORE\ *xs);}
+\DoxyCodeLine{00745\ }
+\DoxyCodeLine{00746\ \textcolor{keywordtype}{int}\ X509\_STORE\_load\_file\_ex(X509\_STORE\ *xs,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,}
+\DoxyCodeLine{00747\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00748\ \textcolor{keywordtype}{int}\ X509\_STORE\_load\_store\_ex(X509\_STORE\ *xs,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *store,}
+\DoxyCodeLine{00749\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00750\ \textcolor{keywordtype}{int}\ X509\_STORE\_load\_locations\_ex(X509\_STORE\ *xs,}
+\DoxyCodeLine{00751\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *dir,}
+\DoxyCodeLine{00752\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00753\ \textcolor{keywordtype}{int}\ X509\_STORE\_set\_default\_paths\_ex(X509\_STORE\ *xs,}
+\DoxyCodeLine{00754\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_LIB\_CTX\ *libctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq);}
+\DoxyCodeLine{00755\ }
+\DoxyCodeLine{00756\ \textcolor{preprocessor}{\#define\ X509\_STORE\_CTX\_get\_ex\_new\_index(l,\ p,\ newf,\ dupf,\ freef)\ \(\backslash\)}}
+\DoxyCodeLine{00757\ \textcolor{preprocessor}{\ \ \ \ CRYPTO\_get\_ex\_new\_index(CRYPTO\_EX\_INDEX\_X509\_STORE\_CTX,\ l,\ p,\ newf,\ dupf,\ freef)}}
+\DoxyCodeLine{00758\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_set\_ex\_data(X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ idx,\ \textcolor{keywordtype}{void}\ *data);}
+\DoxyCodeLine{00759\ \textcolor{keywordtype}{void}\ *X509\_STORE\_CTX\_get\_ex\_data(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ idx);}
+\DoxyCodeLine{00760\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_get\_error(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00761\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_error(X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ s);}
+\DoxyCodeLine{00762\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_get\_error\_depth(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00763\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_error\_depth(X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ depth);}
+\DoxyCodeLine{00764\ X509\ *X509\_STORE\_CTX\_get\_current\_cert(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00765\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_current\_cert(X509\_STORE\_CTX\ *ctx,\ X509\ *x);}
+\DoxyCodeLine{00766\ X509\ *X509\_STORE\_CTX\_get0\_current\_issuer(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00767\ X509\_CRL\ *X509\_STORE\_CTX\_get0\_current\_crl(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00768\ X509\_STORE\_CTX\ *X509\_STORE\_CTX\_get0\_parent\_ctx(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00769\ STACK\_OF(X509)\ *X509\_STORE\_CTX\_get0\_chain(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00770\ STACK\_OF(X509)\ *X509\_STORE\_CTX\_get1\_chain(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00771\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_cert(X509\_STORE\_CTX\ *ctx,\ X509\ *target);}
+\DoxyCodeLine{00772\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set0\_rpk(X509\_STORE\_CTX\ *ctx,\ EVP\_PKEY\ *target);}
+\DoxyCodeLine{00773\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set0\_verified\_chain(X509\_STORE\_CTX\ *c,\ STACK\_OF(X509)\ *sk);}
+\DoxyCodeLine{00774\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set0\_crls(X509\_STORE\_CTX\ *ctx,\ STACK\_OF(X509\_CRL)\ *sk);}
+\DoxyCodeLine{00775\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_set\_purpose(X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ purpose);}
+\DoxyCodeLine{00776\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_set\_trust(X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ trust);}
+\DoxyCodeLine{00777\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_purpose\_inherit(X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{int}\ def\_purpose,}
+\DoxyCodeLine{00778\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ purpose,\ \textcolor{keywordtype}{int}\ trust);}
+\DoxyCodeLine{00779\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_flags(X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ flags);}
+\DoxyCodeLine{00780\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_time(X509\_STORE\_CTX\ *ctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ flags,}
+\DoxyCodeLine{00781\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ time\_t\ t);}
+\DoxyCodeLine{00782\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set\_current\_reasons(X509\_STORE\_CTX\ *ctx,}
+\DoxyCodeLine{00783\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ current\_reasons);}
+\DoxyCodeLine{00784\ }
+\DoxyCodeLine{00785\ X509\_POLICY\_TREE\ *X509\_STORE\_CTX\_get0\_policy\_tree(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00786\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_get\_explicit\_policy(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00787\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_get\_num\_untrusted(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00788\ }
+\DoxyCodeLine{00789\ X509\_VERIFY\_PARAM\ *X509\_STORE\_CTX\_get0\_param(\textcolor{keyword}{const}\ X509\_STORE\_CTX\ *ctx);}
+\DoxyCodeLine{00790\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set0\_param(X509\_STORE\_CTX\ *ctx,\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00791\ \textcolor{keywordtype}{int}\ X509\_STORE\_CTX\_set\_default(X509\_STORE\_CTX\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00792\ }
+\DoxyCodeLine{00793\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00794\ \textcolor{comment}{\ *\ Bridge\ opacity\ barrier\ between\ libcrypt\ and\ libssl,\ also\ needed\ to\ support}}
+\DoxyCodeLine{00795\ \textcolor{comment}{\ *\ offline\ testing\ in\ test/danetest.c}}
+\DoxyCodeLine{00796\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00797\ \textcolor{keywordtype}{void}\ X509\_STORE\_CTX\_set0\_dane(X509\_STORE\_CTX\ *ctx,\ SSL\_DANE\ *dane);}
+\DoxyCodeLine{00798\ \textcolor{preprocessor}{\#define\ DANE\_FLAG\_NO\_DANE\_EE\_NAMECHECKS\ (1L\ <<\ 0)}}
+\DoxyCodeLine{00799\ }
+\DoxyCodeLine{00800\ \textcolor{comment}{/*\ X509\_VERIFY\_PARAM\ functions\ */}}
+\DoxyCodeLine{00801\ }
+\DoxyCodeLine{00802\ X509\_VERIFY\_PARAM\ *X509\_VERIFY\_PARAM\_new(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00803\ \textcolor{keywordtype}{void}\ X509\_VERIFY\_PARAM\_free(X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00804\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_inherit(X509\_VERIFY\_PARAM\ *to,}
+\DoxyCodeLine{00805\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *from);}
+\DoxyCodeLine{00806\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set1(X509\_VERIFY\_PARAM\ *to,}
+\DoxyCodeLine{00807\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *from);}
+\DoxyCodeLine{00808\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set1\_name(X509\_VERIFY\_PARAM\ *param,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00809\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set\_flags(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00810\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ flags);}
+\DoxyCodeLine{00811\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_clear\_flags(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00812\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ flags);}
+\DoxyCodeLine{00813\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ X509\_VERIFY\_PARAM\_get\_flags(\textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00814\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set\_purpose(X509\_VERIFY\_PARAM\ *param,\ \textcolor{keywordtype}{int}\ purpose);}
+\DoxyCodeLine{00815\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_get\_purpose(\textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00816\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set\_trust(X509\_VERIFY\_PARAM\ *param,\ \textcolor{keywordtype}{int}\ trust);}
+\DoxyCodeLine{00817\ \textcolor{keywordtype}{void}\ X509\_VERIFY\_PARAM\_set\_depth(X509\_VERIFY\_PARAM\ *param,\ \textcolor{keywordtype}{int}\ depth);}
+\DoxyCodeLine{00818\ \textcolor{keywordtype}{void}\ X509\_VERIFY\_PARAM\_set\_auth\_level(X509\_VERIFY\_PARAM\ *param,\ \textcolor{keywordtype}{int}\ auth\_level);}
+\DoxyCodeLine{00819\ time\_t\ X509\_VERIFY\_PARAM\_get\_time(\textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00820\ \textcolor{keywordtype}{void}\ X509\_VERIFY\_PARAM\_set\_time(X509\_VERIFY\_PARAM\ *param,\ time\_t\ t);}
+\DoxyCodeLine{00821\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_add0\_policy(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00822\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ASN1\_OBJECT\ *policy);}
+\DoxyCodeLine{00823\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set1\_policies(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00824\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(ASN1\_OBJECT)\ *policies);}
+\DoxyCodeLine{00825\ }
+\DoxyCodeLine{00826\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set\_inh\_flags(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00827\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t\ flags);}
+\DoxyCodeLine{00828\ uint32\_t\ X509\_VERIFY\_PARAM\_get\_inh\_flags(\textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00829\ }
+\DoxyCodeLine{00830\ \textcolor{keywordtype}{char}\ *X509\_VERIFY\_PARAM\_get0\_host(X509\_VERIFY\_PARAM\ *param,\ \textcolor{keywordtype}{int}\ idx);}
+\DoxyCodeLine{00831\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set1\_host(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00832\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name,\ \textcolor{keywordtype}{size\_t}\ namelen);}
+\DoxyCodeLine{00833\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_add1\_host(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00834\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name,\ \textcolor{keywordtype}{size\_t}\ namelen);}
+\DoxyCodeLine{00835\ \textcolor{keywordtype}{void}\ X509\_VERIFY\_PARAM\_set\_hostflags(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00836\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ flags);}
+\DoxyCodeLine{00837\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_get\_hostflags(\textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00838\ \textcolor{keywordtype}{char}\ *X509\_VERIFY\_PARAM\_get0\_peername(\textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00839\ \textcolor{keywordtype}{void}\ X509\_VERIFY\_PARAM\_move\_peername(X509\_VERIFY\_PARAM\ *,\ X509\_VERIFY\_PARAM\ *);}
+\DoxyCodeLine{00840\ \textcolor{keywordtype}{char}\ *X509\_VERIFY\_PARAM\_get0\_email(X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00841\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set1\_email(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00842\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *email,\ \textcolor{keywordtype}{size\_t}\ emaillen);}
+\DoxyCodeLine{00843\ \textcolor{keywordtype}{char}\ *X509\_VERIFY\_PARAM\_get1\_ip\_asc(X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00844\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set1\_ip(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00845\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *ip,\ \textcolor{keywordtype}{size\_t}\ iplen);}
+\DoxyCodeLine{00846\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_set1\_ip\_asc(X509\_VERIFY\_PARAM\ *param,}
+\DoxyCodeLine{00847\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *ipasc);}
+\DoxyCodeLine{00848\ }
+\DoxyCodeLine{00849\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_get\_depth(\textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00850\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_get\_auth\_level(\textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00851\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *X509\_VERIFY\_PARAM\_get0\_name(\textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00852\ }
+\DoxyCodeLine{00853\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_add0\_table(X509\_VERIFY\_PARAM\ *param);}
+\DoxyCodeLine{00854\ \textcolor{keywordtype}{int}\ X509\_VERIFY\_PARAM\_get\_count(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00855\ \textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *X509\_VERIFY\_PARAM\_get0(\textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00856\ \textcolor{keyword}{const}\ X509\_VERIFY\_PARAM\ *X509\_VERIFY\_PARAM\_lookup(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *name);}
+\DoxyCodeLine{00857\ \textcolor{keywordtype}{void}\ X509\_VERIFY\_PARAM\_table\_cleanup(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{00858\ }
+\DoxyCodeLine{00859\ \textcolor{comment}{/*\ Non\ positive\ return\ values\ are\ errors\ */}}
+\DoxyCodeLine{00860\ \textcolor{preprocessor}{\#define\ X509\_PCY\_TREE\_FAILURE\ \ -\/2\ }\textcolor{comment}{/*\ Failure\ to\ satisfy\ explicit\ policy\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00861\ \textcolor{preprocessor}{\#define\ X509\_PCY\_TREE\_INVALID\ \ -\/1\ }\textcolor{comment}{/*\ Inconsistent\ or\ invalid\ extensions\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00862\ \textcolor{preprocessor}{\#define\ X509\_PCY\_TREE\_INTERNAL\ \ 0\ }\textcolor{comment}{/*\ Internal\ error,\ most\ likely\ malloc\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00863\ }
+\DoxyCodeLine{00864\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00865\ \textcolor{comment}{\ *\ Positive\ return\ values\ form\ a\ bit\ mask,\ all\ but\ the\ first\ are\ internal\ to}}
+\DoxyCodeLine{00866\ \textcolor{comment}{\ *\ the\ library\ and\ don't\ appear\ in\ results\ from\ X509\_policy\_check().}}
+\DoxyCodeLine{00867\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00868\ \textcolor{preprocessor}{\#define\ X509\_PCY\_TREE\_VALID\ \ \ \ \ 1\ }\textcolor{comment}{/*\ The\ policy\ tree\ is\ valid\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00869\ \textcolor{preprocessor}{\#define\ X509\_PCY\_TREE\_EMPTY\ \ \ \ \ 2\ }\textcolor{comment}{/*\ The\ policy\ tree\ is\ empty\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00870\ \textcolor{preprocessor}{\#define\ X509\_PCY\_TREE\_EXPLICIT\ \ 4\ }\textcolor{comment}{/*\ Explicit\ policy\ required\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00871\ }
+\DoxyCodeLine{00872\ \textcolor{keywordtype}{int}\ X509\_policy\_check(X509\_POLICY\_TREE\ **ptree,\ \textcolor{keywordtype}{int}\ *pexplicit\_policy,}
+\DoxyCodeLine{00873\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(X509)\ *certs,}
+\DoxyCodeLine{00874\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ STACK\_OF(ASN1\_OBJECT)\ *policy\_oids,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ flags);}
+\DoxyCodeLine{00875\ }
+\DoxyCodeLine{00876\ \textcolor{keywordtype}{void}\ X509\_policy\_tree\_free(X509\_POLICY\_TREE\ *tree);}
+\DoxyCodeLine{00877\ }
+\DoxyCodeLine{00878\ \textcolor{keywordtype}{int}\ X509\_policy\_tree\_level\_count(\textcolor{keyword}{const}\ X509\_POLICY\_TREE\ *tree);}
+\DoxyCodeLine{00879\ X509\_POLICY\_LEVEL\ *X509\_policy\_tree\_get0\_level(\textcolor{keyword}{const}\ X509\_POLICY\_TREE\ *tree,}
+\DoxyCodeLine{00880\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00881\ }
+\DoxyCodeLine{00882\ STACK\_OF(X509\_POLICY\_NODE)}
+\DoxyCodeLine{00883\ \ \ \ \ *X509\_policy\_tree\_get0\_policies(\textcolor{keyword}{const}\ X509\_POLICY\_TREE\ *tree);}
+\DoxyCodeLine{00884\ }
+\DoxyCodeLine{00885\ STACK\_OF(X509\_POLICY\_NODE)}
+\DoxyCodeLine{00886\ \ \ \ \ *X509\_policy\_tree\_get0\_user\_policies(\textcolor{keyword}{const}\ X509\_POLICY\_TREE\ *tree);}
+\DoxyCodeLine{00887\ }
+\DoxyCodeLine{00888\ \textcolor{keywordtype}{int}\ X509\_policy\_level\_node\_count(X509\_POLICY\_LEVEL\ *level);}
+\DoxyCodeLine{00889\ }
+\DoxyCodeLine{00890\ X509\_POLICY\_NODE\ *X509\_policy\_level\_get0\_node(\textcolor{keyword}{const}\ X509\_POLICY\_LEVEL\ *level,}
+\DoxyCodeLine{00891\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00892\ }
+\DoxyCodeLine{00893\ \textcolor{keyword}{const}\ ASN1\_OBJECT\ *X509\_policy\_node\_get0\_policy(\textcolor{keyword}{const}\ X509\_POLICY\_NODE\ *node);}
+\DoxyCodeLine{00894\ }
+\DoxyCodeLine{00895\ STACK\_OF(POLICYQUALINFO)}
+\DoxyCodeLine{00896\ \ \ \ \ *X509\_policy\_node\_get0\_qualifiers(\textcolor{keyword}{const}\ X509\_POLICY\_NODE\ *node);}
+\DoxyCodeLine{00897\ \textcolor{keyword}{const}\ X509\_POLICY\_NODE}
+\DoxyCodeLine{00898\ \ \ \ \ *X509\_policy\_node\_get0\_parent(\textcolor{keyword}{const}\ X509\_POLICY\_NODE\ *node);}
+\DoxyCodeLine{00899\ }
+\DoxyCodeLine{00900\ \textcolor{preprocessor}{\#ifdef\ \ \_\_cplusplus}}
+\DoxyCodeLine{00901\ \}}
+\DoxyCodeLine{00902\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00903\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

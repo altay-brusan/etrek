@@ -1,0 +1,245 @@
+\doxysection{cond.\+h}
+\hypertarget{cond_8h_source}{}\label{cond_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmnet/cond.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmnet/cond.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 1994-\/2022,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ dcmnet}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Marco\ Eichelberg}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ network\ conditions\ and\ helper\ class}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ COND\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ COND\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofconsol.h"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofdeprec.h"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{dcerror_8h}{dcmtk/dcmdata/dcerror.h}}"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmnet/dndefine.h"{}}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{/*\ NOTES\ ON\ THE\ CONVERSION\ OF\ THE\ DCMNET\ MODULE\ FROM\ CONDITION\ TO\ OFCONDITION}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *\ All\ functions\ in\ this\ module\ have\ been\ adapted\ to\ the\ new\ OFCondition}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ class\ which\ -\/\ unlike\ the\ CONDITION\ functions\ -\/\ does\ not\ create\ problems}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ in\ multi-\/threaded\ code.\ The\ following\ notes\ explain\ the\ major\ differences}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ and\ modifications\ needed\ in\ client\ code.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *\ -\/\ OFCondition\ is\ a\ class\ (CONDITION\ was\ just\ a\ typedef\ for\ long).\ \ This}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ \ \ means\ that\ switch\ statements\ on\ conditions\ are\ not\ possible\ anymore.}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ \ \ Use\ if/else\ if/else\ constructs\ instead.}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ -\/\ The\ condition\ ASC\_RELEASECONFIRMED\ has\ been\ removed.}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ \ \ ASC\_releaseAssociation()\ now\ returns\ EC\_Normal\ upon\ successful\ completion.}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ -\/\ No\ translation\ of\ error\ codes\ that\ are\ passed\ from\ the\ DUL\ module\ to\ the}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ \ \ ASC\ or\ DIMSE\ module\ is\ performed\ anymore.\ \ That\ means\ that\ error\ codes}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ \ \ such\ as\ DUL\_PEERABORTEDASSOCIATION\ or\ DUL\_PEERREQUESTEDRELEASE\ are\ now}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ \ \ passed\ back\ to\ client\ code\ instead\ of\ their\ "{}aliases"{}\ with\ ASC\_\ or}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ \ \ DIMSE\_\ prefix.\ \ Macros\ have\ been\ defined\ to\ catch\ most\ of\ these\ cases.}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *\ -\/\ All\ normal\ status\ codes\ (DUL\_NORMAL,\ DIMSE\_NORMAL,\ ASC\_NORMAL)\ have\ been}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ \ \ mapped\ to\ EC\_Normal.\ Macros\ have\ also\ been\ defined\ for\ these\ identifiers.}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *\ -\/\ DUL\_PEERREQUESTEDRELEASE\ is\ now\ an\ error\ code,\ i.e.\ unlike\ prior\ releases}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *\ \ \ SUCCESS(DUL\_PEERREQUESTEDRELEASE)\ is\ false.}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{comment}{//\ condition\ code\ constants\ used\ in\ the\ association\ module}}
+\DoxyCodeLine{00059\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_BADPRESENTATIONCONTEXTID\ \ \ \ \ \ \ =\ 0x101;}
+\DoxyCodeLine{00060\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_BADPRESENTATIONCONTEXTPOSITION\ =\ 0x102;}
+\DoxyCodeLine{00061\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_CODINGERROR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x103;}
+\DoxyCodeLine{00062\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_DUPLICATEPRESENTATIONCONTEXTID\ =\ 0x104;}
+\DoxyCodeLine{00063\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_MISSINGTRANSFERSYNTAX\ \ \ \ \ \ \ \ \ \ =\ 0x105;}
+\DoxyCodeLine{00064\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_NULLKEY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x106;}
+\DoxyCodeLine{00065\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_SHUTDOWNAPPLICATION\ \ \ \ \ \ \ \ \ \ \ \ =\ 0x107;}
+\DoxyCodeLine{00066\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_USERIDENTIFICATIONFAILED\ \ \ \ \ \ \ =\ 0x108;}
+\DoxyCodeLine{00067\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_SCPSCUROLESELECTIONFAILED\ \ \ \ \ \ =\ 0x109;}
+\DoxyCodeLine{00068\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ ASCC\_NOPRESENTATIONCONTEXTPROPOSED\ \ =\ 0x110;}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{comment}{//\ condition\ constants\ used\ in\ the\ association\ module}}
+\DoxyCodeLine{00071\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ ASC\_BADPRESENTATIONCONTEXTID;\ \ \ \ \ \ \textcolor{comment}{/*\ Bad\ presentation\ context\ ID\ */}}
+\DoxyCodeLine{00072\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ ASC\_MISSINGTRANSFERSYNTAX;\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Missing\ transfer\ syntax\ */}}
+\DoxyCodeLine{00073\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ ASC\_NULLKEY;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Caller\ passed\ in\ a\ NULL\ key\ */}}
+\DoxyCodeLine{00074\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ ASC\_SHUTDOWNAPPLICATION;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Peer\ requested\ application\ shutdown\ */}}
+\DoxyCodeLine{00075\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ ASC\_USERIDENTIFICATIONFAILED;\ \ \ \ \ \ \textcolor{comment}{/*\ User\ Identity\ Negotiation\ failed\ */}}
+\DoxyCodeLine{00076\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ ASC\_SCPSCUROLESELECTIONFAILED;\ \ \ \ \ \textcolor{comment}{/*\ SCP/SCU\ role\ selection\ failed\ */}}
+\DoxyCodeLine{00077\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ ASC\_NOPRESENTATIONCONTEXTPROPOSED;\ \textcolor{comment}{/*\ No\ presentation\ context\ proposed\ */}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{comment}{//\ condition\ code\ constants\ used\ in\ the\ DIMSE\ module}}
+\DoxyCodeLine{00080\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_BADCOMMANDTYPE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x201;}
+\DoxyCodeLine{00081\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_BADDATA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x202;}
+\DoxyCodeLine{00082\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_BADMESSAGE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x203;}
+\DoxyCodeLine{00083\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_BUILDFAILED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x204;}
+\DoxyCodeLine{00084\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_ILLEGALASSOCIATION\ \ \ \ \ \ \ \ \ \ \ =\ 0x205;}
+\DoxyCodeLine{00085\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_INVALIDPRESENTATIONCONTEXTID\ =\ 0x206;}
+\DoxyCodeLine{00086\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_NODATAAVAILABLE\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x207;}
+\DoxyCodeLine{00087\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_NOVALIDPRESENTATIONCONTEXTID\ =\ 0x208;}
+\DoxyCodeLine{00088\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_NULLKEY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x209;}
+\DoxyCodeLine{00089\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_OUTOFRESOURCES\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x20a;}
+\DoxyCodeLine{00090\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_PARSEFAILED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x20b;}
+\DoxyCodeLine{00091\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_READPDVFAILED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x20c;}
+\DoxyCodeLine{00092\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_RECEIVEFAILED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x20d;}
+\DoxyCodeLine{00093\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_SENDFAILED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x20e;}
+\DoxyCodeLine{00094\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_UNEXPECTEDPDVTYPE\ \ \ \ \ \ \ \ \ \ \ \ =\ 0x20f;}
+\DoxyCodeLine{00095\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_UNEXPECTEDREQUEST\ \ \ \ \ \ \ \ \ \ \ \ =\ 0x210;}
+\DoxyCodeLine{00096\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_UNEXPECTEDRESPONSE\ \ \ \ \ \ \ \ \ \ \ =\ 0x211;}
+\DoxyCodeLine{00097\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_UNSUPPORTEDTRANSFERSYNTAX\ \ \ \ =\ 0x212;}
+\DoxyCodeLine{00098\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DIMSEC\_NODATADICT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x213;}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{comment}{//\ condition\ constants\ used\ in\ the\ DIMSE\ module}}
+\DoxyCodeLine{00101\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_BADCOMMANDTYPE;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Bad\ command\ type\ */}}
+\DoxyCodeLine{00102\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_BADDATA;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Inappropriate\ data\ for\ message\ (send)\ */}}
+\DoxyCodeLine{00103\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_BADMESSAGE;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Badly\ formed\ message\ (send)\ */}}
+\DoxyCodeLine{00104\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_ILLEGALASSOCIATION;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Caller\ passed\ in\ an\ illegal\ association\ */}}
+\DoxyCodeLine{00105\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_NODATAAVAILABLE;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ No\ data\ (timeout\ in\ non-\/blocking\ mode)\ */}}
+\DoxyCodeLine{00106\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_NOVALIDPRESENTATIONCONTEXTID;\ \ \textcolor{comment}{/*\ No\ valid\ presentation\ context\ ID\ */}}
+\DoxyCodeLine{00107\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_NULLKEY;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Caller\ passed\ in\ a\ NULL\ key\ */}}
+\DoxyCodeLine{00108\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_OUTOFRESOURCES;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Out\ of\ resources\ */}}
+\DoxyCodeLine{00109\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_PARSEFAILED;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Failed\ to\ parse\ received\ message*/}}
+\DoxyCodeLine{00110\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_READPDVFAILED;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Read\ PDV\ failed\ */}}
+\DoxyCodeLine{00111\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_RECEIVEFAILED;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Failed\ to\ receive\ message\ */}}
+\DoxyCodeLine{00112\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_SENDFAILED;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Failed\ to\ send\ message\ */}}
+\DoxyCodeLine{00113\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_UNEXPECTEDPDVTYPE;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Unexpected\ PDV\ type\ */}}
+\DoxyCodeLine{00114\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DIMSE\_NODATADICT;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Data\ dictionary\ missing\ */}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{comment}{//\ condition\ code\ constants\ used\ in\ the\ DUL\ module}}
+\DoxyCodeLine{00117\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ASSOCIATIONREJECTED\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x301;}
+\DoxyCodeLine{00118\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_CODINGERROR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x302;}
+\DoxyCodeLine{00119\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_FSMERROR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x303;}
+\DoxyCodeLine{00120\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALACCEPT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x304;}
+\DoxyCodeLine{00121\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALKEY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x305;}
+\DoxyCodeLine{00122\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALPARAMETER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x306;}
+\DoxyCodeLine{00123\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALPDU\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x307;}
+\DoxyCodeLine{00124\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALPDULENGTH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x308;}
+\DoxyCodeLine{00125\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALREJECTREASON\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x309;}
+\DoxyCodeLine{00126\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALREJECTRESULT\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x30a;}
+\DoxyCodeLine{00127\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALREQUEST\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x30b;}
+\DoxyCodeLine{00128\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALSERVICEPARAMETER\ \ \ \ \ \ \ \ \ \ =\ 0x30c;}
+\DoxyCodeLine{00129\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_INCORRECTBUFFERLENGTH\ \ \ \ \ \ \ \ \ \ \ \ =\ 0x30d;}
+\DoxyCodeLine{00130\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_INSUFFICIENTBUFFERLENGTH\ \ \ \ \ \ \ \ \ =\ 0x30e;}
+\DoxyCodeLine{00131\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_LISTERROR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x30f;}
+\DoxyCodeLine{00132\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_NETWORKCLOSED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x310;}
+\DoxyCodeLine{00133\ \textcolor{comment}{//\ 0x311\ was\ NETWORKINITIALIZED\ (Network\ already\ initialized)\ in\ previous\ releases}}
+\DoxyCodeLine{00134\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_NOASSOCIATIONREQUEST\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x312;}
+\DoxyCodeLine{00135\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_NOPDVS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x313;}
+\DoxyCodeLine{00136\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_NULLKEY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x314;}
+\DoxyCodeLine{00137\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_PCTRANSLATIONFAILURE\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x315;}
+\DoxyCodeLine{00138\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_PDATAPDUARRIVED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x316;}
+\DoxyCodeLine{00139\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_PEERABORTEDASSOCIATION\ \ \ \ \ \ \ \ \ \ \ =\ 0x317;}
+\DoxyCodeLine{00140\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_PEERILLEGALXFERSYNTAXCOUNT\ \ \ \ \ \ \ =\ 0x318;}
+\DoxyCodeLine{00141\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_PEERREQUESTEDRELEASE\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x319;}
+\DoxyCodeLine{00142\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_READTIMEOUT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x31a;}
+\DoxyCodeLine{00143\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_REQUESTASSOCIATIONFAILED\ \ \ \ \ \ \ \ \ =\ 0x31b;}
+\DoxyCodeLine{00144\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_TCPINITERROR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x31c;}
+\DoxyCodeLine{00145\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_TCPIOERROR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x31d;}
+\DoxyCodeLine{00146\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_TLSERROR\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x31e;}
+\DoxyCodeLine{00147\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_UNEXPECTEDPDU\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x31f;}
+\DoxyCodeLine{00148\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_UNKNOWNHOST\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x320;}
+\DoxyCodeLine{00149\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_UNRECOGNIZEDPDUTYPE\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x321;}
+\DoxyCodeLine{00150\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_UNSUPPORTEDPEERPROTOCOL\ \ \ \ \ \ \ \ \ \ =\ 0x322;}
+\DoxyCodeLine{00151\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_WRONGDATATYPE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x323;}
+\DoxyCodeLine{00152\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_TCPWRAPPER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x324;}
+\DoxyCodeLine{00153\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_FORKEDCHILD\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x325;}
+\DoxyCodeLine{00154\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_CANNOTFORK\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x326;}
+\DoxyCodeLine{00155\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_ILLEGALREJECTSOURCE\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0x327;}
+\DoxyCodeLine{00156\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ DULC\_CANNOTREADSOCKETHANDLE\ \ \ \ \ \ \ \ \ =\ 0x328;}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{comment}{//\ condition\ constants\ used\ in\ the\ DUL\ module}}
+\DoxyCodeLine{00159\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_ASSOCIATIONREJECTED;\ \ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ Association\ Rejected\ */}}
+\DoxyCodeLine{00160\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_ILLEGALACCEPT;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Attempt\ to\ accept\ by\ requestor\ */}}
+\DoxyCodeLine{00161\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_ILLEGALKEY;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Illegal\ key\ */}}
+\DoxyCodeLine{00162\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_ILLEGALPDU;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ Illegal\ or\ ill-\/formed\ PDU\ */}}
+\DoxyCodeLine{00163\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_ILLEGALPDULENGTH;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ Illegal\ PDU\ Length\ */}}
+\DoxyCodeLine{00164\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_ILLEGALREQUEST;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Attempt\ to\ request\ by\ acceptor\ */}}
+\DoxyCodeLine{00165\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_INCORRECTBUFFERLENGTH;\ \ \ \ \ \textcolor{comment}{/*\ DUL\ Incorrect\ buffer\ space\ allocated\ for\ data\ */}}
+\DoxyCodeLine{00166\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_INSUFFICIENTBUFFERLENGTH;\ \ \textcolor{comment}{/*\ DUL\ Insufficient\ buffer\ space\ allocated\ for\ data\ */}}
+\DoxyCodeLine{00167\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_LISTERROR;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ List\ error\ */}}
+\DoxyCodeLine{00168\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_NETWORKCLOSED;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ network\ closed\ */}}
+\DoxyCodeLine{00169\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_NOASSOCIATIONREQUEST;\ \ \ \ \ \ \textcolor{comment}{/*\ No\ requests\ for\ associations\ for\ this\ server\ */}}
+\DoxyCodeLine{00170\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_NOPDVS;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ No\ PDVs\ available\ in\ current\ buffer\ */}}
+\DoxyCodeLine{00171\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_NULLKEY;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ NULL\ key\ passed\ to\ routine\ */}}
+\DoxyCodeLine{00172\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_PCTRANSLATIONFAILURE;\ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ Presentation\ Context\ translation\ failure\ */}}
+\DoxyCodeLine{00173\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_PDATAPDUARRIVED;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ P-\/Data\ PDU\ arrived\ */}}
+\DoxyCodeLine{00174\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_PEERABORTEDASSOCIATION;\ \ \ \ \textcolor{comment}{/*\ Peer\ aborted\ Association\ (or\ never\ connected)\ */}}
+\DoxyCodeLine{00175\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_PEERREQUESTEDRELEASE;\ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ Peer\ Requested\ Release\ */}}
+\DoxyCodeLine{00176\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_READTIMEOUT;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ network\ read\ timeout\ */}}
+\DoxyCodeLine{00177\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_REQUESTASSOCIATIONFAILED;\ \ \textcolor{comment}{/*\ Failed\ to\ establish\ association\ */}}
+\DoxyCodeLine{00178\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_UNEXPECTEDPDU;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Received\ unexpected\ PDU\ */}}
+\DoxyCodeLine{00179\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_UNSUPPORTEDPEERPROTOCOL;\ \ \ \textcolor{comment}{/*\ DUL\ Unsupported\ peer\ protocol\ */}}
+\DoxyCodeLine{00180\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_WRONGDATATYPE;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ DUL\ Wrong\ Data\ Type\ Specified\ for\ Request\ */}}
+\DoxyCodeLine{00181\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ DUL\_CANNOTREADSOCKETHANDLE;\ \ \ \ \textcolor{comment}{/*\ Cannot\ read\ socket\ handle\ from\ pipe\ */}}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \textcolor{comment}{//\ other\ condition\ constants\ used\ in\ the\ network\ module\ (codes\ 1000\ to\ 1023)}}
+\DoxyCodeLine{00184\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_InvalidSOPClassUID;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Invalid\ SOP\ Class\ UID\ */}}
+\DoxyCodeLine{00185\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_UnknownStorageSOPClass;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Unknown\ Storage\ SOP\ Class\ */}}
+\DoxyCodeLine{00186\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_InvalidSOPInstanceUID;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Invalid\ SOP\ Instance\ UID\ */}}
+\DoxyCodeLine{00187\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_InvalidTransferSyntaxUID;\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Invalid\ Transfer\ Syntax\ UID\ */}}
+\DoxyCodeLine{00188\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_UnknownTransferSyntax;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Unknown\ Transfer\ Syntax\ */}}
+\DoxyCodeLine{00189\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_NoPresentationContextsDefined;\ \ \ \ \textcolor{comment}{/*\ No\ Presentation\ Contexts\ defined\ */}}
+\DoxyCodeLine{00190\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_NoAcceptablePresentationContexts;\ \textcolor{comment}{/*\ No\ acceptable\ Presentation\ Contexts\ */}}
+\DoxyCodeLine{00191\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_NoSOPInstancesToSend;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ No\ SOP\ instances\ to\ send\ */}}
+\DoxyCodeLine{00192\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_NoSuchSOPInstance;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ No\ such\ SOP\ instance\ */}}
+\DoxyCodeLine{00193\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_InvalidDatasetPointer;\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Invalid\ dataset\ pointer\ */}}
+\DoxyCodeLine{00194\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_AlreadyConnected;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Already\ connected\ */}}
+\DoxyCodeLine{00195\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_InsufficientPortPrivileges;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Insufficient\ Port\ Privileges\ */}}
+\DoxyCodeLine{00196\ \textcolor{comment}{//\ codes\ 1024\ to\ 1073\ are\ used\ for\ the\ association\ negotiation\ profile\ classes}}
+\DoxyCodeLine{00197\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_SCPBusy;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ SCP\ is\ busy\ */}}
+\DoxyCodeLine{00198\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_CannotStartSCPThread;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Cannot\ start\ SCP\ thread\ */}}
+\DoxyCodeLine{00199\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_StopAfterAssociation;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Stop\ after\ current\ association\ (as\ requested)\ */}}
+\DoxyCodeLine{00200\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_StopAfterConnectionTimeout;\ \ \ \ \ \ \ \textcolor{comment}{/*\ Stop\ after\ TCP\ connection\ timeout\ (as\ requested)\ */}}
+\DoxyCodeLine{00201\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_InvalidSCPAssociationProfile;\ \ \ \ \ \textcolor{comment}{/*\ Invalid\ or\ non-\/existing\ SCP\ Association\ Profile\ */}}
+\DoxyCodeLine{00202\ \textcolor{keyword}{extern}\ DCMTK\_DCMNET\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_f_condition_const}{OFConditionConst}}\ NET\_EC\_AssociatePDUTooLarge;\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ A-\/ASSOCIATE\ PDU\ too\ large\ */}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{comment}{//\ This\ macro\ creates\ a\ condition\ with\ given\ code,\ severity\ and\ text.}}
+\DoxyCodeLine{00205\ \textcolor{comment}{//\ Making\ this\ a\ macro\ instead\ of\ a\ function\ saves\ the\ creation\ of\ a\ temporary.}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\#define\ makeDcmnetCondition(A,\ B,\ C)\ makeOFCondition(OFM\_dcmnet,\ (A),\ (B),\ (C))}}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \textcolor{comment}{//\ This\ macro\ creates\ a\ condition\ with\ given\ code,\ severity,\ text,\ and\ subcondition.}}
+\DoxyCodeLine{00209\ \textcolor{comment}{//\ This\ method\ is\ intended\ as\ a\ replacement\ for\ COND\_PushCondition().}}
+\DoxyCodeLine{00210\ \textcolor{comment}{//\ Instead\ of\ maintaining\ a\ global\ condition\ stack\ (which\ is\ difficult}}
+\DoxyCodeLine{00211\ \textcolor{comment}{//\ in\ multi-\/threaded\ applications),\ the\ error\ text\ of\ the\ sub-\/condition}}
+\DoxyCodeLine{00212\ \textcolor{comment}{//\ is\ appended\ to\ the\ newly\ created\ condition.}}
+\DoxyCodeLine{00213\ \textcolor{comment}{//\ Making\ this\ a\ macro\ instead\ of\ a\ function\ saves\ the\ creation\ of\ a\ temporary.}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#define\ makeDcmnetSubCondition(A,\ B,\ C,\ D)\ DimseCondition::push(OFM\_dcmnet,\ (A),\ (B),\ (C),\ (D))}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00221\ \textcolor{keyword}{class\ }DCMTK\_DCMNET\_EXPORT\ \doxymbox{\hyperlink{class_dimse_condition}{DimseCondition}}}
+\DoxyCodeLine{00222\ \{}
+\DoxyCodeLine{00223\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00233\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ \doxymbox{\hyperlink{class_dimse_condition_a7bd89f2555b5ecda94c8d5d593952063}{dump}}(\doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ str,\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ cond);}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00243\ \ \ OFdeprecated\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dimse_condition_aeba28d4dd3f9e93876f45100aaa331ab}{dump}}(\doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ cond,\ \doxymbox{\hyperlink{class_o_f_console}{OFConsole}}\&\ console\ =\ ofConsole);}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00256\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dimse_condition_a6d6325b3a7766b1b82bceb5b455fac19}{push}}(}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ aModule,}
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}\ aCode,}
+\DoxyCodeLine{00259\ \ \ \ \ \doxymbox{\hyperlink{ofcond_8h_aab65ef813a934e309936071be4edd39c}{OFStatus}}\ aStatus,}
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *aText,}
+\DoxyCodeLine{00261\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ subCondition);}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00271\ \ \ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ \doxymbox{\hyperlink{class_dimse_condition_a4187eeb95647b4c04864ca593a7e1be0}{push}}(}
+\DoxyCodeLine{00272\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ newCondition,}
+\DoxyCodeLine{00273\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_condition}{OFCondition}}\ subCondition);}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \};}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,228 @@
+\doxysection{io.\+cpp}
+\hypertarget{io_8cpp_source}{}\label{io_8cpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/mpi/io.cpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/mpi/io.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifdef\ DIY\_MPI\_AS\_LIB}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}io.hpp"{}}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}status.hpp"{}}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#ifdef\ DIY\_MPI\_AS\_LIB}}
+\DoxyCodeLine{00008\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ diy::mpi::io::file::rdonly\ \ \ \ \ \ \ \ \ \ =\ MPI\_MODE\_RDONLY;}
+\DoxyCodeLine{00009\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ diy::mpi::io::file::rdwr\ \ \ \ \ \ \ \ \ \ \ \ =\ MPI\_MODE\_RDWR;}
+\DoxyCodeLine{00010\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ diy::mpi::io::file::wronly\ \ \ \ \ \ \ \ \ \ =\ MPI\_MODE\_WRONLY;}
+\DoxyCodeLine{00011\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ diy::mpi::io::file::create\ \ \ \ \ \ \ \ \ \ =\ MPI\_MODE\_CREATE;}
+\DoxyCodeLine{00012\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ diy::mpi::io::file::exclusive\ \ \ \ \ \ \ =\ MPI\_MODE\_EXCL;}
+\DoxyCodeLine{00013\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ diy::mpi::io::file::delete\_on\_close\ =\ MPI\_MODE\_DELETE\_ON\_CLOSE;}
+\DoxyCodeLine{00014\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ diy::mpi::io::file::unique\_open\ \ \ \ \ =\ MPI\_MODE\_UNIQUE\_OPEN;}
+\DoxyCodeLine{00015\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ diy::mpi::io::file::sequential\ \ \ \ \ \ =\ MPI\_MODE\_SEQUENTIAL;}
+\DoxyCodeLine{00016\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ diy::mpi::io::file::append\ \ \ \ \ \ \ \ \ \ =\ MPI\_MODE\_APPEND;}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ diy::mpi::io::file::}
+\DoxyCodeLine{00020\ file(\textcolor{keyword}{const}\ communicator\&\ comm\_\_,\ \textcolor{keyword}{const}\ std::string\&\ filename,\ \textcolor{keywordtype}{int}\ mode)}
+\DoxyCodeLine{00021\ :\ comm\_(comm\_\_)}
+\DoxyCodeLine{00022\ \{}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00024\ \ \ \textcolor{keywordtype}{int}\ ret\ =\ MPI\_File\_open(diy::mpi::mpi\_cast(comm\_\_.handle()),\ \textcolor{keyword}{const\_cast<}\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(filename.c\_str()),\ mode,\ MPI\_INFO\_NULL,\ \&diy::mpi::mpi\_cast(fh));}
+\DoxyCodeLine{00025\ \ \ \textcolor{keywordflow}{if}\ (ret)}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}DIY\ cannot\ open\ file:\ "{}}\ +\ filename);}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00028\ \ \ (void)comm\_\_;\ (void)filename;\ (void)mode;}
+\DoxyCodeLine{00029\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(MPI\_File\_open);}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00031\ \}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00034\ diy::mpi::io::file::}
+\DoxyCodeLine{00035\ close()}
+\DoxyCodeLine{00036\ \{}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00038\ \ \ \textcolor{keywordflow}{if}\ (diy::mpi::mpi\_cast(fh)\ !=\ MPI\_FILE\_NULL)}
+\DoxyCodeLine{00039\ \ \ \ \ MPI\_File\_close(\&diy::mpi::mpi\_cast(fh));}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00041\ \}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ diy::mpi::io::offset}
+\DoxyCodeLine{00044\ diy::mpi::io::file::}
+\DoxyCodeLine{00045\ size()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00046\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00048\ \ \ MPI\_Offset\ sz;}
+\DoxyCodeLine{00049\ \ \ MPI\_File\_get\_size(diy::mpi::mpi\_cast(fh),\ \&sz);}
+\DoxyCodeLine{00050\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}offset\textcolor{keyword}{>}(sz);}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00052\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(MPI\_File\_get\_size);}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00054\ \}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00057\ diy::mpi::io::file::}
+\DoxyCodeLine{00058\ resize(diy::mpi::io::offset\ size\_)}
+\DoxyCodeLine{00059\ \{}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00061\ \ \ MPI\_File\_set\_size(diy::mpi::mpi\_cast(fh),\ \textcolor{keyword}{static\_cast<}MPI\_Offset\textcolor{keyword}{>}(size\_));}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00063\ \ \ (void)size\_;}
+\DoxyCodeLine{00064\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(MPI\_File\_set\_size);}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00066\ \}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00069\ diy::mpi::io::file::}
+\DoxyCodeLine{00070\ read\_at(offset\ o,\ \textcolor{keywordtype}{char}*\ buffer,\ \textcolor{keywordtype}{size\_t}\ size\_)}
+\DoxyCodeLine{00071\ \{}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00073\ \ \ status\ s;}
+\DoxyCodeLine{00074\ \ \ MPI\_File\_read\_at(diy::mpi::mpi\_cast(fh),\ \textcolor{keyword}{static\_cast<}MPI\_Offset\textcolor{keyword}{>}(o),\ buffer,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(size\_),\ MPI\_BYTE,\ \&diy::mpi::mpi\_cast(s.handle));}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00076\ \ \ (void)o;\ (void)buffer;\ (void)size\_;}
+\DoxyCodeLine{00077\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(MPI\_File\_read\_at);}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00079\ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00082\ diy::mpi::io::file::}
+\DoxyCodeLine{00083\ read\_at\_all(offset\ o,\ \textcolor{keywordtype}{char}*\ buffer,\ \textcolor{keywordtype}{size\_t}\ size\_)}
+\DoxyCodeLine{00084\ \{}
+\DoxyCodeLine{00085\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00086\ \ \ status\ s;}
+\DoxyCodeLine{00087\ \ \ MPI\_File\_read\_at\_all(diy::mpi::mpi\_cast(fh),\ \textcolor{keyword}{static\_cast<}MPI\_Offset\textcolor{keyword}{>}(o),\ buffer,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(size\_),\ MPI\_BYTE,\ \&diy::mpi::mpi\_cast(s.handle));}
+\DoxyCodeLine{00088\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00089\ \ \ (void)o;\ (void)buffer;\ (void)size\_;}
+\DoxyCodeLine{00090\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(MPI\_File\_read\_at\_all);}
+\DoxyCodeLine{00091\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00092\ \}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00095\ diy::mpi::io::file::}
+\DoxyCodeLine{00096\ write\_at(offset\ o,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ buffer,\ \textcolor{keywordtype}{size\_t}\ size\_)}
+\DoxyCodeLine{00097\ \{}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00099\ \ \ status\ s;}
+\DoxyCodeLine{00100\ \ \ MPI\_File\_write\_at(diy::mpi::mpi\_cast(fh),\ \textcolor{keyword}{static\_cast<}MPI\_Offset\textcolor{keyword}{>}(o),\ (\textcolor{keywordtype}{void}\ *)buffer,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(size\_),\ MPI\_BYTE,\ \&diy::mpi::mpi\_cast(s.handle));}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00102\ \ \ (void)o;\ (void)buffer;\ (void)size\_;}
+\DoxyCodeLine{00103\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(MPI\_File\_write\_at);}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00105\ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00108\ diy::mpi::io::file::}
+\DoxyCodeLine{00109\ write\_at\_all(offset\ o,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ buffer,\ \textcolor{keywordtype}{size\_t}\ size\_)}
+\DoxyCodeLine{00110\ \{}
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00112\ \ \ status\ s;}
+\DoxyCodeLine{00113\ \ \ MPI\_File\_write\_at\_all(diy::mpi::mpi\_cast(fh),\ \textcolor{keyword}{static\_cast<}MPI\_Offset\textcolor{keyword}{>}(o),\ (\textcolor{keywordtype}{void}\ *)buffer,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(size\_),\ MPI\_BYTE,\ \&diy::mpi::mpi\_cast(s.handle));}
+\DoxyCodeLine{00114\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00115\ \ \ (void)o;\ (void)buffer;\ (void)size\_;}
+\DoxyCodeLine{00116\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(MPI\_File\_write\_at\_all);}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00118\ \}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00121\ diy::mpi::io::file::}
+\DoxyCodeLine{00122\ read\_bov(\textcolor{keyword}{const}\ DiscreteBounds\&\ bounds,\ \textcolor{keywordtype}{int}\ ndims,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ dims[],\ \textcolor{keywordtype}{char}*\ buffer,\ \textcolor{keywordtype}{size\_t}\ offset,\ \textcolor{keyword}{const}\ datatype\&\ dt,\ \textcolor{keywordtype}{bool}\ collective,\ \textcolor{keywordtype}{int}\ chunk)}
+\DoxyCodeLine{00123\ \{}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00125\ \ \ \textcolor{keywordtype}{int}\ total\ =\ 1;}
+\DoxyCodeLine{00126\ \ \ std::vector<int>\ subsizes;}
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ static\_cast<unsigned>(ndims);\ ++i)}
+\DoxyCodeLine{00128\ \ \ \{}
+\DoxyCodeLine{00129\ \ \ \ \ subsizes.push\_back(bounds.max[i]\ -\/\ bounds.min[i]\ +\ 1);}
+\DoxyCodeLine{00130\ \ \ \ \ total\ *=\ subsizes.back();}
+\DoxyCodeLine{00131\ \ \ \}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ MPI\_Datatype\ T\_type;}
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordflow}{if}\ (chunk\ ==\ 1)}
+\DoxyCodeLine{00135\ \ \ \{}
+\DoxyCodeLine{00136\ \ \ \ \ T\_type\ =\ diy::mpi::mpi\_cast(dt.handle);}
+\DoxyCodeLine{00137\ \ \ \}}
+\DoxyCodeLine{00138\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00139\ \ \ \{}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{comment}{//\ create\ an\ MPI\ struct\ of\ size\ chunk\ to\ read\ the\ data\ in\ those\ chunks}}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{comment}{//\ (this\ allows\ to\ work\ around\ MPI-\/IO\ weirdness\ where\ crucial\ quantities}}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{comment}{//\ are\ ints,\ which\ are\ too\ narrow\ of\ a\ type)}}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ array\_of\_blocklengths[]\ \ =\ \{\ chunk\ \};}
+\DoxyCodeLine{00144\ \ \ \ \ MPI\_Aint\ \ \ \ \ \ \ \ array\_of\_displacements[]\ =\ \{\ 0\ \};}
+\DoxyCodeLine{00145\ \ \ \ \ MPI\_Datatype\ \ \ \ array\_of\_types[]\ \ \ \ \ \ \ \ \ =\ \{\ diy::mpi::mpi\_cast(dt.handle)\ \};}
+\DoxyCodeLine{00146\ \ \ \ \ MPI\_Type\_create\_struct(1,\ array\_of\_blocklengths,\ array\_of\_displacements,\ array\_of\_types,\ \&T\_type);}
+\DoxyCodeLine{00147\ \ \ \ \ MPI\_Type\_commit(\&T\_type);}
+\DoxyCodeLine{00148\ \ \ \}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ MPI\_Datatype\ fileblk;}
+\DoxyCodeLine{00151\ \ \ MPI\_Type\_create\_subarray(ndims,\ dims,\ subsizes.data(),\ (\textcolor{keywordtype}{int}*)\ \&bounds.min[0],\ MPI\_ORDER\_C,\ T\_type,\ \&fileblk);}
+\DoxyCodeLine{00152\ \ \ MPI\_Type\_commit(\&fileblk);}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ MPI\_File\_set\_view(diy::mpi::mpi\_cast(fh),\ \textcolor{keyword}{static\_cast<}MPI\_Offset\textcolor{keyword}{>}(offset),\ T\_type,\ fileblk,\ (\textcolor{keywordtype}{char}*)\textcolor{stringliteral}{"{}native"{}},\ MPI\_INFO\_NULL);}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ mpi::status\ s;}
+\DoxyCodeLine{00157\ \ \ \textcolor{keywordflow}{if}\ (!collective)}
+\DoxyCodeLine{00158\ \ \ \ \ MPI\_File\_read(diy::mpi::mpi\_cast(fh),\ buffer,\ total,\ T\_type,\ \&mpi\_cast(s.handle));}
+\DoxyCodeLine{00159\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00160\ \ \ \ \ MPI\_File\_read\_all(diy::mpi::mpi\_cast(fh),\ buffer,\ total,\ T\_type,\ \&mpi\_cast(s.handle));}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordflow}{if}\ (chunk\ !=\ 1)}
+\DoxyCodeLine{00163\ \ \ \ \ MPI\_Type\_free(\&T\_type);}
+\DoxyCodeLine{00164\ \ \ MPI\_Type\_free(\&fileblk);}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00166\ \ \ (void)\ bounds;\ (void)\ ndims;\ (void)\ dims,\ (\textcolor{keywordtype}{void})\ buffer;\ (void)\ offset,\ (\textcolor{keywordtype}{void})\ dt,\ (void)\ collective;\ (void)\ chunk;}
+\DoxyCodeLine{00167\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(diy::mpi::io::file::read\_bov);}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00169\ \}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00172\ diy::mpi::io::file::}
+\DoxyCodeLine{00173\ write\_bov(\textcolor{keyword}{const}\ DiscreteBounds\&\ bounds,\ \textcolor{keyword}{const}\ DiscreteBounds\&\ core,\ \textcolor{keywordtype}{int}\ ndims,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ dims[],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ buffer,\ \textcolor{keywordtype}{size\_t}\ offset,\ \textcolor{keyword}{const}\ datatype\&\ dt,\ \textcolor{keywordtype}{bool}\ collective,\ \textcolor{keywordtype}{int}\ chunk)}
+\DoxyCodeLine{00174\ \{}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00176\ \ \ std::vector<int>\ subsizes;}
+\DoxyCodeLine{00177\ \ \ std::vector<int>\ buffer\_shape,\ buffer\_start;}
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ static\_cast<unsigned>(ndims);\ ++i)}
+\DoxyCodeLine{00179\ \ \ \{}
+\DoxyCodeLine{00180\ \ \ \ \ buffer\_shape.push\_back(bounds.max[i]\ -\/\ bounds.min[i]\ +\ 1);}
+\DoxyCodeLine{00181\ \ \ \ \ buffer\_start.push\_back(core.min[i]\ -\/\ bounds.min[i]);}
+\DoxyCodeLine{00182\ \ \ \ \ subsizes.push\_back(core.max[i]\ -\/\ core.min[i]\ +\ 1);}
+\DoxyCodeLine{00183\ \ \ \}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ MPI\_Datatype\ T\_type;}
+\DoxyCodeLine{00186\ \ \ \textcolor{keywordflow}{if}\ (chunk\ ==\ 1)}
+\DoxyCodeLine{00187\ \ \ \{}
+\DoxyCodeLine{00188\ \ \ \ \ T\_type\ =\ diy::mpi::mpi\_cast(dt.handle);}
+\DoxyCodeLine{00189\ \ \ \}}
+\DoxyCodeLine{00190\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00191\ \ \ \{}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{comment}{//\ assume\ T\ is\ a\ binary\ block\ and\ create\ an\ MPI\ struct\ of\ appropriate\ size}}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ array\_of\_blocklengths[]\ \ =\ \{\ chunk\ \};}
+\DoxyCodeLine{00194\ \ \ \ \ MPI\_Aint\ \ \ \ \ \ \ \ array\_of\_displacements[]\ =\ \{\ 0\ \};}
+\DoxyCodeLine{00195\ \ \ \ \ MPI\_Datatype\ \ \ \ array\_of\_types[]\ \ \ \ \ \ \ \ \ =\ \{\ diy::mpi::mpi\_cast(dt.handle)\ \};}
+\DoxyCodeLine{00196\ \ \ \ \ MPI\_Type\_create\_struct(1,\ array\_of\_blocklengths,\ array\_of\_displacements,\ array\_of\_types,\ \&T\_type);}
+\DoxyCodeLine{00197\ \ \ \ \ MPI\_Type\_commit(\&T\_type);}
+\DoxyCodeLine{00198\ \ \ \}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ MPI\_Datatype\ fileblk,\ subbuffer;}
+\DoxyCodeLine{00201\ \ \ MPI\_Type\_create\_subarray(ndims,\ dims,\ subsizes.data(),\ (\textcolor{keywordtype}{int}*)\ \&core.min[0],\ MPI\_ORDER\_C,\ T\_type,\ \&fileblk);}
+\DoxyCodeLine{00202\ \ \ MPI\_Type\_create\_subarray(ndims,\ buffer\_shape.data(),\ subsizes.data(),\ buffer\_start.data(),\ MPI\_ORDER\_C,\ T\_type,\ \&subbuffer);}
+\DoxyCodeLine{00203\ \ \ MPI\_Type\_commit(\&fileblk);}
+\DoxyCodeLine{00204\ \ \ MPI\_Type\_commit(\&subbuffer);}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ MPI\_File\_set\_view(diy::mpi::mpi\_cast(fh),\ \textcolor{keyword}{static\_cast<}MPI\_Offset\textcolor{keyword}{>}(offset),\ T\_type,\ fileblk,\ (\textcolor{keywordtype}{char}*)\textcolor{stringliteral}{"{}native"{}},\ MPI\_INFO\_NULL);}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ mpi::status\ s;}
+\DoxyCodeLine{00209\ \ \ \textcolor{keywordflow}{if}\ (!collective)}
+\DoxyCodeLine{00210\ \ \ \ \ MPI\_File\_write(diy::mpi::mpi\_cast(fh),\ (\textcolor{keywordtype}{void}*)buffer,\ 1,\ subbuffer,\ \&mpi\_cast(s.handle));}
+\DoxyCodeLine{00211\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00212\ \ \ \ \ MPI\_File\_write\_all(diy::mpi::mpi\_cast(fh),\ (\textcolor{keywordtype}{void}*)buffer,\ 1,\ subbuffer,\ \&mpi\_cast(s.handle));}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ \textcolor{keywordflow}{if}\ (chunk\ !=\ 1)}
+\DoxyCodeLine{00215\ \ \ \ \ MPI\_Type\_free(\&T\_type);}
+\DoxyCodeLine{00216\ \ \ MPI\_Type\_free(\&fileblk);}
+\DoxyCodeLine{00217\ \ \ MPI\_Type\_free(\&subbuffer);}
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00219\ \ \ (void)\ bounds;\ (void)\ core,\ (\textcolor{keywordtype}{void})\ ndims;\ (void)\ dims,\ (\textcolor{keywordtype}{void})\ buffer;\ (void)\ offset,\ (\textcolor{keywordtype}{void})\ dt,\ (void)\ collective;\ (void)\ chunk;}
+\DoxyCodeLine{00220\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(diy::mpi::io::file::write\_bov);}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00222\ \}}
+
+\end{DoxyCode}

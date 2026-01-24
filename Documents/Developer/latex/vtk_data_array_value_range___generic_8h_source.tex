@@ -1,0 +1,1003 @@
+\doxysection{vtk\+Data\+Array\+Value\+Range\+\_\+\+Generic.\+h}
+\hypertarget{vtk_data_array_value_range___generic_8h_source}{}\label{vtk_data_array_value_range___generic_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataArrayValueRange\_Generic.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataArrayValueRange\_Generic.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#ifndef\ vtkDataArrayValueRange\_Generic\_h}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#define\ vtkDataArrayValueRange\_Generic\_h}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}vtkDataArrayAccessor.h"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_data_array_meta_8h}{vtkDataArrayMeta.h}}"{}}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <tuple>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ VTK\_ITER\_OPTIMIZE\_START}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00023\ \{}
+\DoxyCodeLine{00024\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00025\ \{}
+\DoxyCodeLine{00026\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{comment}{//\ Forward\ decs\ for\ friends/args}}
+\DoxyCodeLine{00029\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00030\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_reference}{ValueReference}};}
+\DoxyCodeLine{00031\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00032\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_value_reference}{ConstValueReference}};}
+\DoxyCodeLine{00033\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00034\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_iterator}{ValueIterator}};}
+\DoxyCodeLine{00035\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00036\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_value_iterator}{ConstValueIterator}};}
+\DoxyCodeLine{00037\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00038\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_range}{ValueRange}};}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ Helper\ that\ converts\ ValueId\ <-\/-\/>\ \{\ TupleId,\ ComponentId\ \}}}
+\DoxyCodeLine{00042\ \textcolor{comment}{//\ This\ class\ stores\ both\ representations.\ Profiling\ and\ assembly\ inspection}}
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ show\ that\ ValueId\ is\ much\ more\ efficient\ for\ comparing\ Ids,\ while\ Tuple/Comp}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ ids\ are\ much\ faster\ for\ looking\ up\ elements\ (especially\ when\ considering}}
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ SOA\ arrays).\ The\ overhead\ of\ maintaining\ both\ is\ low,\ and\ this\ class\ is}}
+\DoxyCodeLine{00046\ \textcolor{comment}{//\ transparent\ enough\ that\ the\ compiler\ will\ produce\ efficient\ ASM\ with}}
+\DoxyCodeLine{00047\ \textcolor{comment}{//\ simple\ optimizations\ enabled.}}
+\DoxyCodeLine{00048\ \textcolor{keyword}{template}\ <ComponentIdType\ TupleSize>}
+\DoxyCodeLine{00049\ \textcolor{keyword}{struct\ }IdStorage}
+\DoxyCodeLine{00050\ \{}
+\DoxyCodeLine{00051\ \ \ \textcolor{keyword}{using\ }NumCompsType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_generic_tuple_size}{GenericTupleSize<TupleSize>}};}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00054\ \ \ IdStorage()\ noexcept}
+\DoxyCodeLine{00055\ \ \ \ \ :\ ValueId(0)}
+\DoxyCodeLine{00056\ \ \ \ \ ,\ TupleId(0)}
+\DoxyCodeLine{00057\ \ \ \ \ ,\ ComponentId(0)}
+\DoxyCodeLine{00058\ \ \ \{}
+\DoxyCodeLine{00059\ \ \ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00062\ \ \ IdStorage(ValueIdType\ valueId,\ NumCompsType\ numComps)\ noexcept}
+\DoxyCodeLine{00063\ \ \ \ \ :\ ValueId(valueId)}
+\DoxyCodeLine{00064\ \ \ \ \ ,\ TupleId(\textcolor{keyword}{static\_cast<}TupleIdType\textcolor{keyword}{>}(valueId)\ /\ \textcolor{keyword}{static\_cast<}TupleIdType\textcolor{keyword}{>}(numComps.value))}
+\DoxyCodeLine{00065\ \ \ \ \ ,\ ComponentId(\textcolor{keyword}{static\_cast<}ComponentIdType\textcolor{keyword}{>}(valueId\ \%\ \textcolor{keyword}{static\_cast<}ValueIdType\textcolor{keyword}{>}(numComps.value)))}
+\DoxyCodeLine{00066\ \ \ \ \ ,\ NumComps(numComps)}
+\DoxyCodeLine{00067\ \ \ \{}
+\DoxyCodeLine{00068\ \ \ \}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00071\ \ \ IdStorage(TupleIdType\ tupleId,\ ComponentIdType\ comp,\ NumCompsType\ numComps)\ noexcept}
+\DoxyCodeLine{00072\ \ \ \ \ :\ ValueId(tupleId\ *\ numComps.value\ +\ comp)}
+\DoxyCodeLine{00073\ \ \ \ \ ,\ TupleId(tupleId)}
+\DoxyCodeLine{00074\ \ \ \ \ ,\ ComponentId(comp)}
+\DoxyCodeLine{00075\ \ \ \ \ ,\ NumComps(numComps)}
+\DoxyCodeLine{00076\ \ \ \{}
+\DoxyCodeLine{00077\ \ \ \}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00080\ \ \ IdStorage(}
+\DoxyCodeLine{00081\ \ \ \ \ ValueIdType\ valueId,\ TupleIdType\ tupleId,\ ComponentIdType\ comp,\ NumCompsType\ numComps)\ noexcept}
+\DoxyCodeLine{00082\ \ \ \ \ :\ ValueId(valueId)}
+\DoxyCodeLine{00083\ \ \ \ \ ,\ TupleId(tupleId)}
+\DoxyCodeLine{00084\ \ \ \ \ ,\ ComponentId(comp)}
+\DoxyCodeLine{00085\ \ \ \ \ ,\ NumComps(numComps)}
+\DoxyCodeLine{00086\ \ \ \{}
+\DoxyCodeLine{00087\ \ \ \}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType>}
+\DoxyCodeLine{00090\ \ \ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ DebugAsserts(ArrayType*\ array)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00091\ \ \ \{}
+\DoxyCodeLine{00092\ \ \ \ \ (void)array;}
+\DoxyCodeLine{00093\ \ \ \ \ VTK\_ITER\_ASSERT(array\ !=\ \textcolor{keyword}{nullptr},\ \textcolor{stringliteral}{"{}Invalid\ array."{}});}
+\DoxyCodeLine{00094\ \ \ \ \ VTK\_ITER\_ASSERT(this-\/>ValueId\ ==\ this-\/>TupleId\ *\ this-\/>GetTupleSize()\ +\ this-\/>ComponentId,}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Inconsistent\ internal\ state\ in\ IdStorage."{}});}
+\DoxyCodeLine{00096\ \ \ \ \ VTK\_ITER\_ASSERT(this-\/>GetTupleSize()\ >\ 0,\ \textcolor{stringliteral}{"{}Invalid\ number\ of\ components."{}});}
+\DoxyCodeLine{00097\ \ \ \ \ VTK\_ITER\_ASSERT(}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ this-\/>ValueId\ >=\ 0\ \&\&\ this-\/>ValueId\ <=\ array-\/>GetNumberOfValues(),\ \textcolor{stringliteral}{"{}Invalid\ value\ id."{}});}
+\DoxyCodeLine{00099\ \ \ \ \ VTK\_ITER\_ASSERT(this-\/>GetTupleId()\ >=\ 0\ \&\&\ this-\/>GetTupleId()\ <=\ array-\/>GetNumberOfTuples(),}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Invalid\ tuple\ id."{}});}
+\DoxyCodeLine{00101\ \ \ \ \ VTK\_ITER\_ASSERT(this-\/>GetComponentId()\ >=\ 0\ \&\&}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ (this-\/>GetComponentId()\ <\ this-\/>GetTupleSize()\ ||}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ (this-\/>GetComponentId()\ ==\ this-\/>GetTupleSize()\ \&\&}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ this-\/>GetTupleId()\ ==\ array-\/>GetNumberOfTuples())),}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Invalid\ component\ id."{}});}
+\DoxyCodeLine{00106\ \ \ \ \ VTK\_ITER\_ASSERT(this-\/>GetValueId()\ >=\ 0\ \&\&\ this-\/>GetValueId()\ <=\ array-\/>GetNumberOfValues(),}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \textcolor{stringliteral}{"{}Invalid\ value\ id."{}});}
+\DoxyCodeLine{00108\ \ \ \}}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00111\ \ \ IdStorage\&\ operator++()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00112\ \ \ \{}
+\DoxyCodeLine{00113\ \ \ \ \ ++this-\/>ValueId;}
+\DoxyCodeLine{00114\ \ \ \ \ ++this-\/>ComponentId;}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>ComponentId\ ==\ this-\/>GetTupleSize())}
+\DoxyCodeLine{00116\ \ \ \ \ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ this-\/>ComponentId\ =\ 0;}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ ++this-\/>TupleId;}
+\DoxyCodeLine{00119\ \ \ \ \ \}}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00121\ \ \ \}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00124\ \ \ IdStorage\ operator++(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00125\ \ \ \{}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keyword}{auto}\ v\ =\ this-\/>ValueId++;}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keyword}{auto}\ t\ =\ this-\/>TupleId;}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keyword}{auto}\ c\ =\ this-\/>ComponentId++;}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>ComponentId\ ==\ this-\/>GetTupleSize())}
+\DoxyCodeLine{00130\ \ \ \ \ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ this-\/>ComponentId\ =\ 0;}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ ++this-\/>TupleId;}
+\DoxyCodeLine{00133\ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keywordflow}{return}\ IdStorage\{\ v,\ t,\ c,\ this-\/>NumComps\ \};}
+\DoxyCodeLine{00135\ \ \ \}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ IdStorage\ operator+(\textcolor{keyword}{const}\ IdStorage\&\ \textcolor{keywordtype}{id},\ ValueIdType\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00138\ \ \ \{}
+\DoxyCodeLine{00139\ \ \ \ \ IdStorage\ res\ =\ id;}
+\DoxyCodeLine{00140\ \ \ \ \ res.AddOffset(offset);}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00142\ \ \ \}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00145\ \ \ IdStorage\&\ operator-\/-\/()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00146\ \ \ \{}
+\DoxyCodeLine{00147\ \ \ \ \ -\/-\/this-\/>ValueId;}
+\DoxyCodeLine{00148\ \ \ \ \ -\/-\/this-\/>ComponentId;}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>ComponentId\ <\ 0)}
+\DoxyCodeLine{00150\ \ \ \ \ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ this-\/>ComponentId\ =\ this-\/>GetTupleSize()\ -\/\ 1;}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ -\/-\/this-\/>TupleId;}
+\DoxyCodeLine{00153\ \ \ \ \ \}}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00155\ \ \ \}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00158\ \ \ IdStorage\ operator-\/-\/(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00159\ \ \ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keyword}{auto}\ v\ =\ this-\/>ValueId-\/-\/;}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keyword}{auto}\ t\ =\ this-\/>TupleId;}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keyword}{auto}\ c\ =\ this-\/>ComponentId-\/-\/;}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>ComponentId\ <\ 0)}
+\DoxyCodeLine{00164\ \ \ \ \ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ this-\/>ComponentId\ =\ this-\/>GetTupleSize()\ -\/\ 1;}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ -\/-\/this-\/>TupleId;}
+\DoxyCodeLine{00167\ \ \ \ \ \}}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keywordflow}{return}\ IdStorage\{\ v,\ t,\ c,\ this-\/>NumComps\ \};}
+\DoxyCodeLine{00169\ \ \ \}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00172\ \ \ ValueIdType\ Convert(TupleIdType\ tuple,\ ComponentIdType\ comp)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00173\ \ \ \{}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}ValueIdType\textcolor{keyword}{>}(tuple)\ *\ this-\/>NumComps.value\ +\ comp;}
+\DoxyCodeLine{00175\ \ \ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00178\ \ \ std::pair<TupleIdType,\ ComponentIdType>\ Convert(ValueIdType\ value)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00179\ \ \ \{}
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keywordflow}{return}\ std::make\_pair(\textcolor{keyword}{static\_cast<}TupleIdType\textcolor{keyword}{>}(value\ /\ this-\/>NumComps.value),}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}ComponentIdType\textcolor{keyword}{>}(value\ \%\ this-\/>NumComps.value));}
+\DoxyCodeLine{00182\ \ \ \}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00185\ \ \ \textcolor{keywordtype}{void}\ AddOffset(ValueIdType\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00186\ \ \ \{}
+\DoxyCodeLine{00187\ \ \ \ \ this-\/>ValueId\ +=\ offset;}
+\DoxyCodeLine{00188\ \ \ \ \ std::tie(this-\/>TupleId,\ this-\/>ComponentId)\ =\ this-\/>Convert(this-\/>ValueId);}
+\DoxyCodeLine{00189\ \ \ \}}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00192\ \ \ ComponentIdType\ GetTupleSize()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NumComps.value;\ \}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00195\ \ \ TupleIdType\ GetTupleId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>TupleId;\ \}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00198\ \ \ ComponentIdType\ GetComponentId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>ComponentId;\ \}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00201\ \ \ ValueIdType\ GetValueId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>ValueId;\ \}}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(IdStorage\&\ lhs,\ IdStorage\&\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00204\ \ \ \{}
+\DoxyCodeLine{00205\ \ \ \ \ \textcolor{keyword}{using\ }std::swap;}
+\DoxyCodeLine{00206\ \ \ \ \ swap(lhs.ValueId,\ rhs.ValueId);}
+\DoxyCodeLine{00207\ \ \ \ \ swap(lhs.TupleId,\ rhs.TupleId);}
+\DoxyCodeLine{00208\ \ \ \ \ swap(lhs.ComponentId,\ rhs.ComponentId);}
+\DoxyCodeLine{00209\ \ \ \}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00212\ \ \ vtk::ValueIdType\ ValueId;}
+\DoxyCodeLine{00213\ \ \ vtk::TupleIdType\ TupleId;}
+\DoxyCodeLine{00214\ \ \ vtk::ComponentIdType\ ComponentId;}
+\DoxyCodeLine{00215\ \ \ NumCompsType\ NumComps;}
+\DoxyCodeLine{00216\ \};}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00219\ \textcolor{comment}{//\ Value\ reference}}
+\DoxyCodeLine{00220\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType\ TupleSize,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00221\ \textcolor{keyword}{struct\ }ConstValueReference}
+\DoxyCodeLine{00222\ \{}
+\DoxyCodeLine{00223\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00224\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_valid_tuple_size}{IsValidTupleSize<TupleSize>::value}},\ \textcolor{stringliteral}{"{}Invalid\ tuple\ size."{}});}
+\DoxyCodeLine{00225\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_vtk_data_array}{IsVtkDataArray<ArrayType>::value}},\ \textcolor{stringliteral}{"{}Invalid\ array\ type."{}});}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \textcolor{keyword}{using\ }IdStorageType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_id_storage}{IdStorage<TupleSize>}};}
+\DoxyCodeLine{00228\ \ \ \textcolor{keyword}{using\ }APIType\ =\ GetAPIType<ArrayType,\ ForceValueTypeForVtkDataArray>;}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00231\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ APIType;}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00234\ \ \ ConstValueReference()\ noexcept}
+\DoxyCodeLine{00235\ \ \ \ \ :\ Array\{\ \textcolor{keyword}{nullptr}\ \}}
+\DoxyCodeLine{00236\ \ \ \ \ ,\ Id\{\}}
+\DoxyCodeLine{00237\ \ \ \{}
+\DoxyCodeLine{00238\ \ \ \}}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00241\ \ \ ConstValueReference(ArrayType*\ array,\ IdStorageType\ \textcolor{keywordtype}{id})\ noexcept}
+\DoxyCodeLine{00242\ \ \ \ \ :\ Array\{\ array\ \}}
+\DoxyCodeLine{00243\ \ \ \ \ ,\ Id\{\ \textcolor{keywordtype}{id}\ \}}
+\DoxyCodeLine{00244\ \ \ \{}
+\DoxyCodeLine{00245\ \ \ \ \ this-\/>Id.DebugAsserts(array);}
+\DoxyCodeLine{00246\ \ \ \}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00249\ \ \ ConstValueReference(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_reference}{ValueReference<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}}\&\ o)}
+\DoxyCodeLine{00250\ \ \ \ \ :\ Array\{\ o.Array\ \}}
+\DoxyCodeLine{00251\ \ \ \ \ ,\ Id\{\ o.Id\ \}}
+\DoxyCodeLine{00252\ \ \ \{}
+\DoxyCodeLine{00253\ \ \ \}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00256\ \ \ ConstValueReference(\textcolor{keyword}{const}\ ConstValueReference\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00259\ \ \ ConstValueReference(ConstValueReference\&\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00262\ \ \ ConstValueReference\ operator=(\textcolor{keyword}{const}\ ConstValueReference\&\ o)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00263\ \ \ \{}
+\DoxyCodeLine{00264\ \ \ \ \ VTK\_ITER\_ASSERT(!this-\/>Array,\ \textcolor{stringliteral}{"{}Const\ reference\ already\ initialized."{}});}
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{comment}{//\ Initialize\ the\ reference.}}
+\DoxyCodeLine{00266\ \ \ \ \ this-\/>Array\ =\ o.Array;}
+\DoxyCodeLine{00267\ \ \ \ \ this-\/>Id\ =\ o.Id;}
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00269\ \ \ \}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00272\ \ \ ConstValueReference\ operator=(ConstValueReference\&\&\ o)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00273\ \ \ \{}
+\DoxyCodeLine{00274\ \ \ \ \ VTK\_ITER\_ASSERT(!this-\/>Array,\ \textcolor{stringliteral}{"{}Const\ reference\ already\ initialized."{}});}
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{comment}{//\ Initialize\ the\ reference.}}
+\DoxyCodeLine{00276\ \ \ \ \ this-\/>Array\ =\ std::move(o.Array);}
+\DoxyCodeLine{00277\ \ \ \ \ this-\/>Id\ =\ std::move(o.Id);}
+\DoxyCodeLine{00278\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00279\ \ \ \}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ VTK\_ITER\_INLINE\ \textcolor{keyword}{operator}\ APIType()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>castOperator();\ \}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00284\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ AT\ =\ ArrayType>}
+\DoxyCodeLine{00285\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<std::is\_same<AT,\ vtkDataArray>::value,\ APIType>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00286\ \ \ castOperator()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00287\ \ \ \{}
+\DoxyCodeLine{00288\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Id.GetTupleSize()\ >\ 0);}
+\DoxyCodeLine{00289\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Array-\/>GetNumberOfComponents()\ ==\ this-\/>Id.GetTupleSize());}
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetComponent(this-\/>Id.GetTupleId(),\ this-\/>Id.GetComponentId());}
+\DoxyCodeLine{00291\ \ \ \}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ AT\ =\ ArrayType>}
+\DoxyCodeLine{00294\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_same<AT,\ vtkDataArray>::value,\ APIType>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00295\ \ \ castOperator()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00296\ \ \ \{}
+\DoxyCodeLine{00297\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Id.GetTupleSize()\ >\ 0);}
+\DoxyCodeLine{00298\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Array-\/>GetNumberOfComponents()\ ==\ this-\/>Id.GetTupleSize());}
+\DoxyCodeLine{00299\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetTypedComponent(this-\/>Id.GetTupleId(),\ this-\/>Id.GetComponentId());}
+\DoxyCodeLine{00300\ \ \ \}}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \ \ \textcolor{keyword}{mutable}\ ArrayType*\ Array;}
+\DoxyCodeLine{00303\ \ \ IdStorageType\ Id;}
+\DoxyCodeLine{00304\ \};}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00307\ \textcolor{comment}{//\ Value\ reference}}
+\DoxyCodeLine{00308\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType\ TupleSize,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00309\ \textcolor{keyword}{struct\ }ValueReference}
+\DoxyCodeLine{00310\ \{}
+\DoxyCodeLine{00311\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00312\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_valid_tuple_size}{IsValidTupleSize<TupleSize>::value}},\ \textcolor{stringliteral}{"{}Invalid\ tuple\ size."{}});}
+\DoxyCodeLine{00313\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_vtk_data_array}{IsVtkDataArray<ArrayType>::value}},\ \textcolor{stringliteral}{"{}Invalid\ array\ type."{}});}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \ \ \textcolor{keyword}{using\ }APIType\ =\ GetAPIType<ArrayType,\ ForceValueTypeForVtkDataArray>;}
+\DoxyCodeLine{00316\ \ \ \textcolor{keyword}{using\ }IdStorageType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_id_storage}{IdStorage<TupleSize>}};}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00319\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ APIType;}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00321\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00322\ \ \ ValueReference()\ noexcept}
+\DoxyCodeLine{00323\ \ \ \ \ :\ Array\{\ \textcolor{keyword}{nullptr}\ \}}
+\DoxyCodeLine{00324\ \ \ \ \ ,\ Id\{\}}
+\DoxyCodeLine{00325\ \ \ \{}
+\DoxyCodeLine{00326\ \ \ \}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00329\ \ \ ValueReference(ArrayType*\ array,\ IdStorageType\ \textcolor{keywordtype}{id})\ noexcept}
+\DoxyCodeLine{00330\ \ \ \ \ :\ Array\{\ array\ \}}
+\DoxyCodeLine{00331\ \ \ \ \ ,\ Id\{\ \textcolor{keywordtype}{id}\ \}}
+\DoxyCodeLine{00332\ \ \ \{}
+\DoxyCodeLine{00333\ \ \ \ \ this-\/>Id.DebugAsserts(this-\/>Array);}
+\DoxyCodeLine{00334\ \ \ \}}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00336\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00337\ \ \ ValueReference(\textcolor{keyword}{const}\ ValueReference\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00338\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00339\ \ \ ValueReference(ValueReference\&\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00342\ \ \ ValueReference\ operator=(\textcolor{keyword}{const}\ ValueReference\&\ o)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00343\ \ \ \{}
+\DoxyCodeLine{00344\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>Array)}
+\DoxyCodeLine{00345\ \ \ \ \ \{\ \textcolor{comment}{//\ Already\ initialized.\ Assign\ the\ value,\ not\ the\ reference:}}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ \textcolor{keyword}{static\_cast<}APIType\textcolor{keyword}{>}(o);}
+\DoxyCodeLine{00347\ \ \ \ \ \}}
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00349\ \ \ \ \ \{\ \textcolor{comment}{//\ Initialize\ the\ reference:}}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ this-\/>Array\ =\ o.Array;}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ this-\/>Id\ =\ o.Id;}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00353\ \ \ \ \ \}}
+\DoxyCodeLine{00354\ \ \ \}}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00356\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00357\ \ \ ValueReference\ operator=(ValueReference\&\&\ o)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00358\ \ \ \{}
+\DoxyCodeLine{00359\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>Array)}
+\DoxyCodeLine{00360\ \ \ \ \ \{\ \textcolor{comment}{//\ Already\ initialized.\ Assign\ the\ value,\ not\ the\ reference:}}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ \textcolor{keyword}{static\_cast<}APIType\textcolor{keyword}{>}(o);}
+\DoxyCodeLine{00362\ \ \ \ \ \}}
+\DoxyCodeLine{00363\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00364\ \ \ \ \ \{\ \textcolor{comment}{//\ Initialize\ the\ reference:}}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ this-\/>Array\ =\ std::move(o.Array);}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ this-\/>Id\ =\ std::move(o.Id);}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00368\ \ \ \ \ \}}
+\DoxyCodeLine{00369\ \ \ \}}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArray,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00372\ \ \ VTK\_ITER\_INLINE\ ValueReference\ operator=(}
+\DoxyCodeLine{00373\ \ \ \ \ \textcolor{keyword}{const}\ ValueReference<OArray,\ OSize,\ ForceValueTypeForVtkDataArray>\&\ o)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00374\ \ \ \{\ \textcolor{comment}{//\ Always\ copy\ the\ value\ for\ different\ reference\ types:}}
+\DoxyCodeLine{00375\ \ \ \ \ \textcolor{keyword}{const}\ APIType\ tmp\ =\ o;}
+\DoxyCodeLine{00376\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this}\ =\ std::move(tmp);}
+\DoxyCodeLine{00377\ \ \ \}}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ VTK\_ITER\_INLINE\ \textcolor{keyword}{operator}\ APIType()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>castOperator();\ \}}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ AT\ =\ ArrayType>}
+\DoxyCodeLine{00382\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<std::is\_same<AT,\ vtkDataArray>::value,\ ValueReference>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}}
+\DoxyCodeLine{00383\ \ \ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00384\ \ \ \ \ operator=(APIType\ val)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00385\ \ \ \{}
+\DoxyCodeLine{00386\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Id.GetTupleSize()\ >\ 0);}
+\DoxyCodeLine{00387\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Array-\/>GetNumberOfComponents()\ ==\ this-\/>Id.GetTupleSize());}
+\DoxyCodeLine{00388\ \ \ \ \ this-\/>Array-\/>SetComponent(this-\/>Id.GetTupleId(),\ this-\/>Id.GetComponentId(),\ val);}
+\DoxyCodeLine{00389\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00390\ \ \ \}}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ AT\ =\ ArrayType>}
+\DoxyCodeLine{00393\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_same<AT,\ vtkDataArray>::value,\ ValueReference>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}}
+\DoxyCodeLine{00394\ \ \ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00395\ \ \ \ \ operator=(APIType\ val)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00396\ \ \ \{}
+\DoxyCodeLine{00397\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Id.GetTupleSize()\ >\ 0);}
+\DoxyCodeLine{00398\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Array-\/>GetNumberOfComponents()\ ==\ this-\/>Id.GetTupleSize());}
+\DoxyCodeLine{00399\ \ \ \ \ this-\/>Array-\/>SetTypedComponent(this-\/>Id.GetTupleId(),\ this-\/>Id.GetComponentId(),\ val);}
+\DoxyCodeLine{00400\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00401\ \ \ \}}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(ValueReference\ lhs,\ ValueReference\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00404\ \ \ \{\ \textcolor{comment}{//\ Swap\ values,\ not\ references:}}
+\DoxyCodeLine{00405\ \ \ \ \ APIType\ tmp\ =\ std::move(\textcolor{keyword}{static\_cast<}APIType\textcolor{keyword}{>}(lhs));}
+\DoxyCodeLine{00406\ \ \ \ \ lhs\ =\ std::move(\textcolor{keyword}{static\_cast<}APIType\textcolor{keyword}{>}(rhs));}
+\DoxyCodeLine{00407\ \ \ \ \ rhs\ =\ std::move(tmp);}
+\DoxyCodeLine{00408\ \ \ \}}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ OArray,\ ComponentIdType\ OSize>}
+\DoxyCodeLine{00411\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(}
+\DoxyCodeLine{00412\ \ \ \ \ ValueReference\ lhs,\ ValueReference<OArray,\ OSize,\ ForceValueTypeForVtkDataArray>\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00413\ \ \ \{\ \textcolor{comment}{//\ Swap\ values,\ not\ references:}}
+\DoxyCodeLine{00414\ \ \ \ \ \textcolor{keyword}{using\ }OAPIType\ =}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \textcolor{keyword}{typename}\ ValueReference<OArray,\ OSize,\ ForceValueTypeForVtkDataArray>::value\_type;}
+\DoxyCodeLine{00416\ \ \ \ \ \textcolor{keyword}{static\_assert}(}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ std::is\_same<APIType,\ OAPIType>::value,\ \textcolor{stringliteral}{"{}Cannot\ swap\ components\ with\ different\ types."{}});}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \ \ \ \ APIType\ tmp\ =\ std::move(\textcolor{keyword}{static\_cast<}APIType\textcolor{keyword}{>}(lhs));}
+\DoxyCodeLine{00420\ \ \ \ \ lhs\ =\ std::move(\textcolor{keyword}{static\_cast<}APIType\textcolor{keyword}{>}(rhs));}
+\DoxyCodeLine{00421\ \ \ \ \ rhs\ =\ std::move(tmp);}
+\DoxyCodeLine{00422\ \ \ \}}
+\DoxyCodeLine{00423\ }
+\DoxyCodeLine{00424\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(ValueReference\ lhs,\ APIType\&\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00425\ \ \ \{}
+\DoxyCodeLine{00426\ \ \ \ \ APIType\ tmp\ =\ std::move(\textcolor{keyword}{static\_cast<}APIType\textcolor{keyword}{>}(lhs));}
+\DoxyCodeLine{00427\ \ \ \ \ lhs\ =\ std::move(rhs);}
+\DoxyCodeLine{00428\ \ \ \ \ rhs\ =\ std::move(tmp);}
+\DoxyCodeLine{00429\ \ \ \}}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(APIType\&\ lhs,\ ValueReference\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00432\ \ \ \{}
+\DoxyCodeLine{00433\ \ \ \ \ APIType\ tmp\ =\ std::move(lhs);}
+\DoxyCodeLine{00434\ \ \ \ \ lhs\ =\ std::move(\textcolor{keyword}{static\_cast<}APIType\textcolor{keyword}{>}(rhs));}
+\DoxyCodeLine{00435\ \ \ \ \ rhs\ =\ std::move(tmp);}
+\DoxyCodeLine{00436\ \ \ \}}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00439\ \ \ ValueReference\ operator++()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00440\ \ \ \{}
+\DoxyCodeLine{00441\ \ \ \ \ \textcolor{keyword}{const}\ APIType\ newVal\ =\ *\textcolor{keyword}{this}\ +\ 1;}
+\DoxyCodeLine{00442\ \ \ \ \ *\textcolor{keyword}{this}\ =\ newVal;}
+\DoxyCodeLine{00443\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00444\ \ \ \}}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00447\ \ \ APIType\ operator++(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00448\ \ \ \{}
+\DoxyCodeLine{00449\ \ \ \ \ \textcolor{keyword}{const}\ APIType\ retVal\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00450\ \ \ \ \ *\textcolor{keyword}{this}\ =\ *\textcolor{keyword}{this}\ +\ 1;}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keywordflow}{return}\ retVal;}
+\DoxyCodeLine{00452\ \ \ \}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00455\ \ \ ValueReference\ operator-\/-\/()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00456\ \ \ \{}
+\DoxyCodeLine{00457\ \ \ \ \ \textcolor{keyword}{const}\ APIType\ newVal\ =\ *\textcolor{keyword}{this}\ -\/\ 1;}
+\DoxyCodeLine{00458\ \ \ \ \ *\textcolor{keyword}{this}\ =\ newVal;}
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00460\ \ \ \}}
+\DoxyCodeLine{00461\ }
+\DoxyCodeLine{00462\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00463\ \ \ APIType\ operator-\/-\/(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00464\ \ \ \{}
+\DoxyCodeLine{00465\ \ \ \ \ \textcolor{keyword}{const}\ APIType\ retVal\ =\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00466\ \ \ \ \ *\textcolor{keyword}{this}\ =\ *\textcolor{keyword}{this}\ -\/\ 1;}
+\DoxyCodeLine{00467\ \ \ \ \ \textcolor{keywordflow}{return}\ retVal;}
+\DoxyCodeLine{00468\ \ \ \}}
+\DoxyCodeLine{00469\ }
+\DoxyCodeLine{00470\ \textcolor{preprocessor}{\#define\ VTK\_REF\_OP\_OVERLOADS(Op,\ ImplOp)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00471\ \textcolor{preprocessor}{\ \ friend\ VTK\_ITER\_INLINE\ ValueReference\ operator\ Op(ValueReference\ lhs,\ APIType\ val)\ noexcept\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00472\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00473\ \textcolor{preprocessor}{\ \ \ \ const\ APIType\ newVal\ =\ lhs\ ImplOp\ val;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00474\ \textcolor{preprocessor}{\ \ \ \ lhs\ =\ newVal;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00475\ \textcolor{preprocessor}{\ \ \ \ return\ lhs;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00476\ \textcolor{preprocessor}{\ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{\ \ friend\ VTK\_ITER\_INLINE\ ValueReference\ operator\ Op(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00478\ \textcolor{preprocessor}{\ \ \ \ ValueReference\ lhs,\ ValueReference\ val)\ noexcept\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00479\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00480\ \textcolor{preprocessor}{\ \ \ \ const\ APIType\ newVal\ =\ lhs\ ImplOp\ val;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00481\ \textcolor{preprocessor}{\ \ \ \ lhs\ =\ newVal;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00482\ \textcolor{preprocessor}{\ \ \ \ return\ lhs;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00483\ \textcolor{preprocessor}{\ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00484\ \textcolor{preprocessor}{\ \ friend\ VTK\_ITER\_INLINE\ APIType\&\ operator\ Op(APIType\&\ lhs,\ ValueReference\ val)\ noexcept\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00486\ \textcolor{preprocessor}{\ \ \ \ const\ APIType\ newVal\ =\ lhs\ ImplOp\ val;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00487\ \textcolor{preprocessor}{\ \ \ \ lhs\ =\ newVal;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00488\ \textcolor{preprocessor}{\ \ \ \ return\ lhs;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00489\ \textcolor{preprocessor}{\ \ \}}}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00491\ \ \ VTK\_REF\_OP\_OVERLOADS(+=,\ +)}
+\DoxyCodeLine{00492\ \ \ VTK\_REF\_OP\_OVERLOADS(-\/=,\ -\/)}
+\DoxyCodeLine{00493\ \ \ VTK\_REF\_OP\_OVERLOADS(*=,\ *)}
+\DoxyCodeLine{00494\ \ \ VTK\_REF\_OP\_OVERLOADS(/=,\ /)}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00496\ \textcolor{preprocessor}{\#undef\ VTK\_REF\_OP\_OVERLOADS}}
+\DoxyCodeLine{00497\ }
+\DoxyCodeLine{00498\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_value_reference}{ConstValueReference}}<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>;}
+\DoxyCodeLine{00499\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_iterator}{ValueIterator}}<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>;}
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00501\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00502\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ AT\ =\ ArrayType>}
+\DoxyCodeLine{00503\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<std::is\_same<AT,\ vtkDataArray>::value,\ APIType>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00504\ \ \ castOperator()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00505\ \ \ \{}
+\DoxyCodeLine{00506\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Id.GetTupleSize()\ >\ 0);}
+\DoxyCodeLine{00507\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Array-\/>GetNumberOfComponents()\ ==\ this-\/>Id.GetTupleSize());}
+\DoxyCodeLine{00508\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetComponent(this-\/>Id.GetTupleId(),\ this-\/>Id.GetComponentId());}
+\DoxyCodeLine{00509\ \ \ \}}
+\DoxyCodeLine{00510\ }
+\DoxyCodeLine{00511\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ AT\ =\ ArrayType>}
+\DoxyCodeLine{00512\ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!std::is\_same<AT,\ vtkDataArray>::value,\ APIType>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00513\ \ \ castOperator()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00514\ \ \ \{}
+\DoxyCodeLine{00515\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Id.GetTupleSize()\ >\ 0);}
+\DoxyCodeLine{00516\ \ \ \ \ VTK\_ITER\_ASSUME(this-\/>Array-\/>GetNumberOfComponents()\ ==\ this-\/>Id.GetTupleSize());}
+\DoxyCodeLine{00517\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetTypedComponent(this-\/>Id.GetTupleId(),\ this-\/>Id.GetComponentId());}
+\DoxyCodeLine{00518\ \ \ \}}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \ \ \textcolor{keywordtype}{void}\ CopyReference(\textcolor{keyword}{const}\ ValueReference\&\ o)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00521\ \ \ \{}
+\DoxyCodeLine{00522\ \ \ \ \ this-\/>Array\ =\ o.Array;}
+\DoxyCodeLine{00523\ \ \ \ \ this-\/>Id\ =\ o.Id;}
+\DoxyCodeLine{00524\ \ \ \}}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \ \ \textcolor{keyword}{mutable}\ ArrayType*\ Array;}
+\DoxyCodeLine{00527\ \ \ IdStorageType\ Id;}
+\DoxyCodeLine{00528\ \};}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00530\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00531\ \textcolor{comment}{//\ Const\ value\ iterator}}
+\DoxyCodeLine{00532\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType\ TupleSize,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00533\ \textcolor{keyword}{struct\ }ConstValueIterator}
+\DoxyCodeLine{00534\ \{}
+\DoxyCodeLine{00535\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00536\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_valid_tuple_size}{IsValidTupleSize<TupleSize>::value}},\ \textcolor{stringliteral}{"{}Invalid\ tuple\ size."{}});}
+\DoxyCodeLine{00537\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_vtk_data_array}{IsVtkDataArray<ArrayType>::value}},\ \textcolor{stringliteral}{"{}Invalid\ array\ type."{}});}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ \ \ \textcolor{keyword}{using\ }APIType\ =\ GetAPIType<ArrayType,\ ForceValueTypeForVtkDataArray>;}
+\DoxyCodeLine{00540\ \ \ \textcolor{keyword}{using\ }IdStorageType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_id_storage}{IdStorage<TupleSize>}};}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00543\ \ \ \textcolor{keyword}{using\ }iterator\_category\ =\ std::random\_access\_iterator\_tag;}
+\DoxyCodeLine{00544\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ APIType;}
+\DoxyCodeLine{00545\ \ \ \textcolor{keyword}{using\ }difference\_type\ =\ ValueIdType;}
+\DoxyCodeLine{00546\ \ \ \textcolor{keyword}{using\ }pointer\ =\ void;}
+\DoxyCodeLine{00547\ \ \ \textcolor{keyword}{using\ }reference\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_value_reference}{ConstValueReference<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}};}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00550\ \ \ ConstValueIterator()\ noexcept}
+\DoxyCodeLine{00551\ \ \ \ \ :\ Array(\textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00552\ \ \ \ \ ,\ Id()}
+\DoxyCodeLine{00553\ \ \ \{}
+\DoxyCodeLine{00554\ \ \ \}}
+\DoxyCodeLine{00555\ }
+\DoxyCodeLine{00556\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00557\ \ \ ConstValueIterator(ArrayType*\ array,\ IdStorageType\ \textcolor{keywordtype}{id})\ noexcept}
+\DoxyCodeLine{00558\ \ \ \ \ :\ Array(array)}
+\DoxyCodeLine{00559\ \ \ \ \ ,\ Id(\textcolor{keywordtype}{id})}
+\DoxyCodeLine{00560\ \ \ \{}
+\DoxyCodeLine{00561\ \ \ \ \ this-\/>Id.DebugAsserts(this-\/>Array);}
+\DoxyCodeLine{00562\ \ \ \}}
+\DoxyCodeLine{00563\ }
+\DoxyCodeLine{00564\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00565\ \ \ ConstValueIterator(}
+\DoxyCodeLine{00566\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_iterator}{ValueIterator<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}}\&\ o)\ noexcept}
+\DoxyCodeLine{00567\ \ \ \ \ :\ Array\{\ o.GetArray()\ \}}
+\DoxyCodeLine{00568\ \ \ \ \ ,\ Id\{\ o.GetId()\ \}}
+\DoxyCodeLine{00569\ \ \ \{}
+\DoxyCodeLine{00570\ \ \ \}}
+\DoxyCodeLine{00571\ }
+\DoxyCodeLine{00572\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00573\ \ \ ConstValueIterator(\textcolor{keyword}{const}\ ConstValueIterator\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00574\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00575\ \ \ ConstValueIterator\&\ operator=(\textcolor{keyword}{const}\ ConstValueIterator\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00576\ }
+\DoxyCodeLine{00577\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00578\ \ \ ConstValueIterator\&\ operator++()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00579\ \ \ \{}
+\DoxyCodeLine{00580\ \ \ \ \ ++this-\/>Id;}
+\DoxyCodeLine{00581\ \ \ \ \ this-\/>Id.DebugAsserts(this-\/>Array);}
+\DoxyCodeLine{00582\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00583\ \ \ \}}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00586\ \ \ ConstValueIterator\ operator++(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00587\ \ \ \{}
+\DoxyCodeLine{00588\ \ \ \ \ \textcolor{keyword}{auto}\ ret\ =\ this-\/>Id++;}
+\DoxyCodeLine{00589\ \ \ \ \ this-\/>Id.DebugAsserts(this-\/>Array);}
+\DoxyCodeLine{00590\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstValueIterator\{\ this-\/>Array,\ ret\ \};}
+\DoxyCodeLine{00591\ \ \ \}}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00594\ \ \ ConstValueIterator\&\ operator-\/-\/()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00595\ \ \ \{}
+\DoxyCodeLine{00596\ \ \ \ \ -\/-\/this-\/>Id;}
+\DoxyCodeLine{00597\ \ \ \ \ this-\/>Id.DebugAsserts(this-\/>Array);}
+\DoxyCodeLine{00598\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00599\ \ \ \}}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00602\ \ \ ConstValueIterator\ operator-\/-\/(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00603\ \ \ \{}
+\DoxyCodeLine{00604\ \ \ \ \ \textcolor{keyword}{auto}\ ret\ =\ this-\/>Id-\/-\/;}
+\DoxyCodeLine{00605\ \ \ \ \ this-\/>Id.DebugAsserts(this-\/>Array);}
+\DoxyCodeLine{00606\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstValueIterator\{\ this-\/>Array,\ ret\ \};}
+\DoxyCodeLine{00607\ \ \ \}}
+\DoxyCodeLine{00608\ }
+\DoxyCodeLine{00609\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00610\ \ \ reference\ operator[](difference\_type\ i)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00611\ \ \ \{}
+\DoxyCodeLine{00612\ \ \ \ \ \textcolor{keywordflow}{return}\ reference\{\ this-\/>Array,\ this-\/>Id\ +\ i\ \};}
+\DoxyCodeLine{00613\ \ \ \}}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00616\ \ \ reference\ operator*()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ reference\{\ this-\/>Array,\ this-\/>Id\ \};\ \}}
+\DoxyCodeLine{00617\ }
+\DoxyCodeLine{00618\ \ \ \textcolor{comment}{//\ Using\ GetValueType\ here\ makes\ iteration\ 50\%\ faster\ by\ reducing\ comparisons}}
+\DoxyCodeLine{00619\ \ \ \textcolor{comment}{//\ and\ jumps\ (instead\ of\ comparing\ std::tie(tupleId,\ compId)).}}
+\DoxyCodeLine{00620\ \textcolor{preprocessor}{\#define\ VTK\_TMP\_MAKE\_OPERATOR(OP)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00621\ \textcolor{preprocessor}{\ \ friend\ VTK\_ITER\_INLINE\ bool\ operator\ OP(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00622\ \textcolor{preprocessor}{\ \ \ \ const\ ConstValueIterator\&\ lhs,\ const\ ConstValueIterator\&\ rhs)\ noexcept\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00623\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00624\ \textcolor{preprocessor}{\ \ \ \ VTK\_ITER\_ASSERT(lhs.Array\ ==\ rhs.Array,\ "{}Mismatched\ arrays\ in\ iterator\ comparison."{});\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00625\ \textcolor{preprocessor}{\ \ \ \ return\ lhs.Id.GetValueId()\ OP\ rhs.Id.GetValueId();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00626\ \textcolor{preprocessor}{\ \ \}}}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \ \ VTK\_TMP\_MAKE\_OPERATOR(==)}
+\DoxyCodeLine{00629\ \ \ VTK\_TMP\_MAKE\_OPERATOR(!=)}
+\DoxyCodeLine{00630\ \ \ VTK\_TMP\_MAKE\_OPERATOR(<)}
+\DoxyCodeLine{00631\ \ \ VTK\_TMP\_MAKE\_OPERATOR(>)}
+\DoxyCodeLine{00632\ \ \ VTK\_TMP\_MAKE\_OPERATOR(<=)}
+\DoxyCodeLine{00633\ \ \ VTK\_TMP\_MAKE\_OPERATOR(>=)}
+\DoxyCodeLine{00634\ }
+\DoxyCodeLine{00635\ \textcolor{preprocessor}{\#undef\ VTK\_TMP\_MAKE\_OPERATOR}}
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00637\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00638\ \ \ ConstValueIterator\&\ operator+=(difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00639\ \ \ \{}
+\DoxyCodeLine{00640\ \ \ \ \ this-\/>Id.AddOffset(offset);}
+\DoxyCodeLine{00641\ \ \ \ \ this-\/>Id.DebugAsserts(this-\/>Array);}
+\DoxyCodeLine{00642\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00643\ \ \ \}}
+\DoxyCodeLine{00644\ }
+\DoxyCodeLine{00645\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ ConstValueIterator\ operator+(}
+\DoxyCodeLine{00646\ \ \ \ \ \textcolor{keyword}{const}\ ConstValueIterator\&\ it,\ difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00647\ \ \ \{}
+\DoxyCodeLine{00648\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstValueIterator\{\ it.Array,\ it.Id\ +\ offset\ \};}
+\DoxyCodeLine{00649\ \ \ \}}
+\DoxyCodeLine{00650\ }
+\DoxyCodeLine{00651\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ ConstValueIterator\ operator+(}
+\DoxyCodeLine{00652\ \ \ \ \ difference\_type\ offset,\ \textcolor{keyword}{const}\ ConstValueIterator\&\ it)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00653\ \ \ \{}
+\DoxyCodeLine{00654\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstValueIterator\{\ it.Array,\ it.Id\ +\ offset\ \};}
+\DoxyCodeLine{00655\ \ \ \}}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00658\ \ \ ConstValueIterator\&\ operator-\/=(difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00659\ \ \ \{}
+\DoxyCodeLine{00660\ \ \ \ \ this-\/>Id.AddOffset(-\/offset);}
+\DoxyCodeLine{00661\ \ \ \ \ this-\/>Id.DebugAsserts(this-\/>Array);}
+\DoxyCodeLine{00662\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00663\ \ \ \}}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ ConstValueIterator\ operator-\/(}
+\DoxyCodeLine{00666\ \ \ \ \ \textcolor{keyword}{const}\ ConstValueIterator\&\ it,\ difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00667\ \ \ \{}
+\DoxyCodeLine{00668\ \ \ \ \ \textcolor{keywordflow}{return}\ ConstValueIterator\{\ it.Array,\ it.Id\ +\ (-\/offset)\ \};}
+\DoxyCodeLine{00669\ \ \ \}}
+\DoxyCodeLine{00670\ }
+\DoxyCodeLine{00671\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ difference\_type\ operator-\/(}
+\DoxyCodeLine{00672\ \ \ \ \ \textcolor{keyword}{const}\ ConstValueIterator\&\ it1,\ \textcolor{keyword}{const}\ ConstValueIterator\&\ it2)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00673\ \ \ \{}
+\DoxyCodeLine{00674\ \ \ \ \ VTK\_ITER\_ASSERT(it1.Array\ ==\ it2.Array,\ \textcolor{stringliteral}{"{}Cannot\ do\ math\ with\ iterators\ from\ different\ arrays."{}});}
+\DoxyCodeLine{00675\ \ \ \ \ \textcolor{keywordflow}{return}\ it1.Id.GetValueId()\ -\/\ it2.Id.GetValueId();}
+\DoxyCodeLine{00676\ \ \ \}}
+\DoxyCodeLine{00677\ }
+\DoxyCodeLine{00678\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(ConstValueIterator\&\ lhs,\ ConstValueIterator\&\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00679\ \ \ \{}
+\DoxyCodeLine{00680\ \ \ \ \ \textcolor{comment}{//\ Different\ arrays\ may\ use\ different\ iterator\ implementations.}}
+\DoxyCodeLine{00681\ \ \ \ \ VTK\_ITER\_ASSERT(lhs.Array\ ==\ rhs.Array,\ \textcolor{stringliteral}{"{}Cannot\ swap\ iterators\ from\ different\ arrays."{}});}
+\DoxyCodeLine{00682\ }
+\DoxyCodeLine{00683\ \ \ \ \ \textcolor{keyword}{using\ }std::swap;}
+\DoxyCodeLine{00684\ \ \ \ \ swap(lhs.Id,\ rhs.Id);}
+\DoxyCodeLine{00685\ \ \ \}}
+\DoxyCodeLine{00686\ }
+\DoxyCodeLine{00687\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00688\ \ \ \textcolor{keyword}{mutable}\ ArrayType*\ Array;}
+\DoxyCodeLine{00689\ \ \ IdStorageType\ Id;}
+\DoxyCodeLine{00690\ \};}
+\DoxyCodeLine{00691\ }
+\DoxyCodeLine{00692\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00693\ \textcolor{comment}{//\ Component\ iterator}}
+\DoxyCodeLine{00694\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType\ TupleSize,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00695\ \textcolor{keyword}{struct\ }ValueIterator}
+\DoxyCodeLine{00696\ \{}
+\DoxyCodeLine{00697\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00698\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_valid_tuple_size}{IsValidTupleSize<TupleSize>::value}},\ \textcolor{stringliteral}{"{}Invalid\ tuple\ size."{}});}
+\DoxyCodeLine{00699\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_vtk_data_array}{IsVtkDataArray<ArrayType>::value}},\ \textcolor{stringliteral}{"{}Invalid\ array\ type."{}});}
+\DoxyCodeLine{00700\ }
+\DoxyCodeLine{00701\ \ \ \textcolor{keyword}{using\ }APIType\ =\ GetAPIType<ArrayType,\ ForceValueTypeForVtkDataArray>;}
+\DoxyCodeLine{00702\ \ \ \textcolor{keyword}{using\ }IdStorageType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_id_storage}{IdStorage<TupleSize>}};}
+\DoxyCodeLine{00703\ }
+\DoxyCodeLine{00704\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00705\ \ \ \textcolor{keyword}{using\ }iterator\_category\ =\ std::random\_access\_iterator\_tag;}
+\DoxyCodeLine{00706\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ GetAPIType<ArrayType,\ ForceValueTypeForVtkDataArray>;}
+\DoxyCodeLine{00707\ \ \ \textcolor{keyword}{using\ }difference\_type\ =\ ValueIdType;}
+\DoxyCodeLine{00708\ \ \ \textcolor{keyword}{using\ }pointer\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_reference}{ValueReference<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}};}
+\DoxyCodeLine{00709\ \ \ \textcolor{keyword}{using\ }reference\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_reference}{ValueReference<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}};}
+\DoxyCodeLine{00710\ }
+\DoxyCodeLine{00711\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00712\ \ \ ValueIterator()\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00713\ }
+\DoxyCodeLine{00714\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00715\ \ \ ValueIterator(ArrayType*\ array,\ IdStorageType\ \textcolor{keywordtype}{id})\ noexcept}
+\DoxyCodeLine{00716\ \ \ \ \ :\ Ref\{\ array,\ \textcolor{keywordtype}{id}\ \}}
+\DoxyCodeLine{00717\ \ \ \{}
+\DoxyCodeLine{00718\ \ \ \ \ this-\/>DebugIdAsserts();}
+\DoxyCodeLine{00719\ \ \ \}}
+\DoxyCodeLine{00720\ }
+\DoxyCodeLine{00721\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00722\ \ \ ValueIterator(\textcolor{keyword}{const}\ ValueIterator\&\ o)\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00723\ }
+\DoxyCodeLine{00724\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00725\ \ \ ValueIterator\&\ operator=(\textcolor{keyword}{const}\ ValueIterator\&\ o)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00726\ \ \ \{}
+\DoxyCodeLine{00727\ \ \ \ \ this-\/>Ref.CopyReference(o.Ref);}
+\DoxyCodeLine{00728\ \ \ \ \ this-\/>DebugIdAsserts();}
+\DoxyCodeLine{00729\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00730\ \ \ \}}
+\DoxyCodeLine{00731\ }
+\DoxyCodeLine{00732\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00733\ \ \ ValueIterator\&\ operator++()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00734\ \ \ \{}
+\DoxyCodeLine{00735\ \ \ \ \ ++this-\/>Ref.Id;}
+\DoxyCodeLine{00736\ \ \ \ \ this-\/>DebugIdAsserts();}
+\DoxyCodeLine{00737\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00738\ \ \ \}}
+\DoxyCodeLine{00739\ }
+\DoxyCodeLine{00740\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00741\ \ \ ValueIterator\ operator++(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00742\ \ \ \{}
+\DoxyCodeLine{00743\ \ \ \ \ \textcolor{keyword}{auto}\ ret\ =\ this-\/>Ref.Id++;}
+\DoxyCodeLine{00744\ \ \ \ \ this-\/>DebugIdAsserts();}
+\DoxyCodeLine{00745\ \ \ \ \ \textcolor{keywordflow}{return}\ ValueIterator\{\ this-\/>Ref.Array,\ ret\ \};}
+\DoxyCodeLine{00746\ \ \ \}}
+\DoxyCodeLine{00747\ }
+\DoxyCodeLine{00748\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00749\ \ \ ValueIterator\&\ operator-\/-\/()\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ prefix}}
+\DoxyCodeLine{00750\ \ \ \{}
+\DoxyCodeLine{00751\ \ \ \ \ -\/-\/this-\/>Ref.Id;}
+\DoxyCodeLine{00752\ \ \ \ \ this-\/>DebugIdAsserts();}
+\DoxyCodeLine{00753\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00754\ \ \ \}}
+\DoxyCodeLine{00755\ }
+\DoxyCodeLine{00756\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00757\ \ \ ValueIterator\ operator-\/-\/(\textcolor{keywordtype}{int})\ \textcolor{keyword}{noexcept}\ \textcolor{comment}{//\ postfix}}
+\DoxyCodeLine{00758\ \ \ \{}
+\DoxyCodeLine{00759\ \ \ \ \ \textcolor{keyword}{auto}\ ret\ =\ this-\/>Ref.Id-\/-\/;}
+\DoxyCodeLine{00760\ \ \ \ \ this-\/>DebugIdAsserts();}
+\DoxyCodeLine{00761\ \ \ \ \ \textcolor{keywordflow}{return}\ ValueIterator\{\ this-\/>Ref.Array,\ ret\ \};}
+\DoxyCodeLine{00762\ \ \ \}}
+\DoxyCodeLine{00763\ }
+\DoxyCodeLine{00764\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00765\ \ \ reference\ operator[](difference\_type\ i)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00766\ \ \ \{}
+\DoxyCodeLine{00767\ \ \ \ \ \textcolor{keywordflow}{return}\ reference\{\ this-\/>Ref.Array,\ this-\/>Ref.Id\ +\ i\ \};}
+\DoxyCodeLine{00768\ \ \ \}}
+\DoxyCodeLine{00769\ }
+\DoxyCodeLine{00770\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00771\ \ \ reference\ operator*()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref;\ \}}
+\DoxyCodeLine{00772\ }
+\DoxyCodeLine{00773\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00774\ \ \ \textcolor{keyword}{const}\ pointer\&\ operator-\/>()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref;\ \}}
+\DoxyCodeLine{00775\ }
+\DoxyCodeLine{00776\ \textcolor{preprocessor}{\#define\ VTK\_TMP\_MAKE\_OPERATOR(OP)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00777\ \textcolor{preprocessor}{\ \ friend\ VTK\_ITER\_INLINE\ bool\ operator\ OP(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00778\ \textcolor{preprocessor}{\ \ \ \ const\ ValueIterator\&\ lhs,\ const\ ValueIterator\&\ rhs)\ noexcept\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00779\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00780\ \textcolor{preprocessor}{\ \ \ \ VTK\_ITER\_ASSERT(\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00781\ \textcolor{preprocessor}{\ \ \ \ \ \ lhs.GetArray()\ ==\ rhs.GetArray(),\ "{}Mismatched\ arrays\ in\ iterator\ comparison."{});\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00782\ \textcolor{preprocessor}{\ \ \ \ return\ lhs.GetId().GetValueId()\ OP\ rhs.GetId().GetValueId();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00783\ \textcolor{preprocessor}{\ \ \}}}
+\DoxyCodeLine{00784\ }
+\DoxyCodeLine{00785\ \ \ VTK\_TMP\_MAKE\_OPERATOR(==)}
+\DoxyCodeLine{00786\ \ \ VTK\_TMP\_MAKE\_OPERATOR(!=)}
+\DoxyCodeLine{00787\ \ \ VTK\_TMP\_MAKE\_OPERATOR(<)}
+\DoxyCodeLine{00788\ \ \ VTK\_TMP\_MAKE\_OPERATOR(>)}
+\DoxyCodeLine{00789\ \ \ VTK\_TMP\_MAKE\_OPERATOR(<=)}
+\DoxyCodeLine{00790\ \ \ VTK\_TMP\_MAKE\_OPERATOR(>=)}
+\DoxyCodeLine{00791\ }
+\DoxyCodeLine{00792\ \textcolor{preprocessor}{\#undef\ VTK\_TMP\_MAKE\_OPERATOR}}
+\DoxyCodeLine{00793\ }
+\DoxyCodeLine{00794\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00795\ \ \ ValueIterator\&\ operator+=(difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00796\ \ \ \{}
+\DoxyCodeLine{00797\ \ \ \ \ this-\/>Ref.Id.AddOffset(offset);}
+\DoxyCodeLine{00798\ \ \ \ \ this-\/>DebugIdAsserts();}
+\DoxyCodeLine{00799\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00800\ \ \ \}}
+\DoxyCodeLine{00801\ }
+\DoxyCodeLine{00802\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ ValueIterator\ operator+(}
+\DoxyCodeLine{00803\ \ \ \ \ \textcolor{keyword}{const}\ ValueIterator\&\ it,\ difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00804\ \ \ \{}
+\DoxyCodeLine{00805\ \ \ \ \ \textcolor{keywordflow}{return}\ ValueIterator\{\ it.GetArray(),\ it.GetId()\ +\ offset\ \};}
+\DoxyCodeLine{00806\ \ \ \}}
+\DoxyCodeLine{00807\ }
+\DoxyCodeLine{00808\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ ValueIterator\ operator+(}
+\DoxyCodeLine{00809\ \ \ \ \ difference\_type\ offset,\ \textcolor{keyword}{const}\ ValueIterator\&\ it)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00810\ \ \ \{}
+\DoxyCodeLine{00811\ \ \ \ \ \textcolor{keywordflow}{return}\ ValueIterator\{\ it.GetArray(),\ it.GetId()\ +\ offset\ \};}
+\DoxyCodeLine{00812\ \ \ \}}
+\DoxyCodeLine{00813\ }
+\DoxyCodeLine{00814\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00815\ \ \ ValueIterator\&\ operator-\/=(difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00816\ \ \ \{}
+\DoxyCodeLine{00817\ \ \ \ \ this-\/>Ref.Id.AddOffset(-\/offset);}
+\DoxyCodeLine{00818\ \ \ \ \ this-\/>Ref.Id.DebugAsserts(this-\/>Ref.Array);}
+\DoxyCodeLine{00819\ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00820\ \ \ \}}
+\DoxyCodeLine{00821\ }
+\DoxyCodeLine{00822\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ ValueIterator\ operator-\/(}
+\DoxyCodeLine{00823\ \ \ \ \ \textcolor{keyword}{const}\ ValueIterator\&\ it,\ difference\_type\ offset)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00824\ \ \ \{}
+\DoxyCodeLine{00825\ \ \ \ \ \textcolor{keywordflow}{return}\ ValueIterator\{\ it.GetArray(),\ it.GetId()\ +\ (-\/offset)\ \};}
+\DoxyCodeLine{00826\ \ \ \}}
+\DoxyCodeLine{00827\ }
+\DoxyCodeLine{00828\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ difference\_type\ operator-\/(}
+\DoxyCodeLine{00829\ \ \ \ \ \textcolor{keyword}{const}\ ValueIterator\&\ it1,\ \textcolor{keyword}{const}\ ValueIterator\&\ it2)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00830\ \ \ \{}
+\DoxyCodeLine{00831\ \ \ \ \ VTK\_ITER\_ASSERT(}
+\DoxyCodeLine{00832\ \ \ \ \ \ \ it1.Ref.Array\ ==\ it2.Ref.Array,\ \textcolor{stringliteral}{"{}Cannot\ do\ math\ with\ iterators\ from\ different\ arrays."{}});}
+\DoxyCodeLine{00833\ \ \ \ \ \textcolor{keywordflow}{return}\ it1.GetId().GetValueId()\ -\/\ it2.GetId().GetValueId();}
+\DoxyCodeLine{00834\ \ \ \}}
+\DoxyCodeLine{00835\ }
+\DoxyCodeLine{00836\ \ \ \textcolor{keyword}{friend}\ VTK\_ITER\_INLINE\ \textcolor{keywordtype}{void}\ swap(ValueIterator\&\ lhs,\ ValueIterator\&\ rhs)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00837\ \ \ \{}
+\DoxyCodeLine{00838\ \ \ \ \ \textcolor{comment}{//\ Different\ arrays\ may\ use\ different\ iterator\ implementations.}}
+\DoxyCodeLine{00839\ \ \ \ \ VTK\_ITER\_ASSERT(}
+\DoxyCodeLine{00840\ \ \ \ \ \ \ lhs.GetArray()\ ==\ rhs.GetArray(),\ \textcolor{stringliteral}{"{}Cannot\ swap\ iterators\ from\ different\ arrays."{}});}
+\DoxyCodeLine{00841\ }
+\DoxyCodeLine{00842\ \ \ \ \ \textcolor{keyword}{using\ }std::swap;}
+\DoxyCodeLine{00843\ \ \ \ \ swap(lhs.GetId(),\ rhs.GetId());}
+\DoxyCodeLine{00844\ \ \ \}}
+\DoxyCodeLine{00845\ }
+\DoxyCodeLine{00846\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_value_iterator}{ConstValueIterator}}<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>;}
+\DoxyCodeLine{00847\ }
+\DoxyCodeLine{00848\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00849\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00850\ \ \ \textcolor{keywordtype}{void}\ DebugIdAsserts()\textcolor{keyword}{\ const\ }\{\ this-\/>Ref.Id.DebugAsserts(this-\/>Ref.Array);\ \}}
+\DoxyCodeLine{00851\ }
+\DoxyCodeLine{00852\ \ \ \textcolor{comment}{//\ Needed\ for\ access\ from\ friend\ functions.\ We\ could\ just\ store\ the\ array}}
+\DoxyCodeLine{00853\ \ \ \textcolor{comment}{//\ and\ ID\ here\ instead\ of\ the\ ref,\ but\ meh.}}
+\DoxyCodeLine{00854\ \ \ ArrayType*\ GetArray()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.Array;\ \}}
+\DoxyCodeLine{00855\ \ \ IdStorageType\&\ GetId()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.Id;\ \}}
+\DoxyCodeLine{00856\ \ \ \textcolor{keyword}{const}\ IdStorageType\&\ GetId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Ref.Id;\ \}}
+\DoxyCodeLine{00857\ }
+\DoxyCodeLine{00858\ \ \ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_reference}{ValueReference<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}}\ Ref;}
+\DoxyCodeLine{00859\ \};}
+\DoxyCodeLine{00860\ }
+\DoxyCodeLine{00861\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00862\ \textcolor{comment}{//\ ValueRange}}
+\DoxyCodeLine{00863\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayTypeT,\ ComponentIdType\ TupleSize,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00864\ \textcolor{keyword}{struct\ }ValueRange}
+\DoxyCodeLine{00865\ \{}
+\DoxyCodeLine{00866\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00867\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_valid_tuple_size}{IsValidTupleSize<TupleSize>::value}},\ \textcolor{stringliteral}{"{}Invalid\ tuple\ size."{}});}
+\DoxyCodeLine{00868\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_vtk_data_array}{IsVtkDataArray<ArrayTypeT>::value}},\ \textcolor{stringliteral}{"{}Invalid\ array\ type."{}});}
+\DoxyCodeLine{00869\ }
+\DoxyCodeLine{00870\ \ \ \textcolor{keyword}{using\ }IdStorageType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_id_storage}{IdStorage<TupleSize>}};}
+\DoxyCodeLine{00871\ \ \ \textcolor{keyword}{using\ }NumCompsType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_generic_tuple_size}{GenericTupleSize<TupleSize>}};}
+\DoxyCodeLine{00872\ }
+\DoxyCodeLine{00873\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00874\ \ \ \textcolor{keyword}{using\ }ArrayType\ =\ ArrayTypeT;}
+\DoxyCodeLine{00875\ \ \ \textcolor{keyword}{using\ }ValueType\ =\ GetAPIType<ArrayType,\ ForceValueTypeForVtkDataArray>;}
+\DoxyCodeLine{00876\ }
+\DoxyCodeLine{00877\ \ \ \textcolor{keyword}{using\ }IteratorType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_iterator}{ValueIterator<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}};}
+\DoxyCodeLine{00878\ \ \ \textcolor{keyword}{using\ }ConstIteratorType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_value_iterator}{ConstValueIterator<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}};}
+\DoxyCodeLine{00879\ \ \ \textcolor{keyword}{using\ }ReferenceType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_reference}{ValueReference<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}};}
+\DoxyCodeLine{00880\ \ \ \textcolor{keyword}{using\ }ConstReferenceType\ =}
+\DoxyCodeLine{00881\ \ \ \ \ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_const_value_reference}{ConstValueReference<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}};}
+\DoxyCodeLine{00882\ }
+\DoxyCodeLine{00883\ \ \ \textcolor{comment}{//\ May\ be\ DynamicTupleSize,\ or\ the\ actual\ tuple\ size.}}
+\DoxyCodeLine{00884\ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{static}\ ComponentIdType\ TupleSizeTag\ =\ TupleSize;}
+\DoxyCodeLine{00885\ }
+\DoxyCodeLine{00886\ \ \ \textcolor{comment}{//\ STL-\/compat}}
+\DoxyCodeLine{00887\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ ValueType;}
+\DoxyCodeLine{00888\ \ \ \textcolor{keyword}{using\ }size\_type\ =\ ValueIdType;}
+\DoxyCodeLine{00889\ \ \ \textcolor{keyword}{using\ }iterator\ =\ IteratorType;}
+\DoxyCodeLine{00890\ \ \ \textcolor{keyword}{using\ }const\_iterator\ =\ ConstIteratorType;}
+\DoxyCodeLine{00891\ \ \ \textcolor{keyword}{using\ }reference\ =\ ReferenceType;}
+\DoxyCodeLine{00892\ \ \ \textcolor{keyword}{using\ }const\_reference\ =\ ConstReferenceType;}
+\DoxyCodeLine{00893\ }
+\DoxyCodeLine{00894\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00895\ \ \ ValueRange()\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00896\ }
+\DoxyCodeLine{00897\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00898\ \ \ ValueRange(ArrayType*\ arr,\ ValueIdType\ beginValue,\ ValueIdType\ endValue)\ noexcept}
+\DoxyCodeLine{00899\ \ \ \ \ :\ Array(arr)}
+\DoxyCodeLine{00900\ \ \ \ \ ,\ NumComps(arr)}
+\DoxyCodeLine{00901\ \ \ \ \ ,\ BeginValue(beginValue,\ this-\/>NumComps)}
+\DoxyCodeLine{00902\ \ \ \ \ ,\ EndValue(endValue,\ this-\/>NumComps)}
+\DoxyCodeLine{00903\ \ \ \{}
+\DoxyCodeLine{00904\ \ \ \ \ assert(this-\/>Array);}
+\DoxyCodeLine{00905\ \ \ \ \ assert(beginValue\ >=\ 0\ \&\&\ beginValue\ <=\ endValue);}
+\DoxyCodeLine{00906\ \ \ \ \ assert(endValue\ >=\ 0\ \&\&\ endValue\ <=\ this-\/>Array-\/>GetNumberOfValues());}
+\DoxyCodeLine{00907\ \ \ \}}
+\DoxyCodeLine{00908\ }
+\DoxyCodeLine{00909\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00910\ \ \ ValueRange\ GetSubRange(ValueIdType\ beginValue\ =\ 0,\ ValueIdType\ endValue\ =\ -\/1)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00911\ \ \ \{}
+\DoxyCodeLine{00912\ \ \ \ \ \textcolor{keyword}{const}\ ValueIdType\ realBegin\ =\ this-\/>BeginValue.GetValueId()\ +\ beginValue;}
+\DoxyCodeLine{00913\ \ \ \ \ \textcolor{keyword}{const}\ ValueIdType\ realEnd\ =}
+\DoxyCodeLine{00914\ \ \ \ \ \ \ endValue\ >=\ 0\ ?\ this-\/>BeginValue.GetValueId()\ +\ endValue\ :\ this-\/>EndValue.GetValueId();}
+\DoxyCodeLine{00915\ }
+\DoxyCodeLine{00916\ \ \ \ \ \textcolor{keywordflow}{return}\ ValueRange\{\ this-\/>Array,\ realBegin,\ realEnd\ \};}
+\DoxyCodeLine{00917\ \ \ \}}
+\DoxyCodeLine{00918\ }
+\DoxyCodeLine{00919\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00920\ \ \ ArrayType*\ GetArray()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array;\ \}}
+\DoxyCodeLine{00921\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00922\ \ \ ComponentIdType\ GetTupleSize()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NumComps.value;\ \}}
+\DoxyCodeLine{00923\ }
+\DoxyCodeLine{00924\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00925\ \ \ ValueIdType\ GetBeginValueId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>BeginValue.GetValueId();\ \}}
+\DoxyCodeLine{00926\ }
+\DoxyCodeLine{00927\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00928\ \ \ ValueIdType\ GetEndValueId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>EndValue.GetValueId();\ \}}
+\DoxyCodeLine{00929\ }
+\DoxyCodeLine{00930\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00931\ \ \ size\_type\ size()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00932\ \ \ \{}
+\DoxyCodeLine{00933\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>EndValue.GetValueId()\ -\/\ this-\/>BeginValue.GetValueId();}
+\DoxyCodeLine{00934\ \ \ \}}
+\DoxyCodeLine{00935\ }
+\DoxyCodeLine{00936\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00937\ \ \ iterator\ begin()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NewIterator(this-\/>BeginValue);\ \}}
+\DoxyCodeLine{00938\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00939\ \ \ iterator\ end()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NewIterator(this-\/>EndValue);\ \}}
+\DoxyCodeLine{00940\ }
+\DoxyCodeLine{00941\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00942\ \ \ const\_iterator\ begin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NewConstIterator(this-\/>BeginValue);\ \}}
+\DoxyCodeLine{00943\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00944\ \ \ const\_iterator\ end()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NewConstIterator(this-\/>EndValue);\ \}}
+\DoxyCodeLine{00945\ }
+\DoxyCodeLine{00946\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00947\ \ \ const\_iterator\ cbegin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NewConstIterator(this-\/>BeginValue);\ \}}
+\DoxyCodeLine{00948\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00949\ \ \ const\_iterator\ cend()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NewConstIterator(this-\/>EndValue);\ \}}
+\DoxyCodeLine{00950\ }
+\DoxyCodeLine{00951\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00952\ \ \ reference\ operator[](size\_type\ i)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00953\ \ \ \{}
+\DoxyCodeLine{00954\ \ \ \ \ \textcolor{keywordflow}{return}\ reference\{\ this-\/>Array,\ this-\/>BeginValue\ +\ i\ \};}
+\DoxyCodeLine{00955\ \ \ \}}
+\DoxyCodeLine{00956\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00957\ \ \ const\_reference\ operator[](size\_type\ i)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00958\ \ \ \{}
+\DoxyCodeLine{00959\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_reference\{\ this-\/>Array,\ this-\/>BeginValue\ +\ i\ \};}
+\DoxyCodeLine{00960\ \ \ \}}
+\DoxyCodeLine{00961\ }
+\DoxyCodeLine{00963\ }
+\DoxyCodeLine{00970\ \ \ value\_type*\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_range_a2a5fcc2ed2064f7e5cb47d7cf0266a1a}{data}}()\ noexcept}
+\DoxyCodeLine{00971\ \ \ \{}
+\DoxyCodeLine{00972\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}value\_type*\textcolor{keyword}{>}(this-\/>Array-\/>GetVoidPointer(0));}
+\DoxyCodeLine{00973\ \ \ \}}
+\DoxyCodeLine{00974\ \ \ value\_type*\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_range_a2a5fcc2ed2064f7e5cb47d7cf0266a1a}{data}}()\ const\ noexcept}
+\DoxyCodeLine{00975\ \ \ \{}
+\DoxyCodeLine{00976\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}value\_type*\textcolor{keyword}{>}(this-\/>Array-\/>GetVoidPointer(0));}
+\DoxyCodeLine{00977\ \ \ \}}
+\DoxyCodeLine{00979\ }
+\DoxyCodeLine{00980\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00981\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00982\ \ \ \doxymbox{\hyperlink{class_o_f_map}{iterator}}\ NewIterator(IdStorageType\ \textcolor{keywordtype}{id})\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_o_f_map}{iterator}}\{\ this-\/>Array,\ \textcolor{keywordtype}{id}\ \};\ \}}
+\DoxyCodeLine{00983\ }
+\DoxyCodeLine{00984\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00985\ \ \ const\_iterator\ NewConstIterator(IdStorageType\ \textcolor{keywordtype}{id})\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00986\ \ \ \{}
+\DoxyCodeLine{00987\ \ \ \ \ \textcolor{keywordflow}{return}\ const\_iterator\{\ this-\/>Array,\ \textcolor{keywordtype}{id}\ \};}
+\DoxyCodeLine{00988\ \ \ \}}
+\DoxyCodeLine{00989\ }
+\DoxyCodeLine{00990\ \ \ \textcolor{keyword}{mutable}\ ArrayType*\ Array\{\ \textcolor{keyword}{nullptr}\ \};}
+\DoxyCodeLine{00991\ \ \ NumCompsType\ NumComps\{\};}
+\DoxyCodeLine{00992\ \ \ IdStorageType\ BeginValue\{\};}
+\DoxyCodeLine{00993\ \ \ IdStorageType\ EndValue\{\};}
+\DoxyCodeLine{00994\ \};}
+\DoxyCodeLine{00995\ }
+\DoxyCodeLine{00996\ \textcolor{comment}{//\ Unimplemented,\ only\ used\ inside\ decltype\ in\ SelectValueRange:}}
+\DoxyCodeLine{00997\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType\ TupleSize,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00998\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_range}{ValueRange<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}}\ DeclareValueRangeSpecialization(}
+\DoxyCodeLine{00999\ \ \ vtkDataArray*);}
+\DoxyCodeLine{01000\ }
+\DoxyCodeLine{01001\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{01002\ \}\ \textcolor{comment}{//\ end\ namespace\ detail}}
+\DoxyCodeLine{01003\ \}\ \textcolor{comment}{//\ end\ namespace\ vtk}}
+\DoxyCodeLine{01004\ }
+\DoxyCodeLine{01005\ VTK\_ITER\_OPTIMIZE\_END}
+\DoxyCodeLine{01006\ }
+\DoxyCodeLine{01007\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkDataArrayValueRange\_Generic\_h}}
+\DoxyCodeLine{01008\ }
+\DoxyCodeLine{01009\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkDataArrayValueRange\_Generic.h}}
+
+\end{DoxyCode}

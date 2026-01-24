@@ -1,0 +1,17 @@
+var group___serialization =
+[
+    [ "diy::BinaryBuffer", "structdiy_1_1_binary_buffer.html", [
+      [ "advance", "structdiy_1_1_binary_buffer.html#a48f4b9ecb26ed46c1c06c458a8221d69", null ],
+      [ "append_binary", "structdiy_1_1_binary_buffer.html#a3dfaa6a4881eebe258fc5c42e9e91e8d", null ],
+      [ "grow", "structdiy_1_1_binary_buffer.html#a819993783c04b9b1bbb38da90c854ec6", null ],
+      [ "load_binary", "structdiy_1_1_binary_buffer.html#a53b5ba450ddf8b6e9b262c552b2ef673", null ],
+      [ "load_binary_back", "structdiy_1_1_binary_buffer.html#a4bf1ffd8ae3aecf1851f357a30f97656", null ],
+      [ "save_binary", "structdiy_1_1_binary_buffer.html#a9d0ab30fe4978c730176a52ccd142cc3", null ]
+    ] ],
+    [ "diy::Serialization&lt; T &gt;", "structdiy_1_1_serialization.html", null ],
+    [ "diy::load", "group___serialization.html#ga0ca4d0879a29c0c9ea2e731f1f85979f", null ],
+    [ "diy::load", "group___serialization.html#gae54f4c5c6740fcf7627009bdcfe02aa1", null ],
+    [ "diy::load_back", "group___serialization.html#ga33accb25f133567d216ebd3bee44595b", null ],
+    [ "diy::save", "group___serialization.html#gafc0f66da2662b4ae1eaedcede2fc8bb3", null ],
+    [ "diy::save", "group___serialization.html#gafaac9aa4ccdc04930f612ca20341fc9b", null ]
+];

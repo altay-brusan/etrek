@@ -1,0 +1,28 @@
+var classvtk_text_actor =
+[
+    [ "ComputeScaledFont", "classvtk_text_actor.html#afaf7394461984f5645cbd25cf7fc4200", null ],
+    [ "DisplayToSpecified", "classvtk_text_actor.html#af9403bfffc0bd202c7a7b2c10edc2e53", null ],
+    [ "GetBoundingBox", "classvtk_text_actor.html#afc0b90e97bcd388140cd4965b85ddbc3", null ],
+    [ "GetImageBoundingBox", "classvtk_text_actor.html#a6deb77bbf72034e20e7d08e4a39c71a6", null ],
+    [ "GetSize", "classvtk_text_actor.html#ab2f2aa2e48b5f6056cc560c3460a7eda", null ],
+    [ "HasTranslucentPolygonalGeometry", "classvtk_text_actor.html#a0381daf2f2002c341ab314d9971e9b53", null ],
+    [ "PrintSelf", "classvtk_text_actor.html#ae72e1201998d5d92f9fed9aa24a3c87c", null ],
+    [ "ReleaseGraphicsResources", "classvtk_text_actor.html#a2e1f8f60a89736c146212f14cc2390c3", null ],
+    [ "RenderImage", "classvtk_text_actor.html#a2eac4dc1a817b102f6b5150302aaff31", null ],
+    [ "RenderOpaqueGeometry", "classvtk_text_actor.html#a3f3864dfd0b10f2122dc9d5556d05233", null ],
+    [ "RenderOverlay", "classvtk_text_actor.html#a2609df763016dfb492331239f8aaa34d", null ],
+    [ "SetAlignmentPoint", "classvtk_text_actor.html#a5d88fe19f9f98fe256b25ed7d7a06491", null ],
+    [ "SetConstrainedFontSize", "classvtk_text_actor.html#ad02172bbafefa6a9330e9da466e23953", null ],
+    [ "SetInput", "classvtk_text_actor.html#a4d7726bbb0943afd99347cd14b3e43c5", null ],
+    [ "SetNonLinearFontScale", "classvtk_text_actor.html#ab140f94133cb2d859047010eeca2beb2", null ],
+    [ "SetOrientation", "classvtk_text_actor.html#a1811d0de38266241fbc8342da4cd0890", null ],
+    [ "SetTextProperty", "classvtk_text_actor.html#acac76d0a6eda611705643b2963810961", null ],
+    [ "ShallowCopy", "classvtk_text_actor.html#a25ff6c47208790d231a9940e184b5832", null ],
+    [ "SpecifiedToDisplay", "classvtk_text_actor.html#af3cfc440f7d7b0f8464d97dac2bb9535", null ],
+    [ "UpdateRectangle", "classvtk_text_actor.html#a5497057e8d80eaf2802d85b4256f6ca2", null ],
+    [ "vtkGetObjectMacro", "classvtk_text_actor.html#a25de4bbed0dca029cd7e734a9c9711d6", null ],
+    [ "vtkSetClampMacro", "classvtk_text_actor.html#a6bfaf46462f97b32059a820c7a9667f0", null ],
+    [ "vtkSetMacro", "classvtk_text_actor.html#a00e5b1b366d6f4ccd66f4a607e59d880", null ],
+    [ "vtkSetMacro", "classvtk_text_actor.html#a09c13f9ba326e3975138a1eba35b5e2b", null ],
+    [ "vtkSetVector2Macro", "classvtk_text_actor.html#a9eb84bbfae290952700bf76b06d1e277", null ]
+];

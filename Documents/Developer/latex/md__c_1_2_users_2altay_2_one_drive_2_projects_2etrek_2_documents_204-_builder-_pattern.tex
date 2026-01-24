@@ -1,0 +1,804 @@
+\chapter{Builder Pattern in Etrek }
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern}{}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern}\index{Builder Pattern in Etrek@{Builder Pattern in Etrek}}
+\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md397}%
+\Hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md397}%
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md398}{}\doxysection{\texorpdfstring{Overview}{Overview}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md398}
+Etrek implements a {\bfseries{template-\/based, hierarchical Builder pattern}} for constructing UI component pairs (Widget + Delegate). This pattern separates construction complexity from runtime behavior, provides clear dependency injection, and enables lazy component creation.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md399}{}\doxysection{\texorpdfstring{Core Interface}{Core Interface}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md399}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md400}{}\doxysubsection{\texorpdfstring{IWidget\+Delegate\+Builder Template}{IWidget\+Delegate\+Builder Template}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md400}
+{\bfseries{Location}}:\+ {\ttfamily \doxylink{_i_widget_delegate_builder_8h}{Common/\+\+Include/\+\+IWidget\+Delegate\+Builder.\+h}}
+
+All builders inherit from this template interface:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename}\ W\textcolor{keywordtype}{id}getType,\ \textcolor{keyword}{typename}\ DelegateType>}
+\DoxyCodeLine{\textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_i_widget_delegate_builder}{IWidgetDelegateBuilder}}\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ std::pair<WidgetType*,\ DelegateType*>}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_i_widget_delegate_builder_a024312e1df508463df4d0a2efc1da6c2}{build}}(\textcolor{keyword}{const}\ DelegateParameter\&\ params,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ QWidget*\ parentWidget\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ QObject*\ parentDelegate\ =\ \textcolor{keyword}{nullptr})\ =\ 0;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \string~IWidgetDelegateBuilder()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Key Design Decisions}}:\+
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Template-\/based}}:\+ Type safety and flexibility
+\item {\bfseries{Returns {\ttfamily std::\+pair}}}:\+ Both widget and delegate in single call
+\item {\bfseries{Raw pointers}}:\+ Leverage Qt\textquotesingle{}s parent-\/child lifetime management
+\item {\bfseries{\doxylink{struct_delegate_parameter}{Delegate\+Parameter}}}:\+ Centralized dependency injection container
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md401}{}\doxysection{\texorpdfstring{Dependency Injection:\+ Delegate\+Parameter}{Dependency Injection:\+ Delegate\+Parameter}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md401}
+{\bfseries{Location}}:\+ {\ttfamily \doxylink{_delegate_parameter_8h_source}{Common/\+\+Include/\+\+Delegate\+Parameter.\+h}}
+
+\doxylink{requirements_The}{The} central dependency injection container:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Database\ connection\ for\ builders\ to\ create\ repositories}}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting>\ \doxymbox{\hyperlink{struct_delegate_parameter_a81308f606468ce23f9de299f48cd7b5a}{dbConnection}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Map\ of\ delegate\ names\ to\ instances\ for\ inter-\/delegate\ dependencies}}
+\DoxyCodeLine{\ \ \ \ QMap<QString,\ QWeakPointer<IDelegate>>\ \doxymbox{\hyperlink{struct_delegate_parameter_a524bc9987e83d9263bf9bd3d2812c45a}{delegates}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Context\ manager\ for\ accessing\ session\ and\ workflow\ contexts}}
+\DoxyCodeLine{\ \ \ \ std::weak\_ptr<Etrek::Context::IContextManager>\ \doxymbox{\hyperlink{struct_delegate_parameter_a3bce0f919f824cec133891383be18ba9}{contextManager}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Pre-\/fetched\ session\ context\ (optional,\ for\ convenience)}}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<Etrek::Context::ISessionContext>\ \doxymbox{\hyperlink{struct_delegate_parameter_a780059a9c3acf94eab8a7ae94595414c}{sessionContext}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Pre-\/fetched\ workflow\ context\ (optional)}}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<Etrek::Context::IWorkflowContext>\ \doxymbox{\hyperlink{struct_delegate_parameter_a39e9c75bfd1fc9f8dbbf708d5e583f12}{workflowContext}};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Architectural Pattern}}:\+
+
+
+\begin{DoxyItemize}
+\item {\bfseries{\doxylink{struct_delegate_parameter}{Delegate\+Parameter} contains ONLY {\ttfamily db\+Connection}}}, NOT repositories
+\item Builders receive {\ttfamily \doxylink{struct_delegate_parameter}{Delegate\+Parameter}} and create repositories from {\ttfamily db\+Connection}
+\item Builders pass repository instances to delegates
+\item Delegates NEVER receive {\ttfamily db\+Connection}, only repositories
+\item Each builder independently creates its required repositories
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md402}{}\doxysection{\texorpdfstring{All Builder Classes}{All Builder Classes}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md402}
+Etrek has {\bfseries{17 builder classes}} across different modules:\+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md403}{}\doxysubsection{\texorpdfstring{Application Module (4 builders)}{Application Module (4 builders)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md403}
+
+\begin{DoxyTable}{4}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Builder  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Purpose  \\
+Main\+Window\+Builder  &\doxylink{class_main_window}{Main\+Window}  &Main\+Window\+Delegate  &Main application window; page orchestration  \\
+System\+Setting\+Page\+Builder  &\doxylink{class_system_setting_page}{System\+Setting\+Page}  &System\+Setting\+Page\+Delegate  &Composite settings page with 12 sub-\/configurations  \\
+View\+Selection\+Dialog\+Builder  &\doxylink{class_view_selection_dialog}{View\+Selection\+Dialog}  &View\+Selection\+Dialog\+Delegate  &Procedure/\+view selection for examinations  \\
+Work\+List\+Page\+Builder  &\doxylink{class_work_list_page}{Work\+List\+Page}  &Work\+List\+Page\+Delegate  &DICOM worklist display and management  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md404}{}\doxysubsection{\texorpdfstring{Device Module (6 builders)}{Device Module (6 builders)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md404}
+
+\begin{DoxyTable}{4}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Builder  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Dependencies  \\
+Connection\+Setup\+Builder  &\doxylink{class_connection_setup_widget}{Connection\+Setup\+Widget}  &Connection\+Setup\+Delegate  &None (UI only)  \\
+Workflow\+Configuration\+Builder  &\doxylink{class_workflow_configuration_widget}{Workflow\+Configuration\+Widget}  &Workflow\+Configuration\+Delegate  &Device\+Repository  \\
+Generator\+Configuration\+Builder  &\doxylink{class_generator_configuration_widget}{Generator\+Configuration\+Widget}  &Generator\+Configuration\+Delegate  &Device\+Repository  \\
+Detector\+Configuration\+Builder  &\doxylink{class_detector_configuration_widget}{Detector\+Configuration\+Widget}  &Detector\+Configuration\+Delegate  &Device\+Repository  \\
+Collimator\+Configuration\+Builder  &\doxylink{class_collimator_configuration_widget}{Collimator\+Configuration\+Widget}  &Collimator\+Configuration\+Delegate  &Device\+Repository  \\
+Dap\+Configuration\+Builder  &\doxylink{class_dap_configuration_widget}{Dap\+Configuration\+Widget}  &Dap\+Configuration\+Delegate  &Device\+Repository  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md405}{}\doxysubsection{\texorpdfstring{Worklist Module (1 builder)}{Worklist Module (1 builder)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md405}
+
+\begin{DoxyTable}{4}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Builder  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Dependencies  \\
+Work\+List\+Configuration\+Builder  &\doxylink{class_work_list_configuration_widget}{Work\+List\+Configuration\+Widget}  &Work\+List\+Configuration\+Delegate  &Worklist\+Repository  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md406}{}\doxysubsection{\texorpdfstring{PACS Module (1 builder)}{PACS Module (1 builder)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md406}
+
+\begin{DoxyTable}{4}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Builder  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Dependencies  \\
+Pacs\+Entity\+Configuration\+Builder  &\doxylink{class_pacs_entity_configuration_widget}{Pacs\+Entity\+Configuration\+Widget}  &Pacs\+Entity\+Configuration\+Delegate  &Pacs\+Node\+Repository  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md407}{}\doxysubsection{\texorpdfstring{Scan\+Protocol Module (3 builders)}{Scan\+Protocol Module (3 builders)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md407}
+
+\begin{DoxyTable}{4}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Builder  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Dependencies  \\
+Procedure\+Configuration\+Builder  &\doxylink{class_procedure_configuration_widget}{Procedure\+Configuration\+Widget}  &Procedure\+Configuration\+Delegate  &Scan\+Protocol\+Repository  \\
+View\+Configuration\+Builder  &\doxylink{class_view_configuration_widget}{View\+Configuration\+Widget}  &View\+Configuration\+Delegate  &Scan\+Protocol\+Repository  \\
+Technique\+Configuration\+Builder  &\doxylink{class_technique_configuration_widget}{Technique\+Configuration\+Widget}  &Technique\+Configuration\+Delegate  &Scan\+Protocol\+Repository  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md408}{}\doxysubsection{\texorpdfstring{Dicom Module (1 builder)}{Dicom Module (1 builder)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md408}
+
+\begin{DoxyTable}{4}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Builder  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Dependencies  \\
+Image\+Comment\+Configuration\+Builder  &\doxylink{class_image_comment_configuration_widget}{Image\+Comment\+Configuration\+Widget}  &Image\+Comment\+Configuration\+Delegate  &Image\+Comment\+Repository  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md409}{}\doxysubsection{\texorpdfstring{Device Connectivity (1 builder)}{Device Connectivity (1 builder)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md409}
+
+\begin{DoxyTable}{4}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Builder  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Dependencies  \\
+Connection\+Setting\+Builder  &\doxylink{class_connection_setting_widget}{Connection\+Setting\+Widget}  &QObject (no delegate)  &None  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md410}{}\doxysection{\texorpdfstring{Builder Construction Patterns}{Builder Construction Patterns}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md410}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md411}{}\doxysubsection{\texorpdfstring{Pattern 1:\+ Simple UI-\/\+Only Builder (No Repository)}{Pattern 1:\+ Simple UI-\/\+Only Builder (No Repository)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md411}
+For widgets that don\textquotesingle{}t require data persistence:\+
+
+{\bfseries{Example:\+ Connection\+Setup\+Builder}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::pair<ConnectionSetupWidget*,\ ConnectionSetupDelegate*>}
+\DoxyCodeLine{ConnectionSetupBuilder::build(}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,}
+\DoxyCodeLine{\ \ \ \ QWidget*\ parentWidget,}
+\DoxyCodeLine{\ \ \ \ QObject*\ parentDelegate)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 1:\ Create\ widget}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_connection_setup_widget}{ConnectionSetupWidget}}(parentWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 2:\ Create\ delegate}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ ConnectionSetupDelegate(widget,\ parentDelegate);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 3:\ Wire\ signals\ (internal\ to\ delegate\ constructor)}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ \{\ widget,\ delegate\ \};}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md412}{}\doxysubsection{\texorpdfstring{Pattern 2:\+ Repository-\/\+Based Read-\/\+Only Builder}{Pattern 2:\+ Repository-\/\+Based Read-\/\+Only Builder}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md412}
+For widgets that display data but don\textquotesingle{}t modify it:\+
+
+{\bfseries{Example:\+ Image\+Comment\+Configuration\+Builder}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::pair<ImageCommentConfigurationWidget*,\ ImageCommentConfigurationDelegate*>}
+\DoxyCodeLine{ImageCommentConfigurationBuilder::build(}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,}
+\DoxyCodeLine{\ \ \ \ QWidget*\ parentWidget,}
+\DoxyCodeLine{\ \ \ \ QObject*\ parentDelegate)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 1:\ Create\ repository\ from\ dbConnection}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ repository\ =\ std::make\_shared<ImageCommentRepository>(params.dbConnection);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 2:\ Fetch\ initial\ data}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ commentsResult\ =\ repository-\/>getAllComments();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 3:\ Create\ widget\ with\ data}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_image_comment_configuration_widget}{ImageCommentConfigurationWidget}}(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ commentsResult.value,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ parentWidget}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 4:\ Create\ delegate\ WITHOUT\ repository\ (read-\/only)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ ImageCommentConfigurationDelegate(widget,\ parentDelegate);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ \{\ widget,\ delegate\ \};}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md413}{}\doxysubsection{\texorpdfstring{Pattern 3:\+ Repository-\/\+Based CRUD Builder}{Pattern 3:\+ Repository-\/\+Based CRUD Builder}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md413}
+For widgets that require full CRUD operations:\+
+
+{\bfseries{Example:\+ Generator\+Configuration\+Builder}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::pair<GeneratorConfigurationWidget*,\ GeneratorConfigurationDelegate*>}
+\DoxyCodeLine{GeneratorConfigurationBuilder::build(}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,}
+\DoxyCodeLine{\ \ \ \ QWidget*\ parentWidget,}
+\DoxyCodeLine{\ \ \ \ QObject*\ parentDelegate)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 1:\ Create\ repository}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ repository\ =\ std::make\_shared<DeviceRepository>(params.dbConnection,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 2:\ Fetch\ initial\ data}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ generatorsResult\ =\ repository-\/>getGeneratorList();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ tubesResult\ =\ repository-\/>getXRayTubesList();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 3:\ Create\ widget\ with\ data}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_generator_configuration_widget}{GeneratorConfigurationWidget}}(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ generatorsResult.value,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ tubesResult.value,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ parentWidget}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 4:\ Create\ delegate\ WITH\ repository\ (needs\ CRUD\ access)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ GeneratorConfigurationDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ widget,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ repository,\ \ \textcolor{comment}{//\ Repository\ injected\ for\ CRUD\ operations}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ parentDelegate}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ \{\ widget,\ delegate\ \};}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md414}{}\doxysubsection{\texorpdfstring{Pattern 4:\+ Multi-\/\+Repository Builder}{Pattern 4:\+ Multi-\/\+Repository Builder}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md414}
+For complex components requiring multiple data sources:\+
+
+{\bfseries{Example:\+ Work\+List\+Page\+Builder}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::pair<WorkListPage*,\ WorkListPageDelegate*>}
+\DoxyCodeLine{WorkListPageBuilder::build(}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,}
+\DoxyCodeLine{\ \ \ \ QWidget*\ parentWidget,}
+\DoxyCodeLine{\ \ \ \ QObject*\ parentDelegate)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 1:\ Create\ multiple\ repositories}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ worklistRepository\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::make\_shared<WorklistRepository>(params.dbConnection);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ scanRepository\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::make\_shared<ScanProtocolRepository>(params.dbConnection,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ dicomRepository\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::make\_shared<DicomRepository>(params.dbConnection);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ dicomTagRepository\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::make\_shared<DicomTagRepository>(params.dbConnection);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 2:\ Create\ interface\ pointer\ for\ view}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ irepository\ =\ std::static\_pointer\_cast<IWorklistRepository>(worklistRepository);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 3:\ Create\ widget}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_work_list_page}{WorkListPage}}(irepository,\ parentWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 4:\ Create\ delegate\ with\ ALL\ repositories}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ WorkListPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ widget,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ worklistRepository,\ \ \ \ \ \textcolor{comment}{//\ Concrete\ implementation}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ scanRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ dicomRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ dicomTagRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ params.dbConnection,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ params.contextManager,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ parentDelegate}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ \{\ widget,\ delegate\ \};}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md415}{}\doxysection{\texorpdfstring{Composite Builder Pattern:\+ System\+Setting\+Page\+Builder}{Composite Builder Pattern:\+ System\+Setting\+Page\+Builder}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md415}
+\doxylink{requirements_The}{The} most complex builder demonstrates hierarchical composition:\+
+
+{\bfseries{Location}}:\+ {\ttfamily Application/\+\+Builder/\+\+System\+Setting\+Page\+Builder.\+cpp}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md416}{}\doxysubsection{\texorpdfstring{Build Process}{Build Process}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md416}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::pair<SystemSettingPage*,\ SystemSettingPageDelegate*>}
+\DoxyCodeLine{SystemSettingPageBuilder::build(}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,}
+\DoxyCodeLine{\ \ \ \ QWidget*\ parentWidget,}
+\DoxyCodeLine{\ \ \ \ QObject*\ parentDelegate)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 1:\ Create\ parent\ page\ and\ delegate}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ page\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_system_setting_page}{SystemSettingPage}}(parentWidget);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ systemSettingPageDelegate\ =\ \textcolor{keyword}{new}\ SystemSettingPageDelegate(page,\ parentDelegate);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 2:\ Prepare\ delegation\ parameters}}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\ delegateParameters;}
+\DoxyCodeLine{\ \ \ \ delegateParameters.\doxymbox{\hyperlink{struct_delegate_parameter_a81308f606468ce23f9de299f48cd7b5a}{dbConnection}}\ =\ params.dbConnection;}
+\DoxyCodeLine{\ \ \ \ delegateParameters.\doxymbox{\hyperlink{struct_delegate_parameter_a3bce0f919f824cec133891383be18ba9}{contextManager}}\ =\ params.contextManager;}
+\DoxyCodeLine{\ \ \ \ delegateParameters.\doxymbox{\hyperlink{struct_delegate_parameter_a780059a9c3acf94eab8a7ae94595414c}{sessionContext}}\ =\ params.sessionContext;}
+\DoxyCodeLine{\ \ \ \ delegateParameters.\doxymbox{\hyperlink{struct_delegate_parameter_a39e9c75bfd1fc9f8dbbf708d5e583f12}{workflowContext}}\ =\ params.workflowContext;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 3:\ Build\ 12\ sub-\/widgets\ using\ specialized\ builders}}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Each\ sub-\/builder\ creates\ its\ own\ repositories}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Device\ Configuration\ Builders}}
+\DoxyCodeLine{\ \ \ \ WorkflowConfigurationBuilder\ workflowBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [workflowWidget,\ workflowDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ workflowBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setWorkflowConfigurationWidget(workflowWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ GeneratorConfigurationBuilder\ generatorBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [generatorWidget,\ generatorDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ generatorBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setGeneratorConfigurationWidget(generatorWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ DetectorConfigurationBuilder\ detectorBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [detectorWidget,\ detectorDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ detectorBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setDetectorConfigurationWidget(detectorWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ CollimatorConfigurationBuilder\ collimatorBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [collimatorWidget,\ collimatorDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ collimatorBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setCollimatorConfigurationWidget(collimatorWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ DapConfigurationBuilder\ dapBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [dapWidget,\ dapDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ dapBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setDapConfigurationWidget(dapWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Scan\ Protocol\ Builders}}
+\DoxyCodeLine{\ \ \ \ ProcedureConfigurationBuilder\ procedureBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [procedureWidget,\ procedureDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ procedureBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setProcedureConfigurationWidget(procedureWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ ViewConfigurationBuilder\ viewBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [viewWidget,\ viewDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ viewBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setViewConfigurationWidget(viewWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ TechniqueConfigurationBuilder\ techniqueBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [techniqueWidget,\ techniqueDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ techniqueBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setTechniqueConfigurationWidget(techniqueWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Integration\ Builders}}
+\DoxyCodeLine{\ \ \ \ WorkListConfigurationBuilder\ worklistBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [worklistWidget,\ worklistDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ worklistBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setWorkListConfigurationWidget(worklistWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ PacsEntityConfigurationBuilder\ pacsBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [pacsWidget,\ pacsDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ pacsBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setPacsEntityConfigurationWidget(pacsWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ ConnectionSetupBuilder\ connectionBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [connectionWidget,\ connectionDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ connectionBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setConnectionSetupWidget(connectionWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ ImageCommentConfigurationBuilder\ commentBuilder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [commentWidget,\ commentDelegate]\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ commentBuilder.build(delegateParameters,\ page,\ systemSettingPageDelegate);}
+\DoxyCodeLine{\ \ \ \ page-\/>setImageCommentConfigurationWidget(commentWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 4:\ Collect\ all\ child\ delegates}}
+\DoxyCodeLine{\ \ \ \ QVector<QObject*>\ delegates\ =\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ workflowDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ generatorDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ detectorDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ collimatorDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ dapDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ procedureDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ viewDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ techniqueDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ worklistDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ pacsDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ connectionDelegate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ commentDelegate}
+\DoxyCodeLine{\ \ \ \ \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 5:\ Attach\ child\ delegates\ to\ parent}}
+\DoxyCodeLine{\ \ \ \ systemSettingPageDelegate-\/>attachDelegates(delegates);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ \{\ page,\ systemSettingPageDelegate\ \};}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md417}{}\doxysubsection{\texorpdfstring{Hierarchical Structure}{Hierarchical Structure}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md417}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{SystemSettingPageBuilder}
+\DoxyCodeLine{├─\ Creates\ SystemSettingPage\ +\ SystemSettingPageDelegate}
+\DoxyCodeLine{├─\ Invokes\ 12\ sub-\/builders:}
+\DoxyCodeLine{│\ \ \ ├─\ WorkflowConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ DeviceRepository}
+\DoxyCodeLine{│\ \ \ ├─\ GeneratorConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ DeviceRepository\ +\ fetches\ generators/tubes}
+\DoxyCodeLine{│\ \ \ ├─\ DetectorConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ DeviceRepository\ +\ fetches\ detectors}
+\DoxyCodeLine{│\ \ \ ├─\ CollimatorConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ DeviceRepository}
+\DoxyCodeLine{│\ \ \ ├─\ DapConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ DeviceRepository}
+\DoxyCodeLine{│\ \ \ ├─\ ProcedureConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ ScanProtocolRepository\ +\ fetches\ procedures}
+\DoxyCodeLine{│\ \ \ ├─\ ViewConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ ScanProtocolRepository\ +\ fetches\ views}
+\DoxyCodeLine{│\ \ \ ├─\ TechniqueConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ ScanProtocolRepository\ +\ fetches\ techniques}
+\DoxyCodeLine{│\ \ \ ├─\ WorkListConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ WorklistRepository}
+\DoxyCodeLine{│\ \ \ ├─\ PacsEntityConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ Creates\ PacsNodeRepository}
+\DoxyCodeLine{│\ \ \ ├─\ ConnectionSetupBuilder}
+\DoxyCodeLine{│\ \ \ │\ \ \ └─\ No\ repository}
+\DoxyCodeLine{│\ \ \ └─\ ImageCommentConfigurationBuilder}
+\DoxyCodeLine{│\ \ \ \ \ \ \ └─\ Creates\ ImageCommentRepository\ +\ fetches\ comments}
+\DoxyCodeLine{└─\ Injects\ all\ child\ delegates\ into\ parent\ delegate}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md418}{}\doxysection{\texorpdfstring{Signal and Slot Wiring}{Signal and Slot Wiring}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md418}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md419}{}\doxysubsection{\texorpdfstring{Builder Responsibility}{Builder Responsibility}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md419}
+Builders are responsible for wiring signals and slots. This typically happens in the delegate constructor:\+
+
+{\bfseries{Example:\+ Main\+Window\+Delegate}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{MainWindowDelegate::MainWindowDelegate(}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_main_window}{MainWindow}}*\ widget,}
+\DoxyCodeLine{\ \ \ \ QObject*\ parent)}
+\DoxyCodeLine{\ \ \ \ :\ QObject(parent),\ m\_params(params),\ m\_mainWindow(widget)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Wire\ MainWindow\ signals\ to\ delegate\ slots}}
+\DoxyCodeLine{\ \ \ \ connect(m\_mainWindow,\ \&MainWindow::LoadSystemPageAction,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&MainWindowDelegate::onLoadSystemPageAction);}
+\DoxyCodeLine{\ \ \ \ connect(m\_mainWindow,\ \&MainWindow::LoadWorklistPageAction,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&MainWindowDelegate::onLoadWorklistPageAction);}
+\DoxyCodeLine{\ \ \ \ connect(m\_mainWindow,\ \&MainWindow::aboutToClose,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&MainWindowDelegate::aboutToClose);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md420}{}\doxysubsection{\texorpdfstring{Cross-\/\+Delegate Signal Wiring}{Cross-\/\+Delegate Signal Wiring}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md420}
+Builders also wire cross-\/delegate signals after construction:\+
+
+{\bfseries{Example:\+ Main\+Window\+Builder}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{std::pair<MainWindow*,\ MainWindowDelegate*>}
+\DoxyCodeLine{MainWindowBuilder::build(}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params,}
+\DoxyCodeLine{\ \ \ \ QWidget*\ parentWidget,}
+\DoxyCodeLine{\ \ \ \ QObject*\ parentDelegate)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_main_window}{MainWindow}}(parentWidget);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ MainWindowDelegate(params,\ widget,\ parentDelegate);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Wire\ delegate-\/to-\/widget\ signals}}
+\DoxyCodeLine{\ \ \ \ connect(delegate,\ \&MainWindowDelegate::applicationClosed,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ widget,\ \&MainWindow::close);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ \{\ widget,\ delegate\ \};}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md421}{}\doxysection{\texorpdfstring{Lazy Construction Pattern}{Lazy Construction Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md421}
+Pages are built on-\/demand when user navigates to them, not at application startup:\+
+
+{\bfseries{Example:\+ Main\+Window\+Delegate Lazy Page Loading}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ MainWindowDelegate::onLoadSystemPageAction()}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Clean\ up\ existing\ page\ delegate}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (m\_systemSettingPageDelegate)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_systemSettingPageDelegate-\/>deleteLater();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_systemSettingPageDelegate\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Build\ page\ on-\/demand}}
+\DoxyCodeLine{\ \ \ \ SystemSettingPageBuilder\ builder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [page,\ delegate]\ =\ builder.build(m\_params,\ \textcolor{keyword}{nullptr},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{\ \ \ \ m\_systemSettingPageDelegate\ =\ delegate;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Wire\ page\ delegate\ signals}}
+\DoxyCodeLine{\ \ \ \ connect(delegate,\ \&SystemSettingPageDelegate::closeSettings,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ [page,\ \textcolor{keyword}{this}]()\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_mainWindow)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_mainWindow-\/>closePage();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Display\ page}}
+\DoxyCodeLine{\ \ \ \ m\_mainWindow-\/>loadPage(page);}
+\DoxyCodeLine{\ \ \ \ m\_mainWindow-\/>finishLoadingPage();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Benefits}}:\+
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Reduced startup time}}:\+ Only \doxylink{class_main_window}{Main\+Window} is built initially
+\item {\bfseries{Lower memory footprint}}:\+ Pages created only when needed
+\item {\bfseries{Dynamic replacement}}:\+ Old pages can be destroyed and rebuilt
+\item {\bfseries{Resource optimization}}:\+ Database connections created per-\/page lifecycle
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md422}{}\doxysection{\texorpdfstring{Dependency Injection Flow}{Dependency Injection Flow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md422}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md423}{}\doxysubsection{\texorpdfstring{Full Application Startup}{Full Application Startup}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md423}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ApplicationService::loadMainWindow()}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{1.\ Create\ DelegateParameter:}
+\DoxyCodeLine{\ \ \ -\/\ dbConnection\ (from\ SettingProvider)}
+\DoxyCodeLine{\ \ \ -\/\ contextManager\ (created\ by\ ApplicationService)}
+\DoxyCodeLine{\ \ \ -\/\ sessionContext\ (set\ after\ authentication)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{2.\ Instantiate\ MainWindowBuilder}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{3.\ Call\ builder.build(params)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ \ MainWindowBuilder::build()}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ 1.\ new\ MainWindow(parentWidget)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ 2.\ new\ MainWindowDelegate(params,\ mainWindow,\ parentDelegate)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ 3.\ Connect\ signals/slots}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ 4.\ return\ \{mainWindow,\ delegate\}}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{4.\ Store\ result:}
+\DoxyCodeLine{\ \ \ -\/\ m\_mainWindow\ =\ result.first}
+\DoxyCodeLine{\ \ \ -\/\ m\_mainWindowDelegate\ =\ result.second}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{5.\ Display:\ m\_mainWindow-\/>show()}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md424}{}\doxysubsection{\texorpdfstring{Lazy Page Construction (User Action)}{Lazy Page Construction (User Action)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md424}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{User\ clicks\ "{}System\ Settings"{}\ button}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{MainWindow::LoadSystemPageAction()\ signal}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{MainWindowDelegate::onLoadSystemPageAction()\ slot}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{1.\ Create\ DelegateParameter\ (same\ as\ main\ window)}
+\DoxyCodeLine{2.\ Instantiate\ SystemSettingPageBuilder}
+\DoxyCodeLine{3.\ Call\ builder.build(params)}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ \ SystemSettingPageBuilder::build()}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ↓}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ 1.\ new\ SystemSettingPage()}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ 2.\ new\ SystemSettingPageDelegate()}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ 3.\ FOR\ EACH\ of\ 12\ sub-\/builders:}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ a.\ Create\ sub-\/builder}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ b.\ Call\ sub-\/builder.build(params,\ page,\ systemSettingPageDelegate)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/\ Sub-\/builder\ creates\ its\ own\ repositories\ from\ params.dbConnection}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ c.\ Add\ widget\ to\ page}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ d.\ Collect\ delegate}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ 4.\ Call\ systemSettingPageDelegate-\/>attachDelegates(allSubDelegates)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ 5.\ return\ \{page,\ pageDelegate\}}
+\DoxyCodeLine{\ \ \ \ ↓}
+\DoxyCodeLine{4.\ Wire\ signal:\ pageDelegate.closeSettings\ →\ mainWindow.closePage()}
+\DoxyCodeLine{5.\ Display:\ mainWindow-\/>loadPage(page)}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md425}{}\doxysection{\texorpdfstring{Builder Patterns and Best Practices}{Builder Patterns and Best Practices}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md425}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md426}{}\doxysubsection{\texorpdfstring{Pattern 1:\+ Repository Creation Responsibility}{Pattern 1:\+ Repository Creation Responsibility}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md426}
+{\bfseries{Builders create repositories, NOT delegates}}:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ CORRECT:\ Builder\ creates\ repository}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ repository\ =\ std::make\_shared<DeviceRepository>(params.dbConnection,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ GeneratorConfigurationDelegate(widget,\ repository,\ parentDelegate);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ INCORRECT:\ Delegate\ creates\ repository}}
+\DoxyCodeLine{\textcolor{comment}{//\ auto\ delegate\ =\ new\ GeneratorConfigurationDelegate(widget,\ params.dbConnection,\ parentDelegate);}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md427}{}\doxysubsection{\texorpdfstring{Pattern 2:\+ Stateless Builders}{Pattern 2:\+ Stateless Builders}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md427}
+Builders have no state and can be instantiated per-\/use:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Create\ builder\ on-\/demand}}
+\DoxyCodeLine{SystemSettingPageBuilder\ builder;}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ result\ =\ builder.build(params);}
+\DoxyCodeLine{\textcolor{comment}{//\ Builder\ can\ be\ destroyed\ immediately\ after\ build()}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md428}{}\doxysubsection{\texorpdfstring{Pattern 3:\+ Qt Ownership Model}{Pattern 3:\+ Qt Ownership Model}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md428}
+Use raw pointers with Qt parent-\/child mechanism:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Widget\ parent\ =\ UI\ container}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_work_list_page}{WorkListPage}}(parentWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Delegate\ parent\ =\ higher-\/level\ delegate\ or\ ApplicationService}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ WorkListPageDelegate(widget,\ ...,\ parentDelegate);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Qt\ automatically\ destroys\ both\ when\ parents\ are\ destroyed}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md429}{}\doxysubsection{\texorpdfstring{Pattern 4:\+ Smart Pointers for Repositories}{Pattern 4:\+ Smart Pointers for Repositories}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md429}
+Repositories use shared pointers for proper lifetime management:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Shared\ pointer\ ensures\ cleanup\ when\ builder\ scope\ ends}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ repository\ =\ std::make\_shared<WorklistRepository>(params.dbConnection);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Multiple\ repositories\ can\ be\ passed\ to\ single\ delegate}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ WorkListPageDelegate(}
+\DoxyCodeLine{\ \ \ \ widget,}
+\DoxyCodeLine{\ \ \ \ repository1,}
+\DoxyCodeLine{\ \ \ \ repository2,}
+\DoxyCodeLine{\ \ \ \ repository3,}
+\DoxyCodeLine{\ \ \ \ ...}
+\DoxyCodeLine{);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md430}{}\doxysubsection{\texorpdfstring{Pattern 5:\+ Interface-\/\+Based View Construction}{Pattern 5:\+ Interface-\/\+Based View Construction}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md430}
+Views receive interface pointers, delegates receive concrete implementations:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ View\ receives\ interface\ for\ flexibility}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ irepository\ =\ std::static\_pointer\_cast<IWorklistRepository>(worklistRepository);}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_work_list_page}{WorkListPage}}(irepository,\ parentWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Delegate\ receives\ concrete\ implementation\ for\ full\ access}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ WorkListPageDelegate(}
+\DoxyCodeLine{\ \ \ \ widget,}
+\DoxyCodeLine{\ \ \ \ worklistRepository,\ \ \textcolor{comment}{//\ Concrete\ implementation}}
+\DoxyCodeLine{\ \ \ \ ...}
+\DoxyCodeLine{);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md431}{}\doxysection{\texorpdfstring{Complete Example:\+ Work\+List\+Page\+Builder}{Complete Example:\+ Work\+List\+Page\+Builder}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md431}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md432}{}\doxysubsection{\texorpdfstring{Builder Header (Work\+List\+Page\+Builder.\+h)}{Builder Header (Work\+List\+Page\+Builder.\+h)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md432}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{preprocessor}{\#ifndef\ WORKLISTPAGEBUILDER\_H}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#define\ WORKLISTPAGEBUILDER\_H}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{_i_widget_delegate_builder_8h}{IWidgetDelegateBuilder.h}}"{}}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}WorkListPageDelegate.h"{}}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}WorkListPage.h"{}}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}DelegateParameter.h"{}}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_etrek_1_1_application_1_1_delegate}{Etrek::Application::Delegate}}\ \{}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_etrek_1_1_application_1_1_delegate_1_1_work_list_page_builder}{WorkListPageBuilder}}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ :\ \textcolor{keyword}{public}\ IWidgetDelegateBuilder<WorkListPage,\ WorkListPageDelegate>}
+\DoxyCodeLine{\ \ \ \ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ WorkListPageBuilder();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \string~WorkListPageBuilder();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::pair<WorkListPage*,\ WorkListPageDelegate*>}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_etrek_1_1_application_1_1_delegate_1_1_work_list_page_builder_a782dbfb7ebb6fbde659955d217ab6a78}{build}}(\textcolor{keyword}{const}\ DelegateParameter\&\ params,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QWidget*\ parentWidget\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QObject*\ parentDelegate\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{\ \ \ \ \};}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ WORKLISTPAGEBUILDER\_H}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md433}{}\doxysubsection{\texorpdfstring{Builder Implementation (Work\+List\+Page\+Builder.\+cpp)}{Builder Implementation (Work\+List\+Page\+Builder.\+cpp)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md433}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}WorkListPageBuilder.h"{}}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{_worklist_repository_8h}{WorklistRepository.h}}"{}}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{_scan_protocol_repository_8h}{ScanProtocolRepository.h}}"{}}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}DicomRepository.h"{}}}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}DicomTagRepository.h"{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_etrek_1_1_application_1_1_delegate}{Etrek::Application::Delegate}}\ \{}
+\DoxyCodeLine{}
+\DoxyCodeLine{WorkListPageBuilder::WorkListPageBuilder()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{WorkListPageBuilder::\string~WorkListPageBuilder()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{}
+\DoxyCodeLine{std::pair<WorkListPage*,\ WorkListPageDelegate*>}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_etrek_1_1_application_1_1_delegate_1_1_work_list_page_builder_a782dbfb7ebb6fbde659955d217ab6a78}{WorkListPageBuilder::build}}(}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ DelegateParameter\&\ params,}
+\DoxyCodeLine{\ \ \ \ QWidget*\ parentWidget,}
+\DoxyCodeLine{\ \ \ \ QObject*\ parentDelegate)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 1:\ Create\ multiple\ repositories\ from\ dbConnection}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ worklistRepository\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::make\_shared<Etrek::Worklist::Repository::WorklistRepository>(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ params.dbConnection}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ scanRepository\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::make\_shared<Etrek::ScanProtocol::Repository::ScanProtocolRepository>(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ params.dbConnection,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{nullptr}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ dicomRepository\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::make\_shared<Etrek::Dicom::Repository::DicomRepository>(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ params.dbConnection}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ dicomTagRepository\ =}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::make\_shared<Etrek::Dicom::Repository::DicomTagRepository>(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ params.dbConnection}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 2:\ Create\ interface\ pointer\ for\ view}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ irepository\ =\ std::static\_pointer\_cast<}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ Etrek::Worklist::Repository::IWorklistRepository}
+\DoxyCodeLine{\ \ \ \ >(worklistRepository);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 3:\ Create\ widget\ with\ interface}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ widget\ =\ \textcolor{keyword}{new}\ WorkListPage(irepository,\ parentWidget);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Step\ 4:\ Create\ delegate\ with\ all\ concrete\ repositories}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ WorkListPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ widget,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ worklistRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ scanRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ dicomRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ dicomTagRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ params.dbConnection,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ params.contextManager,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ parentDelegate}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Signals\ are\ wired\ in\ delegate\ constructor}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{return}\ \{\ widget,\ delegate\ \};}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\}\ \textcolor{comment}{//\ namespace\ Etrek::Application::Delegate}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md434}{}\doxysection{\texorpdfstring{Builder Lifecycle and Memory Management}{Builder Lifecycle and Memory Management}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md434}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md435}{}\doxysubsection{\texorpdfstring{Creation and Destruction}{Creation and Destruction}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md435}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ 1.\ Builder\ created\ on\ stack\ (automatic\ storage)}}
+\DoxyCodeLine{SystemSettingPageBuilder\ builder;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ 2.\ build()\ called,\ creates\ widget\ and\ delegate}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ [page,\ delegate]\ =\ builder.build(params,\ parentWidget,\ parentDelegate);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ 3.\ Builder\ goes\ out\ of\ scope\ and\ is\ destroyed}}
+\DoxyCodeLine{\textcolor{comment}{//\ \ \ \ (Widget\ and\ delegate\ remain\ alive\ due\ to\ Qt\ parent\ ownership)}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ 4.\ When\ parent\ is\ destroyed,\ Qt\ destroys\ children\ automatically}}
+\DoxyCodeLine{\textcolor{comment}{//\ \ \ \ No\ manual\ delete\ needed}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md436}{}\doxysubsection{\texorpdfstring{Repository Lifetime}{Repository Lifetime}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md436}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Repository\ created\ with\ shared\_ptr}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ repository\ =\ std::make\_shared<WorklistRepository>(params.dbConnection);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Repository\ injected\ into\ delegate}}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ delegate\ =\ \textcolor{keyword}{new}\ WorkListPageDelegate(widget,\ repository,\ ...);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Repository's\ lifetime:}}
+\DoxyCodeLine{\textcolor{comment}{//\ -\/\ Kept\ alive\ by\ shared\_ptr\ in\ delegate}}
+\DoxyCodeLine{\textcolor{comment}{//\ -\/\ Destroyed\ when\ delegate\ is\ destroyed}}
+\DoxyCodeLine{\textcolor{comment}{//\ -\/\ Automatic\ cleanup,\ no\ manual\ delete\ needed}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md437}{}\doxysection{\texorpdfstring{Summary}{Summary}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern_autotoc_md437}
+\doxylink{requirements_The}{The} Builder pattern in Etrek provides:\+
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Template-\/based standardization}}:\+ All builders follow {\ttfamily \doxylink{class_i_widget_delegate_builder}{IWidget\+Delegate\+Builder}\texorpdfstring{$<$}{<}Widget, Delegate\texorpdfstring{$>$}{>}}
+\item {\bfseries{Centralized dependency injection}}:\+ {\ttfamily \doxylink{struct_delegate_parameter}{Delegate\+Parameter}} carries all dependencies
+\item {\bfseries{Repository creation responsibility}}:\+ Builders create repositories, delegates receive them
+\item {\bfseries{Lazy construction}}:\+ Components built on-\/demand, not at startup
+\item {\bfseries{Hierarchical composition}}:\+ Parent builders orchestrate child builders (System\+Setting\+Page\+Builder)
+\item {\bfseries{Qt integration}}:\+ Leverages parent-\/child ownership for automatic memory management
+\item {\bfseries{Stateless builders}}:\+ No builder state, can be instantiated per-\/use
+\item {\bfseries{17 builder classes}}:\+ Across Application, Device, Worklist, PACS, Scan\+Protocol, and Dicom modules
+\end{DoxyEnumerate}
+
+This architecture enables:\+
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Testability}}:\+ Mock repositories can be injected
+\item {\bfseries{Maintainability}}:\+ Clear construction logic separate from runtime behavior
+\item {\bfseries{Scalability}}:\+ New builders easily added following established pattern
+\item {\bfseries{Performance}}:\+ Lazy loading reduces startup time and memory usage
+\item {\bfseries{Type safety}}:\+ Template-\/based approach catches errors at compile time
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+
+
+{\bfseries{See Also}}:\+
+\begin{DoxyItemize}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern}{Model-\/\+View-\/\+Delegate Pattern Documentation}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_201-_architecture-_overview}{Architecture Overview}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows}{Workflow Documentation}{0} 
+\end{DoxyItemize}

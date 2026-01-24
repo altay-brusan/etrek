@@ -1,0 +1,652 @@
+\doxysection{decomposition.\+hpp}
+\hypertarget{decomposition_8hpp_source}{}\label{decomposition_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/decomposition.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/decomposition.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_DECOMPOSITION\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_DECOMPOSITION\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}link.hpp"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}assigner.hpp"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}master.hpp"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00016\ \{}
+\DoxyCodeLine{00017\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00018\ \{}
+\DoxyCodeLine{00019\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds\_,\ \textcolor{keyword}{class}\ Enable\ =\ \textcolor{keywordtype}{void}>}
+\DoxyCodeLine{00020\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1detail_1_1_bounds_helper}{BoundsHelper}};}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \ \ \textcolor{comment}{//\ discrete\ bounds}}
+\DoxyCodeLine{00023\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00024\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1detail_1_1_bounds_helper}{BoundsHelper}}<\doxymbox{\hyperlink{structdiy_1_1_bounds}{Bounds}},\ typename\ std::enable\_if<std::is\_integral<typename\ Bounds::Coordinate>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}>}
+\DoxyCodeLine{00025\ \ \ \{}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keyword}{using\ }Coordinate\ =\ \textcolor{keyword}{typename}\ Bounds::Coordinate;}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keyword}{static}\ Coordinate\ \ \ from(\textcolor{keywordtype}{int}\ i,\ \textcolor{keywordtype}{int}\ n,\ Coordinate\ min,\ Coordinate\ max,\ \textcolor{keywordtype}{bool})\ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ min\ +\ (max\ -\/\ min\ +\ 1)/n\ *\ i;\ \}}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keyword}{static}\ Coordinate\ \ \ to\ \ (\textcolor{keywordtype}{int}\ i,\ \textcolor{keywordtype}{int}\ n,\ Coordinate\ min,\ Coordinate\ max,\ \textcolor{keywordtype}{bool}\ shared\_face)}
+\DoxyCodeLine{00030\ \ \ \ \ \{}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ ==\ n\ -\/\ 1)}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ max;}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ from(i+1,\ n,\ min,\ max,\ shared\_face)\ -\/\ (shared\_face\ ?\ 0\ :\ 1);}
+\DoxyCodeLine{00035\ \ \ \ \ \}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ lower(Coordinate\ x,\ \textcolor{keywordtype}{int}\ n,\ Coordinate\ min,\ Coordinate\ max,\ \textcolor{keywordtype}{bool}\ shared)}
+\DoxyCodeLine{00038\ \ \ \ \ \{}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ Coordinate\ width\ =\ (max\ -\/\ min\ +\ 1)/n;}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ Coordinate\ res\ =\ (x\ -\/\ min)/width;}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (res\ >=\ n)\ res\ =\ n\ -\/\ 1;}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (shared\ \&\&\ x\ ==\ from(res,\ n,\ min,\ max,\ shared))}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \ \ -\/-\/res;}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00046\ \ \ \ \ \}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ upper(Coordinate\ x,\ \textcolor{keywordtype}{int}\ n,\ Coordinate\ min,\ Coordinate\ max,\ \textcolor{keywordtype}{bool}\ shared)}
+\DoxyCodeLine{00048\ \ \ \ \ \{}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ Coordinate\ width\ =\ (max\ -\/\ min\ +\ 1)/n;}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ Coordinate\ res\ =\ (x\ -\/\ min)/width\ +\ 1;}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (shared\ \&\&\ x\ ==\ from(res,\ n,\ min,\ max,\ shared))}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ ++res;}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00054\ \ \ \ \ \}}
+\DoxyCodeLine{00055\ \ \ \};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{//\ continuous\ bounds}}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1detail_1_1_bounds_helper}{BoundsHelper}}<\doxymbox{\hyperlink{structdiy_1_1_bounds}{Bounds}},\ typename\ std::enable\_if<std::is\_floating\_point<typename\ Bounds::Coordinate>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}>}
+\DoxyCodeLine{00060\ \ \ \{}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keyword}{using\ }Coordinate\ =\ \textcolor{keyword}{typename}\ Bounds::Coordinate;}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keyword}{static}\ Coordinate\ \ \ from(\textcolor{keywordtype}{int}\ i,\ \textcolor{keywordtype}{int}\ n,\ Coordinate\ min,\ Coordinate\ max,\ \textcolor{keywordtype}{bool})\ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ min\ +\ (max\ -\/\ min)/n\ *\ i;\ \}}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keyword}{static}\ Coordinate\ \ \ to\ \ (\textcolor{keywordtype}{int}\ i,\ \textcolor{keywordtype}{int}\ n,\ Coordinate\ min,\ Coordinate\ max,\ \textcolor{keywordtype}{bool})\ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ min\ +\ (max\ -\/\ min)/n\ *\ (i+1);\ \}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ lower(Coordinate\ x,\ \textcolor{keywordtype}{int}\ n,\ Coordinate\ min,\ Coordinate\ max,\ \textcolor{keywordtype}{bool})\ \ \ \{\ Coordinate\ width\ =\ (max\ -\/\ min)/n;\ \textcolor{keyword}{auto}\ res\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(std::floor((x\ -\/\ min)/width));\ \textcolor{keywordflow}{if}\ (min\ +\ res*width\ ==\ x)\ \textcolor{keywordflow}{return}\ (res\ -\/\ 1);\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{return}\ res;\ \}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ upper(Coordinate\ x,\ \textcolor{keywordtype}{int}\ n,\ Coordinate\ min,\ Coordinate\ max,\ \textcolor{keywordtype}{bool})\ \ \ \{\ Coordinate\ width\ =\ (max\ -\/\ min)/n;\ \textcolor{keyword}{auto}\ res\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(std::ceil\ ((x\ -\/\ min)/width));\ \textcolor{keywordflow}{if}\ (min\ +\ res*width\ ==\ x)\ \textcolor{keywordflow}{return}\ (res\ +\ 1);\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{return}\ res;\ \}}
+\DoxyCodeLine{00068\ \ \ \};}
+\DoxyCodeLine{00069\ \}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds\_>}
+\DoxyCodeLine{00075\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_regular_decomposer_a9447fd42149c22e1f896c01b54069dc1}{RegularDecomposer}}}
+\DoxyCodeLine{00076\ \ \ \{}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keyword}{using\ }Bounds\ \ \ \ \ =\ Bounds\_;}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keyword}{using\ }Coordinate\ =\ \textcolor{keyword}{typename}\ BoundsValue<Bounds>::type;}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keyword}{using\ }Link\ \ \ \ \ \ \ =\ \doxymbox{\hyperlink{classdiy_1_1_regular_link}{RegularLink<Bounds>}};}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keyword}{using\ }Creator\ =\ std::function<void(\textcolor{keywordtype}{int},\ \ \ \ \ \ Bounds,\ Bounds,\ Bounds,\ Link)>;}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keyword}{using\ }Updater\ =\ std::function<void(\textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ Bounds,\ Bounds,\ Bounds,\ Link)>;}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ \ \ \ \ std::vector<bool>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BoolVector;}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ \ \ \ \ std::vector<Coordinate>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CoordinateVector;}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ \ \ \ \ std::vector<int>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DivisionsVector;}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer_a9447fd42149c22e1f896c01b54069dc1}{RegularDecomposer}}(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim\_,}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Bounds\&\ \ \ \ \ domain\_,}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nblocks\_,}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BoolVector\ \ \ \ \ \ \ \ share\_face\_\ =\ BoolVector(),}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BoolVector\ \ \ \ \ \ \ \ wrap\_\ \ \ \ \ \ \ =\ BoolVector(),}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CoordinateVector\ \ ghosts\_\ \ \ \ \ =\ CoordinateVector(),}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DivisionsVector\ \ \ divisions\_\ \ =\ DivisionsVector()):}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim(dim\_),\ domain(domain\_),\ nblocks(nblocks\_),}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ share\_face(share\_face\_),}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wrap(wrap\_),\ ghosts(ghosts\_),\ divisions(divisions\_)}
+\DoxyCodeLine{00106\ \ \ \ \ \{}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((\textcolor{keywordtype}{int})\ share\_face.size()\ <\ dim)\ \ share\_face.resize(dim);}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ if\ ((\textcolor{keywordtype}{int})\ wrap.size()\ <\ dim)\ \ \ \ \ \ \ \ wrap.resize(dim);}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ if\ ((\textcolor{keywordtype}{int})\ ghosts.size()\ <\ dim)\ \ \ \ \ \ ghosts.resize(dim);}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ if\ ((\textcolor{keywordtype}{int})\ divisions.size()\ <\ dim)\ \ \ divisions.resize(dim);}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \ \ \ \ fill\_divisions(divisions);}
+\DoxyCodeLine{00113\ \ \ \ \ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{comment}{//\ Calls\ create(int\ gid,\ const\ Bounds\&\ bounds,\ const\ Link\&\ link)}}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(\textcolor{keywordtype}{int}\ rank,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_static_assigner}{StaticAssigner}}\&\ assigner,\ \textcolor{keyword}{const}\ Creator\&\ create);}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(\textcolor{keywordtype}{int}\ rank,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_static_assigner}{StaticAssigner}}\&\ assigner,\ \doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ master,\ \textcolor{keyword}{const}\ Updater\&\ update);}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(\textcolor{keywordtype}{int}\ rank,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_static_assigner}{StaticAssigner}}\&\ assigner,\ \doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ master);}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{comment}{//\ find\ lowest\ gid\ that\ owns\ a\ particular\ point}}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ lowest\_gid(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_point}{Point}}\&\ p)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ DivisionsVector\ gid\_to\_coords(\textcolor{keywordtype}{int}\ gid)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ DivisionsVector\ coords;\ gid\_to\_coords(gid,\ coords);\ \textcolor{keywordflow}{return}\ coords;\ \}}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ gid\_to\_coords(\textcolor{keywordtype}{int}\ gid,\ DivisionsVector\&\ coords)\textcolor{keyword}{\ const\ \ \ \ \ \ \ }\{\ gid\_to\_coords(gid,\ coords,\ divisions);\ \}}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ coords\_to\_gid(\textcolor{keyword}{const}\ DivisionsVector\&\ coords)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ coords\_to\_gid(coords,\ divisions);\ \}}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ fill\_divisions(std::vector<int>\&\ divisions)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer_a05f02918cbd5558ec3d2e64950c97598}{fill\_bounds}}(Bounds\&\ bounds,\ \textcolor{keyword}{const}\ DivisionsVector\&\ coords,\ \textcolor{keywordtype}{bool}\ add\_ghosts\ =\ \textcolor{keyword}{false})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer_a35ac3387609bd1f30de84b997f69f0ed}{fill\_bounds}}(Bounds\&\ bounds,\ \textcolor{keywordtype}{int}\ gid,\ \textcolor{keywordtype}{bool}\ add\_ghosts\ =\ \textcolor{keyword}{false})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \ \ \ \ all(\textcolor{keyword}{const}\ std::vector<int>\&\ v,\ \textcolor{keywordtype}{int}\ x);}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \ \ \ \ gid\_to\_coords(\textcolor{keywordtype}{int}\ gid,\ DivisionsVector\&\ coords,\ \textcolor{keyword}{const}\ DivisionsVector\&\ divs);}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \ \ \ \ \ coords\_to\_gid(\textcolor{keyword}{const}\ DivisionsVector\&\ coords,\ \textcolor{keyword}{const}\ DivisionsVector\&\ divs);}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \ \ \ \ factor(std::vector<unsigned>\&\ factors,\ \textcolor{keywordtype}{int}\ n);}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{comment}{//\ Point\ to\ GIDs\ functions}}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ point\_to\_gids(std::vector<int>\&\ gids,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_point}{Point}}\&\ p)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer_adcb230a2253bd85a727b19f65810c490}{point\_to\_gid}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_point}{Point}}\&\ p)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ num\_gids(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_point}{Point}}\&\ p)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ top\_bottom(\textcolor{keywordtype}{int}\&\ top,\ \textcolor{keywordtype}{int}\&\ bottom,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_point}{Point}}\&\ p,\ \textcolor{keywordtype}{int}\ axis)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim;}
+\DoxyCodeLine{00156\ \ \ \ \ Bounds\ \ \ \ \ \ \ \ \ \ \ \ domain;}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nblocks;}
+\DoxyCodeLine{00158\ \ \ \ \ BoolVector\ \ \ \ \ \ \ \ share\_face;}
+\DoxyCodeLine{00159\ \ \ \ \ BoolVector\ \ \ \ \ \ \ \ wrap;}
+\DoxyCodeLine{00160\ \ \ \ \ CoordinateVector\ \ ghosts;}
+\DoxyCodeLine{00161\ \ \ \ \ DivisionsVector\ \ \ divisions;}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \};}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00181\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00182\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim,}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rank,}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_bounds}{Bounds}}\&\ \ \ \ \ \ \ \ \ \ domain,}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_static_assigner}{StaticAssigner}}\&\ \ assigner,}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::Creator\&\ \ \ create,}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector\ \ \ \ \ \ \ share\_face\ =\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector(),}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector\ \ \ \ \ \ \ wrap\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector(),}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::CoordinateVector\ ghosts\ \ \ \ \ =\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::CoordinateVector(),}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::DivisionsVector\ \ divs\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::DivisionsVector())}
+\DoxyCodeLine{00191\ \ \ \{}
+\DoxyCodeLine{00192\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer}{RegularDecomposer<Bounds>}}(dim,\ domain,\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}(),\ share\_face,\ wrap,\ ghosts,\ divs).decompose(rank,\ assigner,\ create);}
+\DoxyCodeLine{00193\ \ \ \}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00211\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00212\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim,}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rank,}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_bounds}{Bounds}}\&\ \ \ \ \ \ \ \ \ \ domain,}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_static_assigner}{StaticAssigner}}\&\ \ assigner,}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector\ \ \ \ \ \ \ share\_face\ =\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector(),}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector\ \ \ \ \ \ \ wrap\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector(),}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::CoordinateVector\ ghosts\ \ \ \ \ =\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::CoordinateVector(),}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::DivisionsVector\ \ divs\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::DivisionsVector())}
+\DoxyCodeLine{00221\ \ \ \{}
+\DoxyCodeLine{00222\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer}{RegularDecomposer<Bounds>}}(dim,\ domain,\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}(),\ share\_face,\ wrap,\ ghosts,\ divs).decompose(rank,\ assigner,\ master);}
+\DoxyCodeLine{00223\ \ \ \}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00234\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00235\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rank,}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_static_assigner}{StaticAssigner}}\&\ \ assigner,}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master)}
+\DoxyCodeLine{00238\ \ \ \{}
+\DoxyCodeLine{00239\ \ \ \ \ std::vector<int>\ \ local\_gids;}
+\DoxyCodeLine{00240\ \ \ \ \ assigner.\doxymbox{\hyperlink{classdiy_1_1_static_assigner_a8c48278c29fc47df4a5d359f04cae229}{local\_gids}}(rank,\ local\_gids);}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ local\_gids.size();\ ++i)}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ master.\doxymbox{\hyperlink{classdiy_1_1_master_aeab2723bb0ecd4f7316b4805c1b53a61}{add}}(local\_gids[i],\ master.create(),\ \textcolor{keyword}{new}\ diy::Link);}
+\DoxyCodeLine{00244\ \ \ \}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim,}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rank,}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_bounds}{Bounds}}\&\ \ \ \ \ \ \ \ \ \ domain,}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_static_assigner}{StaticAssigner}}\&\ \ assigner,}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::Updater\&\ \ \ update,}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector\ \ \ \ \ \ \ share\_face\ =}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector(),}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector\ \ \ \ \ \ \ wrap\ \ \ \ \ \ \ =}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::BoolVector(),}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::CoordinateVector\ ghosts\ \ \ \ \ =}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::CoordinateVector(),}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::DivisionsVector\ \ divs\ \ \ \ \ \ \ =}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ RegularDecomposer<Bounds>::DivisionsVector())}
+\DoxyCodeLine{00270\ \ \ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer}{RegularDecomposer<Bounds>}}(dim,\ domain,\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}(),\ share\_face,\ wrap,\ ghosts,\ divs).}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(rank,\ assigner,\ master,\ update);}
+\DoxyCodeLine{00273\ \ \ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00277\ \}}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{comment}{//\ decomposes\ domain\ and\ adds\ blocks\ to\ the\ master}}
+\DoxyCodeLine{00280\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00281\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00282\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00283\ decompose(\textcolor{keywordtype}{int}\ rank,\ \textcolor{keyword}{const}\ StaticAssigner\&\ assigner,\ Master\&\ master)}
+\DoxyCodeLine{00284\ \{}
+\DoxyCodeLine{00285\ \ \ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(rank,\ assigner,\ [\&master](\textcolor{keywordtype}{int}\ gid,\ \textcolor{keyword}{const}\ Bounds\&,\ \textcolor{keyword}{const}\ Bounds\&,\ \textcolor{keyword}{const}\ Bounds\&,\ \textcolor{keyword}{const}\ Link\&\ link)}
+\DoxyCodeLine{00286\ \ \ \{}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{keywordtype}{void}*\ \ \ \ \ b\ =\ master.create();}
+\DoxyCodeLine{00288\ \ \ \ \ Link*\ \ \ \ \ l\ =\ \textcolor{keyword}{new}\ Link(link);}
+\DoxyCodeLine{00289\ \ \ \ \ master.add(gid,\ b,\ l);}
+\DoxyCodeLine{00290\ \ \ \});}
+\DoxyCodeLine{00291\ \}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00294\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00295\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00296\ decompose(\textcolor{keywordtype}{int}\ rank,\ \textcolor{keyword}{const}\ StaticAssigner\&\ assigner,\ \textcolor{keyword}{const}\ Creator\&\ create)}
+\DoxyCodeLine{00297\ \{}
+\DoxyCodeLine{00298\ \ \ std::vector<int>\ gids;}
+\DoxyCodeLine{00299\ \ \ assigner.local\_gids(rank,\ gids);}
+\DoxyCodeLine{00300\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ (int)gids.size();\ ++i)}
+\DoxyCodeLine{00301\ \ \ \{}
+\DoxyCodeLine{00302\ \ \ \ \ \textcolor{keywordtype}{int}\ gid\ =\ gids[i];}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \ \ DivisionsVector\ coords;}
+\DoxyCodeLine{00305\ \ \ \ \ gid\_to\_coords(gid,\ coords);}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \ \ Bounds\ core(dim),\ bounds(dim);}
+\DoxyCodeLine{00308\ \ \ \ \ fill\_bounds(core,\ \ \ coords);}
+\DoxyCodeLine{00309\ \ \ \ \ fill\_bounds(bounds,\ coords,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{comment}{//\ Fill\ link\ with\ all\ the\ neighbors}}
+\DoxyCodeLine{00312\ \ \ \ \ Link\ link(dim,\ core,\ bounds);}
+\DoxyCodeLine{00313\ \ \ \ \ std::vector<int>\ \ offsets(dim,\ -\/1);}
+\DoxyCodeLine{00314\ \ \ \ \ offsets[0]\ =\ -\/2;}
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{keywordflow}{while}\ (!all(offsets,\ 1))}
+\DoxyCodeLine{00316\ \ \ \ \ \{}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \textcolor{comment}{//\ next\ offset}}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ j;}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (j\ =\ 0;\ j\ <\ dim;\ ++j)}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (offsets[j]\ ==\ 1)}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ offsets[j]\ =\ -\/1;}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ ++offsets[j];}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (all(offsets,\ 0))\ \textcolor{keywordflow}{continue};\ \ \ \ \ \ \textcolor{comment}{//\ skip\ ourselves}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ \ \ \ \ DivisionsVector\ \ \ \ \ nhbr\_coords(dim);}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ Direction\ \ \ \ \ \ \ \ \ \ \ dir(dim,0),\ wrap\_dir(dim,0);}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ inbounds\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ k\ =\ 0;\ k\ <\ dim;\ ++k)}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ nhbr\_coords[k]\ =\ coords[k]\ +\ offsets[k];}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ wrap}}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nhbr\_coords[k]\ <\ 0)}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wrap[k])}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ nhbr\_coords[k]\ =\ divisions[k]\ -\/\ 1;}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ wrap\_dir[k]\ =\ -\/1;}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ inbounds\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nhbr\_coords[k]\ >=\ divisions[k])}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wrap[k])}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ nhbr\_coords[k]\ =\ 0;}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ wrap\_dir[k]\ =\ 1;}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ inbounds\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NB:\ this\ needs\ to\ match\ the\ addressing\ scheme\ in\ dir\_t\ (in\ constants.h)}}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (offsets[k]\ ==\ -\/1\ ||\ offsets[k]\ ==\ 1)}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ dir[k]\ =\ offsets[k];}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!inbounds)\ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nhbr\_gid\ =\ coords\_to\_gid(nhbr\_coords);}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ BlockID\ bid;\ bid.gid\ =\ nhbr\_gid;\ bid.proc\ =\ assigner.rank(nhbr\_gid);}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ link.add\_neighbor(bid);}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ \ \ \ \ Bounds\ nhbr\_core(dim);}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ fill\_bounds(nhbr\_core,\ nhbr\_coords);}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ link.add\_core(nhbr\_core);}
+\DoxyCodeLine{00371\ }
+\DoxyCodeLine{00372\ \ \ \ \ \ \ Bounds\ nhbr\_bounds(dim);}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ fill\_bounds(nhbr\_bounds,\ nhbr\_coords,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ link.add\_bounds(nhbr\_bounds);}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \ \ \ \ link.add\_direction(dir);}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ link.add\_wrap(wrap\_dir);}
+\DoxyCodeLine{00378\ \ \ \ \ \}}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \ \ create(gid,\ core,\ bounds,\ domain,\ link);}
+\DoxyCodeLine{00381\ \ \ \}}
+\DoxyCodeLine{00382\ \}}
+\DoxyCodeLine{00383\ }
+\DoxyCodeLine{00384\ \textcolor{comment}{//\ decomposes\ domain\ but\ does\ not\ add\ blocks\ to\ master,\ assumes\ they\ were\ added\ already}}
+\DoxyCodeLine{00385\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00386\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00387\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00388\ decompose(\textcolor{keywordtype}{int}\ rank,\ \textcolor{keyword}{const}\ StaticAssigner\&\ assigner,\ Master\&\ master,\ \textcolor{keyword}{const}\ Updater\&\ update)}
+\DoxyCodeLine{00389\ \{}
+\DoxyCodeLine{00390\ \ \ \ \ \doxymbox{\hyperlink{namespacediy_ada52dd59060aac8b76281bec95e5f099}{decompose}}(rank,\ assigner,\ [\&master,\&update](\textcolor{keywordtype}{int}\ gid,\ \textcolor{keyword}{const}\ Bounds\&\ core,\ \textcolor{keyword}{const}\ Bounds\&\ bounds,\ \textcolor{keyword}{const}\ Bounds\&\ domain\_,\ \textcolor{keyword}{const}\ Link\&\ link)}
+\DoxyCodeLine{00391\ \ \ \ \ \{}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ lid\ =\ master.lid(gid);}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ Link*\ l\ =\ \textcolor{keyword}{new}\ Link(link);}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ master.replace\_link(lid,\ l);}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ update(gid,\ lid,\ core,\ bounds,\ domain\_,\ *l);}
+\DoxyCodeLine{00396\ \ \ \ \ \});}
+\DoxyCodeLine{00397\ \}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00400\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00401\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00402\ all(\textcolor{keyword}{const}\ std::vector<int>\&\ v,\ \textcolor{keywordtype}{int}\ x)}
+\DoxyCodeLine{00403\ \{}
+\DoxyCodeLine{00404\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ v.size();\ ++i)}
+\DoxyCodeLine{00405\ \ \ \ \ \textcolor{keywordflow}{if}\ (v[i]\ !=\ x)}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00407\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00408\ \}}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00411\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00412\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00413\ gid\_to\_coords(\textcolor{keywordtype}{int}\ gid,\ DivisionsVector\&\ coords,\ \textcolor{keyword}{const}\ DivisionsVector\&\ divs)}
+\DoxyCodeLine{00414\ \{}
+\DoxyCodeLine{00415\ \ \ coords.clear();}
+\DoxyCodeLine{00416\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ static\_cast<int>(divs.size());\ ++i)}
+\DoxyCodeLine{00417\ \ \ \{}
+\DoxyCodeLine{00418\ \ \ \ \ coords.push\_back(gid\ \%\ divs[i]);}
+\DoxyCodeLine{00419\ \ \ \ \ gid\ /=\ divs[i];}
+\DoxyCodeLine{00420\ \ \ \}}
+\DoxyCodeLine{00421\ \}}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00423\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00424\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00425\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00426\ coords\_to\_gid(\textcolor{keyword}{const}\ DivisionsVector\&\ coords,\ \textcolor{keyword}{const}\ DivisionsVector\&\ divs)}
+\DoxyCodeLine{00427\ \{}
+\DoxyCodeLine{00428\ \ \ \textcolor{keywordtype}{int}\ gid\ =\ 0;}
+\DoxyCodeLine{00429\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(coords.size())\ -\/\ 1;\ i\ >=\ 0;\ -\/-\/i)}
+\DoxyCodeLine{00430\ \ \ \{}
+\DoxyCodeLine{00431\ \ \ \ \ gid\ *=\ divs[i];}
+\DoxyCodeLine{00432\ \ \ \ \ gid\ +=\ coords[i];}
+\DoxyCodeLine{00433\ \ \ \}}
+\DoxyCodeLine{00434\ \ \ \textcolor{keywordflow}{return}\ gid;}
+\DoxyCodeLine{00435\ \}}
+\DoxyCodeLine{00436\ }
+\DoxyCodeLine{00439\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00440\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00441\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00442\ fill\_bounds(Bounds\&\ bounds,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ DivisionsVector\&\ coords,\ \ \ }
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ add\_ghosts)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{}}
+\DoxyCodeLine{00445\ \textcolor{keyword}{\ \ \ \ const}}
+\DoxyCodeLine{00446\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00447\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ dim;\ ++i)}
+\DoxyCodeLine{00448\ \ \ \{}
+\DoxyCodeLine{00449\ \ \ \ \ bounds.min[i]\ =\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_bounds_helper}{detail::BoundsHelper<Bounds>::from}}(coords[i],\ divisions[i],\ domain.min[i],\ domain.max[i],\ share\_face[i]);}
+\DoxyCodeLine{00450\ \ \ \ \ bounds.max[i]\ =\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_bounds_helper}{detail::BoundsHelper<Bounds>::to}}\ \ (coords[i],\ divisions[i],\ domain.min[i],\ domain.max[i],\ share\_face[i]);}
+\DoxyCodeLine{00451\ \ \ \}}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \ \ \textcolor{keywordflow}{if}\ (!add\_ghosts)}
+\DoxyCodeLine{00454\ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ dim;\ ++i)}
+\DoxyCodeLine{00457\ \ \ \{}
+\DoxyCodeLine{00458\ \ \ \ \ \textcolor{keywordflow}{if}\ (wrap[i])}
+\DoxyCodeLine{00459\ \ \ \ \ \{}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ bounds.min[i]\ -\/=\ ghosts[i];}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ bounds.max[i]\ +=\ ghosts[i];}
+\DoxyCodeLine{00462\ \ \ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00463\ \ \ \ \ \{}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ bounds.min[i]\ =\ (std::max)(domain.min[i],\ bounds.min[i]\ -\/\ ghosts[i]);}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ bounds.max[i]\ =\ (std::min)(domain.max[i],\ bounds.max[i]\ +\ ghosts[i]);}
+\DoxyCodeLine{00466\ \ \ \ \ \}}
+\DoxyCodeLine{00467\ \ \ \}}
+\DoxyCodeLine{00468\ \}}
+\DoxyCodeLine{00469\ }
+\DoxyCodeLine{00472\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00473\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00474\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00475\ fill\_bounds(Bounds\&\ bounds,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ gid,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ add\_ghosts)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{}}
+\DoxyCodeLine{00478\ \textcolor{keyword}{\ \ \ \ const}}
+\DoxyCodeLine{00479\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00480\ \ \ \ \ DivisionsVector\ coords;}
+\DoxyCodeLine{00481\ \ \ \ \ gid\_to\_coords(gid,\ coords);}
+\DoxyCodeLine{00482\ \ \ \ \ \textcolor{keywordflow}{if}\ (add\_ghosts)}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer_a05f02918cbd5558ec3d2e64950c97598}{fill\_bounds}}(bounds,\ coords,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00484\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer_a05f02918cbd5558ec3d2e64950c97598}{fill\_bounds}}(bounds,\ coords);}
+\DoxyCodeLine{00486\ \}}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}\ \{\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacedetail}{detail}}\ \{}
+\DoxyCodeLine{00489\ \textcolor{comment}{//\ current\ state\ of\ division\ in\ one\ dimension\ used\ in\ fill\_divisions\ below}}
+\DoxyCodeLine{00490\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Coordinate>}
+\DoxyCodeLine{00491\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1detail_1_1_div}{Div}}}
+\DoxyCodeLine{00492\ \{}
+\DoxyCodeLine{00493\ \ \ \ \ \textcolor{keywordtype}{int}\ dim;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 0,\ 1,\ 2,\ etc.\ e.g.\ for\ x,\ y,\ z\ etc.}}
+\DoxyCodeLine{00494\ \ \ \ \ \textcolor{keywordtype}{int}\ nb;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ number\ of\ blocks\ so\ far\ in\ this\ dimension}}
+\DoxyCodeLine{00495\ \ \ \ \ Coordinate\ b\_size;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ block\ size\ so\ far\ in\ this\ dimension}}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \ \ \ \ \textcolor{comment}{//\ sort\ on\ descending\ block\ size\ unless\ tied,\ in\ which\ case}}
+\DoxyCodeLine{00498\ \ \ \ \ \textcolor{comment}{//\ sort\ on\ ascending\ num\ blocks\ in\ current\ dim\ unless\ tied,\ in\ which\ case}}
+\DoxyCodeLine{00499\ \ \ \ \ \textcolor{comment}{//\ sort\ on\ ascending\ dimension}}
+\DoxyCodeLine{00500\ \ \ \ \ \textcolor{keywordtype}{bool}\ operator<(\doxymbox{\hyperlink{structdiy_1_1detail_1_1_div}{Div}}\ rhs)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00501\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ sort\ on\ second\ value\ of\ the\ pair\ unless\ tied,\ in\ which\ case\ sort\ on\ first}}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (b\_size\ ==\ rhs.b\_size)}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nb\ ==\ rhs.nb)}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}(dim\ <\ rhs.dim);}
+\DoxyCodeLine{00507\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}(nb\ <\ rhs.nb);}
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}(b\_size\ >\ rhs.b\_size);}
+\DoxyCodeLine{00510\ \ \ \ \ \}}
+\DoxyCodeLine{00511\ \};}
+\DoxyCodeLine{00512\ \}\ \}}
+\DoxyCodeLine{00513\ }
+\DoxyCodeLine{00514\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00515\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00516\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00517\ fill\_divisions(std::vector<int>\&\ divisions\_)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00518\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00519\ \ \ \ \ \textcolor{comment}{//\ prod\ =\ number\ of\ blocks\ unconstrained\ by\ user;\ c\ =\ number\ of\ unconstrained\ dimensions}}
+\DoxyCodeLine{00520\ \ \ \ \ \textcolor{keywordtype}{int}\ prod\ =\ 1;\ \textcolor{keywordtype}{int}\ c\ =\ 0;}
+\DoxyCodeLine{00521\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ dim;\ ++i)}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (divisions\_[i]\ !=\ 0)}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ prod\ *=\ divisions\_[i];}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ ++c;}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00527\ }
+\DoxyCodeLine{00528\ \ \ \ \ \textcolor{keywordflow}{if}\ (nblocks\ \%\ prod\ !=\ 0)}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Total\ number\ of\ blocks\ cannot\ be\ factored\ into\ provided\ divs"{}});}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00531\ \ \ \ \ \textcolor{keywordflow}{if}\ (c\ ==\ (\textcolor{keywordtype}{int})\ divisions\_.size())\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ nothing\ to\ do;\ user\ provided\ all\ divs}}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00533\ }
+\DoxyCodeLine{00534\ \ \ \ \ \textcolor{comment}{//\ factor\ number\ of\ blocks\ left\ in\ unconstrained\ dimensions}}
+\DoxyCodeLine{00535\ \ \ \ \ \textcolor{comment}{//\ factorization\ is\ sorted\ from\ smallest\ to\ largest\ factors}}
+\DoxyCodeLine{00536\ \ \ \ \ std::vector<unsigned>\ factors;}
+\DoxyCodeLine{00537\ \ \ \ \ factor(factors,\ nblocks/prod);}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00539\ \ \ \ \ \textcolor{keyword}{using\ }detail::Div;}
+\DoxyCodeLine{00540\ \ \ \ \ std::vector<\ Div<Coordinate>\ >\ missing\_divs;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ pairs\ consisting\ of\ (dim,\ \#divs)}}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \ \ \ \ \textcolor{comment}{//\ init\ missing\_divs}}
+\DoxyCodeLine{00543\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ dim;\ i++)}
+\DoxyCodeLine{00544\ \ \ \ \ \{}
+\DoxyCodeLine{00545\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (divisions\_[i]\ ==\ 0)}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \ \ \ \ \ \ Div<Coordinate>\ div;}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ \ \ \ \ \ \ div.dim\ =\ i;}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ \ \ \ \ \ \ div.nb\ =\ 1;}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \ \ \ \ div.b\_size\ =\ domain.max[i]\ -\/\ domain.min[i];}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \ \ \ \ missing\_divs.push\_back(div);}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00553\ \ \ \ \ \}}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ \ \ \ \ \textcolor{comment}{//\ iterate\ over\ factorization\ of\ number\ of\ blocks\ (factors\ are\ sorted\ smallest\ to\ largest)}}
+\DoxyCodeLine{00556\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ f\ =\ factors.rbegin();\ f\ !=\ factors.rend();\ ++f)}
+\DoxyCodeLine{00557\ \ \ \ \ \{}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ fill\ in\ missing\ divs\ by\ dividing\ dimension\ w/\ largest\ block\ size}}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ except\ when\ this\ would\ be\ illegal\ (resulting\ in\ bounds.max\ <\ bounds.min;}}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ only\ a\ problem\ for\ discrete\ bounds}}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ sort\ on\ decreasing\ block\ size}}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ std::sort(missing\_divs.begin(),\ missing\_divs.end());}
+\DoxyCodeLine{00564\ }
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ split\ the\ dimension\ with\ the\ largest\ block\ size\ (first\ element\ in\ vector)}}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ Coordinate\ min\ =}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ \ \ \ \ detail::BoundsHelper<Bounds>::from(0,}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ missing\_divs[0].nb\ *\ (*f),}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ domain.min[missing\_divs[0].dim],}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ domain.max[missing\_divs[0].dim],}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ share\_face[missing\_divs[0].dim]);}
+\DoxyCodeLine{00572\ \ \ \ \ \ \ \ \ Coordinate\ max\ =}
+\DoxyCodeLine{00573\ \ \ \ \ \ \ \ \ \ \ \ \ detail::BoundsHelper<Bounds>::to(0,}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ missing\_divs[0].nb\ *\ (*f),}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ domain.min[missing\_divs[0].dim],}
+\DoxyCodeLine{00576\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ domain.max[missing\_divs[0].dim],}
+\DoxyCodeLine{00577\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ share\_face[missing\_divs[0].dim]);}
+\DoxyCodeLine{00578\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (max\ >=\ min)}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \ \ \ \ \ \ missing\_divs[0].nb\ \ \ \ *=\ (*f);}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \ \ \ \ \ \ missing\_divs[0].b\_size\ =\ max\ -\/\ min;}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00583\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00585\ \ \ \ \ \ \ \ \ \ \ \ \ std::ostringstream\ oss;}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ \ \ \ \ \ \ oss\ <<\ \textcolor{stringliteral}{"{}Unable\ to\ decompose\ domain\ into\ "{}}\ <<\ nblocks\ <<\ \textcolor{stringliteral}{"{}\ blocks:\ "{}}\ <<\ min\ <<\ \textcolor{stringliteral}{"{}\ "{}}\ <<\ max;}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(oss.str());}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00589\ \ \ \ \ \}}
+\DoxyCodeLine{00590\ }
+\DoxyCodeLine{00591\ \ \ \ \ \textcolor{comment}{//\ assign\ the\ divisions}}
+\DoxyCodeLine{00592\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ missing\_divs.size();\ i++)}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \ \ divisions\_[missing\_divs[i].dim]\ =\ missing\_divs[i].nb;}
+\DoxyCodeLine{00594\ \}}
+\DoxyCodeLine{00595\ }
+\DoxyCodeLine{00596\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00597\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00598\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00599\ factor(std::vector<unsigned>\&\ factors,\ \textcolor{keywordtype}{int}\ n)}
+\DoxyCodeLine{00600\ \{}
+\DoxyCodeLine{00601\ \ \ \textcolor{keywordflow}{while}\ (n\ !=\ 1)}
+\DoxyCodeLine{00602\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 2;\ i\ <=\ n;\ ++i)}
+\DoxyCodeLine{00603\ \ \ \ \ \{}
+\DoxyCodeLine{00604\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (n\ \%\ i\ ==\ 0)}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \ \ factors.push\_back(i);}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \ \ n\ /=\ i;}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00609\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00610\ \ \ \ \ \}}
+\DoxyCodeLine{00611\ \}}
+\DoxyCodeLine{00612\ }
+\DoxyCodeLine{00613\ \textcolor{comment}{//\ Point\ to\ GIDs}}
+\DoxyCodeLine{00614\ \textcolor{comment}{//\ TODO:\ deal\ with\ wrap\ correctly}}
+\DoxyCodeLine{00615\ \textcolor{comment}{//\ TODO:\ add\ an\ optional\ ghosts\ argument\ to\ ignore\ ghosts\ (if\ we\ want\ to\ find\ the\ true\ owners,\ or\ something\ like\ that)}}
+\DoxyCodeLine{00616\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00617\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00618\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00619\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00620\ point\_to\_gids(std::vector<int>\&\ gids,\ \textcolor{keyword}{const}\ Point\&\ p)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00621\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00622\ \ \ \ \ std::vector<\ std::pair<int,\ int>\ >\ ranges(dim);}
+\DoxyCodeLine{00623\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ dim;\ ++i)}
+\DoxyCodeLine{00624\ \ \ \ \ \ \ \ \ top\_bottom(ranges[i].second,\ ranges[i].first,\ p,\ i);}
+\DoxyCodeLine{00625\ }
+\DoxyCodeLine{00626\ \ \ \ \ \textcolor{comment}{//\ look\ up\ gids\ for\ all\ combinations}}
+\DoxyCodeLine{00627\ \ \ \ \ DivisionsVector\ coords(dim),\ location(dim);}
+\DoxyCodeLine{00628\ \ \ \ \ \textcolor{keywordflow}{while}(location.back()\ <\ ranges.back().second\ -\/\ ranges.back().first)}
+\DoxyCodeLine{00629\ \ \ \ \ \{}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ dim;\ ++i)}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \ \ \ \ \ \ coords[i]\ =\ ranges[i].first\ +\ location[i];}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ gids.push\_back(coords\_to\_gid(coords,\ divisions));}
+\DoxyCodeLine{00633\ }
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \ \ location[0]++;}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ i\ =\ 0;}
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (i\ <\ dim-\/1\ \&\&\ location[i]\ ==\ ranges[i].second\ -\/\ ranges[i].first)}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00638\ \ \ \ \ \ \ \ \ \ \ \ \ location[i]\ =\ 0;}
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ \ \ \ \ \ ++i;}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ \ \ \ \ \ \ location[i]++;}
+\DoxyCodeLine{00641\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00642\ \ \ \ \ \}}
+\DoxyCodeLine{00643\ \}}
+\DoxyCodeLine{00644\ }
+\DoxyCodeLine{00645\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00646\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00647\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00648\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00649\ point\_to\_gid(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_point}{Point}}\&\ p)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00650\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00651\ \ \ \ \ \textcolor{keywordtype}{int}\ gid\ =\ 0;}
+\DoxyCodeLine{00652\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ axis\ =\ dim\ -\/\ 1;\ axis\ >=\ 0;\ -\/-\/axis)}
+\DoxyCodeLine{00653\ \ \ \ \ \{}
+\DoxyCodeLine{00654\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ bottom\ \ =\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_bounds_helper}{detail::BoundsHelper<Bounds>::lower}}(p[axis],\ divisions[axis],\ domain.min[axis],\ domain.max[axis],\ share\_face[axis]);}
+\DoxyCodeLine{00655\ \ \ \ \ \ \ \ \ \ \ bottom\ \ =\ (std::max)(0,\ bottom);}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \ \ \ \ \ \ \textcolor{comment}{//\ coupled\ with\ coords\_to\_gid}}
+\DoxyCodeLine{00658\ \ \ \ \ \ \ gid\ *=\ divisions[axis];}
+\DoxyCodeLine{00659\ \ \ \ \ \ \ gid\ +=\ bottom;}
+\DoxyCodeLine{00660\ \ \ \ \ \}}
+\DoxyCodeLine{00661\ }
+\DoxyCodeLine{00662\ \ \ \ \ \textcolor{keywordflow}{return}\ gid;}
+\DoxyCodeLine{00663\ \}}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00665\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00666\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00667\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00668\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00669\ num\_gids(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_point}{Point}}\&\ p)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00670\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00671\ \ \ \ \ \textcolor{keywordtype}{int}\ res\ =\ 1;}
+\DoxyCodeLine{00672\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ dim;\ ++i)}
+\DoxyCodeLine{00673\ \ \ \ \ \{}
+\DoxyCodeLine{00674\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ top,\ bottom;}
+\DoxyCodeLine{00675\ \ \ \ \ \ \ \ \ top\_bottom(top,\ bottom,\ p,\ i);}
+\DoxyCodeLine{00676\ \ \ \ \ \ \ \ \ res\ *=\ top\ -\/\ bottom;}
+\DoxyCodeLine{00677\ \ \ \ \ \}}
+\DoxyCodeLine{00678\ \ \ \ \ \textcolor{keywordflow}{return}\ res;}
+\DoxyCodeLine{00679\ \}}
+\DoxyCodeLine{00680\ }
+\DoxyCodeLine{00681\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00682\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00683\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00684\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00685\ top\_bottom(\textcolor{keywordtype}{int}\&\ top,\ \textcolor{keywordtype}{int}\&\ bottom,\ \textcolor{keyword}{const}\ Point\&\ p,\ \textcolor{keywordtype}{int}\ axis)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00686\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00687\ \ \ \ \ Coordinate\ l\ =\ p[axis]\ -\/\ ghosts[axis];}
+\DoxyCodeLine{00688\ \ \ \ \ Coordinate\ r\ =\ p[axis]\ +\ ghosts[axis];}
+\DoxyCodeLine{00689\ }
+\DoxyCodeLine{00690\ \ \ \ \ top\ \ \ \ \ =\ detail::BoundsHelper<Bounds>::upper(r,\ divisions[axis],\ domain.min[axis],\ domain.max[axis],\ share\_face[axis]);}
+\DoxyCodeLine{00691\ \ \ \ \ bottom\ \ =\ detail::BoundsHelper<Bounds>::lower(l,\ divisions[axis],\ domain.min[axis],\ domain.max[axis],\ share\_face[axis]);}
+\DoxyCodeLine{00692\ }
+\DoxyCodeLine{00693\ \ \ \ \ \textcolor{keywordflow}{if}\ (!wrap[axis])}
+\DoxyCodeLine{00694\ \ \ \ \ \{}
+\DoxyCodeLine{00695\ \ \ \ \ \ \ \ \ bottom\ \ =\ (std::max)(0,\ bottom);}
+\DoxyCodeLine{00696\ \ \ \ \ \ \ \ \ top\ \ \ \ \ =\ (std::min)(divisions[axis],\ top);}
+\DoxyCodeLine{00697\ \ \ \ \ \}}
+\DoxyCodeLine{00698\ \}}
+\DoxyCodeLine{00699\ }
+\DoxyCodeLine{00700\ \textcolor{comment}{//\ find\ lowest\ gid\ that\ owns\ a\ particular\ point}}
+\DoxyCodeLine{00701\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Bounds>}
+\DoxyCodeLine{00702\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00703\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00704\ diy::RegularDecomposer<Bounds>::}
+\DoxyCodeLine{00705\ lowest\_gid(\textcolor{keyword}{const}\ Point\&\ p)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00706\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00707\ \ \ \ \ \textcolor{comment}{//\ TODO:\ optimize\ -\/\ no\ need\ to\ compute\ all\ gids}}
+\DoxyCodeLine{00708\ \ \ \ \ std::vector<int>\ gids;}
+\DoxyCodeLine{00709\ \ \ \ \ point\_to\_gids(gids,\ p);}
+\DoxyCodeLine{00710\ \ \ \ \ std::sort(gids.begin(),\ gids.end());}
+\DoxyCodeLine{00711\ \ \ \ \ \textcolor{keywordflow}{return}\ gids[0];}
+\DoxyCodeLine{00712\ \}}
+\DoxyCodeLine{00713\ }
+\DoxyCodeLine{00714\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

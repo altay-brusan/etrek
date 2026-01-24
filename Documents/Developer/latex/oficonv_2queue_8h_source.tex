@@ -1,0 +1,754 @@
+\doxysection{queue.\+h}
+\hypertarget{oficonv_2queue_8h_source}{}\label{oficonv_2queue_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/oficonv/queue.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/oficonv/queue.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Copyright\ (c)\ 1991,\ 1993}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ \ The\ Regents\ of\ the\ University\ of\ California.\ \ All\ rights\ reserved.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ Redistribution\ and\ use\ in\ source\ and\ binary\ forms,\ with\ or\ without}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ modification,\ are\ permitted\ provided\ that\ the\ following\ conditions}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ are\ met:}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ 1.\ Redistributions\ of\ source\ code\ must\ retain\ the\ above\ copyright}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ notice,\ this\ list\ of\ conditions\ and\ the\ following\ disclaimer.}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *\ 2.\ Redistributions\ in\ binary\ form\ must\ reproduce\ the\ above\ copyright}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *\ \ \ \ notice,\ this\ list\ of\ conditions\ and\ the\ following\ disclaimer\ in\ the}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ \ \ documentation\ and/or\ other\ materials\ provided\ with\ the\ distribution.}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *\ 3.\ Neither\ the\ name\ of\ the\ University\ nor\ the\ names\ of\ its\ contributors}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ \ \ may\ be\ used\ to\ endorse\ or\ promote\ products\ derived\ from\ this\ software}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *\ \ \ \ without\ specific\ prior\ written\ permission.}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ THIS\ SOFTWARE\ IS\ PROVIDED\ BY\ THE\ REGENTS\ AND\ CONTRIBUTORS\ \`{}\`{}AS\ IS''\ AND}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ ANY\ EXPRESS\ OR\ IMPLIED\ WARRANTIES,\ INCLUDING,\ BUT\ NOT\ LIMITED\ TO,\ THE}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *\ IMPLIED\ WARRANTIES\ OF\ MERCHANTABILITY\ AND\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ ARE\ DISCLAIMED.\ \ IN\ NO\ EVENT\ SHALL\ THE\ REGENTS\ OR\ CONTRIBUTORS\ BE\ LIABLE}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *\ FOR\ ANY\ DIRECT,\ INDIRECT,\ INCIDENTAL,\ SPECIAL,\ EXEMPLARY,\ OR\ CONSEQUENTIAL}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ DAMAGES\ (INCLUDING,\ BUT\ NOT\ LIMITED\ TO,\ PROCUREMENT\ OF\ SUBSTITUTE\ GOODS}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ OR\ SERVICES;\ LOSS\ OF\ USE,\ DATA,\ OR\ PROFITS;\ OR\ BUSINESS\ INTERRUPTION)}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ *\ HOWEVER\ CAUSED\ AND\ ON\ ANY\ THEORY\ OF\ LIABILITY,\ WHETHER\ IN\ CONTRACT,\ STRICT}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ *\ LIABILITY,\ OR\ TORT\ (INCLUDING\ NEGLIGENCE\ OR\ OTHERWISE)\ ARISING\ IN\ ANY\ WAY}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ *\ OUT\ OF\ THE\ USE\ OF\ THIS\ SOFTWARE,\ EVEN\ IF\ ADVISED\ OF\ THE\ POSSIBILITY\ OF}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ *\ SUCH\ DAMAGE.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ *\ \ @(\#)queue.h\ 8.5\ (Berkeley)\ 8/20/94}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ \$FreeBSD\$}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#ifndef\ OFICONV\_QUEUE\_H}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#define\ OFICONV\_QUEUE\_H}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ This\ file\ defines\ four\ types\ of\ data\ structures:\ singly-\/linked\ lists,}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ singly-\/linked\ tail\ queues,\ lists\ and\ tail\ queues.}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ A\ singly-\/linked\ list\ is\ headed\ by\ a\ single\ forward\ pointer.\ The\ elements}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ are\ singly\ linked\ for\ minimum\ space\ and\ pointer\ manipulation\ overhead\ at}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ the\ expense\ of\ O(n)\ removal\ for\ arbitrary\ elements.\ New\ elements\ can\ be}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ added\ to\ the\ list\ after\ an\ existing\ element\ or\ at\ the\ head\ of\ the\ list.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ Elements\ being\ removed\ from\ the\ head\ of\ the\ list\ should\ use\ the\ explicit}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ macro\ for\ this\ purpose\ for\ optimum\ efficiency.\ A\ singly-\/linked\ list\ may}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ only\ be\ traversed\ in\ the\ forward\ direction.\ \ Singly-\/linked\ lists\ are\ ideal}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ for\ applications\ with\ large\ datasets\ and\ few\ or\ no\ removals\ or\ for}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ implementing\ a\ LIFO\ queue.}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ A\ singly-\/linked\ tail\ queue\ is\ headed\ by\ a\ pair\ of\ pointers,\ one\ to\ the}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ head\ of\ the\ list\ and\ the\ other\ to\ the\ tail\ of\ the\ list.\ The\ elements\ are}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *\ singly\ linked\ for\ minimum\ space\ and\ pointer\ manipulation\ overhead\ at\ the}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *\ expense\ of\ O(n)\ removal\ for\ arbitrary\ elements.\ New\ elements\ can\ be\ added}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ *\ to\ the\ list\ after\ an\ existing\ element,\ at\ the\ head\ of\ the\ list,\ or\ at\ the}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ *\ end\ of\ the\ list.\ Elements\ being\ removed\ from\ the\ head\ of\ the\ tail\ queue}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *\ should\ use\ the\ explicit\ macro\ for\ this\ purpose\ for\ optimum\ efficiency.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ A\ singly-\/linked\ tail\ queue\ may\ only\ be\ traversed\ in\ the\ forward\ direction.}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *\ Singly-\/linked\ tail\ queues\ are\ ideal\ for\ applications\ with\ large\ datasets}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ *\ and\ few\ or\ no\ removals\ or\ for\ implementing\ a\ FIFO\ queue.}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ *\ A\ list\ is\ headed\ by\ a\ single\ forward\ pointer\ (or\ an\ array\ of\ forward}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ *\ pointers\ for\ a\ hash\ table\ header).\ The\ elements\ are\ doubly\ linked}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ *\ so\ that\ an\ arbitrary\ element\ can\ be\ removed\ without\ a\ need\ to}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *\ traverse\ the\ list.\ New\ elements\ can\ be\ added\ to\ the\ list\ before}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ or\ after\ an\ existing\ element\ or\ at\ the\ head\ of\ the\ list.\ A\ list}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *\ may\ be\ traversed\ in\ either\ direction.}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ *\ A\ tail\ queue\ is\ headed\ by\ a\ pair\ of\ pointers,\ one\ to\ the\ head\ of\ the}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ *\ list\ and\ the\ other\ to\ the\ tail\ of\ the\ list.\ The\ elements\ are\ doubly}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ *\ linked\ so\ that\ an\ arbitrary\ element\ can\ be\ removed\ without\ a\ need\ to}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ *\ traverse\ the\ list.\ New\ elements\ can\ be\ added\ to\ the\ list\ before\ or}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ *\ after\ an\ existing\ element,\ at\ the\ head\ of\ the\ list,\ or\ at\ the\ end\ of}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ *\ the\ list.\ A\ tail\ queue\ may\ be\ traversed\ in\ either\ direction.}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ *\ For\ details\ on\ the\ use\ of\ these\ macros,\ see\ the\ queue(3)\ manual\ page.}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ *\ Below\ is\ a\ summary\ of\ implemented\ functions\ where:}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ *\ \ +\ \ means\ the\ macro\ is\ available}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ *\ \ -\/\ \ means\ the\ macro\ is\ not\ available}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ *\ \ s\ \ means\ the\ macro\ is\ available\ but\ is\ slow\ (runs\ in\ O(n)\ time)}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ \ \ \ SLIST\ \ \ LIST\ \ \ \ STAILQ\ \ TAILQ}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ *\ \_HEAD\ \ \ \ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ *\ \_CLASS\_HEAD\ \ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ *\ \_HEAD\_INITIALIZER\ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ *\ \_ENTRY\ \ \ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ *\ \_CLASS\_ENTRY\ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ *\ \_INIT\ \ \ \ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ *\ \_EMPTY\ \ \ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ *\ \_END\ \ \ \ \ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ *\ \_FIRST\ \ \ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ *\ \_NEXT\ \ \ \ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ *\ \_PREV\ \ \ \ \ \ \ \ \ \ \ \ -\/\ \ \ +\ \ \ -\/\ \ \ +}}
+\DoxyCodeLine{00096\ \textcolor{comment}{\ *\ \_LAST\ \ \ \ \ \ \ \ \ \ \ \ -\/\ \ \ -\/\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ *\ \_LAST\_FAST\ \ \ \ \ \ \ \ \ \ \ -\/\ \ \ -\/\ \ \ -\/\ \ \ +}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ *\ \_FOREACH\ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ *\ \_FOREACH\_FROM\ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ *\ \_FOREACH\_SAFE\ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ *\ \_FOREACH\_FROM\_SAFE\ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ *\ \_FOREACH\_REVERSE\ \ \ \ \ -\/\ \ \ -\/\ \ \ -\/\ \ \ +}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ *\ \_FOREACH\_REVERSE\_FROM\ \ \ \ -\/\ \ \ -\/\ \ \ -\/\ \ \ +}}
+\DoxyCodeLine{00104\ \textcolor{comment}{\ *\ \_FOREACH\_REVERSE\_SAFE\ \ \ \ -\/\ \ \ -\/\ \ \ -\/\ \ \ +}}
+\DoxyCodeLine{00105\ \textcolor{comment}{\ *\ \_FOREACH\_REVERSE\_FROM\_SAFE\ \ \ -\/\ \ \ -\/\ \ \ -\/\ \ \ +}}
+\DoxyCodeLine{00106\ \textcolor{comment}{\ *\ \_INSERT\_HEAD\ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00107\ \textcolor{comment}{\ *\ \_INSERT\_BEFORE\ \ \ \ \ \ \ -\/\ \ \ +\ \ \ -\/\ \ \ +}}
+\DoxyCodeLine{00108\ \textcolor{comment}{\ *\ \_INSERT\_AFTER\ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00109\ \textcolor{comment}{\ *\ \_INSERT\_TAIL\ \ \ \ \ \ \ \ \ -\/\ \ \ -\/\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00110\ \textcolor{comment}{\ *\ \_CONCAT\ \ \ \ \ \ \ \ \ \ s\ \ \ s\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00111\ \textcolor{comment}{\ *\ \_REMOVE\_AFTER\ \ \ \ \ \ \ \ +\ \ \ -\/\ \ \ +\ \ \ -\/}}
+\DoxyCodeLine{00112\ \textcolor{comment}{\ *\ \_REMOVE\_HEAD\ \ \ \ \ \ \ \ \ +\ \ \ -\/\ \ \ +\ \ \ -\/}}
+\DoxyCodeLine{00113\ \textcolor{comment}{\ *\ \_REMOVE\ \ \ \ \ \ \ \ \ \ s\ \ \ +\ \ \ s\ \ \ +}}
+\DoxyCodeLine{00114\ \textcolor{comment}{\ *\ \_SWAP\ \ \ \ \ \ \ \ \ \ \ \ +\ \ \ +\ \ \ +\ \ \ +}}
+\DoxyCodeLine{00115\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00116\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \textcolor{comment}{/*\ we\ don't\ support\ the\ queue\ macro\ debug\ option\ */}}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#define\ QMD\_TRACE\_ELEM(elem)}}
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\#define\ QMD\_TRACE\_HEAD(head)}}
+\DoxyCodeLine{00121\ \textcolor{preprocessor}{\#define\ TRACEBUF}}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#define\ TRACEBUF\_INITIALIZER}}
+\DoxyCodeLine{00123\ \textcolor{preprocessor}{\#define\ QMD\_SAVELINK(name,\ link)}}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#define\ TRASHIT(x)}}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#define\ QMD\_IS\_TRASHED(x)\ \ \ 0}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00128\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00129\ \textcolor{comment}{\ *\ In\ C++\ there\ can\ be\ structure\ lists\ and\ class\ lists:}}
+\DoxyCodeLine{00130\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#define\ QUEUE\_TYPEOF(type)\ type}}
+\DoxyCodeLine{00132\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#define\ QUEUE\_TYPEOF(type)\ struct\ type}}
+\DoxyCodeLine{00134\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00137\ \textcolor{comment}{\ *\ Singly-\/linked\ List\ declarations.}}
+\DoxyCodeLine{00138\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00139\ \textcolor{preprocessor}{\#define\ SLIST\_HEAD(name,\ type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00140\ \textcolor{preprocessor}{struct\ name\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ *slh\_first;\ }\textcolor{comment}{/*\ first\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00142\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{preprocessor}{\#define\ SLIST\_CLASS\_HEAD(name,\ type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{struct\ name\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00146\ \textcolor{preprocessor}{\ \ \ \ class\ type\ *slh\_first;\ \ }\textcolor{comment}{/*\ first\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00147\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \textcolor{preprocessor}{\#define\ SLIST\_HEAD\_INITIALIZER(head)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\ \ \ \ \{\ NULL\ \}}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#define\ SLIST\_ENTRY(type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{struct\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00154\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ *sle\_next;\ \ }\textcolor{comment}{/*\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#define\ SLIST\_CLASS\_ENTRY(type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{struct\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\ \ \ \ class\ type\ *sle\_next;\ \ \ \ \ \ \ }\textcolor{comment}{/*\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00163\ \textcolor{comment}{\ *\ Singly-\/linked\ List\ functions.}}
+\DoxyCodeLine{00164\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#define\ QMD\_SLIST\_CHECK\_PREVPTR(prevp,\ elm)}}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#define\ SLIST\_CONCAT(head1,\ head2,\ type,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\ \ \ \ QUEUE\_TYPEOF(type)\ *curelm\ =\ SLIST\_FIRST(head1);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\ \ \ \ if\ (curelm\ ==\ NULL)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ if\ ((SLIST\_FIRST(head1)\ =\ SLIST\_FIRST(head2))\ !=\ NULL)\ \ \(\backslash\)}}
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ SLIST\_INIT(head2);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\ \ \ \ \}\ else\ if\ (SLIST\_FIRST(head2)\ !=\ NULL)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ while\ (SLIST\_NEXT(curelm,\ field)\ !=\ NULL)\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ curelm\ =\ SLIST\_NEXT(curelm,\ field);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ SLIST\_NEXT(curelm,\ field)\ =\ SLIST\_FIRST(head2);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ SLIST\_INIT(head2);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{\#define\ SLIST\_EMPTY(head)\ \ \ ((head)-\/>slh\_first\ ==\ NULL)}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\#define\ SLIST\_FIRST(head)\ \ \ ((head)-\/>slh\_first)}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \textcolor{preprocessor}{\#define\ SLIST\_FOREACH(var,\ head,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ SLIST\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00186\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00187\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ SLIST\_NEXT((var),\ field))}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#define\ SLIST\_FOREACH\_FROM(var,\ head,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ SLIST\_FIRST((head)));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ SLIST\_NEXT((var),\ field))}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#define\ SLIST\_FOREACH\_SAFE(var,\ head,\ field,\ tvar)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00195\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ SLIST\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ SLIST\_NEXT((var),\ field),\ 1);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00197\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#define\ SLIST\_FOREACH\_FROM\_SAFE(var,\ head,\ field,\ tvar)\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00200\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ SLIST\_FIRST((head)));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ SLIST\_NEXT((var),\ field),\ 1);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\#define\ SLIST\_FOREACH\_PREVPTR(var,\ varp,\ head,\ field)\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00205\ \textcolor{preprocessor}{\ \ \ \ for\ ((varp)\ =\ \&SLIST\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ ((var)\ =\ *(varp))\ !=\ NULL;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00207\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (varp)\ =\ \&SLIST\_NEXT((var),\ field))}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \textcolor{preprocessor}{\#define\ SLIST\_INIT(head)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\ \ \ \ SLIST\_FIRST((head))\ =\ NULL;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00211\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \textcolor{preprocessor}{\#define\ SLIST\_INSERT\_AFTER(slistelm,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\ \ \ \ SLIST\_NEXT((elm),\ field)\ =\ SLIST\_NEXT((slistelm),\ field);\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00215\ \textcolor{preprocessor}{\ \ \ \ SLIST\_NEXT((slistelm),\ field)\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00216\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \textcolor{preprocessor}{\#define\ SLIST\_INSERT\_HEAD(head,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\ \ \ \ SLIST\_NEXT((elm),\ field)\ =\ SLIST\_FIRST((head));\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00220\ \textcolor{preprocessor}{\ \ \ \ SLIST\_FIRST((head))\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \textcolor{preprocessor}{\#define\ SLIST\_NEXT(elm,\ field)\ \ ((elm)-\/>field.sle\_next)}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#define\ SLIST\_REMOVE(head,\ elm,\ type,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\ \ \ \ if\ (SLIST\_FIRST((head))\ ==\ (elm))\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ SLIST\_REMOVE\_HEAD((head),\ field);\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\ \ \ \ else\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ QUEUE\_TYPEOF(type)\ *curelm\ =\ SLIST\_FIRST(head);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00231\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ while\ (SLIST\_NEXT(curelm,\ field)\ !=\ (elm))\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ curelm\ =\ SLIST\_NEXT(curelm,\ field);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ SLIST\_REMOVE\_AFTER(curelm,\ field);\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\#define\ SLIST\_REMOVE\_AFTER(elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\ \ \ \ QMD\_SAVELINK(oldnext,\ SLIST\_NEXT(elm,\ field)-\/>field.sle\_next);\ \ \(\backslash\)}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\ \ \ \ SLIST\_NEXT(elm,\ field)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ SLIST\_NEXT(SLIST\_NEXT(elm,\ field),\ field);\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00241\ \textcolor{preprocessor}{\ \ \ \ TRASHIT(*oldnext);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00242\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \textcolor{preprocessor}{\#define\ SLIST\_REMOVE\_HEAD(head,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\ \ \ \ QMD\_SAVELINK(oldnext,\ SLIST\_FIRST(head)-\/>field.sle\_next);\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00246\ \textcolor{preprocessor}{\ \ \ \ SLIST\_FIRST((head))\ =\ SLIST\_NEXT(SLIST\_FIRST((head)),\ field);\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00247\ \textcolor{preprocessor}{\ \ \ \ TRASHIT(*oldnext);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00248\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\#define\ SLIST\_REMOVE\_PREVPTR(prevp,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\ \ \ \ QMD\_SLIST\_CHECK\_PREVPTR(prevp,\ elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00252\ \textcolor{preprocessor}{\ \ \ \ *(prevp)\ =\ SLIST\_NEXT(elm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\ \ \ \ TRASHIT((elm)-\/>field.sle\_next);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00254\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \textcolor{preprocessor}{\#define\ SLIST\_SWAP(head1,\ head2,\ type)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\ \ \ \ QUEUE\_TYPEOF(type)\ *swap\_first\ =\ SLIST\_FIRST(head1);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00258\ \textcolor{preprocessor}{\ \ \ \ SLIST\_FIRST(head1)\ =\ SLIST\_FIRST(head2);\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00259\ \textcolor{preprocessor}{\ \ \ \ SLIST\_FIRST(head2)\ =\ swap\_first;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00260\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\#define\ SLIST\_END(head)\ \ \ \ \ NULL}}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00265\ \textcolor{comment}{\ *\ Singly-\/linked\ Tail\ queue\ declarations.}}
+\DoxyCodeLine{00266\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00267\ \textcolor{preprocessor}{\#define\ STAILQ\_HEAD(name,\ type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{struct\ name\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ *stqh\_first;}\textcolor{comment}{/*\ first\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00270\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ **stqh\_last;}\textcolor{comment}{/*\ addr\ of\ last\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#define\ STAILQ\_CLASS\_HEAD(name,\ type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{struct\ name\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00275\ \textcolor{preprocessor}{\ \ \ \ class\ type\ *stqh\_first;\ }\textcolor{comment}{/*\ first\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00276\ \textcolor{preprocessor}{\ \ \ \ class\ type\ **stqh\_last;\ }\textcolor{comment}{/*\ addr\ of\ last\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\#define\ STAILQ\_HEAD\_INITIALIZER(head)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00280\ \textcolor{preprocessor}{\ \ \ \ \{\ NULL,\ \&(head).stqh\_first\ \}}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{preprocessor}{\#define\ STAILQ\_ENTRY(type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{struct\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00284\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ *stqe\_next;\ }\textcolor{comment}{/*\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \textcolor{preprocessor}{\#define\ STAILQ\_CLASS\_ENTRY(type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00288\ \textcolor{preprocessor}{struct\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\ \ \ \ class\ type\ *stqe\_next;\ \ }\textcolor{comment}{/*\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00290\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00293\ \textcolor{comment}{\ *\ Singly-\/linked\ Tail\ queue\ functions.}}
+\DoxyCodeLine{00294\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00295\ \textcolor{preprocessor}{\#define\ STAILQ\_CONCAT(head1,\ head2)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00296\ \textcolor{preprocessor}{\ \ \ \ if\ (!STAILQ\_EMPTY((head2)))\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ *(head1)-\/>stqh\_last\ =\ (head2)-\/>stqh\_first;\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head1)-\/>stqh\_last\ =\ (head2)-\/>stqh\_last;\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00299\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ STAILQ\_INIT((head2));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00300\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00301\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\#define\ STAILQ\_EMPTY(head)\ \ ((head)-\/>stqh\_first\ ==\ NULL)}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \textcolor{preprocessor}{\#define\ STAILQ\_FIRST(head)\ \ ((head)-\/>stqh\_first)}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{preprocessor}{\#define\ STAILQ\_FOREACH(var,\ head,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\ \ \ \ for((var)\ =\ STAILQ\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00309\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (var)\ =\ STAILQ\_NEXT((var),\ field))}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#define\ STAILQ\_FOREACH\_FROM(var,\ head,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ STAILQ\_FIRST((head)));\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\ \ \ \ \ \ \ (var)\ =\ STAILQ\_NEXT((var),\ field))}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\#define\ STAILQ\_FOREACH\_SAFE(var,\ head,\ field,\ tvar)\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00318\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ STAILQ\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ STAILQ\_NEXT((var),\ field),\ 1);\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00322\ \textcolor{preprocessor}{\#define\ STAILQ\_FOREACH\_FROM\_SAFE(var,\ head,\ field,\ tvar)\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ STAILQ\_FIRST((head)));\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00324\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ STAILQ\_NEXT((var),\ field),\ 1);\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#define\ STAILQ\_INIT(head)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00328\ \textcolor{preprocessor}{\ \ \ \ STAILQ\_FIRST((head))\ =\ NULL;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\ \ \ \ (head)-\/>stqh\_last\ =\ \&STAILQ\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \textcolor{preprocessor}{\#define\ STAILQ\_INSERT\_AFTER(head,\ tqelm,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00333\ \textcolor{preprocessor}{\ \ \ \ if\ ((STAILQ\_NEXT((elm),\ field)\ =\ STAILQ\_NEXT((tqelm),\ field))\ ==\ NULL)\(\backslash\)}}
+\DoxyCodeLine{00334\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head)-\/>stqh\_last\ =\ \&STAILQ\_NEXT((elm),\ field);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00335\ \textcolor{preprocessor}{\ \ \ \ STAILQ\_NEXT((tqelm),\ field)\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00336\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\#define\ STAILQ\_INSERT\_HEAD(head,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00339\ \textcolor{preprocessor}{\ \ \ \ if\ ((STAILQ\_NEXT((elm),\ field)\ =\ STAILQ\_FIRST((head)))\ ==\ NULL)\ \(\backslash\)}}
+\DoxyCodeLine{00340\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head)-\/>stqh\_last\ =\ \&STAILQ\_NEXT((elm),\ field);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00341\ \textcolor{preprocessor}{\ \ \ \ STAILQ\_FIRST((head))\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00342\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00343\ }
+\DoxyCodeLine{00344\ \textcolor{preprocessor}{\#define\ STAILQ\_INSERT\_TAIL(head,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00345\ \textcolor{preprocessor}{\ \ \ \ STAILQ\_NEXT((elm),\ field)\ =\ NULL;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00346\ \textcolor{preprocessor}{\ \ \ \ *(head)-\/>stqh\_last\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00347\ \textcolor{preprocessor}{\ \ \ \ (head)-\/>stqh\_last\ =\ \&STAILQ\_NEXT((elm),\ field);\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00348\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00349\ }
+\DoxyCodeLine{00350\ \textcolor{preprocessor}{\#define\ STAILQ\_LAST(head,\ type,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00351\ \textcolor{preprocessor}{\ \ \ \ (STAILQ\_EMPTY((head))\ ?\ NULL\ :\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00352\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \_\_containerof((head)-\/>stqh\_last,\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00353\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ QUEUE\_TYPEOF(type),\ field.stqe\_next))}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \textcolor{preprocessor}{\#define\ STAILQ\_NEXT(elm,\ field)\ ((elm)-\/>field.stqe\_next)}}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \textcolor{preprocessor}{\#define\ STAILQ\_REMOVE(head,\ elm,\ type,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00358\ \textcolor{preprocessor}{\ \ \ \ QMD\_SAVELINK(oldnext,\ (elm)-\/>field.stqe\_next);\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00359\ \textcolor{preprocessor}{\ \ \ \ if\ (STAILQ\_FIRST((head))\ ==\ (elm))\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00360\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ STAILQ\_REMOVE\_HEAD((head),\ field);\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00361\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00362\ \textcolor{preprocessor}{\ \ \ \ else\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00363\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ QUEUE\_TYPEOF(type)\ *curelm\ =\ STAILQ\_FIRST(head);\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00364\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ while\ (STAILQ\_NEXT(curelm,\ field)\ !=\ (elm))\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00365\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ curelm\ =\ STAILQ\_NEXT(curelm,\ field);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00366\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ STAILQ\_REMOVE\_AFTER(head,\ curelm,\ field);\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00367\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\ \ \ \ TRASHIT(*oldnext);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00369\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \textcolor{preprocessor}{\#define\ STAILQ\_REMOVE\_AFTER(head,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00372\ \textcolor{preprocessor}{\ \ \ \ if\ ((STAILQ\_NEXT(elm,\ field)\ =\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00373\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ STAILQ\_NEXT(STAILQ\_NEXT(elm,\ field),\ field))\ ==\ NULL)\ \ \(\backslash\)}}
+\DoxyCodeLine{00374\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head)-\/>stqh\_last\ =\ \&STAILQ\_NEXT((elm),\ field);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00375\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\#define\ STAILQ\_REMOVE\_HEAD(head,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00378\ \textcolor{preprocessor}{\ \ \ \ if\ ((STAILQ\_FIRST((head))\ =\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00379\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ STAILQ\_NEXT(STAILQ\_FIRST((head)),\ field))\ ==\ NULL)\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00380\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head)-\/>stqh\_last\ =\ \&STAILQ\_FIRST((head));\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00381\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \textcolor{preprocessor}{\#define\ STAILQ\_SWAP(head1,\ head2,\ type)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00384\ \textcolor{preprocessor}{\ \ \ \ QUEUE\_TYPEOF(type)\ *swap\_first\ =\ STAILQ\_FIRST(head1);\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\ \ \ \ QUEUE\_TYPEOF(type)\ **swap\_last\ =\ (head1)-\/>stqh\_last;\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00386\ \textcolor{preprocessor}{\ \ \ \ STAILQ\_FIRST(head1)\ =\ STAILQ\_FIRST(head2);\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\ \ \ \ (head1)-\/>stqh\_last\ =\ (head2)-\/>stqh\_last;\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00388\ \textcolor{preprocessor}{\ \ \ \ STAILQ\_FIRST(head2)\ =\ swap\_first;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{\ \ \ \ (head2)-\/>stqh\_last\ =\ swap\_last;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00390\ \textcolor{preprocessor}{\ \ \ \ if\ (STAILQ\_EMPTY(head1))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00391\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head1)-\/>stqh\_last\ =\ \&STAILQ\_FIRST(head1);\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00392\ \textcolor{preprocessor}{\ \ \ \ if\ (STAILQ\_EMPTY(head2))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00393\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head2)-\/>stqh\_last\ =\ \&STAILQ\_FIRST(head2);\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00394\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \textcolor{preprocessor}{\#define\ STAILQ\_END(head)\ \ \ \ NULL}}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00400\ \textcolor{comment}{\ *\ List\ declarations.}}
+\DoxyCodeLine{00401\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00402\ \textcolor{preprocessor}{\#define\ LIST\_HEAD(name,\ type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00403\ \textcolor{preprocessor}{struct\ name\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00404\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ *lh\_first;\ \ }\textcolor{comment}{/*\ first\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00405\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \textcolor{preprocessor}{\#define\ LIST\_CLASS\_HEAD(name,\ type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00408\ \textcolor{preprocessor}{struct\ name\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00409\ \textcolor{preprocessor}{\ \ \ \ class\ type\ *lh\_first;\ \ \ }\textcolor{comment}{/*\ first\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00410\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \textcolor{preprocessor}{\#define\ LIST\_HEAD\_INITIALIZER(head)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00413\ \textcolor{preprocessor}{\ \ \ \ \{\ NULL\ \}}}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00415\ \textcolor{preprocessor}{\#define\ LIST\_ENTRY(type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00416\ \textcolor{preprocessor}{struct\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00417\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ *le\_next;\ \ \ }\textcolor{comment}{/*\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00418\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ **le\_prev;\ \ }\textcolor{comment}{/*\ address\ of\ previous\ next\ element\ */}\textcolor{preprocessor}{\ \ \(\backslash\)}}
+\DoxyCodeLine{00419\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \textcolor{preprocessor}{\#define\ LIST\_CLASS\_ENTRY(type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00422\ \textcolor{preprocessor}{struct\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00423\ \textcolor{preprocessor}{\ \ \ \ class\ type\ *le\_next;\ \ \ \ }\textcolor{comment}{/*\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00424\ \textcolor{preprocessor}{\ \ \ \ class\ type\ **le\_prev;\ \ \ }\textcolor{comment}{/*\ address\ of\ previous\ next\ element\ */}\textcolor{preprocessor}{\ \ \(\backslash\)}}
+\DoxyCodeLine{00425\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00428\ \textcolor{comment}{\ *\ List\ functions.}}
+\DoxyCodeLine{00429\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00430\ }
+\DoxyCodeLine{00431\ \textcolor{preprocessor}{\#define\ QMD\_LIST\_CHECK\_HEAD(head,\ field)}}
+\DoxyCodeLine{00432\ \textcolor{preprocessor}{\#define\ QMD\_LIST\_CHECK\_NEXT(elm,\ field)}}
+\DoxyCodeLine{00433\ \textcolor{preprocessor}{\#define\ QMD\_LIST\_CHECK\_PREV(elm,\ field)}}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \textcolor{preprocessor}{\#define\ LIST\_CONCAT(head1,\ head2,\ type,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00436\ \textcolor{preprocessor}{\ \ \ \ QUEUE\_TYPEOF(type)\ *curelm\ =\ LIST\_FIRST(head1);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00437\ \textcolor{preprocessor}{\ \ \ \ if\ (curelm\ ==\ NULL)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00438\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ if\ ((LIST\_FIRST(head1)\ =\ LIST\_FIRST(head2))\ !=\ NULL)\ \{\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00439\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ LIST\_FIRST(head2)-\/>field.le\_prev\ =\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00440\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&LIST\_FIRST((head1));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00441\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ LIST\_INIT(head2);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00442\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00443\ \textcolor{preprocessor}{\ \ \ \ \}\ else\ if\ (LIST\_FIRST(head2)\ !=\ NULL)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00444\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ while\ (LIST\_NEXT(curelm,\ field)\ !=\ NULL)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00445\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ curelm\ =\ LIST\_NEXT(curelm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00446\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ LIST\_NEXT(curelm,\ field)\ =\ LIST\_FIRST(head2);\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00447\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ LIST\_FIRST(head2)-\/>field.le\_prev\ =\ \&LIST\_NEXT(curelm,\ field);\ \(\backslash\)}}
+\DoxyCodeLine{00448\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ LIST\_INIT(head2);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00449\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00450\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00451\ }
+\DoxyCodeLine{00452\ \textcolor{preprocessor}{\#define\ LIST\_EMPTY(head)\ \ \ \ ((head)-\/>lh\_first\ ==\ NULL)}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{preprocessor}{\#define\ LIST\_FIRST(head)\ \ \ \ ((head)-\/>lh\_first)}}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \textcolor{preprocessor}{\#define\ LIST\_FOREACH(var,\ head,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00457\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ LIST\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00458\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00459\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ LIST\_NEXT((var),\ field))}}
+\DoxyCodeLine{00460\ }
+\DoxyCodeLine{00461\ \textcolor{preprocessor}{\#define\ LIST\_FOREACH\_FROM(var,\ head,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00462\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ LIST\_FIRST((head)));\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00463\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00464\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ LIST\_NEXT((var),\ field))}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \textcolor{preprocessor}{\#define\ LIST\_FOREACH\_SAFE(var,\ head,\ field,\ tvar)\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00467\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ LIST\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00468\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ LIST\_NEXT((var),\ field),\ 1);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00469\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00470\ }
+\DoxyCodeLine{00471\ \textcolor{preprocessor}{\#define\ LIST\_FOREACH\_FROM\_SAFE(var,\ head,\ field,\ tvar)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00472\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ LIST\_FIRST((head)));\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00473\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ LIST\_NEXT((var),\ field),\ 1);\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00474\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00476\ \textcolor{preprocessor}{\#define\ LIST\_INIT(head)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{\ \ \ \ LIST\_FIRST((head))\ =\ NULL;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00478\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ \textcolor{preprocessor}{\#define\ LIST\_INSERT\_AFTER(listelm,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00481\ \textcolor{preprocessor}{\ \ \ \ QMD\_LIST\_CHECK\_NEXT(listelm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00482\ \textcolor{preprocessor}{\ \ \ \ if\ ((LIST\_NEXT((elm),\ field)\ =\ LIST\_NEXT((listelm),\ field))\ !=\ NULL)\(\backslash\)}}
+\DoxyCodeLine{00483\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ LIST\_NEXT((listelm),\ field)-\/>field.le\_prev\ =\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00484\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \&LIST\_NEXT((elm),\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{\ \ \ \ LIST\_NEXT((listelm),\ field)\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00486\ \textcolor{preprocessor}{\ \ \ \ (elm)-\/>field.le\_prev\ =\ \&LIST\_NEXT((listelm),\ field);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00487\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00489\ \textcolor{preprocessor}{\#define\ LIST\_INSERT\_BEFORE(listelm,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\ \ \ \ QMD\_LIST\_CHECK\_PREV(listelm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00491\ \textcolor{preprocessor}{\ \ \ \ (elm)-\/>field.le\_prev\ =\ (listelm)-\/>field.le\_prev;\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00492\ \textcolor{preprocessor}{\ \ \ \ LIST\_NEXT((elm),\ field)\ =\ (listelm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00493\ \textcolor{preprocessor}{\ \ \ \ *(listelm)-\/>field.le\_prev\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00494\ \textcolor{preprocessor}{\ \ \ \ (listelm)-\/>field.le\_prev\ =\ \&LIST\_NEXT((elm),\ field);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00495\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00496\ }
+\DoxyCodeLine{00497\ \textcolor{preprocessor}{\#define\ LIST\_INSERT\_HEAD(head,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00498\ \textcolor{preprocessor}{\ \ \ \ QMD\_LIST\_CHECK\_HEAD((head),\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00499\ \textcolor{preprocessor}{\ \ \ \ if\ ((LIST\_NEXT((elm),\ field)\ =\ LIST\_FIRST((head)))\ !=\ NULL)\ \(\backslash\)}}
+\DoxyCodeLine{00500\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ LIST\_FIRST((head))-\/>field.le\_prev\ =\ \&LIST\_NEXT((elm),\ field);\(\backslash\)}}
+\DoxyCodeLine{00501\ \textcolor{preprocessor}{\ \ \ \ LIST\_FIRST((head))\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00502\ \textcolor{preprocessor}{\ \ \ \ (elm)-\/>field.le\_prev\ =\ \&LIST\_FIRST((head));\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00503\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00504\ }
+\DoxyCodeLine{00505\ \textcolor{preprocessor}{\#define\ LIST\_NEXT(elm,\ field)\ \ \ ((elm)-\/>field.le\_next)}}
+\DoxyCodeLine{00506\ }
+\DoxyCodeLine{00507\ \textcolor{preprocessor}{\#define\ LIST\_PREV(elm,\ head,\ type,\ field)\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00508\ \textcolor{preprocessor}{\ \ \ \ ((elm)-\/>field.le\_prev\ ==\ \&LIST\_FIRST((head))\ ?\ NULL\ :\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00509\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \_\_containerof((elm)-\/>field.le\_prev,\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00510\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ QUEUE\_TYPEOF(type),\ field.le\_next))}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \textcolor{preprocessor}{\#define\ LIST\_REMOVE(elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00513\ \textcolor{preprocessor}{\ \ \ \ QMD\_SAVELINK(oldnext,\ (elm)-\/>field.le\_next);\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00514\ \textcolor{preprocessor}{\ \ \ \ QMD\_SAVELINK(oldprev,\ (elm)-\/>field.le\_prev);\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00515\ \textcolor{preprocessor}{\ \ \ \ QMD\_LIST\_CHECK\_NEXT(elm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00516\ \textcolor{preprocessor}{\ \ \ \ QMD\_LIST\_CHECK\_PREV(elm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00517\ \textcolor{preprocessor}{\ \ \ \ if\ (LIST\_NEXT((elm),\ field)\ !=\ NULL)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00518\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ LIST\_NEXT((elm),\ field)-\/>field.le\_prev\ =\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00519\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ (elm)-\/>field.le\_prev;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00520\ \textcolor{preprocessor}{\ \ \ \ *(elm)-\/>field.le\_prev\ =\ LIST\_NEXT((elm),\ field);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00521\ \textcolor{preprocessor}{\ \ \ \ TRASHIT(*oldnext);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00522\ \textcolor{preprocessor}{\ \ \ \ TRASHIT(*oldprev);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00523\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \textcolor{preprocessor}{\#define\ LIST\_SWAP(head1,\ head2,\ type,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00526\ \textcolor{preprocessor}{\ \ \ \ QUEUE\_TYPEOF(type)\ *swap\_tmp\ =\ LIST\_FIRST(head1);\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00527\ \textcolor{preprocessor}{\ \ \ \ LIST\_FIRST((head1))\ =\ LIST\_FIRST((head2));\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00528\ \textcolor{preprocessor}{\ \ \ \ LIST\_FIRST((head2))\ =\ swap\_tmp;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00529\ \textcolor{preprocessor}{\ \ \ \ if\ ((swap\_tmp\ =\ LIST\_FIRST((head1)))\ !=\ NULL)\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00530\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ swap\_tmp-\/>field.le\_prev\ =\ \&LIST\_FIRST((head1));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00531\ \textcolor{preprocessor}{\ \ \ \ if\ ((swap\_tmp\ =\ LIST\_FIRST((head2)))\ !=\ NULL)\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00532\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ swap\_tmp-\/>field.le\_prev\ =\ \&LIST\_FIRST((head2));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00533\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \textcolor{preprocessor}{\#define\ LIST\_END(head)\ \ NULL}}
+\DoxyCodeLine{00536\ }
+\DoxyCodeLine{00537\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00538\ \textcolor{comment}{\ *\ Tail\ queue\ declarations.}}
+\DoxyCodeLine{00539\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00540\ \textcolor{preprocessor}{\#define\ TAILQ\_HEAD(name,\ type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00541\ \textcolor{preprocessor}{struct\ name\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00542\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ *tqh\_first;\ }\textcolor{comment}{/*\ first\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00543\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ **tqh\_last;\ }\textcolor{comment}{/*\ addr\ of\ last\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00544\ \textcolor{preprocessor}{\ \ \ \ TRACEBUF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00545\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00546\ }
+\DoxyCodeLine{00547\ \textcolor{preprocessor}{\#define\ TAILQ\_CLASS\_HEAD(name,\ type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00548\ \textcolor{preprocessor}{struct\ name\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00549\ \textcolor{preprocessor}{\ \ \ \ class\ type\ *tqh\_first;\ \ }\textcolor{comment}{/*\ first\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00550\ \textcolor{preprocessor}{\ \ \ \ class\ type\ **tqh\_last;\ \ }\textcolor{comment}{/*\ addr\ of\ last\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00551\ \textcolor{preprocessor}{\ \ \ \ TRACEBUF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00552\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00553\ }
+\DoxyCodeLine{00554\ \textcolor{preprocessor}{\#define\ TAILQ\_HEAD\_INITIALIZER(head)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00555\ \textcolor{preprocessor}{\ \ \ \ \{\ NULL,\ \&(head).tqh\_first,\ TRACEBUF\_INITIALIZER\ \}}}
+\DoxyCodeLine{00556\ }
+\DoxyCodeLine{00557\ \textcolor{preprocessor}{\#define\ TAILQ\_ENTRY(type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00558\ \textcolor{preprocessor}{struct\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00559\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ *tqe\_next;\ \ }\textcolor{comment}{/*\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00560\ \textcolor{preprocessor}{\ \ \ \ struct\ type\ **tqe\_prev;\ }\textcolor{comment}{/*\ address\ of\ previous\ next\ element\ */}\textcolor{preprocessor}{\ \ \(\backslash\)}}
+\DoxyCodeLine{00561\ \textcolor{preprocessor}{\ \ \ \ TRACEBUF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00562\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00563\ }
+\DoxyCodeLine{00564\ \textcolor{preprocessor}{\#define\ TAILQ\_CLASS\_ENTRY(type)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00565\ \textcolor{preprocessor}{struct\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00566\ \textcolor{preprocessor}{\ \ \ \ class\ type\ *tqe\_next;\ \ \ }\textcolor{comment}{/*\ next\ element\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00567\ \textcolor{preprocessor}{\ \ \ \ class\ type\ **tqe\_prev;\ \ }\textcolor{comment}{/*\ address\ of\ previous\ next\ element\ */}\textcolor{preprocessor}{\ \ \(\backslash\)}}
+\DoxyCodeLine{00568\ \textcolor{preprocessor}{\ \ \ \ TRACEBUF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00569\ \textcolor{preprocessor}{\}}}
+\DoxyCodeLine{00570\ }
+\DoxyCodeLine{00571\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00572\ \textcolor{comment}{\ *\ Tail\ queue\ functions.}}
+\DoxyCodeLine{00573\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00574\ }
+\DoxyCodeLine{00575\ \textcolor{preprocessor}{\#define\ QMD\_TAILQ\_CHECK\_HEAD(head,\ field)}}
+\DoxyCodeLine{00576\ \textcolor{preprocessor}{\#define\ QMD\_TAILQ\_CHECK\_TAIL(head,\ headname)}}
+\DoxyCodeLine{00577\ \textcolor{preprocessor}{\#define\ QMD\_TAILQ\_CHECK\_NEXT(elm,\ field)}}
+\DoxyCodeLine{00578\ \textcolor{preprocessor}{\#define\ QMD\_TAILQ\_CHECK\_PREV(elm,\ field)}}
+\DoxyCodeLine{00579\ }
+\DoxyCodeLine{00580\ \textcolor{preprocessor}{\#define\ TAILQ\_CONCAT(head1,\ head2,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00581\ \textcolor{preprocessor}{\ \ \ \ if\ (!TAILQ\_EMPTY(head2))\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00582\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ *(head1)-\/>tqh\_last\ =\ (head2)-\/>tqh\_first;\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00583\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head2)-\/>tqh\_first-\/>field.tqe\_prev\ =\ (head1)-\/>tqh\_last;\ \(\backslash\)}}
+\DoxyCodeLine{00584\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head1)-\/>tqh\_last\ =\ (head2)-\/>tqh\_last;\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00585\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ TAILQ\_INIT((head2));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00586\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ QMD\_TRACE\_HEAD(head1);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00587\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ QMD\_TRACE\_HEAD(head2);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00588\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00589\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00590\ }
+\DoxyCodeLine{00591\ \textcolor{preprocessor}{\#define\ TAILQ\_EMPTY(head)\ \ \ ((head)-\/>tqh\_first\ ==\ NULL)}}
+\DoxyCodeLine{00592\ }
+\DoxyCodeLine{00593\ \textcolor{preprocessor}{\#define\ TAILQ\_FIRST(head)\ \ \ ((head)-\/>tqh\_first)}}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00595\ \textcolor{preprocessor}{\#define\ TAILQ\_FOREACH(var,\ head,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00596\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ TAILQ\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00597\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00598\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ TAILQ\_NEXT((var),\ field))}}
+\DoxyCodeLine{00599\ }
+\DoxyCodeLine{00600\ \textcolor{preprocessor}{\#define\ TAILQ\_FOREACH\_FROM(var,\ head,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00601\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ TAILQ\_FIRST((head)));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00602\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00603\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ TAILQ\_NEXT((var),\ field))}}
+\DoxyCodeLine{00604\ }
+\DoxyCodeLine{00605\ \textcolor{preprocessor}{\#define\ TAILQ\_FOREACH\_SAFE(var,\ head,\ field,\ tvar)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00606\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ TAILQ\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00607\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ TAILQ\_NEXT((var),\ field),\ 1);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00608\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00610\ \textcolor{preprocessor}{\#define\ TAILQ\_FOREACH\_FROM\_SAFE(var,\ head,\ field,\ tvar)\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00611\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ TAILQ\_FIRST((head)));\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00612\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ TAILQ\_NEXT((var),\ field),\ 1);\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00613\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \textcolor{preprocessor}{\#define\ TAILQ\_FOREACH\_REVERSE(var,\ head,\ headname,\ field)\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00616\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ TAILQ\_LAST((head),\ headname);\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00617\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00618\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ TAILQ\_PREV((var),\ headname,\ field))}}
+\DoxyCodeLine{00619\ }
+\DoxyCodeLine{00620\ \textcolor{preprocessor}{\#define\ TAILQ\_FOREACH\_REVERSE\_FROM(var,\ head,\ headname,\ field)\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00621\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ TAILQ\_LAST((head),\ headname));\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00622\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00623\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ TAILQ\_PREV((var),\ headname,\ field))}}
+\DoxyCodeLine{00624\ }
+\DoxyCodeLine{00625\ \textcolor{preprocessor}{\#define\ TAILQ\_FOREACH\_REVERSE\_SAFE(var,\ head,\ headname,\ field,\ tvar)\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00626\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ TAILQ\_LAST((head),\ headname);\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00627\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ TAILQ\_PREV((var),\ headname,\ field),\ 1);\ \ \(\backslash\)}}
+\DoxyCodeLine{00628\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00629\ }
+\DoxyCodeLine{00630\ \textcolor{preprocessor}{\#define\ TAILQ\_FOREACH\_REVERSE\_FROM\_SAFE(var,\ head,\ headname,\ field,\ tvar)\ \(\backslash\)}}
+\DoxyCodeLine{00631\ \textcolor{preprocessor}{\ \ \ \ for\ ((var)\ =\ ((var)\ ?\ (var)\ :\ TAILQ\_LAST((head),\ headname));\ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00632\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ \&\&\ ((tvar)\ =\ TAILQ\_PREV((var),\ headname,\ field),\ 1);\ \ \(\backslash\)}}
+\DoxyCodeLine{00633\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (var)\ =\ (tvar))}}
+\DoxyCodeLine{00634\ }
+\DoxyCodeLine{00635\ \textcolor{preprocessor}{\#define\ TAILQ\_INIT(head)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00636\ \textcolor{preprocessor}{\ \ \ \ TAILQ\_FIRST((head))\ =\ NULL;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00637\ \textcolor{preprocessor}{\ \ \ \ (head)-\/>tqh\_last\ =\ \&TAILQ\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00638\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_HEAD(head);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00639\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \textcolor{preprocessor}{\#define\ TAILQ\_INSERT\_AFTER(head,\ listelm,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00642\ \textcolor{preprocessor}{\ \ \ \ QMD\_TAILQ\_CHECK\_NEXT(listelm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00643\ \textcolor{preprocessor}{\ \ \ \ if\ ((TAILQ\_NEXT((elm),\ field)\ =\ TAILQ\_NEXT((listelm),\ field))\ !=\ NULL)\(\backslash\)}}
+\DoxyCodeLine{00644\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ TAILQ\_NEXT((elm),\ field)-\/>field.tqe\_prev\ =\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00645\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \&TAILQ\_NEXT((elm),\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00646\ \textcolor{preprocessor}{\ \ \ \ else\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00647\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head)-\/>tqh\_last\ =\ \&TAILQ\_NEXT((elm),\ field);\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00648\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ QMD\_TRACE\_HEAD(head);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00649\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00650\ \textcolor{preprocessor}{\ \ \ \ TAILQ\_NEXT((listelm),\ field)\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00651\ \textcolor{preprocessor}{\ \ \ \ (elm)-\/>field.tqe\_prev\ =\ \&TAILQ\_NEXT((listelm),\ field);\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00652\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_ELEM(\&(elm)-\/>field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00653\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_ELEM(\&(listelm)-\/>field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00654\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00655\ }
+\DoxyCodeLine{00656\ \textcolor{preprocessor}{\#define\ TAILQ\_INSERT\_BEFORE(listelm,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00657\ \textcolor{preprocessor}{\ \ \ \ QMD\_TAILQ\_CHECK\_PREV(listelm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00658\ \textcolor{preprocessor}{\ \ \ \ (elm)-\/>field.tqe\_prev\ =\ (listelm)-\/>field.tqe\_prev;\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00659\ \textcolor{preprocessor}{\ \ \ \ TAILQ\_NEXT((elm),\ field)\ =\ (listelm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00660\ \textcolor{preprocessor}{\ \ \ \ *(listelm)-\/>field.tqe\_prev\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00661\ \textcolor{preprocessor}{\ \ \ \ (listelm)-\/>field.tqe\_prev\ =\ \&TAILQ\_NEXT((elm),\ field);\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00662\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_ELEM(\&(elm)-\/>field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00663\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_ELEM(\&(listelm)-\/>field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00664\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00665\ }
+\DoxyCodeLine{00666\ \textcolor{preprocessor}{\#define\ TAILQ\_INSERT\_HEAD(head,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00667\ \textcolor{preprocessor}{\ \ \ \ QMD\_TAILQ\_CHECK\_HEAD(head,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00668\ \textcolor{preprocessor}{\ \ \ \ if\ ((TAILQ\_NEXT((elm),\ field)\ =\ TAILQ\_FIRST((head)))\ !=\ NULL)\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00669\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ TAILQ\_FIRST((head))-\/>field.tqe\_prev\ =\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00670\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \&TAILQ\_NEXT((elm),\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00671\ \textcolor{preprocessor}{\ \ \ \ else\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00672\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head)-\/>tqh\_last\ =\ \&TAILQ\_NEXT((elm),\ field);\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00673\ \textcolor{preprocessor}{\ \ \ \ TAILQ\_FIRST((head))\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00674\ \textcolor{preprocessor}{\ \ \ \ (elm)-\/>field.tqe\_prev\ =\ \&TAILQ\_FIRST((head));\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00675\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_HEAD(head);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00676\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_ELEM(\&(elm)-\/>field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00677\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00678\ }
+\DoxyCodeLine{00679\ \textcolor{preprocessor}{\#define\ TAILQ\_INSERT\_TAIL(head,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00680\ \textcolor{preprocessor}{\ \ \ \ QMD\_TAILQ\_CHECK\_TAIL(head,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00681\ \textcolor{preprocessor}{\ \ \ \ TAILQ\_NEXT((elm),\ field)\ =\ NULL;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00682\ \textcolor{preprocessor}{\ \ \ \ (elm)-\/>field.tqe\_prev\ =\ (head)-\/>tqh\_last;\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00683\ \textcolor{preprocessor}{\ \ \ \ *(head)-\/>tqh\_last\ =\ (elm);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00684\ \textcolor{preprocessor}{\ \ \ \ (head)-\/>tqh\_last\ =\ \&TAILQ\_NEXT((elm),\ field);\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00685\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_HEAD(head);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00686\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_ELEM(\&(elm)-\/>field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00687\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00688\ }
+\DoxyCodeLine{00689\ \textcolor{preprocessor}{\#define\ TAILQ\_LAST(head,\ headname)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00690\ \textcolor{preprocessor}{\ \ \ \ (*(((struct\ headname\ *)((head)-\/>tqh\_last))-\/>tqh\_last))}}
+\DoxyCodeLine{00691\ }
+\DoxyCodeLine{00692\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00693\ \textcolor{comment}{\ *\ The\ FAST\ function\ is\ fast\ in\ that\ it\ causes\ no\ data\ access\ other}}
+\DoxyCodeLine{00694\ \textcolor{comment}{\ *\ then\ the\ access\ to\ the\ head.\ The\ standard\ LAST\ function\ above}}
+\DoxyCodeLine{00695\ \textcolor{comment}{\ *\ will\ cause\ a\ data\ access\ of\ both\ the\ element\ you\ want\ and}}
+\DoxyCodeLine{00696\ \textcolor{comment}{\ *\ the\ previous\ element.\ FAST\ is\ very\ useful\ for\ instances\ when}}
+\DoxyCodeLine{00697\ \textcolor{comment}{\ *\ you\ may\ want\ to\ prefetch\ the\ last\ data\ element.}}
+\DoxyCodeLine{00698\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00699\ \textcolor{preprocessor}{\#define\ TAILQ\_LAST\_FAST(head,\ type,\ field)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00700\ \textcolor{preprocessor}{\ \ \ \ (TAILQ\_EMPTY(head)\ ?\ NULL\ :\ \_\_containerof((head)-\/>tqh\_last,\ QUEUE\_TYPEOF(type),\ field.tqe\_next))}}
+\DoxyCodeLine{00701\ }
+\DoxyCodeLine{00702\ \textcolor{preprocessor}{\#define\ TAILQ\_NEXT(elm,\ field)\ ((elm)-\/>field.tqe\_next)}}
+\DoxyCodeLine{00703\ }
+\DoxyCodeLine{00704\ \textcolor{preprocessor}{\#define\ TAILQ\_PREV(elm,\ headname,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00705\ \textcolor{preprocessor}{\ \ \ \ (*(((struct\ headname\ *)((elm)-\/>field.tqe\_prev))-\/>tqh\_last))}}
+\DoxyCodeLine{00706\ }
+\DoxyCodeLine{00707\ \textcolor{preprocessor}{\#define\ TAILQ\_PREV\_FAST(elm,\ head,\ type,\ field)\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00708\ \textcolor{preprocessor}{\ \ \ \ ((elm)-\/>field.tqe\_prev\ ==\ \&(head)-\/>tqh\_first\ ?\ NULL\ :\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00709\ \textcolor{preprocessor}{\ \ \ \ \ \_\_containerof((elm)-\/>field.tqe\_prev,\ QUEUE\_TYPEOF(type),\ field.tqe\_next))}}
+\DoxyCodeLine{00710\ }
+\DoxyCodeLine{00711\ \textcolor{preprocessor}{\#define\ TAILQ\_REMOVE(head,\ elm,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00712\ \textcolor{preprocessor}{\ \ \ \ QMD\_SAVELINK(oldnext,\ (elm)-\/>field.tqe\_next);\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00713\ \textcolor{preprocessor}{\ \ \ \ QMD\_SAVELINK(oldprev,\ (elm)-\/>field.tqe\_prev);\ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00714\ \textcolor{preprocessor}{\ \ \ \ QMD\_TAILQ\_CHECK\_NEXT(elm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00715\ \textcolor{preprocessor}{\ \ \ \ QMD\_TAILQ\_CHECK\_PREV(elm,\ field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00716\ \textcolor{preprocessor}{\ \ \ \ if\ ((TAILQ\_NEXT((elm),\ field))\ !=\ NULL)\ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00717\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ TAILQ\_NEXT((elm),\ field)-\/>field.tqe\_prev\ =\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00718\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ (elm)-\/>field.tqe\_prev;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00719\ \textcolor{preprocessor}{\ \ \ \ else\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00720\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head)-\/>tqh\_last\ =\ (elm)-\/>field.tqe\_prev;\ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00721\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ QMD\_TRACE\_HEAD(head);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00722\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00723\ \textcolor{preprocessor}{\ \ \ \ *(elm)-\/>field.tqe\_prev\ =\ TAILQ\_NEXT((elm),\ field);\ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00724\ \textcolor{preprocessor}{\ \ \ \ TRASHIT(*oldnext);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00725\ \textcolor{preprocessor}{\ \ \ \ TRASHIT(*oldprev);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00726\ \textcolor{preprocessor}{\ \ \ \ QMD\_TRACE\_ELEM(\&(elm)-\/>field);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00727\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00728\ }
+\DoxyCodeLine{00729\ \textcolor{preprocessor}{\#define\ TAILQ\_SWAP(head1,\ head2,\ type,\ field)\ do\ \{\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00730\ \textcolor{preprocessor}{\ \ \ \ QUEUE\_TYPEOF(type)\ *swap\_first\ =\ (head1)-\/>tqh\_first;\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00731\ \textcolor{preprocessor}{\ \ \ \ QUEUE\_TYPEOF(type)\ **swap\_last\ =\ (head1)-\/>tqh\_last;\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00732\ \textcolor{preprocessor}{\ \ \ \ (head1)-\/>tqh\_first\ =\ (head2)-\/>tqh\_first;\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00733\ \textcolor{preprocessor}{\ \ \ \ (head1)-\/>tqh\_last\ =\ (head2)-\/>tqh\_last;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00734\ \textcolor{preprocessor}{\ \ \ \ (head2)-\/>tqh\_first\ =\ swap\_first;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00735\ \textcolor{preprocessor}{\ \ \ \ (head2)-\/>tqh\_last\ =\ swap\_last;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00736\ \textcolor{preprocessor}{\ \ \ \ if\ ((swap\_first\ =\ (head1)-\/>tqh\_first)\ !=\ NULL)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00737\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ swap\_first-\/>field.tqe\_prev\ =\ \&(head1)-\/>tqh\_first;\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00738\ \textcolor{preprocessor}{\ \ \ \ else\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00739\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head1)-\/>tqh\_last\ =\ \&(head1)-\/>tqh\_first;\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00740\ \textcolor{preprocessor}{\ \ \ \ if\ ((swap\_first\ =\ (head2)-\/>tqh\_first)\ !=\ NULL)\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00741\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ swap\_first-\/>field.tqe\_prev\ =\ \&(head2)-\/>tqh\_first;\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00742\ \textcolor{preprocessor}{\ \ \ \ else\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00743\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ (head2)-\/>tqh\_last\ =\ \&(head2)-\/>tqh\_first;\ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00744\ \textcolor{preprocessor}{\}\ while\ (0)}}
+\DoxyCodeLine{00745\ }
+\DoxyCodeLine{00746\ \textcolor{preprocessor}{\#define\ TAILQ\_END(head)\ \ \ \ \ NULL}}
+\DoxyCodeLine{00747\ }
+\DoxyCodeLine{00748\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ !OFICONV\_QUEUE\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

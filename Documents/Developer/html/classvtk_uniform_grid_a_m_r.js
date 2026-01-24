@@ -1,0 +1,25 @@
+var classvtk_uniform_grid_a_m_r =
+[
+    [ "CompositeShallowCopy", "classvtk_uniform_grid_a_m_r.html#aa7c24e4f1646c6911a86f3129f5640e0", null ],
+    [ "CopyStructure", "classvtk_uniform_grid_a_m_r.html#ad178879ce2e54def720717b1d58c3a25", null ],
+    [ "DeepCopy", "classvtk_uniform_grid_a_m_r.html#a9fb608637dd70ec384d705772ac6611d", null ],
+    [ "GetBounds", "classvtk_uniform_grid_a_m_r.html#ace105e492dfc4c6883966369db1f9757", null ],
+    [ "GetCompositeIndex", "classvtk_uniform_grid_a_m_r.html#afda0f2aaa700c8704087feabd3616916", null ],
+    [ "GetDataObjectType", "classvtk_uniform_grid_a_m_r.html#afdbff24983b52a09aea0a414fd9354e9", null ],
+    [ "GetDataSet", "classvtk_uniform_grid_a_m_r.html#acb554fec5e58fcd97a2f3919b30698da", null ],
+    [ "GetDataSet", "classvtk_uniform_grid_a_m_r.html#a28c81b3c7109586c60a0d44439684952", null ],
+    [ "GetLevelAndIndex", "classvtk_uniform_grid_a_m_r.html#a73233f165b136b0d4e65bdea34d49c60", null ],
+    [ "GetNumberOfDataSets", "classvtk_uniform_grid_a_m_r.html#ace1c06a7e09465f8cea7d5091d19e2e1", null ],
+    [ "GetNumberOfLevels", "classvtk_uniform_grid_a_m_r.html#a93851b8becb473915b7f5465e46d5c1e", null ],
+    [ "GetTotalNumberOfBlocks", "classvtk_uniform_grid_a_m_r.html#af6ab2fb9ec08ea3c1ad53873021936b9", null ],
+    [ "Initialize", "classvtk_uniform_grid_a_m_r.html#aa461ac7bc795df3039209af222c437b6", null ],
+    [ "Initialize", "classvtk_uniform_grid_a_m_r.html#a83822f1d193ea949807027c5140324cf", null ],
+    [ "NewIterator", "classvtk_uniform_grid_a_m_r.html#ab40e5499992bc20a0290881736935e47", null ],
+    [ "PrintSelf", "classvtk_uniform_grid_a_m_r.html#aee64c35c4d05917456bc24e18577016f", null ],
+    [ "SetDataSet", "classvtk_uniform_grid_a_m_r.html#a5b4c89cbd9781238a6cbf35d193fac4f", null ],
+    [ "SetDataSet", "classvtk_uniform_grid_a_m_r.html#ac9093a5ca562e3e716adada6fb2ac1fb", null ],
+    [ "SetGridDescription", "classvtk_uniform_grid_a_m_r.html#af62440bfa1f4597fc13a398a0396a57c", null ],
+    [ "ShallowCopy", "classvtk_uniform_grid_a_m_r.html#a677fa0238d2b02ac90fd310efbc3f7a4", null ],
+    [ "vtkGetObjectMacro", "classvtk_uniform_grid_a_m_r.html#a5829380c56011f236ba45fb505cde2e2", null ],
+    [ "vtkGetObjectMacro", "classvtk_uniform_grid_a_m_r.html#a3836d9dacab8728f71f731e54faf4f8f", null ]
+];

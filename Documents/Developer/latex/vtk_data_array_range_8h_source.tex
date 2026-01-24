@@ -1,0 +1,122 @@
+\doxysection{vtk\+Data\+Array\+Range.\+h}
+\hypertarget{vtk_data_array_range_8h_source}{}\label{vtk_data_array_range_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataArrayRange.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataArrayRange.h}}
+\doxymbox{\hyperlink{vtk_data_array_range_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#ifndef\ vtkDataArrayRange\_h}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#define\ vtkDataArrayRange\_h}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}vtkAOSDataArrayTemplate.h"{}}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}vtkDataArray.h"{}}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_data_array_meta_8h}{vtkDataArrayMeta.h}}"{}}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ "{}vtkDataArrayTupleRange\_AOS.h"{}}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ "{}vtkDataArrayTupleRange\_Generic.h"{}}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ "{}vtkDataArrayValueRange\_AOS.h"{}}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}vtkDataArrayValueRange\_Generic.h"{}}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_meta_8h}{vtkMeta.h}}"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointer.h"{}}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ VTK\_ITER\_OPTIMIZE\_START}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00087\ \{}
+\DoxyCodeLine{00088\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00089\ \{}
+\DoxyCodeLine{00090\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \textcolor{comment}{//\ Internal\ detail:\ This\ utility\ is\ not\ directly\ needed\ by\ users\ of}}
+\DoxyCodeLine{00093\ \textcolor{comment}{//\ DataArrayRange.}}
+\DoxyCodeLine{00094\ \textcolor{comment}{//}}
+\DoxyCodeLine{00095\ \textcolor{comment}{//\ These\ classes\ are\ used\ to\ detect\ when\ specializations\ exist\ for\ a\ given}}
+\DoxyCodeLine{00096\ \textcolor{comment}{//\ array\ type.\ They\ are\ necessary\ because\ given:}}
+\DoxyCodeLine{00097\ \textcolor{comment}{//}}
+\DoxyCodeLine{00098\ \textcolor{comment}{//\ template\ <typename\ ArrayType>\ class\ SomeTemplateClass;}}
+\DoxyCodeLine{00099\ \textcolor{comment}{//\ template\ <typename\ T>\ class\ SomeTemplateClass<vtkAOSDataArrayTemplate<T>>;}}
+\DoxyCodeLine{00100\ \textcolor{comment}{//}}
+\DoxyCodeLine{00101\ \textcolor{comment}{//\ SomeTemplateClass<vtkFloatArray>\ will\ pick\ the\ generic\ version,\ as\ ArrayType}}
+\DoxyCodeLine{00102\ \textcolor{comment}{//\ is\ a\ better\ match\ than\ vtkAOSDataArrayTemplate<T>.\ This\ class\ works\ around}}
+\DoxyCodeLine{00103\ \textcolor{comment}{//\ that\ by\ using\ Declare[Tuple|Value]RangeSpecialization\ functions\ that\ map\ an}}
+\DoxyCodeLine{00104\ \textcolor{comment}{//\ input\ ArrayTypePtr\ and\ tuple\ size\ to\ a\ specific\ version\ of\ the\ appropriate}}
+\DoxyCodeLine{00105\ \textcolor{comment}{//\ Range.}}
+\DoxyCodeLine{00106\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayTypePtr,\ ComponentIdType\ TupleSize>}
+\DoxyCodeLine{00107\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_select_tuple_range}{SelectTupleRange}}}
+\DoxyCodeLine{00108\ \{}
+\DoxyCodeLine{00109\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00110\ \ \ \textcolor{comment}{//\ Allow\ this\ to\ work\ with\ vtkNew,\ vtkSmartPointer,\ etc.}}
+\DoxyCodeLine{00111\ \ \ \textcolor{keyword}{using\ }ArrayType\ =\ \textcolor{keyword}{typename}\ detail::StripPointers<ArrayTypePtr>::type;}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_valid_tuple_size}{detail::IsValidTupleSize<TupleSize>::value}},\ \textcolor{stringliteral}{"{}Invalid\ tuple\ size."{}});}
+\DoxyCodeLine{00114\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_vtk_data_array}{detail::IsVtkDataArray<ArrayType>::value}},\ \textcolor{stringliteral}{"{}Invalid\ array\ type."{}});}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00117\ \ \ \textcolor{keyword}{using\ }type\ =}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keyword}{typename}\ std::decay<decltype(vtk::detail::DeclareTupleRangeSpecialization<ArrayType,\ TupleSize>(}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ std::declval<ArrayType*>()))>::type;}
+\DoxyCodeLine{00120\ \};}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayTypePtr,\ ComponentIdType\ TupleSize,}
+\DoxyCodeLine{00123\ \ \ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray\ =\ \textcolor{keywordtype}{double}>}
+\DoxyCodeLine{00124\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_1_1detail_1_1_select_value_range}{SelectValueRange}}}
+\DoxyCodeLine{00125\ \{}
+\DoxyCodeLine{00126\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{//\ Allow\ this\ to\ work\ with\ vtkNew,\ vtkSmartPointer,\ etc.}}
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{using\ }ArrayType\ =\ \textcolor{keyword}{typename}\ detail::StripPointers<ArrayTypePtr>::type;}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_valid_tuple_size}{detail::IsValidTupleSize<TupleSize>::value}},\ \textcolor{stringliteral}{"{}Invalid\ tuple\ size."{}});}
+\DoxyCodeLine{00131\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_vtk_data_array}{detail::IsVtkDataArray<ArrayType>::value}},\ \textcolor{stringliteral}{"{}Invalid\ array\ type."{}});}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00134\ \ \ \textcolor{keyword}{using\ }type\ =}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{typename}\ std::remove\_reference<\textcolor{keyword}{decltype}(vtk::detail::DeclareValueRangeSpecialization<ArrayType,}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ TupleSize,\ ForceValueTypeForVtkDataArray>(std::declval<ArrayType*>()))>::type;}
+\DoxyCodeLine{00137\ \};}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00140\ \}\ \textcolor{comment}{//\ end\ namespace\ detail}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00248\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00249\ \textcolor{keyword}{template}\ <ComponentIdType\ TupleSize\ =\ detail::DynamicTupleSize,}
+\DoxyCodeLine{00250\ \ \ \textcolor{keyword}{typename}\ ArrayTypePtr\ =\ vtkDataArray*>}
+\DoxyCodeLine{00251\ VTK\_ITER\_INLINE\ \textcolor{keyword}{auto}\ \doxymbox{\hyperlink{namespacevtk_ab3b536698b4a3d1ab80d9d7ba21fd5e9}{DataArrayTupleRange}}(\textcolor{keyword}{const}\ ArrayTypePtr\&\ array,\ TupleIdType\ start\ =\ -\/1,}
+\DoxyCodeLine{00252\ \ \ TupleIdType\ end\ =\ -\/1)\ -\/>\ \textcolor{keyword}{typename}\ detail::SelectTupleRange<ArrayTypePtr,\ TupleSize>::type}
+\DoxyCodeLine{00253\ \{}
+\DoxyCodeLine{00254\ \ \ \textcolor{comment}{//\ Lookup\ specializations:}}
+\DoxyCodeLine{00255\ \ \ \textcolor{keyword}{using\ }RangeType\ =\ \textcolor{keyword}{typename}\ detail::SelectTupleRange<ArrayTypePtr,\ TupleSize>::type;}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ assert(array);}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \textcolor{keywordflow}{return}\ RangeType(array,\ start\ <\ 0\ ?\ 0\ :\ start,\ end\ <\ 0\ ?\ array-\/>GetNumberOfTuples()\ :\ end);}
+\DoxyCodeLine{00260\ \}}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00359\ \textcolor{keyword}{template}\ <ComponentIdType\ TupleSize\ =\ detail::DynamicTupleSize,}
+\DoxyCodeLine{00360\ \ \ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray\ =\ double,\ \textcolor{keyword}{typename}\ ArrayTypePtr\ =\ vtkDataArray*>}
+\DoxyCodeLine{00361\ VTK\_ITER\_INLINE\ \textcolor{keyword}{auto}\ \doxymbox{\hyperlink{namespacevtk_abb6756380d24cda3ea3a74fdcbdf8de1}{DataArrayValueRange}}(}
+\DoxyCodeLine{00362\ \ \ \textcolor{keyword}{const}\ ArrayTypePtr\&\ array,\ ValueIdType\ start\ =\ -\/1,\ ValueIdType\ end\ =\ -\/1)\ -\/>}
+\DoxyCodeLine{00363\ \ \ \textcolor{keyword}{typename}\ detail::SelectValueRange<ArrayTypePtr,\ TupleSize,\ ForceValueTypeForVtkDataArray>::type}
+\DoxyCodeLine{00364\ \{}
+\DoxyCodeLine{00365\ \ \ \textcolor{keyword}{using\ }RangeType\ =}
+\DoxyCodeLine{00366\ \ \ \ \ \textcolor{keyword}{typename}\ detail::SelectValueRange<ArrayTypePtr,\ TupleSize,\ ForceValueTypeForVtkDataArray>::type;}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ assert(array);}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00370\ \ \ \textcolor{keywordflow}{return}\ RangeType(array,\ start\ <\ 0\ ?\ 0\ :\ start,\ end\ <\ 0\ ?\ array-\/>GetNumberOfValues()\ :\ end);}
+\DoxyCodeLine{00371\ \}}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00374\ \}\ \textcolor{comment}{//\ end\ namespace\ vtk}}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ VTK\_ITER\_OPTIMIZE\_END}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkDataArrayRange\_h}}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkDataArrayRange.h}}
+
+\end{DoxyCode}

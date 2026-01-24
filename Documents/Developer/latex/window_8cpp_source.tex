@@ -1,0 +1,232 @@
+\doxysection{window.\+cpp}
+\hypertarget{window_8cpp_source}{}\label{window_8cpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/mpi/window.cpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/mpi/window.cpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifdef\ DIY\_MPI\_AS\_LIB}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}window.hpp"{}}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00008\ \{}
+\DoxyCodeLine{00009\ \textcolor{keyword}{namespace\ }mpi}
+\DoxyCodeLine{00010\ \{}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#ifdef\ DIY\_MPI\_AS\_LIB}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#\ \ ifdef\ \_MSC\_VER}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#\ \ \ \ define\ EXPORT\_MACRO\ DIY\_MPI\_EXPORT}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#\ \ else}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#\ \ \ \ define\ EXPORT\_MACRO}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#\ \ endif}}
+\DoxyCodeLine{00018\ EXPORT\_MACRO\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}\ nocheck\ \ =\ MPI\_MODE\_NOCHECK;}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#\ \ undef\ EXPORT\_MACRO}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00023\ \{}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ DIY\_MPI\_Win\ win\_allocate(\textcolor{keyword}{const}\ communicator\&\ comm,\ \textcolor{keywordtype}{void}**\ base,\ \textcolor{keywordtype}{unsigned}\ size,\ \textcolor{keywordtype}{int}\ disp)}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00028\ \ \ DIY\_MPI\_Win\ win;}
+\DoxyCodeLine{00029\ \ \ MPI\_Win\_allocate(size,\ disp,\ MPI\_INFO\_NULL,\ mpi\_cast(comm.handle()),\ base,\ \&mpi\_cast(win));}
+\DoxyCodeLine{00030\ \ \ \textcolor{keywordflow}{return}\ win;}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00032\ \ \ (void)comm;\ (void)disp;}
+\DoxyCodeLine{00033\ \ \ *base\ =\ malloc(size);}
+\DoxyCodeLine{00034\ \ \ \textcolor{keyword}{auto}\ mpi\_win\ =\ MPI\_Win(*base,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00035\ \ \ \textcolor{keyword}{auto}\ win\ =\ make\_DIY\_MPI\_Win(std::move(mpi\_win));}
+\DoxyCodeLine{00036\ \ \ \textcolor{keywordflow}{return}\ win;}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00038\ \}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ DIY\_MPI\_Win\ win\_create(\textcolor{keyword}{const}\ communicator\&\ comm,\ \textcolor{keywordtype}{void}*\ base,\ \textcolor{keywordtype}{unsigned}\ size,\ \textcolor{keywordtype}{int}\ disp)}
+\DoxyCodeLine{00041\ \{}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00043\ \ \ DIY\_MPI\_Win\ win;}
+\DoxyCodeLine{00044\ \ \ MPI\_Win\_create(base,\ size,\ disp,\ MPI\_INFO\_NULL,\ mpi\_cast(comm.handle()),\ \&mpi\_cast(win));}
+\DoxyCodeLine{00045\ \ \ \textcolor{keywordflow}{return}\ win;}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00047\ \ \ (void)comm;\ (void)size;\ (void)disp;}
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{auto}\ mpi\_win\ =\ MPI\_Win(base);}
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{auto}\ win\ =\ make\_DIY\_MPI\_Win(std::move(mpi\_win));}
+\DoxyCodeLine{00050\ \ \ \textcolor{keywordflow}{return}\ win;}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00052\ \}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keywordtype}{void}\ win\_free(DIY\_MPI\_Win\&\ win)}
+\DoxyCodeLine{00055\ \{}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00057\ \ \ MPI\_Win\_free(\&mpi\_cast(win));}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{auto}\&\ mpi\_win\ =\ mpi\_cast(win);}
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordflow}{if}\ (mpi\_win.owned())}
+\DoxyCodeLine{00061\ \ \ \ \ free(mpi\_win.data());}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00063\ \}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{keywordtype}{void}\ put(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ data,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{int}\ rank,\ \textcolor{keywordtype}{unsigned}\ offset)}
+\DoxyCodeLine{00066\ \{}
+\DoxyCodeLine{00067\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00068\ \ \ MPI\_Put(data,\ count,\ mpi\_cast(type.handle),\ rank,\ offset,\ count,\ mpi\_cast(type.handle),\ mpi\_cast(win));}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00070\ \ \ \textcolor{keywordtype}{void}*\ buffer\ =\ mpi\_cast(win).data();}
+\DoxyCodeLine{00071\ \ \ \textcolor{keywordtype}{size\_t}\ size\ =\ mpi\_cast(type.handle);}
+\DoxyCodeLine{00072\ \ \ std::copy\_n(\textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }int8\_t*\textcolor{keyword}{>}(data),}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ size\ *\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(count),}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}int8\_t*\textcolor{keyword}{>}(buffer)\ +\ (offset\ *\ size));}
+\DoxyCodeLine{00075\ \ \ (void)rank;}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00077\ \}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keywordtype}{void}\ get(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keywordtype}{void}*\ data,\ \textcolor{keywordtype}{int}\ count,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{int}\ rank,\ \textcolor{keywordtype}{unsigned}\ offset)}
+\DoxyCodeLine{00080\ \{}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00082\ \ \ MPI\_Get(data,\ count,\ mpi\_cast(type.handle),\ rank,\ offset,\ count,\ mpi\_cast(type.handle),\ mpi\_cast(win));}
+\DoxyCodeLine{00083\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00084\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ buffer\ =\ mpi\_cast(win).data();}
+\DoxyCodeLine{00085\ \ \ \textcolor{keywordtype}{size\_t}\ size\ =\ mpi\_cast(type.handle);}
+\DoxyCodeLine{00086\ \ \ std::copy\_n(\textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }int8\_t*\textcolor{keyword}{>}(buffer)\ +\ (offset\ *\ size),}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ size\ *\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(count),}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}int8\_t*\textcolor{keyword}{>}(data));}
+\DoxyCodeLine{00089\ \ \ (void)rank;}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00091\ \}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{keywordtype}{void}\ fence(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keywordtype}{int}\ assert)}
+\DoxyCodeLine{00094\ \{}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00096\ \ \ MPI\_Win\_fence(assert,\ mpi\_cast(win));}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00098\ \ \ (void)\ win;\ (void)\ assert;}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00100\ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \textcolor{keywordtype}{void}\ lock(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keywordtype}{int}\ lock\_type,\ \textcolor{keywordtype}{int}\ rank,\ \textcolor{keywordtype}{int}\ assert)}
+\DoxyCodeLine{00103\ \{}
+\DoxyCodeLine{00104\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00105\ \ \ MPI\_Win\_lock(lock\_type,\ rank,\ assert,\ mpi\_cast(win));}
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00107\ \ \ (void)\ win;\ (void)\ lock\_type;\ (void)\ rank;\ (void)\ assert;}
+\DoxyCodeLine{00108\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00109\ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{keywordtype}{void}\ unlock(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keywordtype}{int}\ rank)}
+\DoxyCodeLine{00112\ \{}
+\DoxyCodeLine{00113\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00114\ \ \ MPI\_Win\_unlock(rank,\ mpi\_cast(win));}
+\DoxyCodeLine{00115\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00116\ \ \ (void)\ win;\ (void)\ rank;}
+\DoxyCodeLine{00117\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00118\ \}}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{keywordtype}{void}\ lock\_all(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keywordtype}{int}\ assert)}
+\DoxyCodeLine{00121\ \{}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00123\ \ \ MPI\_Win\_lock\_all(assert,\ mpi\_cast(win));}
+\DoxyCodeLine{00124\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00125\ \ \ (void)\ win;\ (void)\ assert;}
+\DoxyCodeLine{00126\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00127\ \}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \textcolor{keywordtype}{void}\ unlock\_all(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win)}
+\DoxyCodeLine{00130\ \{}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00132\ \ \ MPI\_Win\_unlock\_all(mpi\_cast(win));}
+\DoxyCodeLine{00133\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00134\ \ \ (void)\ win;}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00136\ \}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \textcolor{keywordtype}{void}\ fetch\_and\_op(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ origin,\ \textcolor{keywordtype}{void}*\ result,\ \textcolor{keyword}{const}\ datatype\&\ type,}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ rank,\ \textcolor{keywordtype}{unsigned}\ offset,}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ operation\&\ op)}
+\DoxyCodeLine{00142\ \{}
+\DoxyCodeLine{00143\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00144\ \ \ MPI\_Fetch\_and\_op(origin,\ result,\ mpi\_cast(type.handle),\ rank,\ offset,\ mpi\_cast(op.handle),\ mpi\_cast(win));}
+\DoxyCodeLine{00145\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00146\ \ \ (void)\ win;\ (void)\ origin;\ (void)\ result;\ (void)\ type;\ (void)\ rank;\ (void)\ offset;\ (void)\ op;}
+\DoxyCodeLine{00147\ \ \ DIY\_UNSUPPORTED\_MPI\_CALL(MPI\_Fetch\_and\_op);}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00149\ \}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{keywordtype}{void}\ fetch(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keywordtype}{void}*\ result,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{int}\ rank,\ \textcolor{keywordtype}{unsigned}\ offset)}
+\DoxyCodeLine{00152\ \{}
+\DoxyCodeLine{00153\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00154\ \ \ MPI\_Fetch\_and\_op(\textcolor{keyword}{nullptr},\ result,\ mpi\_cast(type.handle),\ rank,\ offset,\ MPI\_NO\_OP,\ mpi\_cast(win));}
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00156\ \ \ (void)\ rank;}
+\DoxyCodeLine{00157\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ buffer\ =\ mpi\_cast(win).data();}
+\DoxyCodeLine{00158\ \ \ \textcolor{keywordtype}{size\_t}\ size\ =\ mpi\_cast(type.handle);}
+\DoxyCodeLine{00159\ \ \ std::copy\_n(\textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }int8\_t*\textcolor{keyword}{>}(buffer)\ +\ (offset\ *\ size),}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ size,}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}int8\_t*\textcolor{keyword}{>}(result));}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00163\ \}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \textcolor{keywordtype}{void}\ replace(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ value,\ \textcolor{keyword}{const}\ datatype\&\ type,\ \textcolor{keywordtype}{int}\ rank,\ \textcolor{keywordtype}{unsigned}\ offset)}
+\DoxyCodeLine{00166\ \{}
+\DoxyCodeLine{00167\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00168\ \ \ MPI\_Fetch\_and\_op(value,\ \textcolor{keyword}{nullptr},\ mpi\_cast(type.handle),\ rank,\ offset,\ MPI\_REPLACE,\ mpi\_cast(win));}
+\DoxyCodeLine{00169\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00170\ \ \ (void)\ rank;}
+\DoxyCodeLine{00171\ \ \ \textcolor{keywordtype}{void}*\ buffer\ =\ mpi\_cast(win).data();}
+\DoxyCodeLine{00172\ \ \ \textcolor{keywordtype}{size\_t}\ size\ =\ mpi\_cast(type.handle);}
+\DoxyCodeLine{00173\ \ \ std::copy\_n(\textcolor{keyword}{static\_cast<}\textcolor{keyword}{const\ }int8\_t*\textcolor{keyword}{>}(value),}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ size,}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}int8\_t*\textcolor{keyword}{>}(buffer)\ +\ (offset\ *\ size));}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00177\ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \textcolor{keywordtype}{void}\ sync(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win)}
+\DoxyCodeLine{00180\ \{}
+\DoxyCodeLine{00181\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00182\ \ \ MPI\_Win\_sync(mpi\_cast(win));}
+\DoxyCodeLine{00183\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00184\ \ \ (void)\ win;}
+\DoxyCodeLine{00185\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00186\ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \textcolor{keywordtype}{void}\ flush(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keywordtype}{int}\ rank)}
+\DoxyCodeLine{00189\ \{}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00191\ \ \ MPI\_Win\_flush(rank,\ mpi\_cast(win));}
+\DoxyCodeLine{00192\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00193\ \ \ (void)\ win;\ (void)\ rank;}
+\DoxyCodeLine{00194\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00195\ \}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \textcolor{keywordtype}{void}\ flush\_all(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win)}
+\DoxyCodeLine{00198\ \{}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00200\ \ \ MPI\_Win\_flush\_all(mpi\_cast(win));}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00202\ \ \ (void)\ win;}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00204\ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \textcolor{keywordtype}{void}\ flush\_local(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win,\ \textcolor{keywordtype}{int}\ rank)}
+\DoxyCodeLine{00207\ \{}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00209\ \ \ MPI\_Win\_flush\_local(rank,\ mpi\_cast(win));}
+\DoxyCodeLine{00210\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00211\ \ \ (void)\ win;\ (void)\ rank;}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00213\ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \textcolor{keywordtype}{void}\ flush\_local\_all(\textcolor{keyword}{const}\ DIY\_MPI\_Win\&\ win)}
+\DoxyCodeLine{00216\ \{}
+\DoxyCodeLine{00217\ \textcolor{preprocessor}{\#if\ DIY\_HAS\_MPI}}
+\DoxyCodeLine{00218\ \ \ MPI\_Win\_flush\_local\_all(mpi\_cast(win));}
+\DoxyCodeLine{00219\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00220\ \ \ (void)\ win;}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00222\ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \}}
+\DoxyCodeLine{00225\ \}}
+\DoxyCodeLine{00226\ \}\ \textcolor{comment}{//\ diy::mpi::detail}}
+
+\end{DoxyCode}

@@ -1,0 +1,456 @@
+\doxysection{kdtree-\/sampling.hpp}
+\hypertarget{kdtree-sampling_8hpp_source}{}\label{kdtree-sampling_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/algorithms/kdtree-\/sampling.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/algorithms/kdtree-\/sampling.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_DETAIL\_ALGORITHMS\_KDTREE\_SAMPLING\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_DETAIL\_ALGORITHMS\_KDTREE\_SAMPLING\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}../../partners/all-\/reduce.hpp"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}../../log.hpp"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ TODO:\ technically,\ what's\ done\ now\ is\ not\ a\ perfect\ subsample:}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ \ \ \ \ \ \ we\ take\ the\ same\ number\ of\ samples\ from\ every\ block,\ in\ reality\ this\ number\ should\ be\ selected\ at\ random,}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ \ \ \ \ \ \ so\ that\ the\ total\ number\ of\ samples\ adds\ up\ to\ samples*nblocks}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ NB:\ random\ samples\ are\ chosen\ using\ rand(),\ which\ is\ assumed\ to\ be\ seeded}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ \ \ \ \ externally.\ Once\ we\ switch\ to\ C++11,\ we\ should\ use\ its\ more\ advanced}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ \ \ \ \ random\ number\ generators\ (and\ take\ a\ generator\ as\ an\ external\ parameter)}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ \ \ \ \ (TODO)}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00019\ \{}
+\DoxyCodeLine{00020\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00021\ \{}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00024\ \textcolor{keyword}{struct\ }KDTreeSamplingPartition}
+\DoxyCodeLine{00025\ \{}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ diy::RegularContinuousLink\ \ \ \ \ \ RCLink;}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ diy::ContinuousBounds\ \ \ \ \ \ \ \ \ \ \ Bounds;}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ std::vector<float>\ \ \ \ \ \ \ \ \ \ \ \ \ \ Samples;}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ KDTreeSamplingPartition(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim,}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<Point>\ \ Block::*\ \ \ \ points,}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ samples):}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim\_(dim),\ points\_(points),\ samples\_(samples)\ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ operator()(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_k_d_tree_partners}{KDTreePartners}}\&\ partners)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ divide\_gid(\textcolor{keywordtype}{int}\ gid,\ \textcolor{keywordtype}{bool}\ lower,\ \textcolor{keywordtype}{int}\ round,\ \textcolor{keywordtype}{int}\ rounds)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ update\_links(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int}\ dim,\ \textcolor{keywordtype}{int}\ round,\ \textcolor{keywordtype}{int}\ rounds,\ \textcolor{keywordtype}{bool}\ wrap,\ \textcolor{keyword}{const}\ Bounds\&\ domain)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ split\_to\_neighbors(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int}\ dim)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00041\ \ \ \ \ diy::Direction}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ find\_wrap(\textcolor{keyword}{const}\ Bounds\&\ bounds,\ \textcolor{keyword}{const}\ Bounds\&\ nbr\_bounds,\ \textcolor{keyword}{const}\ Bounds\&\ domain)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ compute\_local\_samples(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int}\ dim)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ add\_samples(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ Samples\&\ samples)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ receive\_samples(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \ \ \ \ \ \ Samples\&\ samples)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ forward\_samples(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keyword}{const}\ Samples\&\ samples)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ enqueue\_exchange(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int}\ dim,\ \textcolor{keyword}{const}\ Samples\&\ samples)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ dequeue\_exchange(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int}\ dim)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ update\_neighbor\_bounds(Bounds\&\ bounds,\ \textcolor{keywordtype}{float}\ split,\ \textcolor{keywordtype}{int}\ dim,\ \textcolor{keywordtype}{bool}\ lower)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ intersects(\textcolor{keyword}{const}\ Bounds\&\ x,\ \textcolor{keyword}{const}\ Bounds\&\ y,\ \textcolor{keywordtype}{int}\ dim,\ \textcolor{keywordtype}{bool}\ wrap,\ \textcolor{keyword}{const}\ Bounds\&\ domain)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{float}\ \ \ \ \ \ \ find\_split(\textcolor{keyword}{const}\ Bounds\&\ changed,\ \textcolor{keyword}{const}\ Bounds\&\ original)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim\_;}
+\DoxyCodeLine{00057\ \ \ \ \ std::vector<Point>\ \ Block::*\ \ \ \ points\_;}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ samples\_;}
+\DoxyCodeLine{00059\ \};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \}}
+\DoxyCodeLine{00062\ \}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00066\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00067\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00068\ operator()(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keyword}{const}\ KDTreePartners\&\ partners)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00069\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{int}\ dim;}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}()\ <\ partners.rounds())}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ dim\ =\ partners.dim(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}());}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ dim\ =\ partners.dim(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}()\ -\/\ 1);}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordflow}{if}\ (srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}()\ ==\ partners.rounds())}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ update\_links(b,\ srp,\ dim,\ partners.sub\_round((\textcolor{keywordtype}{int})srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}()\ -\/\ 2),\ (\textcolor{keywordtype}{int})partners.swap\_rounds(),\ partners.wrap,\ partners.domain);\ \textcolor{comment}{//\ -\/1\ would\ be\ the\ "{}uninformative"{}\ link\ round}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (partners.swap\_round(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}())\ \&\&\ partners.sub\_round(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}())\ <\ 0)\ \ \ \ \ \ \ \textcolor{comment}{//\ link\ round}}
+\DoxyCodeLine{00079\ \ \ \ \ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ dequeue\_exchange(b,\ srp,\ dim);\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ from\ the\ swap\ round}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ split\_to\_neighbors(b,\ srp,\ dim);}
+\DoxyCodeLine{00082\ \ \ \ \ \}}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (partners.swap\_round(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}()))}
+\DoxyCodeLine{00084\ \ \ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ Samples\ samples;}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ receive\_samples(b,\ srp,\ samples);}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ enqueue\_exchange(b,\ srp,\ dim,\ samples);}
+\DoxyCodeLine{00088\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (partners.sub\_round(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}())\ ==\ 0)}
+\DoxyCodeLine{00089\ \ \ \ \ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}()\ >\ 0)}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ prev\_dim\ =\ dim\ -\/\ 1;}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (prev\_dim\ <\ 0)}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ prev\_dim\ +=\ dim\_;}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ update\_links(b,\ srp,\ prev\_dim,\ partners.sub\_round((\textcolor{keywordtype}{int})srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}()\ -\/\ 2),\ (\textcolor{keywordtype}{int})partners.swap\_rounds(),\ partners.wrap,\ partners.domain);\ \ \ \ \textcolor{comment}{//\ -\/1\ would\ be\ the\ "{}uninformative"{}\ link\ round}}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ compute\_local\_samples(b,\ srp,\ dim);}
+\DoxyCodeLine{00099\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (partners.sub\_round(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_acde8173fd5fdd6c3fedf75034169495e}{round}}())\ <\ (\textcolor{keywordtype}{int})\ partners.histogram.rounds()/2)\ \ \ \ \ \textcolor{comment}{//\ we\ are\ reusing\ partners\ class,\ so\ really\ we\ are\ talking\ about\ the\ samples\ rounds\ here}}
+\DoxyCodeLine{00100\ \ \ \ \ \{}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ Samples\ samples;}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ add\_samples(b,\ srp,\ samples);}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(0),\ samples);}
+\DoxyCodeLine{00104\ \ \ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00105\ \ \ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ Samples\ samples;}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ add\_samples(b,\ srp,\ samples);}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (samples.size()\ !=\ 1)}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ pick\ the\ median}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ std::nth\_element(samples.begin(),\ samples.begin()\ +\ samples.size()/2,\ samples.end());}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ std::swap(samples[0],\ samples[samples.size()/2]);}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//std::sort(samples.begin(),\ samples.end());}}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//samples[0]\ =\ (samples[samples.size()/2]\ +\ samples[samples.size()/2\ +\ 1])/2;}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ samples.resize(1);}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ forward\_samples(b,\ srp,\ samples);}
+\DoxyCodeLine{00118\ \ \ \ \ \}}
+\DoxyCodeLine{00119\ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00122\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00123\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00124\ divide\_gid(\textcolor{keywordtype}{int}\ gid,\ \textcolor{keywordtype}{bool}\ lower,\ \textcolor{keywordtype}{int}\ round,\ \textcolor{keywordtype}{int}\ rounds)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00125\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordflow}{if}\ (lower)}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ gid\ \&=\ \string~(1\ <<\ (rounds\ -\/\ 1\ -\/\ round));}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ gid\ |=\ \ (1\ <<\ (rounds\ -\/\ 1\ -\/\ round));}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keywordflow}{return}\ gid;}
+\DoxyCodeLine{00131\ \}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{comment}{//\ round\ here\ is\ the\ outer\ iteration\ of\ the\ algorithm}}
+\DoxyCodeLine{00134\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00135\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00136\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00137\ update\_links(Block*,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int}\ dim,\ \textcolor{keywordtype}{int}\ round,\ \textcolor{keywordtype}{int}\ rounds,\ \textcolor{keywordtype}{bool}\ wrap,\ \textcolor{keyword}{const}\ Bounds\&\ domain)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00138\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keyword}{auto}\ \ \ \ \ \ \ \ log\ \ =\ get\_logger();}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ gid\ \ =\ srp.gid();}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ lid\ \ =\ srp.master()-\/>\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(gid);}
+\DoxyCodeLine{00142\ \ \ \ \ RCLink*\ \ \ \ \ link\ =\ \textcolor{keyword}{static\_cast<}RCLink*\textcolor{keyword}{>}(srp.master()-\/>link(lid));}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{comment}{//\ (gid,\ dir)\ -\/>\ i}}
+\DoxyCodeLine{00145\ \ \ \ \ std::map<std::pair<int,diy::Direction>,\ \textcolor{keywordtype}{int}>\ link\_map;}
+\DoxyCodeLine{00146\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ link-\/>size();\ ++i)}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ link\_map[std::make\_pair(link-\/>target(i).gid,\ link-\/>direction(i))]\ =\ i;}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{comment}{//\ NB:\ srp.enqueue(...,\ ...)\ should\ match\ the\ link}}
+\DoxyCodeLine{00150\ \ \ \ \ std::vector<float>\ \ splits(link-\/>size());}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ link-\/>size();\ ++i)}
+\DoxyCodeLine{00152\ \ \ \ \ \{}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ split;\ diy::Direction\ dir(dim\_,0);}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ in\_gid\ =\ link-\/>target(i).gid;}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}(srp.incoming(in\_gid))}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(in\_gid,\ split);}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(in\_gid,\ dir);}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ reverse\ dir}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ dim\_;\ ++j)}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dir[j]\ =\ -\/dir[j];}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ k\ =\ link\_map[std::make\_pair(in\_gid,\ dir)];}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>trace(\textcolor{stringliteral}{"{}\{\}\ \{\}\ \{\}\ -\/>\ \{\}"{}},\ in\_gid,\ dir,\ split,\ k);}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ splits[k]\ =\ split;}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00169\ \ \ \ \ \}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ RCLink\ \ \ \ \ \ new\_link(dim\_,\ link-\/>core(),\ link-\/>core());}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keywordtype}{bool}\ lower\ =\ !(gid\ \&\ (1\ <<\ (rounds\ -\/\ 1\ -\/\ round)));}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{comment}{//\ fill\ out\ the\ new\ link}}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ link-\/>size();\ ++i)}
+\DoxyCodeLine{00177\ \ \ \ \ \{}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ diy::Direction\ \ dir\ =\ link-\/>direction(i);}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \textcolor{comment}{//diy::Direction\ \ wrap\_dir\ =\ link-\/>wrap(i);\ \ \ \ \ //\ we\ don't\ use\ existing\ wrap,\ but\ restore\ it\ from\ scratch}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (dir[dim]\ !=\ 0)}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((dir[dim]\ <\ 0\ \&\&\ lower)\ ||\ (dir[dim]\ >\ 0\ \&\&\ !lower))}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nbr\_gid\ =\ divide\_gid(link-\/>target(i).gid,\ !lower,\ round,\ rounds);}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::BlockID\ nbr\ =\ \{\ nbr\_gid,\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_aa2c94841259ffe8942b610b1600b27a9}{assigner}}().\doxymbox{\hyperlink{classdiy_1_1_assigner_a272d33bcc94394f39880603084b55f38}{rank}}(nbr\_gid)\ \};}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_neighbor(nbr);}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_direction(dir);}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Bounds\ bounds\ =\ link-\/>bounds(i);}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ update\_neighbor\_bounds(bounds,\ splits[i],\ dim,\ !lower);}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_bounds(bounds);}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wrap)}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_wrap(find\_wrap(new\_link.bounds(),\ bounds,\ domain));}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_wrap(diy::Direction(dim\_,0));}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{comment}{//\ non-\/aligned\ side}}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ 2;\ ++j)}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nbr\_gid\ =\ divide\_gid(link-\/>target(i).gid,\ j\ ==\ 0,\ round,\ rounds);}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Bounds\ \ bounds\ \ =\ link-\/>bounds(i);}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ update\_neighbor\_bounds(bounds,\ splits[i],\ dim,\ j\ ==\ 0);}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (intersects(bounds,\ new\_link.bounds(),\ dim,\ wrap,\ domain))}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::BlockID\ nbr\ =\ \{\ nbr\_gid,\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_aa2c94841259ffe8942b610b1600b27a9}{assigner}}().\doxymbox{\hyperlink{classdiy_1_1_assigner_a272d33bcc94394f39880603084b55f38}{rank}}(nbr\_gid)\ \};}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_neighbor(nbr);}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_direction(dir);}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_bounds(bounds);}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wrap)}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_wrap(find\_wrap(new\_link.bounds(),\ bounds,\ domain));}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ new\_link.add\_wrap(diy::Direction(dim\_,0));}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00222\ \ \ \ \ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{comment}{//\ add\ link\ to\ the\ dual\ block}}
+\DoxyCodeLine{00225\ \ \ \ \ \textcolor{keywordtype}{int}\ dual\_gid\ =\ divide\_gid(gid,\ !lower,\ round,\ rounds);}
+\DoxyCodeLine{00226\ \ \ \ \ diy::BlockID\ dual\ =\ \{\ dual\_gid,\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_aa2c94841259ffe8942b610b1600b27a9}{assigner}}().\doxymbox{\hyperlink{classdiy_1_1_assigner_a272d33bcc94394f39880603084b55f38}{rank}}(dual\_gid)\ \};}
+\DoxyCodeLine{00227\ \ \ \ \ new\_link.add\_neighbor(dual);}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ Bounds\ nbr\_bounds\ =\ link-\/>bounds();\ \ \ \ \ \textcolor{comment}{//\ old\ block\ bounds}}
+\DoxyCodeLine{00230\ \ \ \ \ update\_neighbor\_bounds(nbr\_bounds,\ find\_split(new\_link.bounds(),\ nbr\_bounds),\ dim,\ !lower);}
+\DoxyCodeLine{00231\ \ \ \ \ new\_link.add\_bounds(nbr\_bounds);}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \ \ new\_link.add\_wrap(diy::Direction(dim\_,0));\ \ \ \ \textcolor{comment}{//\ dual\ block\ cannot\ be\ wrapped}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordflow}{if}\ (lower)}
+\DoxyCodeLine{00236\ \ \ \ \ \{}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ diy::Direction\ right(dim\_,0);}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ right[dim]\ =\ 1;}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ new\_link.add\_direction(right);}
+\DoxyCodeLine{00240\ \ \ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00241\ \ \ \ \ \{}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ diy::Direction\ left(dim\_,0);}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ left[dim]\ =\ -\/1;}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ new\_link.add\_direction(left);}
+\DoxyCodeLine{00245\ \ \ \ \ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00247\ \ \ \ \ \textcolor{comment}{//\ update\ the\ link;\ notice\ that\ this\ won't\ conflict\ with\ anything\ since}}
+\DoxyCodeLine{00248\ \ \ \ \ \textcolor{comment}{//\ reduce\ is\ using\ its\ own\ notion\ of\ the\ link\ constructed\ through\ the}}
+\DoxyCodeLine{00249\ \ \ \ \ \textcolor{comment}{//\ partners}}
+\DoxyCodeLine{00250\ \ \ \ \ link-\/>swap(new\_link);}
+\DoxyCodeLine{00251\ \}}
+\DoxyCodeLine{00252\ }
+\DoxyCodeLine{00253\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00254\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00255\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00256\ split\_to\_neighbors(Block*,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int})\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00257\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ lid\ \ =\ srp.master()-\/>\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(srp.gid());}
+\DoxyCodeLine{00259\ \ \ \ \ RCLink*\ \ \ \ \ link\ =\ \textcolor{keyword}{static\_cast<}RCLink*\textcolor{keyword}{>}(srp.master()-\/>link(lid));}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{comment}{//\ determine\ split}}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordtype}{float}\ split\ =\ find\_split(link-\/>core(),\ link-\/>bounds());}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ link-\/>size();\ ++i)}
+\DoxyCodeLine{00265\ \ \ \ \ \{}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(link-\/>target(i),\ split);}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(link-\/>target(i),\ link-\/>direction(i));}
+\DoxyCodeLine{00268\ \ \ \ \ \}}
+\DoxyCodeLine{00269\ \}}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00272\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00273\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00274\ compute\_local\_samples(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int}\ dim)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00275\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{comment}{//\ compute\ and\ enqueue\ local\ samples}}
+\DoxyCodeLine{00277\ \ \ \ \ Samples\ samples;}
+\DoxyCodeLine{00278\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ points\_size\ =\ (b-\/>*points\_).size();}
+\DoxyCodeLine{00279\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ n\ =\ (std::min)(points\_size,\ samples\_);}
+\DoxyCodeLine{00280\ \ \ \ \ samples.reserve(n);}
+\DoxyCodeLine{00281\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ n;\ ++i)}
+\DoxyCodeLine{00282\ \ \ \ \ \{}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ x\ =\ (b-\/>*points\_)[rand()\ \%\ points\_size][dim];}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ samples.push\_back(x);}
+\DoxyCodeLine{00285\ \ \ \ \ \}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(0),\ samples);}
+\DoxyCodeLine{00288\ \}}
+\DoxyCodeLine{00289\ }
+\DoxyCodeLine{00290\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00291\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00292\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00293\ add\_samples(Block*,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ Samples\&\ samples)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00294\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00295\ \ \ \ \ \textcolor{comment}{//\ dequeue\ and\ combine\ the\ samples}}
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}().size();\ ++i)}
+\DoxyCodeLine{00297\ \ \ \ \ \{}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nbr\_gid\ =\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}().target(i).gid;}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ Samples\ smpls;}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(nbr\_gid,\ smpls);}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ j\ =\ 0;\ j\ <\ smpls.size();\ ++j)}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ samples.push\_back(smpls[j]);}
+\DoxyCodeLine{00304\ \ \ \ \ \}}
+\DoxyCodeLine{00305\ \}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00308\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00309\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00310\ receive\_samples(Block*,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ Samples\&\ samples)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00311\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00312\ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}().target(0).gid,\ samples);}
+\DoxyCodeLine{00313\ \}}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00316\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00317\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00318\ forward\_samples(Block*,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keyword}{const}\ Samples\&\ samples)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00319\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00320\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().size();\ ++i)}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(i),\ samples);}
+\DoxyCodeLine{00322\ \}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00325\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00326\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00327\ enqueue\_exchange(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int}\ dim,\ \textcolor{keyword}{const}\ Samples\&\ samples)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00328\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00329\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ lid\ \ =\ srp.master()-\/>\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(srp.gid());}
+\DoxyCodeLine{00330\ \ \ \ \ RCLink*\ \ \ \ \ link\ =\ \textcolor{keyword}{static\_cast<}RCLink*\textcolor{keyword}{>}(srp.master()-\/>link(lid));}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keywordtype}{int}\ k\ =\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().size();}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00334\ \ \ \ \ \textcolor{keywordflow}{if}\ (k\ ==\ 0)\ \ \ \ \ \ \ \ \textcolor{comment}{//\ final\ round;\ nothing\ needs\ to\ be\ sent;\ this\ is\ actually\ redundant}}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \ \ \textcolor{comment}{//\ pick\ split\ points}}
+\DoxyCodeLine{00338\ \ \ \ \ \textcolor{keywordtype}{float}\ split\ =\ samples[0];}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \ \ \textcolor{comment}{//\ subset\ and\ enqueue}}
+\DoxyCodeLine{00341\ \ \ \ \ std::vector<\ std::vector<Point>\ >\ out\_points(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().size());}
+\DoxyCodeLine{00342\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ (b-\/>*points\_).size();\ ++i)}
+\DoxyCodeLine{00343\ \ \ \ \ \{}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ x\ =\ (b-\/>*points\_)[i][dim];}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ loc\ =\ x\ <\ split\ ?\ 0\ :\ 1;}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ out\_points[loc].push\_back((b-\/>*points\_)[i]);}
+\DoxyCodeLine{00347\ \ \ \ \ \}}
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{keywordtype}{int}\ pos\ =\ -\/1;}
+\DoxyCodeLine{00349\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ k;\ ++i)}
+\DoxyCodeLine{00350\ \ \ \ \ \{}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(i).gid\ ==\ srp.gid())}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ (b-\/>*points\_).swap(out\_points[i]);}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ pos\ =\ i;}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(i),\ out\_points[i]);}
+\DoxyCodeLine{00358\ \ \ \ \ \}}
+\DoxyCodeLine{00359\ \ \ \ \ \textcolor{keywordflow}{if}\ (pos\ ==\ 0)}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ link-\/>core().max[dim]\ =\ split;}
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ link-\/>core().min[dim]\ =\ split;}
+\DoxyCodeLine{00363\ \}}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00366\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00367\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00368\ dequeue\_exchange(Block*\ b,\ \textcolor{keyword}{const}\ diy::ReduceProxy\&\ srp,\ \textcolor{keywordtype}{int}\ dim)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00369\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00370\ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ lid\ \ =\ srp.master()-\/>\doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(srp.gid());}
+\DoxyCodeLine{00371\ \ \ \ \ RCLink*\ \ \ \ \ link\ =\ \textcolor{keyword}{static\_cast<}RCLink*\textcolor{keyword}{>}(srp.master()-\/>link(lid));}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}().size();\ ++i)}
+\DoxyCodeLine{00374\ \ \ \ \ \{}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nbr\_gid\ =\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}().target(i).gid;}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (nbr\_gid\ ==\ srp.gid())}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \ \ \ \ \ \ std::vector<Point>\ \ \ in\_points;}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a4da36b7cac758930a3aa4f1e94672214}{dequeue}}(nbr\_gid,\ in\_points);}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ j\ =\ 0;\ j\ <\ in\_points.size();\ ++j)}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (in\_points[j][dim]\ <\ link-\/>core().min[dim]\ ||\ in\_points[j][dim]\ >\ link-\/>core().max[dim])}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(fmt::format(\textcolor{stringliteral}{"{}Dequeued\ \{\}\ outside\ [\{\},\{\}]\ (\{\})"{}},}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ in\_points[j][dim],\ link-\/>core().min[dim],\ link-\/>core().max[dim],\ dim));}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ (b-\/>*points\_).push\_back(in\_points[j]);}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00388\ \ \ \ \ \}}
+\DoxyCodeLine{00389\ \}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00392\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00393\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00394\ update\_neighbor\_bounds(Bounds\&\ bounds,\ \textcolor{keywordtype}{float}\ split,\ \textcolor{keywordtype}{int}\ dim,\ \textcolor{keywordtype}{bool}\ lower)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00395\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00396\ \ \ \ \ \textcolor{keywordflow}{if}\ (lower)}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ bounds.max[dim]\ =\ split;}
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ bounds.min[dim]\ =\ split;}
+\DoxyCodeLine{00400\ \}}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00402\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00403\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00404\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00405\ intersects(\textcolor{keyword}{const}\ Bounds\&\ x,\ \textcolor{keyword}{const}\ Bounds\&\ y,\ \textcolor{keywordtype}{int}\ dim,\ \textcolor{keywordtype}{bool}\ wrap,\ \textcolor{keyword}{const}\ Bounds\&\ domain)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00406\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00407\ \ \ \ \ \textcolor{keywordflow}{if}\ (wrap)}
+\DoxyCodeLine{00408\ \ \ \ \ \{}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (x.min[dim]\ ==\ domain.min[dim]\ \&\&\ y.max[dim]\ ==\ domain.max[dim])}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (y.min[dim]\ ==\ domain.min[dim]\ \&\&\ x.max[dim]\ ==\ domain.max[dim])}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00413\ \ \ \ \ \}}
+\DoxyCodeLine{00414\ \ \ \ \ \textcolor{keywordflow}{return}\ x.min[dim]\ <=\ y.max[dim]\ \&\&\ y.min[dim]\ <=\ x.max[dim];}
+\DoxyCodeLine{00415\ \}}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00418\ \textcolor{keywordtype}{float}}
+\DoxyCodeLine{00419\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00420\ find\_split(\textcolor{keyword}{const}\ Bounds\&\ changed,\ \textcolor{keyword}{const}\ Bounds\&\ original)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00421\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00422\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ dim\_;\ ++i)}
+\DoxyCodeLine{00423\ \ \ \ \ \{}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (changed.min[i]\ !=\ original.min[i])}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ changed.min[i];}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (changed.max[i]\ !=\ original.max[i])}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ changed.max[i];}
+\DoxyCodeLine{00428\ \ \ \ \ \}}
+\DoxyCodeLine{00429\ \ \ \ \ assert(0);}
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00431\ \}}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00433\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00434\ diy::Direction}
+\DoxyCodeLine{00435\ diy::detail::KDTreeSamplingPartition<Block,Point>::}
+\DoxyCodeLine{00436\ find\_wrap(\textcolor{keyword}{const}\ Bounds\&\ bounds,\ \textcolor{keyword}{const}\ Bounds\&\ nbr\_bounds,\ \textcolor{keyword}{const}\ Bounds\&\ domain)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00437\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00438\ \ \ \ \ diy::Direction\ wrap(dim\_,0);}
+\DoxyCodeLine{00439\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ dim\_;\ ++i)}
+\DoxyCodeLine{00440\ \ \ \ \ \{}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bounds.min[i]\ ==\ domain.min[i]\ \&\&\ nbr\_bounds.max[i]\ ==\ domain.max[i])}
+\DoxyCodeLine{00442\ \ \ \ \ \ \ \ \ \ \ \ \ wrap[i]\ =\ -\/1;}
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (bounds.max[i]\ ==\ domain.max[i]\ \&\&\ nbr\_bounds.min[i]\ ==\ domain.min[i])}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \ \ \ \ wrap[i]\ =\ \ 1;}
+\DoxyCodeLine{00445\ \ \ \ \ \}}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{keywordflow}{return}\ wrap;}
+\DoxyCodeLine{00447\ \}}
+\DoxyCodeLine{00448\ }
+\DoxyCodeLine{00449\ }
+\DoxyCodeLine{00450\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

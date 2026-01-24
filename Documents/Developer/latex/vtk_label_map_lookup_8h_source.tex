@@ -1,0 +1,174 @@
+\doxysection{vtk\+Label\+Map\+Lookup.\+h}
+\hypertarget{vtk_label_map_lookup_8h_source}{}\label{vtk_label_map_lookup_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkLabelMapLookup.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkLabelMapLookup.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#ifndef\ vtkLabelMapLookup\_h}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#define\ vtkLabelMapLookup\_h}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ "{}vtkCommonDataModelModule.h"{}}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ <unordered\_set>}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00028\ \textcolor{comment}{//\ Determine\ whether\ an\ image\ label/object\ has\ been\ specified\ for\ output.}}
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ This\ requires\ looking\ up\ an\ image\ pixel/scalar\ value\ and\ determining}}
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ whether\ it's\ part\ of\ a\ segmented\ object.\ Since\ this\ can\ be\ relatively}}
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ expensive\ when\ performed\ many\ times,\ different\ lookup\ classes\ are\ used}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ depending\ on\ the\ number\ of\ labels\ specified.\ A\ cache\ is\ used\ for\ the}}
+\DoxyCodeLine{00033\ \textcolor{comment}{//\ common\ case\ of\ repeated\ queries\ for\ the\ same\ label\ value.}}
+\DoxyCodeLine{00034\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00035\ \textcolor{keyword}{struct\ }vtkLabelMapLookup}
+\DoxyCodeLine{00036\ \{}
+\DoxyCodeLine{00037\ \ \ T\ CachedValue;}
+\DoxyCodeLine{00038\ \ \ T\ CachedOutValue;}
+\DoxyCodeLine{00039\ \ \ \textcolor{keywordtype}{bool}\ CachedOutValueInitialized;}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ vtkLabelMapLookup(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ values,\ \textcolor{keywordtype}{int}\ vtkNotUsed(numValues))}
+\DoxyCodeLine{00042\ \ \ \{}
+\DoxyCodeLine{00043\ \ \ \ \ this-\/>CachedValue\ =\ \textcolor{keyword}{static\_cast<}T\textcolor{keyword}{>}(values[0]);}
+\DoxyCodeLine{00044\ \ \ \ \ this-\/>CachedOutValue\ =\ \textcolor{keyword}{static\_cast<}T\textcolor{keyword}{>}(values[0]);}
+\DoxyCodeLine{00045\ \ \ \ \ this-\/>CachedOutValueInitialized\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00046\ \ \ \}}
+\DoxyCodeLine{00047\ \ \ \textcolor{keyword}{virtual}\ \string~vtkLabelMapLookup()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ IsLabelValue(T\ label)\ =\ 0;}
+\DoxyCodeLine{00049\ \ \ \textcolor{keywordtype}{bool}\ IsLabelValueInCache(T\ label,\ \textcolor{keywordtype}{bool}\&\ inLabelSet)}
+\DoxyCodeLine{00050\ \ \ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordflow}{if}\ (label\ ==\ this-\/>CachedValue)}
+\DoxyCodeLine{00052\ \ \ \ \ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ inLabelSet\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00055\ \ \ \ \ \}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (this-\/>CachedOutValueInitialized\ \&\&\ label\ ==\ this-\/>CachedOutValue)}
+\DoxyCodeLine{00057\ \ \ \ \ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ inLabelSet\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00060\ \ \ \ \ \}}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00062\ \ \ \ \ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00064\ \ \ \ \ \}}
+\DoxyCodeLine{00065\ \ \ \}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \textcolor{comment}{//\ A\ factory\ method\ for\ creating\ the\ right\ type\ of\ label\ map\ based}}
+\DoxyCodeLine{00068\ \ \ \textcolor{comment}{//\ on\ the\ number\ of\ labels\ in\ the\ set.}}
+\DoxyCodeLine{00069\ \ \ \textcolor{keyword}{static}\ vtkLabelMapLookup<T>*\ CreateLabelLookup(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ values,\ vtkIdType\ numLabels);}
+\DoxyCodeLine{00070\ \};\ \textcolor{comment}{//\ vtkLabelMapLookup}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{comment}{//\ Cache\ a\ single\ contour\ value}}
+\DoxyCodeLine{00073\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00074\ \textcolor{keyword}{struct\ }SingleLabelValue\ :\ \textcolor{keyword}{public}\ vtkLabelMapLookup<T>}
+\DoxyCodeLine{00075\ \{}
+\DoxyCodeLine{00076\ \ \ SingleLabelValue(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ values)}
+\DoxyCodeLine{00077\ \ \ \ \ :\ vtkLabelMapLookup<T>(values,\ 1)}
+\DoxyCodeLine{00078\ \ \ \{}
+\DoxyCodeLine{00079\ \ \ \}}
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordtype}{bool}\ IsLabelValue(T\ label)\textcolor{keyword}{\ override\ }\{\ \textcolor{keywordflow}{return}\ label\ ==\ this-\/>CachedValue;\ \}}
+\DoxyCodeLine{00081\ \};\ \textcolor{comment}{//\ SingleLabelValue}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{comment}{//\ Represent\ a\ few\ contour\ values\ with\ a\ std::vector<>}}
+\DoxyCodeLine{00084\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00085\ \textcolor{keyword}{struct\ }LabelVector\ :\ \textcolor{keyword}{public}\ vtkLabelMapLookup<T>}
+\DoxyCodeLine{00086\ \{}
+\DoxyCodeLine{00087\ \ \ std::vector<T>\ Map;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ LabelVector(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ values,\ \textcolor{keywordtype}{int}\ numValues)}
+\DoxyCodeLine{00090\ \ \ \ \ :\ vtkLabelMapLookup<T>(values,\ numValues)}
+\DoxyCodeLine{00091\ \ \ \{}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ vidx\ =\ 0;\ vidx\ <\ numValues;\ vidx++)}
+\DoxyCodeLine{00093\ \ \ \ \ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ Map.push\_back(\textcolor{keyword}{static\_cast<}T\textcolor{keyword}{>}(values[vidx]));}
+\DoxyCodeLine{00095\ \ \ \ \ \}}
+\DoxyCodeLine{00096\ \ \ \}}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordtype}{bool}\ IsLabelValue(T\ label)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00098\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keywordtype}{bool}\ inLabelSet;}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{comment}{//\ Check\ the\ cache}}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>IsLabelValueInCache(label,\ inLabelSet))}
+\DoxyCodeLine{00102\ \ \ \ \ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ inLabelSet;}
+\DoxyCodeLine{00104\ \ \ \ \ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{comment}{//\ Not\ in\ the\ cache,\ check\ the\ vector}}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordflow}{if}\ (std::find(this-\/>Map.begin(),\ this-\/>Map.end(),\ label)\ !=\ this-\/>Map.end())}
+\DoxyCodeLine{00108\ \ \ \ \ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ this-\/>CachedValue\ =\ label;}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00111\ \ \ \ \ \}}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00113\ \ \ \ \ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ this-\/>CachedOutValue\ =\ label;}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ this-\/>CachedOutValueInitialized\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00117\ \ \ \ \ \}}
+\DoxyCodeLine{00118\ \ \ \}}
+\DoxyCodeLine{00119\ \};\ \textcolor{comment}{//\ LabelVector}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{comment}{//\ Represent\ many\ contour\ values\ with\ a\ std::set<>}}
+\DoxyCodeLine{00122\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00123\ \textcolor{keyword}{struct\ }LabelSet\ :\ \textcolor{keyword}{public}\ vtkLabelMapLookup<T>}
+\DoxyCodeLine{00124\ \{}
+\DoxyCodeLine{00125\ \ \ std::unordered\_set<T>\ Map;}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ LabelSet(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ values,\ \textcolor{keywordtype}{int}\ numValues)}
+\DoxyCodeLine{00128\ \ \ \ \ :\ vtkLabelMapLookup<T>(values,\ numValues)}
+\DoxyCodeLine{00129\ \ \ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ vidx\ =\ 0;\ vidx\ <\ numValues;\ vidx++)}
+\DoxyCodeLine{00131\ \ \ \ \ \{}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ Map.insert(\textcolor{keyword}{static\_cast<}T\textcolor{keyword}{>}(values[vidx]));}
+\DoxyCodeLine{00133\ \ \ \ \ \}}
+\DoxyCodeLine{00134\ \ \ \}}
+\DoxyCodeLine{00135\ \ \ \textcolor{keywordtype}{bool}\ IsLabelValue(T\ label)\textcolor{keyword}{\ override}}
+\DoxyCodeLine{00136\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keywordtype}{bool}\ inLabelSet;}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{comment}{//\ Check\ the\ cache}}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>IsLabelValueInCache(label,\ inLabelSet))}
+\DoxyCodeLine{00140\ \ \ \ \ \{}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ inLabelSet;}
+\DoxyCodeLine{00142\ \ \ \ \ \}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{comment}{//\ Not\ in\ cache,\ check\ the\ map}}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>Map.find(label)\ !=\ this-\/>Map.end())}
+\DoxyCodeLine{00146\ \ \ \ \ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ this-\/>CachedValue\ =\ label;}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00149\ \ \ \ \ \}}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00151\ \ \ \ \ \{}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ this-\/>CachedOutValue\ =\ label;}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ this-\/>CachedOutValueInitialized\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00155\ \ \ \ \ \}}
+\DoxyCodeLine{00156\ \ \ \}}
+\DoxyCodeLine{00157\ \};\ \textcolor{comment}{//\ LabelSet}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{comment}{//\ Given\ a\ list\ of\ label\ values\ (represented\ generically\ as\ doubles),}}
+\DoxyCodeLine{00160\ \textcolor{comment}{//\ create\ the\ appropriate\ lookup\ class\ and\ add\ the\ label\ values\ to}}
+\DoxyCodeLine{00161\ \textcolor{comment}{//\ the\ collection\ of\ labels.}}
+\DoxyCodeLine{00162\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00163\ \doxymbox{\hyperlink{structvtk_label_map_lookup}{vtkLabelMapLookup<T>}}*\ vtkLabelMapLookup<T>::CreateLabelLookup(}
+\DoxyCodeLine{00164\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ values,\ vtkIdType\ numLabels)}
+\DoxyCodeLine{00165\ \{}
+\DoxyCodeLine{00166\ \ \ \textcolor{comment}{//\ These\ cutoffs\ are\ empirical\ and\ can\ be\ changed.}}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordflow}{if}\ (numLabels\ ==\ 1)}
+\DoxyCodeLine{00168\ \ \ \{}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{struct_single_label_value}{SingleLabelValue<T>}}(values);}
+\DoxyCodeLine{00170\ \ \ \}}
+\DoxyCodeLine{00171\ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (numLabels\ <\ 20)}
+\DoxyCodeLine{00172\ \ \ \{}
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{struct_label_vector}{LabelVector<T>}}(values,\ numLabels);}
+\DoxyCodeLine{00174\ \ \ \}}
+\DoxyCodeLine{00175\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00176\ \ \ \{}
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{struct_label_set}{LabelSet<T>}}(values,\ numLabels);}
+\DoxyCodeLine{00178\ \ \ \}}
+\DoxyCodeLine{00179\ \}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00182\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00183\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkLabelMapLookup.h}}
+
+\end{DoxyCode}

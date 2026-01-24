@@ -1,0 +1,407 @@
+\doxysection{vtk\+Hardware\+Selector.\+h}
+\hypertarget{vtk_hardware_selector_8h_source}{}\label{vtk_hardware_selector_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkHardwareSelector.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkHardwareSelector.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ @class\ \ \ vtkHardwareSelector}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ @brief\ \ \ manager\ for\ OpenGL-\/based\ selection.}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ vtkHardwareSelector\ is\ a\ helper\ that\ orchestrates\ color\ buffer\ based}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ selection.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ vtkHardwareSelector\ can\ be\ used\ to\ select\ visible\ cells\ or\ points\ within\ a}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ given\ rectangle\ of\ the\ RenderWindow.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ To\ use\ it,\ call\ in\ order:}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *\ \(\backslash\)li\ SetRenderer()\ -\/\ to\ select\ the\ renderer\ in\ which\ we}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *\ want\ to\ select\ the\ cells/points.}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \(\backslash\)li\ SetArea()\ -\/\ to\ set\ the\ rectangular\ region\ in\ the\ render\ window\ to\ select}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *\ in.}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \(\backslash\)li\ SetFieldAssociation()\ -\/\ \ to\ select\ the\ attribute\ to\ select\ i.e.}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *\ cells/points\ etc.}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \(\backslash\)li\ Finally,\ call\ Select().}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ Select\ will\ cause\ the\ attached\ vtkRenderer\ to\ render\ in\ a\ special\ color\ mode,}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ where\ each\ cell/point\ is\ given\ it\ own\ color\ so\ that\ later\ inspection\ of\ the}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *\ Rendered\ Pixels\ can\ determine\ what\ cells\ are\ visible.\ Select()\ returns\ a\ new}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ vtkSelection\ instance\ with\ the\ cells/points\ selected.}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ Limitations:}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ Antialiasing\ will\ break\ this\ class.\ If\ your\ graphics\ card\ settings\ force}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ *\ their\ use\ this\ class\ will\ return\ invalid\ results.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00028\ \textcolor{comment}{\ *\ Only\ Opaque\ geometry\ in\ Actors\ is\ selected\ from.\ Assemblies\ and\ LODMappers}}
+\DoxyCodeLine{00029\ \textcolor{comment}{\ *\ are\ not\ currently\ supported.}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ *\ During\ selection,\ visible\ datasets\ that\ can\ not\ be\ selected\ from\ are}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ temporarily\ hidden\ so\ as\ not\ to\ produce\ invalid\ indices\ from\ their\ colors.}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ The\ basic\ approach\ this\ class\ uses\ is\ to\ invoke\ render\ multiple\ times}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ (passes)\ and\ have\ the\ mappers\ render\ pass\ specific\ information\ into}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *\ the\ color\ buffer.\ For\ example\ during\ the\ ACTOR\_PASS\ a\ mapper\ is}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *\ supposed\ to\ render\ it's\ actor's\ id\ into\ the\ color\ buffer\ as\ a\ RGB}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ value\ where\ R\ is\ the\ lower\ 8\ bits,\ G\ is\ the\ next\ 8,\ etc.\ Giving\ us\ 24}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ bits\ of\ unsigned\ int\ range.}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ The\ same\ concept\ applies\ to\ the\ COMPOSITE\_INDEX\_PASS\ and\ the\ point\ and}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ cell\ ID\ passes.\ As\ points\ and\ cells\ can\ easily\ exceed\ the\ 24\ bit\ range}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ of\ the\ color\ buffer\ we\ break\ them\ into\ two\ 24\ bit\ passes\ for\ a\ total}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ *\ of\ 48\ bits\ of\ range.}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ *\ During\ each\ pass\ the\ mappers\ render\ their\ data\ into\ the\ color\ buffer,}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ the\ hardware\ selector\ grabs\ that\ buffer\ and\ then\ invokes}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ ProcessSelectorPixelBuffer\ on\ all\ of\ the\ hit\ props.\ Giving\ them,\ and}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ their\ mappers,\ a\ chance\ to\ modify\ the\ pixel\ buffer.}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ Most\ mappers\ use\ this\ ProcessSelectorPixelBuffers\ pass\ to\ take\ when}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ they\ rendered\ into\ the\ color\ buffer\ and\ convert\ it\ into\ what\ the}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *\ hardware\ selector\ is\ expecting.\ This\ is\ because\ in\ some\ cases\ it\ is}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *\ far\ easier\ and\ faster\ to\ \ render\ something\ else,\ such\ as}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ *\ gl\_PrimitiveID\ or\ gl\_VertexID\ and\ then\ in\ the\ processing\ convert\ those}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ *\ values\ to\ the\ appropriate\ VTK\ values.}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ *\ NOTE:\ \ The\ goal\ is\ for\ mappers\ to\ support\ hardware\ selection\ without}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ *\ having\ to\ rebuild\ any\ of\ their\ VBO/IBOs\ to\ maintain\ fast\ picking}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ *\ performance.}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ *\ NOTE:\ This\ class\ has\ a\ complex\ interaction\ with\ parallel\ compositing}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ *\ techniques\ such\ as\ IceT\ that\ are\ used\ on\ supercomputers.\ In\ those}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ *\ cases\ the\ local\ nodes\ render\ each\ pass,\ process\ it,\ send\ it\ to\ icet}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *\ which\ composites\ it,\ and\ then\ must\ copy\ the\ result\ back\ to\ the\ hardware}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ selector.\ Be\ aware\ of\ these\ interactions\ \ if\ you\ work\ on\ this\ class.}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ *\ NOTE:\ many\ mappers\ support\ remapping\ arrays\ from\ their\ local\ value\ to}}
+\DoxyCodeLine{00070\ \textcolor{comment}{\ *\ some\ other\ provided\ value.\ For\ example\ ParaView\ when\ creating\ a}}
+\DoxyCodeLine{00071\ \textcolor{comment}{\ *\ polydata\ from\ an\ unstructured\ grid\ will\ create\ point\ and\ cell\ data}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\ *\ arrays\ on\ the\ polydata\ that\ may\ the\ polydata\ point\ and\ cell\ IDs\ back}}
+\DoxyCodeLine{00073\ \textcolor{comment}{\ *\ to\ the\ original\ unstructured\ grid's\ point\ and\ cell\ IDs.\ The\ hardware}}
+\DoxyCodeLine{00074\ \textcolor{comment}{\ *\ selection\ process\ honors\ those\ arrays\ and\ will\ provide\ the\ original}}
+\DoxyCodeLine{00075\ \textcolor{comment}{\ *\ unstructured\ grid\ point\ and\ cell\ ID\ when\ a\ selection\ is\ made.}}
+\DoxyCodeLine{00076\ \textcolor{comment}{\ *\ Likewise\ there\ are\ process\ and\ composite\ arrays\ that\ most\ mappers}}
+\DoxyCodeLine{00077\ \textcolor{comment}{\ *\ support\ that\ allow\ for\ parallel\ data\ generation,\ delivery,\ and\ local}}
+\DoxyCodeLine{00078\ \textcolor{comment}{\ *\ rendering\ while\ preserving\ the\ original\ process\ and\ composite\ values}}
+\DoxyCodeLine{00079\ \textcolor{comment}{\ *\ from\ when\ the\ data\ was\ distributed.\ Be\ aware\ the\ process\ array\ is\ a}}
+\DoxyCodeLine{00080\ \textcolor{comment}{\ *\ point\ data\ while\ the\ composite\ array\ is\ a\ cell\ data.}}
+\DoxyCodeLine{00081\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00082\ \textcolor{comment}{\ *\ TODO:\ This\ whole\ selection\ process\ could\ be\ nicely\ encapsulated\ as\ a}}
+\DoxyCodeLine{00083\ \textcolor{comment}{\ *\ RenderPass\ that\ internally\ renders\ multiple\ times\ with\ different}}
+\DoxyCodeLine{00084\ \textcolor{comment}{\ *\ settings.\ That\ would\ be\ my\ suggestion\ for\ the\ future.}}
+\DoxyCodeLine{00085\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00086\ \textcolor{comment}{\ *\ TODO:\ The\ pick\ method\ build\ into\ renderer\ could\ use\ the\ ACTOR\ pass\ of}}
+\DoxyCodeLine{00087\ \textcolor{comment}{\ *\ this\ class\ to\ do\ it's\ work\ eliminating\ some\ confusion\ and\ duplicate}}
+\DoxyCodeLine{00088\ \textcolor{comment}{\ *\ code\ paths.}}
+\DoxyCodeLine{00089\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00090\ \textcolor{comment}{\ *\ TODO:\ I\ am\ not\ sure\ where\ the\ composite\ array\ indirection\ is\ used.}}
+\DoxyCodeLine{00091\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00092\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00093\ \textcolor{comment}{\ *\ @sa}}
+\DoxyCodeLine{00094\ \textcolor{comment}{\ *\ vtkOpenGLHardwareSelector}}
+\DoxyCodeLine{00095\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#ifndef\ vtkHardwareSelector\_h}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#define\ vtkHardwareSelector\_h}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00101\ \textcolor{preprocessor}{\#include\ "{}vtkRenderingCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{preprocessor}{\#include\ <string>}\ \textcolor{comment}{//\ for\ std::string}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00106\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}};}
+\DoxyCodeLine{00107\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_render_window}{vtkRenderWindow}};}
+\DoxyCodeLine{00108\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_selection}{vtkSelection}};}
+\DoxyCodeLine{00109\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_prop}{vtkProp}};}
+\DoxyCodeLine{00110\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_texture_object}{vtkTextureObject}};}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{keyword}{class\ }VTKRENDERINGCORE\_EXPORT\ vtkHardwareSelector\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00113\ \{}
+\DoxyCodeLine{00114\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00119\ \ \ \textcolor{keyword}{struct\ }PixelInformation}
+\DoxyCodeLine{00120\ \ \ \{}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keywordtype}{bool}\ Valid;}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordtype}{int}\ ProcessID;}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keywordtype}{int}\ PropID;}
+\DoxyCodeLine{00124\ \ \ \ \ \doxymbox{\hyperlink{classvtk_prop}{vtkProp}}*\ Prop;}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ CompositeID;}
+\DoxyCodeLine{00126\ \ \ \ \ vtkIdType\ AttributeID;}
+\DoxyCodeLine{00127\ \ \ \ \ vtkIdType\ CellGridCellTypeID;}
+\DoxyCodeLine{00128\ \ \ \ \ vtkIdType\ CellGridSourceSpecID;}
+\DoxyCodeLine{00129\ \ \ \ \ vtkIdType\ CellGridTupleID;}
+\DoxyCodeLine{00130\ \ \ \ \ PixelInformation()}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ :\ Valid(\textcolor{keyword}{false})}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ ,\ ProcessID(-\/1)}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ ,\ PropID(-\/1)}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ ,\ Prop(\textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ ,\ CompositeID(0)}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ ,\ AttributeID(-\/1)}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ ,\ CellGridCellTypeID(-\/1)}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ ,\ CellGridSourceSpecID(-\/1)}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ ,\ CellGridTupleID(-\/1)}
+\DoxyCodeLine{00140\ \ \ \ \ \{}
+\DoxyCodeLine{00141\ \ \ \ \ \}}
+\DoxyCodeLine{00142\ \ \ \};}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \textcolor{keyword}{static}\ vtkHardwareSelector*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00146\ \ \ vtkTypeMacro(vtkHardwareSelector,\ vtkObject);}
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_hardware_selector_ae9ce14b951ce357da05e136660499f3e}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00153\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_hardware_selector_a2edd535aa5c1b944b7f88b44c8c51f09}{SetRenderer}}(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*);}
+\DoxyCodeLine{00154\ \ \ vtkGetObjectMacro(Renderer,\ \doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}});}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00161\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_af443a446b2b280a2041b3c8130f7bb23}{vtkSetVector4Macro}}(Area,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00162\ \ \ vtkGetVector4Macro(Area,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00176\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_ae25b74be72310c5bd53264a233e46ad5}{vtkSetMacro}}(FieldAssociation,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00177\ \ \ vtkGetMacro(FieldAssociation,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00186\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_a15ce2fd1b72dac9be583e4d7a6576283}{vtkSetMacro}}(UseProcessIdFromData,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00187\ \ \ vtkGetMacro(UseProcessIdFromData,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00194\ \ \ VTK\_NEWINSTANCE\ \doxymbox{\hyperlink{classvtk_selection}{vtkSelection}}*\ \doxymbox{\hyperlink{classvtk_hardware_selector_a7e56bda761dcbcbb069b2a0efc7d94bb}{Select}}();}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00210\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_hardware_selector_af4a7fa2712e119665b6970017b825bb8}{CaptureBuffers}}();}
+\DoxyCodeLine{00211\ \ \ \doxymbox{\hyperlink{structvtk_hardware_selector_1_1_pixel_information}{PixelInformation}}\ GetPixelInformation(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ display\_position[2])}
+\DoxyCodeLine{00212\ \ \ \{}
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>GetPixelInformation(display\_position,\ 0);}
+\DoxyCodeLine{00214\ \ \ \}}
+\DoxyCodeLine{00215\ \ \ PixelInformation\ GetPixelInformation(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ display\_position[2],\ \textcolor{keywordtype}{int}\ maxDist)}
+\DoxyCodeLine{00216\ \ \ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ temp[2];}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>GetPixelInformation(display\_position,\ maxDist,\ temp);}
+\DoxyCodeLine{00219\ \ \ \}}
+\DoxyCodeLine{00220\ \ \ \textcolor{keyword}{virtual}\ PixelInformation\ GetPixelInformation(}
+\DoxyCodeLine{00221\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ display\_position[2],\ \textcolor{keywordtype}{int}\ maxDist,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ selected\_position[2]);}
+\DoxyCodeLine{00222\ \ \ \textcolor{keywordtype}{void}\ ClearBuffers()\ \{\ this-\/>ReleasePixBuffers();\ \}}
+\DoxyCodeLine{00223\ \ \ \textcolor{comment}{//\ raw\ is\ before\ processing}}
+\DoxyCodeLine{00224\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ GetRawPixelBuffer(\textcolor{keywordtype}{int}\ passNo)\ \{\ \textcolor{keywordflow}{return}\ this-\/>RawPixBuffer[passNo];\ \}}
+\DoxyCodeLine{00225\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ GetPixelBuffer(\textcolor{keywordtype}{int}\ passNo)\ \{\ \textcolor{keywordflow}{return}\ this-\/>PixBuffer[passNo];\ \}}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00232\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_hardware_selector_acafd5505a1657fc8d27713c2096c949e}{RenderCompositeIndex}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00241\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_hardware_selector_a80cea113a7903c3434c4449458b5fa19}{UpdateMaximumCellId}}(vtkIdType\ attribid);}
+\DoxyCodeLine{00242\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ UpdateMaximumPointId(vtkIdType\ attribid);}
+\DoxyCodeLine{00243\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ UpdateMaximumCellGridTupleId(vtkIdType\ attribid);}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00250\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_hardware_selector_afe6198fb0f95dc619f261831d794709a}{RenderProcessId}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ processid);}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_hardware_selector_aa96edcb693d64a697d8a7b55a8f755fc}{Render}}(\doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ renderer,\ \doxymbox{\hyperlink{classvtk_prop}{vtkProp}}**\ propArray,\ \textcolor{keywordtype}{int}\ propArrayCount);}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00263\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_aefcd567c7cda1354e85b84baccd9cd9a}{vtkGetMacro}}(ActorPassOnly,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00264\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_ae25b74be72310c5bd53264a233e46ad5}{vtkSetMacro}}(ActorPassOnly,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00274\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_ad984575c06ff987b1f466e0aa9bd16bd}{vtkGetMacro}}(CaptureZValues,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00275\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_ae25b74be72310c5bd53264a233e46ad5}{vtkSetMacro}}(CaptureZValues,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00282\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_hardware_selector_a0ed2a04747b97c79f0b0624691debe85}{BeginRenderProp}}();}
+\DoxyCodeLine{00283\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ EndRenderProp();}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00291\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_a5f8f73256ff058665660e3dfebd2b8c8}{vtkSetMacro}}(ProcessID,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00292\ \ \ vtkGetMacro(ProcessID,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00294\ }
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00299\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_a798619de06dc8cb442111d28c2ccf573}{vtkGetVector3Macro}}(PropColorValue,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00300\ \ \ vtkSetVector3Macro(PropColorValue,\ \textcolor{keywordtype}{float});}
+\DoxyCodeLine{00301\ \ \ \textcolor{keywordtype}{void}\ SetPropColorValue(vtkIdType\ val);}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00308\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector_ac6fa0759da8795b823b0edec95658110}{vtkGetMacro}}(CurrentPass,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00319\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classvtk_selection}{vtkSelection}}*\ \doxymbox{\hyperlink{classvtk_hardware_selector_a4908b5b60b9bf4d89cff71dc12fc631b}{GenerateSelection}}()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classvtk_hardware_selector_a4908b5b60b9bf4d89cff71dc12fc631b}{GenerateSelection}}(this-\/>Area);\ \}}
+\DoxyCodeLine{00320\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classvtk_selection}{vtkSelection}}*\ GenerateSelection(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ r[4])}
+\DoxyCodeLine{00321\ \ \ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \textcolor{keywordflow}{return}\ GenerateSelection(r[0],\ r[1],\ r[2],\ r[3]);}
+\DoxyCodeLine{00323\ \ \ \}}
+\DoxyCodeLine{00324\ \ \ \textcolor{keyword}{virtual}\ vtkSelection*\ GenerateSelection(}
+\DoxyCodeLine{00325\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ x1,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ y1,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ x2,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ y2);}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00333\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classvtk_selection}{vtkSelection}}*\ \doxymbox{\hyperlink{classvtk_hardware_selector_a74e78f938333827e73df22b8ca2db9af}{GeneratePolygonSelection}}(\textcolor{keywordtype}{int}*\ polygonPoints,\ vtkIdType\ count);}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00339\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{classvtk_prop}{vtkProp}}*\ \doxymbox{\hyperlink{classvtk_hardware_selector_a07c6fbbafec6951079d2cb2ae4d2f40a}{GetPropFromID}}(\textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ \textcolor{comment}{//\ it\ is\ very\ critical\ that\ these\ passes\ happen\ in\ the\ right\ order}}
+\DoxyCodeLine{00342\ \ \ \textcolor{comment}{//\ this\ is\ because\ of\ two\ complexities}}
+\DoxyCodeLine{00343\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00344\ \ \ \textcolor{comment}{//\ Compositing\ engines\ such\ as\ iceT\ send\ each\ pass\ as\ it}}
+\DoxyCodeLine{00345\ \ \ \textcolor{comment}{//\ renders.\ This\ means}}
+\DoxyCodeLine{00346\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00347\ \ \ \textcolor{comment}{//\ Mappers\ use\ point\ Ids\ or\ cell\ Id\ to\ update\ the\ process}}
+\DoxyCodeLine{00348\ \ \ \textcolor{comment}{//\ and\ composite\ ids.\ So\ the\ point\ and\ cell\ id\ passes}}
+\DoxyCodeLine{00349\ \ \ \textcolor{comment}{//\ have\ to\ happen\ before\ the\ last\ process\ and\ compoite}}
+\DoxyCodeLine{00350\ \ \ \textcolor{comment}{//\ passes\ respectively}}
+\DoxyCodeLine{00351\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00352\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00353\ \ \ \textcolor{keyword}{enum}\ PassTypes}
+\DoxyCodeLine{00354\ \ \ \{}
+\DoxyCodeLine{00355\ \ \ \ \ \textcolor{comment}{//\ always\ must\ be\ first\ so\ that\ the\ prop\ IDs\ are\ set}}
+\DoxyCodeLine{00356\ \ \ \ \ ACTOR\_PASS,}
+\DoxyCodeLine{00357\ \ \ \ \ \textcolor{comment}{//\ must\ always\ be\ second\ for\ composite\ mapper}}
+\DoxyCodeLine{00358\ \ \ \ \ COMPOSITE\_INDEX\_PASS,}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \ \ POINT\_ID\_LOW24,}
+\DoxyCodeLine{00361\ \ \ \ \ POINT\_ID\_HIGH24,\ \textcolor{comment}{//\ if\ needed}}
+\DoxyCodeLine{00362\ \ \ \ \ PROCESS\_PASS,\ \ \ \ \textcolor{comment}{//\ must\ be\ after\ point\ id\ pass}}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \ \ \ \ CELL\_ID\_LOW24,}
+\DoxyCodeLine{00365\ \ \ \ \ CELL\_ID\_HIGH24,\ \textcolor{comment}{//\ if\ needed}}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \ \ CELLGRID\_CELL\_TYPE\_INDEX\_PASS,}
+\DoxyCodeLine{00368\ \ \ \ \ CELLGRID\_SOURCE\_INDEX\_PASS,}
+\DoxyCodeLine{00369\ \ \ \ \ CELLGRID\_TUPLE\_ID\_LOW24,}
+\DoxyCodeLine{00370\ \ \ \ \ CELLGRID\_TUPLE\_ID\_HIGH24,}
+\DoxyCodeLine{00371\ }
+\DoxyCodeLine{00372\ \ \ \ \ MAX\_KNOWN\_PASS\ =\ CELLGRID\_TUPLE\_ID\_HIGH24,}
+\DoxyCodeLine{00373\ \ \ \ \ MIN\_KNOWN\_PASS\ =\ ACTOR\_PASS}
+\DoxyCodeLine{00374\ \ \ \};}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00379\ \ \ std::string\ \doxymbox{\hyperlink{classvtk_hardware_selector_aa3cf534db85e7a6269b8ffff482a8c6f}{PassTypeToString}}(PassTypes\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ Convert(vtkIdType\ \textcolor{keywordtype}{id},\ \textcolor{keywordtype}{float}\ tcoord[3])}
+\DoxyCodeLine{00382\ \ \ \{}
+\DoxyCodeLine{00383\ \ \ \ \ tcoord[0]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}((\textcolor{keywordtype}{id}\ \&\ 0xff)\ /\ 255.0);}
+\DoxyCodeLine{00384\ \ \ \ \ tcoord[1]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(((\textcolor{keywordtype}{id}\ \&\ 0xff00)\ >>\ 8)\ /\ 255.0);}
+\DoxyCodeLine{00385\ \ \ \ \ tcoord[2]\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{float}\textcolor{keyword}{>}(((\textcolor{keywordtype}{id}\ \&\ 0xff0000)\ >>\ 16)\ /\ 255.0);}
+\DoxyCodeLine{00386\ \ \ \}}
+\DoxyCodeLine{00387\ }
+\DoxyCodeLine{00388\ \ \ \textcolor{comment}{//\ grab\ the\ pixel\ buffer\ and\ save\ it}}
+\DoxyCodeLine{00389\ \ \ \textcolor{comment}{//\ typically\ called\ internally}}
+\DoxyCodeLine{00390\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ SavePixelBuffer(\textcolor{keywordtype}{int}\ passNo);}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \ \ \textcolor{comment}{//\ does\ the\ selection\ process\ have\ high\ cell\ data}}
+\DoxyCodeLine{00393\ \ \ \textcolor{comment}{//\ requiring\ a\ high24\ pass}}
+\DoxyCodeLine{00394\ \ \ \textcolor{keywordtype}{bool}\ HasHighCellIds();}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \ \ \textcolor{comment}{//\ does\ the\ selection\ process\ have\ high\ point\ data}}
+\DoxyCodeLine{00397\ \ \ \textcolor{comment}{//\ requiring\ a\ high24\ pass}}
+\DoxyCodeLine{00398\ \ \ \textcolor{keywordtype}{bool}\ HasHighPointIds();}
+\DoxyCodeLine{00399\ }
+\DoxyCodeLine{00400\ \ \ \textcolor{comment}{//\ deos\ the\ selection\ process\ have\ high\ cell\ grid\ tuple\ ids}}
+\DoxyCodeLine{00401\ \ \ \textcolor{comment}{//\ requiring\ a\ high24\ pass}}
+\DoxyCodeLine{00402\ \ \ \textcolor{keywordtype}{bool}\ HasHighCellGridTupleIds();}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00405\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector}{vtkHardwareSelector}}();}
+\DoxyCodeLine{00406\ \ \ \doxymbox{\hyperlink{classvtk_hardware_selector}{\string~vtkHardwareSelector}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00407\ }
+\DoxyCodeLine{00408\ \ \ \textcolor{comment}{//\ Used\ to\ notify\ subclasses\ when\ a\ capture\ pass\ is\ occurring.}}
+\DoxyCodeLine{00409\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ PreCapturePass(\textcolor{keywordtype}{int}\ pass)\ \{\ (void)pass;\ \}}
+\DoxyCodeLine{00410\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ PostCapturePass(\textcolor{keywordtype}{int}\ pass)\ \{\ (void)pass;\ \}}
+\DoxyCodeLine{00411\ }
+\DoxyCodeLine{00412\ \ \ \textcolor{comment}{//\ Called\ internally\ before\ and\ after\ each\ prop\ is\ rendered}}
+\DoxyCodeLine{00413\ \ \ \textcolor{comment}{//\ for\ device\ specific\ configuration/preparation\ etc.}}
+\DoxyCodeLine{00414\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ BeginRenderProp(vtkRenderWindow*)\ =\ 0;}
+\DoxyCodeLine{00415\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ EndRenderProp(vtkRenderWindow*)\ =\ 0;}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \ \ \textcolor{keywordtype}{double}\ GetZValue(\textcolor{keywordtype}{int}\ propid);}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \ \ \textcolor{keywordtype}{int}\ Convert(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ offset,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ pb)}
+\DoxyCodeLine{00420\ \ \ \{}
+\DoxyCodeLine{00421\ \ \ \ \ \textcolor{keywordflow}{if}\ (!pb)}
+\DoxyCodeLine{00422\ \ \ \ \ \{}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00424\ \ \ \ \ \}}
+\DoxyCodeLine{00425\ \ \ \ \ offset\ =\ offset\ *\ 3;}
+\DoxyCodeLine{00426\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ rgb[3];}
+\DoxyCodeLine{00427\ \ \ \ \ rgb[0]\ =\ pb[offset];}
+\DoxyCodeLine{00428\ \ \ \ \ rgb[1]\ =\ pb[offset\ +\ 1];}
+\DoxyCodeLine{00429\ \ \ \ \ rgb[2]\ =\ pb[offset\ +\ 2];}
+\DoxyCodeLine{00430\ \ \ \ \ \textcolor{keywordtype}{int}\ val\ =\ 0;}
+\DoxyCodeLine{00431\ \ \ \ \ val\ |=\ rgb[2];}
+\DoxyCodeLine{00432\ \ \ \ \ val\ =\ val\ <<\ 8;}
+\DoxyCodeLine{00433\ \ \ \ \ val\ |=\ rgb[1];}
+\DoxyCodeLine{00434\ \ \ \ \ val\ =\ val\ <<\ 8;}
+\DoxyCodeLine{00435\ \ \ \ \ val\ |=\ rgb[0];}
+\DoxyCodeLine{00436\ \ \ \ \ \textcolor{keywordflow}{return}\ val;}
+\DoxyCodeLine{00437\ \ \ \}}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00443\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_hardware_selector_ac8804124ae11ed6fe76d1c187694e155}{Convert}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ pos[2],\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ pb)\ \{\ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{classvtk_hardware_selector_ac8804124ae11ed6fe76d1c187694e155}{Convert}}(pos[0],\ pos[1],\ pb);\ \}}
+\DoxyCodeLine{00444\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ Convert(\textcolor{keywordtype}{int}\ xx,\ \textcolor{keywordtype}{int}\ yy,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ pb)}
+\DoxyCodeLine{00445\ \ \ \{}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{keywordflow}{if}\ (!pb)}
+\DoxyCodeLine{00447\ \ \ \ \ \{}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00449\ \ \ \ \ \}}
+\DoxyCodeLine{00450\ \ \ \ \ \textcolor{keywordtype}{int}\ offset\ =\ (yy\ *\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(this-\/>Area[2]\ -\/\ this-\/>Area[0]\ +\ 1)\ +\ xx)\ *\ 3;}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ rgb[3];}
+\DoxyCodeLine{00452\ \ \ \ \ rgb[0]\ =\ pb[offset];}
+\DoxyCodeLine{00453\ \ \ \ \ rgb[1]\ =\ pb[offset\ +\ 1];}
+\DoxyCodeLine{00454\ \ \ \ \ rgb[2]\ =\ pb[offset\ +\ 2];}
+\DoxyCodeLine{00455\ \ \ \ \ \textcolor{keywordtype}{int}\ val\ =\ 0;}
+\DoxyCodeLine{00456\ \ \ \ \ val\ |=\ rgb[2];}
+\DoxyCodeLine{00457\ \ \ \ \ val\ =\ val\ <<\ 8;}
+\DoxyCodeLine{00458\ \ \ \ \ val\ |=\ rgb[1];}
+\DoxyCodeLine{00459\ \ \ \ \ val\ =\ val\ <<\ 8;}
+\DoxyCodeLine{00460\ \ \ \ \ val\ |=\ rgb[0];}
+\DoxyCodeLine{00461\ \ \ \ \ \textcolor{keywordflow}{return}\ val;}
+\DoxyCodeLine{00462\ \ \ \}}
+\DoxyCodeLine{00464\ }
+\DoxyCodeLine{00465\ \ \ vtkIdType\ GetID(\textcolor{keywordtype}{int}\ low24,\ \textcolor{keywordtype}{int}\ mid24,\ \textcolor{keywordtype}{int}\ high16)}
+\DoxyCodeLine{00466\ \ \ \{}
+\DoxyCodeLine{00467\ \ \ \ \ vtkIdType\ val\ =\ 0;}
+\DoxyCodeLine{00468\ \ \ \ \ val\ |=\ high16;}
+\DoxyCodeLine{00469\ \ \ \ \ val\ =\ val\ <<\ 24;}
+\DoxyCodeLine{00470\ \ \ \ \ val\ |=\ mid24;}
+\DoxyCodeLine{00471\ \ \ \ \ val\ =\ val\ <<\ 24;}
+\DoxyCodeLine{00472\ \ \ \ \ val\ |=\ low24;}
+\DoxyCodeLine{00473\ \ \ \ \ \textcolor{keywordflow}{return}\ val;}
+\DoxyCodeLine{00474\ \ \ \}}
+\DoxyCodeLine{00475\ }
+\DoxyCodeLine{00479\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_hardware_selector_a89f94e47c53d720dceea33b93c444bd5}{PassRequired}}(\textcolor{keywordtype}{int}\ pass);}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00486\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_hardware_selector_aa11cb56507a7a798a005ee0471f4fb3e}{IsPropHit}}(\textcolor{keywordtype}{int}\ propid);}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00491\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_hardware_selector_aa78f06e9e2e2ac90a6127a98e8f8a442}{GetPropID}}(\textcolor{keywordtype}{int}\ idx,\ \doxymbox{\hyperlink{classvtk_prop}{vtkProp}}*\ vtkNotUsed(prop))\ \{\ \textcolor{keywordflow}{return}\ idx;\ \}}
+\DoxyCodeLine{00492\ }
+\DoxyCodeLine{00493\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ BeginSelection();}
+\DoxyCodeLine{00494\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ EndSelection();}
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00496\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ ProcessPixelBuffers();}
+\DoxyCodeLine{00497\ \ \ \textcolor{keywordtype}{void}\ BuildPropHitList(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ rgbData);}
+\DoxyCodeLine{00498\ }
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00503\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_hardware_selector_a3898bbcfe41dec815ade407b334078e1}{ReleasePixBuffers}}();}
+\DoxyCodeLine{00504\ \ \ \doxymbox{\hyperlink{classvtk_renderer}{vtkRenderer}}*\ Renderer;}
+\DoxyCodeLine{00505\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ Area[4];}
+\DoxyCodeLine{00506\ \ \ \textcolor{keywordtype}{int}\ FieldAssociation;}
+\DoxyCodeLine{00507\ \ \ \textcolor{keywordtype}{bool}\ UseProcessIdFromData;}
+\DoxyCodeLine{00508\ \ \ vtkIdType\ MaximumPointId;}
+\DoxyCodeLine{00509\ \ \ vtkIdType\ MaximumCellId;}
+\DoxyCodeLine{00510\ \ \ vtkIdType\ MaximumCellGridTupleId;}
+\DoxyCodeLine{00512\ }
+\DoxyCodeLine{00513\ \ \ \textcolor{comment}{//\ At\ most\ 11\ passes.}}
+\DoxyCodeLine{00514\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ PixBuffer[11];}
+\DoxyCodeLine{00515\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ RawPixBuffer[11];}
+\DoxyCodeLine{00516\ \ \ \textcolor{keywordtype}{int}\ ProcessID;}
+\DoxyCodeLine{00517\ \ \ \textcolor{keywordtype}{int}\ CurrentPass;}
+\DoxyCodeLine{00518\ \ \ \textcolor{keywordtype}{int}\ Iteration;}
+\DoxyCodeLine{00519\ \ \ \textcolor{keywordtype}{int}\ InPropRender;}
+\DoxyCodeLine{00520\ \ \ \textcolor{keywordtype}{int}\ PropID;}
+\DoxyCodeLine{00521\ \ \ \textcolor{keywordtype}{float}\ PropColorValue[3];}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00523\ \ \ \textcolor{keywordtype}{bool}\ ActorPassOnly;}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \ \ \textcolor{keywordtype}{bool}\ CaptureZValues;}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00528\ \ \ vtkHardwareSelector(\textcolor{keyword}{const}\ vtkHardwareSelector\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00529\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkHardwareSelector\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00531\ \ \ \textcolor{keyword}{class\ }vtkInternals;}
+\DoxyCodeLine{00532\ \ \ vtkInternals*\ Internals;}
+\DoxyCodeLine{00533\ \};}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00536\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

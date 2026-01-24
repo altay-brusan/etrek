@@ -1,0 +1,316 @@
+\doxysection{robin\+\_\+growth\+\_\+policy.\+h}
+\hypertarget{robin__growth__policy_8h_source}{}\label{robin__growth__policy_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/robin\_growth\_policy.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/robin\_growth\_policy.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#ifndef\ TSL\_ROBIN\_GROWTH\_POLICY\_H}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#define\ TSL\_ROBIN\_GROWTH\_POLICY\_H}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ <array>}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ <climits>}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ <cstddef>}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ <limits>}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ <ratio>}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#ifdef\ TSL\_DEBUG}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#define\ tsl\_rh\_assert(expr)\ assert(expr)}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ tsl\_rh\_assert(expr)\ (static\_cast<void>(0))}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#if\ (defined(\_\_cpp\_exceptions)\ ||\ defined(\_\_EXCEPTIONS)\ ||\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\ \ \ \ \ (defined(\_MSC\_VER)\ \&\&\ defined(\_CPPUNWIND)))\ \&\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\ \ \ \ !defined(TSL\_NO\_EXCEPTIONS)}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#define\ TSL\_RH\_THROW\_OR\_TERMINATE(ex,\ msg)\ throw\ ex(msg)}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#define\ TSL\_RH\_NO\_EXCEPTIONS}}
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#ifdef\ TSL\_DEBUG}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#define\ TSL\_RH\_THROW\_OR\_TERMINATE(ex,\ msg)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\ \ do\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\ \ \ \ std::cerr\ <<\ msg\ <<\ std::endl;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\ \ \ \ std::terminate();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\ \ \}\ while\ (0)}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#define\ TSL\_RH\_THROW\_OR\_TERMINATE(ex,\ msg)\ std::terminate()}}
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{preprocessor}{\#if\ defined(\_\_GNUC\_\_)\ ||\ defined(\_\_clang\_\_)}}
+\DoxyCodeLine{00067\ \textcolor{preprocessor}{\#define\ TSL\_RH\_LIKELY(exp)\ (\_\_builtin\_expect(!!(exp),\ true))}}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\#define\ TSL\_RH\_LIKELY(exp)\ (exp)}}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#define\ TSL\_RH\_UNUSED(x)\ static\_cast<void>(x)}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{keyword}{namespace\ }tsl::rh\ \{}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{keyword}{template}\ <std::\textcolor{keywordtype}{size\_t}\ GrowthFactor>\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classtsl_1_1rh_1_1power__of__two__growth__policy_a8b66b984743a4ba03c6b5862920b38b8}{power\_of\_two\_growth\_policy}}}
+\DoxyCodeLine{00084\ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classtsl_1_1rh_1_1power__of__two__growth__policy_a8b66b984743a4ba03c6b5862920b38b8}{power\_of\_two\_growth\_policy}}(std::size\_t\ \&min\_bucket\_count\_in\_out)}
+\DoxyCodeLine{00095\ \ \ \ \ \{}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_bucket\_count\_in\_out\ >\ \doxymbox{\hyperlink{classtsl_1_1rh_1_1power__of__two__growth__policy_a837ee1d15d9f44004f8acbb5df116939}{max\_bucket\_count}}())\ \{}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ TSL\_RH\_THROW\_OR\_TERMINATE(std::length\_error,\ \textcolor{stringliteral}{"{}The\ hash\ table\ exceeds\ its\ maximum\ size."{}});}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_bucket\_count\_in\_out\ >\ 0)\ \{}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ min\_bucket\_count\_in\_out\ =\ round\_up\_to\_power\_of\_two(min\_bucket\_count\_in\_out);}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ m\_mask\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ min\_bucket\_count\_in\_out\ -\/\ 1;}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ m\_mask\ =\ 0;}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00107\ \ \ \ \ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00113\ \ \ \ \ std::size\_t\ \doxymbox{\hyperlink{classtsl_1_1rh_1_1power__of__two__growth__policy_ae9f7810f6786c7ead8f3da64b0d1a719}{bucket\_for\_hash}}(std::size\_t\ hash)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ hash\ \&\ m\_mask;\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00118\ \ \ \ \ std::size\_t\ \doxymbox{\hyperlink{classtsl_1_1rh_1_1power__of__two__growth__policy_ab6ff2bc13c9a3c87cc8c90469e4191a3}{next\_bucket\_count}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00119\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ((m\_mask\ +\ 1)\ >\ \doxymbox{\hyperlink{classtsl_1_1rh_1_1power__of__two__growth__policy_a837ee1d15d9f44004f8acbb5df116939}{max\_bucket\_count}}()\ /\ GrowthFactor)\ \{}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ TSL\_RH\_THROW\_OR\_TERMINATE(std::length\_error,\ \textcolor{stringliteral}{"{}The\ hash\ table\ exceeds\ its\ maximum\ size."{}});}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (m\_mask\ +\ 1)\ *\ GrowthFactor;}
+\DoxyCodeLine{00125\ \ \ \ \ \}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00130\ \ \ \ \ std::size\_t\ \doxymbox{\hyperlink{classtsl_1_1rh_1_1power__of__two__growth__policy_a837ee1d15d9f44004f8acbb5df116939}{max\_bucket\_count}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00131\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \textcolor{comment}{//\ Largest\ power\ of\ two.}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (std::numeric\_limits<std::size\_t>::max()\ /\ 2)\ +\ 1;}
+\DoxyCodeLine{00134\ \ \ \ \ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classtsl_1_1rh_1_1power__of__two__growth__policy_aff6441091ef925c6d669c69d9ccbcbbc}{clear}}()\ noexcept\ \{\ m\_mask\ =\ 0;\ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keyword}{static}\ std::size\_t\ round\_up\_to\_power\_of\_two(std::size\_t\ value)}
+\DoxyCodeLine{00145\ \ \ \ \ \{}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (is\_power\_of\_two(value))\ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ value;}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (value\ ==\ 0)\ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \ \ -\/-\/value;}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (std::size\_t\ i\ =\ 1;\ i\ <\ \textcolor{keyword}{sizeof}(std::size\_t)\ *\ CHAR\_BIT;\ i\ *=\ 2)\ \{}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ value\ |=\ value\ >>\ i;}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ value\ +\ 1;}
+\DoxyCodeLine{00160\ \ \ \ \ \}}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{bool}\ is\_power\_of\_two(std::size\_t\ value)}
+\DoxyCodeLine{00163\ \ \ \ \ \{}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ value\ !=\ 0\ \&\&\ (value\ \&\ (value\ -\/\ 1))\ ==\ 0;}
+\DoxyCodeLine{00165\ \ \ \ \ \}}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keyword}{static\_assert}(is\_power\_of\_two(GrowthFactor)\ \&\&\ GrowthFactor\ >=\ 2,}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}GrowthFactor\ must\ be\ a\ power\ of\ two\ >=\ 2."{}});}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ std::size\_t\ m\_mask;}
+\DoxyCodeLine{00172\ \ \ \};}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00179\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ GrowthFactor\ =\ std::ratio<3,\ 2>>\ \textcolor{keyword}{class\ }mod\_growth\_policy}
+\DoxyCodeLine{00180\ \ \ \{}
+\DoxyCodeLine{00181\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keyword}{explicit}\ mod\_growth\_policy(std::size\_t\ \&min\_bucket\_count\_in\_out)}
+\DoxyCodeLine{00183\ \ \ \ \ \{}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_bucket\_count\_in\_out\ >\ max\_bucket\_count())\ \{}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ TSL\_RH\_THROW\_OR\_TERMINATE(std::length\_error,\ \textcolor{stringliteral}{"{}The\ hash\ table\ exceeds\ its\ maximum\ size."{}});}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_bucket\_count\_in\_out\ >\ 0)\ \{}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ m\_mod\ =\ min\_bucket\_count\_in\_out;}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ m\_mod\ =\ 1;}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00194\ \ \ \ \ \}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \ \ std::size\_t\ bucket\_for\_hash(std::size\_t\ hash)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ hash\ \%\ m\_mod;\ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \ \ std::size\_t\ next\_bucket\_count()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00199\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_mod\ ==\ max\_bucket\_count())\ \{}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ TSL\_RH\_THROW\_OR\_TERMINATE(std::length\_error,\ \textcolor{stringliteral}{"{}The\ hash\ table\ exceeds\ its\ maximum\ size."{}});}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00203\ }
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}\ next\_bucket\_count\ =\ std::ceil(\textcolor{keywordtype}{double}(m\_mod)\ *\ REHASH\_SIZE\_MULTIPLICATION\_FACTOR);}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!std::isnormal(next\_bucket\_count))\ \{}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ TSL\_RH\_THROW\_OR\_TERMINATE(std::length\_error,\ \textcolor{stringliteral}{"{}The\ hash\ table\ exceeds\ its\ maximum\ size."{}});}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (next\_bucket\_count\ >\ \textcolor{keywordtype}{double}(max\_bucket\_count()))\ \{}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ max\_bucket\_count();}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ std::size\_t(next\_bucket\_count);}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00215\ \ \ \ \ \}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \ \ std::size\_t\ max\_bucket\_count()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ MAX\_BUCKET\_COUNT;\ \}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{keywordtype}{void}\ clear()\ \textcolor{keyword}{noexcept}\ \{\ m\_mod\ =\ 1;\ \}}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00222\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{double}\ REHASH\_SIZE\_MULTIPLICATION\_FACTOR\ =}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ 1.0\ *\ GrowthFactor::num\ /\ GrowthFactor::den;}
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ std::size\_t\ MAX\_BUCKET\_COUNT\ =\ std::size\_t(}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}(std::numeric\_limits<std::size\_t>::max()\ /\ REHASH\_SIZE\_MULTIPLICATION\_FACTOR));}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keyword}{static\_assert}(REHASH\_SIZE\_MULTIPLICATION\_FACTOR\ >=\ 1.1,\ \textcolor{stringliteral}{"{}Growth\ factor\ should\ be\ >=\ 1.1."{}});}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ std::size\_t\ m\_mod;}
+\DoxyCodeLine{00230\ \ \ \};}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \ \ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacedetail}{detail}}\ \{}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#if\ SIZE\_MAX\ >=\ ULLONG\_MAX}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\#define\ TSL\_RH\_NB\_PRIMES\ 51}}
+\DoxyCodeLine{00236\ \textcolor{preprocessor}{\#elif\ SIZE\_MAX\ >=\ ULONG\_MAX}}
+\DoxyCodeLine{00237\ \textcolor{preprocessor}{\#define\ TSL\_RH\_NB\_PRIMES\ 40}}
+\DoxyCodeLine{00238\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\#define\ TSL\_RH\_NB\_PRIMES\ 23}}
+\DoxyCodeLine{00240\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{const}\ std::array<std::size\_t,\ TSL\_RH\_NB\_PRIMES>\ PRIMES\ =\ \{\{}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ 1u,}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ 5u,}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ 17u,}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ 29u,}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ 37u,}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ 53u,}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ 67u,}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ 79u,}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ 97u,}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ 131u,}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ 193u,}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ 257u,}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ 389u,}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ 521u,}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ 769u,}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ 1031u,}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ 1543u,}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ 2053u,}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ 3079u,}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ 6151u,}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ 12289u,}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ 24593u,}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ 49157u,}
+\DoxyCodeLine{00266\ \textcolor{preprocessor}{\#if\ SIZE\_MAX\ >=\ ULONG\_MAX}}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ 98317ul,}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ 196613ul,}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ 393241ul,}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ 786433ul,}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ 1572869ul,}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ 3145739ul,}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ 6291469ul,}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ 12582917ul,}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ 25165843ul,}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ 50331653ul,}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ 100663319ul,}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ 201326611ul,}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ 402653189ul,}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ 805306457ul,}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ 1610612741ul,}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ 3221225473ul,}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ 4294967291ul,}
+\DoxyCodeLine{00284\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\#if\ SIZE\_MAX\ >=\ ULLONG\_MAX}}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ 6442450939ull,}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ 12884901893ull,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ 25769803751ull,}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ 51539607551ull,}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ 103079215111ull,}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ 206158430209ull,}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ 412316860441ull,}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ 824633720831ull,}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ 1649267441651ull,}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ 3298534883309ull,}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ 6597069766657ull,}
+\DoxyCodeLine{00297\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00298\ \ \ \ \ \}\};}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ IPrime>\ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ std::size\_t\ mod(std::size\_t\ hash)}
+\DoxyCodeLine{00301\ \ \ \ \ \{}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ hash\ \%\ PRIMES[IPrime];}
+\DoxyCodeLine{00303\ \ \ \ \ \}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{comment}{//\ MOD\_PRIME[iprime](hash)\ returns\ hash\ \%\ PRIMES[iprime].\ This\ table\ allows\ for}}
+\DoxyCodeLine{00306\ \ \ \ \ \textcolor{comment}{//\ faster\ modulo\ as\ the\ compiler\ can\ optimize\ the\ modulo\ code\ better\ with\ a}}
+\DoxyCodeLine{00307\ \ \ \ \ \textcolor{comment}{//\ constant\ known\ at\ the\ compilation.}}
+\DoxyCodeLine{00308\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{const}\ std::array<std::size\_t\ (*)(std::size\_t),\ TSL\_RH\_NB\_PRIMES>\ MOD\_PRIME\ =\ \{\{}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \&mod<0>,\ \ \&mod<1>,\ \ \&mod<2>,\ \ \&mod<3>,\ \ \&mod<4>,\ \ \&mod<5>,\ \ \&mod<6>,\ \ \&mod<7>,\ \ \&mod<8>,}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \&mod<9>,\ \ \&mod<10>,\ \&mod<11>,\ \&mod<12>,\ \&mod<13>,\ \&mod<14>,\ \&mod<15>,\ \&mod<16>,\ \&mod<17>,}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \&mod<18>,\ \&mod<19>,\ \&mod<20>,\ \&mod<21>,\ \&mod<22>,}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#if\ SIZE\_MAX\ >=\ ULONG\_MAX}}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \&mod<23>,\ \&mod<24>,\ \&mod<25>,\ \&mod<26>,\ \&mod<27>,\ \&mod<28>,\ \&mod<29>,\ \&mod<30>,\ \&mod<31>,}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \&mod<32>,\ \&mod<33>,\ \&mod<34>,\ \&mod<35>,\ \&mod<36>,\ \&mod<37>,\ \&mod<38>,\ \&mod<39>,}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\#if\ SIZE\_MAX\ >=\ ULLONG\_MAX}}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \&mod<40>,\ \&mod<41>,\ \&mod<42>,\ \&mod<43>,\ \&mod<44>,\ \&mod<45>,\ \&mod<46>,\ \&mod<47>,\ \&mod<48>,}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \&mod<49>,\ \&mod<50>,}
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00320\ \ \ \ \ \}\};}
+\DoxyCodeLine{00321\ }
+\DoxyCodeLine{00322\ \ \ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00351\ \ \ \textcolor{keyword}{class\ }prime\_growth\_policy}
+\DoxyCodeLine{00352\ \ \ \{}
+\DoxyCodeLine{00353\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00354\ \ \ \ \ \textcolor{keyword}{explicit}\ prime\_growth\_policy(std::size\_t\ \&min\_bucket\_count\_in\_out)}
+\DoxyCodeLine{00355\ \ \ \ \ \{}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ it\_prime\ =}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ std::lower\_bound(detail::PRIMES.begin(),\ detail::PRIMES.end(),\ min\_bucket\_count\_in\_out);}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (it\_prime\ ==\ detail::PRIMES.end())\ \{}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ TSL\_RH\_THROW\_OR\_TERMINATE(std::length\_error,\ \textcolor{stringliteral}{"{}The\ hash\ table\ exceeds\ its\ maximum\ size."{}});}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00362\ \ \ \ \ \ \ m\_iprime\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(std::distance(detail::PRIMES.begin(),\ it\_prime));}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (min\_bucket\_count\_in\_out\ >\ 0)\ \{}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ min\_bucket\_count\_in\_out\ =\ *it\_prime;}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ min\_bucket\_count\_in\_out\ =\ 0;}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00369\ \ \ \ \ \}}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ \ \ std::size\_t\ bucket\_for\_hash(std::size\_t\ hash)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00372\ \ \ \ \ \{}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ detail::MOD\_PRIME[m\_iprime](hash);}
+\DoxyCodeLine{00374\ \ \ \ \ \}}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \ \ std::size\_t\ next\_bucket\_count()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00377\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_iprime\ +\ 1\ >=\ detail::PRIMES.size())\ \{}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ TSL\_RH\_THROW\_OR\_TERMINATE(std::length\_error,\ \textcolor{stringliteral}{"{}The\ hash\ table\ exceeds\ its\ maximum\ size."{}});}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ detail::PRIMES[m\_iprime\ +\ 1];}
+\DoxyCodeLine{00383\ \ \ \ \ \}}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00385\ \ \ \ \ std::size\_t\ max\_bucket\_count()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ detail::PRIMES.back();\ \}}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \ \ \textcolor{keywordtype}{void}\ clear()\ \textcolor{keyword}{noexcept}\ \{\ m\_iprime\ =\ 0;\ \}}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ m\_iprime;}
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00392\ \ \ \ \ \textcolor{keyword}{static\_assert}(std::numeric\_limits<\textcolor{keyword}{decltype}(m\_iprime)>::max()\ >=\ detail::PRIMES.size(),}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{"{}The\ type\ of\ m\_iprime\ is\ not\ big\ enough."{}});}
+\DoxyCodeLine{00394\ \ \ \};}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \}\ \textcolor{comment}{//\ namespace\ tsl::rh}}
+\DoxyCodeLine{00397\ }
+\DoxyCodeLine{00398\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

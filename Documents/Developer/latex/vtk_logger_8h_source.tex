@@ -1,0 +1,266 @@
+\doxysection{vtk\+Logger.\+h}
+\hypertarget{vtk_logger_8h_source}{}\label{vtk_logger_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkLogger.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkLogger.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{preprocessor}{\#ifndef\ vtkLogger\_h}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\#define\ vtkLogger\_h}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#include\ "{}vtkObjectBase.h"{}}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#include\ "{}vtkSetGet.h"{}}\ \textcolor{comment}{//\ needed\ for\ macros}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#include\ <string>}\ \textcolor{comment}{//\ needed\ for\ std::string}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#include\ <sal.h>}\ \textcolor{comment}{//\ Needed\ for\ \_In\_z\_\ etc\ annotations}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \textcolor{comment}{//\ this\ is\ copied\ from\ \`{}loguru.hpp`}}
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#if\ defined(\_\_clang\_\_)\ ||\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00169\ \textcolor{comment}{//\ Helper\ macro\ for\ declaring\ functions\ as\ having\ similar\ signature\ to\ printf.}}
+\DoxyCodeLine{00170\ \textcolor{comment}{//\ This\ allows\ the\ compiler\ to\ catch\ format\ errors\ at\ compile-\/time.}}
+\DoxyCodeLine{00171\ \textcolor{preprocessor}{\#define\ VTK\_PRINTF\_LIKE(fmtarg,\ firstvararg)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00172\ \textcolor{preprocessor}{\ \ \_\_attribute\_\_((\_\_format\_\_(\_\_printf\_\_,\ fmtarg,\ firstvararg)))}}
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#define\ VTK\_FORMAT\_STRING\_TYPE\ const\ char*}}
+\DoxyCodeLine{00174\ \textcolor{preprocessor}{\#elif\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#define\ VTK\_PRINTF\_LIKE(fmtarg,\ firstvararg)}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\#define\ VTK\_FORMAT\_STRING\_TYPE\ \_In\_z\_\ \_Printf\_format\_string\_\ const\ char*}}
+\DoxyCodeLine{00177\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00178\ \textcolor{preprocessor}{\#define\ VTK\_PRINTF\_LIKE(fmtarg,\ firstvararg)}}
+\DoxyCodeLine{00179\ \textcolor{preprocessor}{\#define\ VTK\_FORMAT\_STRING\_TYPE\ const\ char*}}
+\DoxyCodeLine{00180\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00183\ \textcolor{keyword}{class\ }VTKCOMMONCORE\_EXPORT\ vtkLogger\ :\ \textcolor{keyword}{public}\ vtkObjectBase}
+\DoxyCodeLine{00184\ \{}
+\DoxyCodeLine{00185\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00186\ \ \ vtkBaseTypeMacro(vtkLogger,\ vtkObjectBase);}
+\DoxyCodeLine{00187\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_logger_abaeecf52bf47e1e916d4486e6ab238d3}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{keyword}{enum}\ Verbosity}
+\DoxyCodeLine{00190\ \ \ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{comment}{//\ Used\ to\ mark\ an\ invalid\ verbosity.\ Do\ not\ log\ to\ this\ level.}}
+\DoxyCodeLine{00192\ \ \ \ \ VERBOSITY\_INVALID\ =\ -\/10,\ \textcolor{comment}{//\ Never\ do\ LOG\_F(INVALID)}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{comment}{//\ You\ may\ use\ VERBOSITY\_OFF\ on\ g\_stderr\_verbosity,\ but\ for\ nothing\ else!}}
+\DoxyCodeLine{00195\ \ \ \ \ VERBOSITY\_OFF\ =\ -\/9,\ \textcolor{comment}{//\ Never\ do\ LOG\_F(OFF)}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \ \ VERBOSITY\_ERROR\ =\ -\/2,}
+\DoxyCodeLine{00198\ \ \ \ \ VERBOSITY\_WARNING\ =\ -\/1,}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{comment}{//\ Normal\ messages.\ By\ default\ written\ to\ stderr.}}
+\DoxyCodeLine{00201\ \ \ \ \ VERBOSITY\_INFO\ =\ 0,}
+\DoxyCodeLine{00202\ }
+\DoxyCodeLine{00203\ \ \ \ \ \textcolor{comment}{//\ Same\ as\ VERBOSITY\_INFO\ in\ every\ way.}}
+\DoxyCodeLine{00204\ \ \ \ \ VERBOSITY\_0\ =\ 0,}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{comment}{//\ Verbosity\ levels\ 1-\/9\ are\ generally\ not\ written\ to\ stderr,\ but\ are\ written\ to\ file.}}
+\DoxyCodeLine{00207\ \ \ \ \ VERBOSITY\_1\ =\ +1,}
+\DoxyCodeLine{00208\ \ \ \ \ VERBOSITY\_2\ =\ +2,}
+\DoxyCodeLine{00209\ \ \ \ \ VERBOSITY\_3\ =\ +3,}
+\DoxyCodeLine{00210\ \ \ \ \ VERBOSITY\_4\ =\ +4,}
+\DoxyCodeLine{00211\ \ \ \ \ VERBOSITY\_5\ =\ +5,}
+\DoxyCodeLine{00212\ \ \ \ \ VERBOSITY\_6\ =\ +6,}
+\DoxyCodeLine{00213\ \ \ \ \ VERBOSITY\_7\ =\ +7,}
+\DoxyCodeLine{00214\ \ \ \ \ VERBOSITY\_8\ =\ +8,}
+\DoxyCodeLine{00215\ \ \ \ \ VERBOSITY\_9\ =\ +9,}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{comment}{//\ trace\ level,\ same\ as\ VERBOSITY\_9}}
+\DoxyCodeLine{00218\ \ \ \ \ VERBOSITY\_TRACE\ =\ +9,}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{comment}{//\ Don\ not\ use\ higher\ verbosity\ levels,\ as\ that\ will\ make\ grepping\ log\ files\ harder.}}
+\DoxyCodeLine{00221\ \ \ \ \ VERBOSITY\_MAX\ =\ +9,}
+\DoxyCodeLine{00222\ \ \ \};}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00261\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_logger_a9bb88d9631ffb75a42c40e01b8655ea7}{Init}}(\textcolor{keywordtype}{int}\&\ argc,\ \textcolor{keywordtype}{char}*\ argv[],\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ verbosity\_flag\ =\ \textcolor{stringliteral}{"{}-\/v"{}});}
+\DoxyCodeLine{00262\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_logger_a9bb88d9631ffb75a42c40e01b8655ea7}{Init}}();}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00271\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_logger_aafe642339f32388f839026a4087306c1}{SetStderrVerbosity}}(Verbosity\ level);}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00279\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_logger_a61f7ffc6309e1f53c4bd65cad485df90}{SetInternalVerbosityLevel}}(Verbosity\ level);}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00285\ \ \ \textcolor{keyword}{enum}\ \doxymbox{\hyperlink{classvtk_logger_ab6dd77d089846f15ea77536a6f31308f}{FileMode}}}
+\DoxyCodeLine{00286\ \ \ \{}
+\DoxyCodeLine{00287\ \ \ \ \ TRUNCATE,}
+\DoxyCodeLine{00288\ \ \ \ \ APPEND}
+\DoxyCodeLine{00289\ \ \ \};}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00297\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_logger_afac662ba4d6c1a1d22f93715c8be6df5}{LogToFile}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ path,\ \doxymbox{\hyperlink{classvtk_logger_ab6dd77d089846f15ea77536a6f31308f}{FileMode}}\ filemode,\ Verbosity\ verbosity);}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00302\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_logger_a994ab7546e8ae633a96c2edea45359e1}{EndLogToFile}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ path);}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00308\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_logger_a8af426d06d7ee55b601e5a8439993daf}{SetThreadName}}(\textcolor{keyword}{const}\ std::string\&\ name);}
+\DoxyCodeLine{00309\ \ \ \textcolor{keyword}{static}\ std::string\ GetThreadName();}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00315\ \ \ \textcolor{keyword}{static}\ std::string\ \doxymbox{\hyperlink{classvtk_logger_a46d6557b78d9387d3e1d59783814db69}{GetIdentifier}}(vtkObjectBase*\ obj);}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00321\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_logger_1_1_message}{Message}}}
+\DoxyCodeLine{00322\ \ \ \{}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{comment}{//\ You\ would\ generally\ print\ a\ Message\ by\ just\ concatenating\ the\ buffers\ without\ spacing.}}
+\DoxyCodeLine{00324\ \ \ \ \ \textcolor{comment}{//\ Optionally,\ ignore\ preamble\ and\ indentation.}}
+\DoxyCodeLine{00325\ \ \ \ \ Verbosity\ verbosity;\ \ \ \ \ \textcolor{comment}{//\ Already\ part\ of\ preamble}}
+\DoxyCodeLine{00326\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ filename;\ \ \ \ \textcolor{comment}{//\ Already\ part\ of\ preamble}}
+\DoxyCodeLine{00327\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ line;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Already\ part\ of\ preamble}}
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ preamble;\ \ \ \ \textcolor{comment}{//\ Date,\ time,\ uptime,\ thread,\ file:line,\ verbosity.}}
+\DoxyCodeLine{00329\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ indentation;\ \textcolor{comment}{//\ Just\ a\ bunch\ of\ spacing.}}
+\DoxyCodeLine{00330\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ prefix;\ \ \ \ \ \ \textcolor{comment}{//\ Assertion\ failure\ info\ goes\ here\ (or\ "{}"{}).}}
+\DoxyCodeLine{00331\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ message;\ \ \ \ \ \textcolor{comment}{//\ User\ message\ goes\ here.}}
+\DoxyCodeLine{00332\ \ \ \};}
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00338\ \ \ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{classvtk_logger_a16ab80bcd8eeeb8b9a8b1cbd86a80cf2}{LogHandlerCallbackT}}\ =\ void\ (*)(\textcolor{keywordtype}{void}*\ user\_data,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_logger_1_1_message}{Message}}\&\ message);}
+\DoxyCodeLine{00339\ \ \ \textcolor{keyword}{using\ }CloseHandlerCallbackT\ =\ void\ (*)(\textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00340\ \ \ \textcolor{keyword}{using\ }FlushHandlerCallbackT\ =\ void\ (*)(\textcolor{keywordtype}{void}*\ user\_data);}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00352\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_logger_a74f2657db81beb0578bd47963beac663}{AddCallback}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keywordtype}{id},\ \doxymbox{\hyperlink{classvtk_logger_a16ab80bcd8eeeb8b9a8b1cbd86a80cf2}{LogHandlerCallbackT}}\ callback,\ \textcolor{keywordtype}{void}*\ user\_data,}
+\DoxyCodeLine{00353\ \ \ \ \ Verbosity\ verbosity,\ CloseHandlerCallbackT\ on\_close\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{00354\ \ \ \ \ FlushHandlerCallbackT\ on\_flush\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00360\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_logger_a2dc658bc8c7cfc3a7da249db19c242d9}{RemoveCallback}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00361\ }
+\DoxyCodeLine{00365\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_logger_a87fce1fbd0d0cf8e5e624c7c76edef16}{IsEnabled}}();}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00372\ \ \ \textcolor{keyword}{static}\ Verbosity\ \doxymbox{\hyperlink{classvtk_logger_ababfff7ece2e21f6a23d07b1f3713056}{GetCurrentVerbosityCutoff}}();}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00380\ \ \ \textcolor{keyword}{static}\ Verbosity\ \doxymbox{\hyperlink{classvtk_logger_a0ae34e6e0dc12ec7a96804b8cbe695eb}{ConvertToVerbosity}}(\textcolor{keywordtype}{int}\ value);}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00388\ \ \ \textcolor{keyword}{static}\ Verbosity\ \doxymbox{\hyperlink{classvtk_logger_a8b6a63111533efb01d995e3dafead06e}{ConvertToVerbosity}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ text);}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00391\ }
+\DoxyCodeLine{00396\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ Log(}
+\DoxyCodeLine{00397\ \ \ \ \ Verbosity\ verbosity,\ VTK\_FILEPATH\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ fname,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lineno,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ txt);}
+\DoxyCodeLine{00398\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ StartScope(}
+\DoxyCodeLine{00399\ \ \ \ \ Verbosity\ verbosity,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keywordtype}{id},\ VTK\_FILEPATH\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ fname,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lineno);}
+\DoxyCodeLine{00400\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ EndScope(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00401\ \textcolor{preprocessor}{\#if\ !defined(\_\_WRAP\_\_)}}
+\DoxyCodeLine{00402\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ LogF(Verbosity\ verbosity,\ VTK\_FILEPATH\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ fname,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lineno,}
+\DoxyCodeLine{00403\ \ \ \ \ VTK\_FORMAT\_STRING\_TYPE\ format,\ ...)\ VTK\_PRINTF\_LIKE(4,\ 5);}
+\DoxyCodeLine{00404\ \ \ static\ \textcolor{keywordtype}{void}\ StartScopeF(Verbosity\ verbosity,\ const\ \textcolor{keywordtype}{char}*\ \textcolor{keywordtype}{id},\ VTK\_FILEPATH\ const\ \textcolor{keywordtype}{char}*\ fname,}
+\DoxyCodeLine{00405\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lineno,\ VTK\_FORMAT\_STRING\_TYPE\ format,\ ...)\ VTK\_PRINTF\_LIKE(5,\ 6);}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \ \ class\ VTKCOMMONCORE\_EXPORT\ LogScopeRAII}
+\DoxyCodeLine{00408\ \ \ \{}
+\DoxyCodeLine{00409\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00410\ \ \ \ \ LogScopeRAII();}
+\DoxyCodeLine{00411\ \ \ \ \ LogScopeRAII(vtkLogger::Verbosity\ verbosity,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ fname,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ lineno,}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ VTK\_FORMAT\_STRING\_TYPE\ format,\ ...)\ VTK\_PRINTF\_LIKE(5,\ 6);}
+\DoxyCodeLine{00413\ \ \ \ \ \string~LogScopeRAII();}
+\DoxyCodeLine{00414\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)\ \&\&\ \_MSC\_VER\ >\ 1800}}
+\DoxyCodeLine{00415\ \ \ \ \ \textcolor{comment}{//\ see\ loguru.hpp\ for\ the\ reason\ why\ this\ is\ needed\ on\ MSVC}}
+\DoxyCodeLine{00416\ \ \ \ \ LogScopeRAII(LogScopeRAII\&\&\ other)}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ :\ Internals(other.Internals)}
+\DoxyCodeLine{00418\ \ \ \ \ \{}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ other.Internals\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00420\ \ \ \ \ \}}
+\DoxyCodeLine{00421\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00422\ \ \ \ \ LogScopeRAII(LogScopeRAII\&\&)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00423\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00425\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00426\ \ \ \ \ LogScopeRAII(\textcolor{keyword}{const}\ LogScopeRAII\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00427\ \ \ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ LogScopeRAII\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00428\ \ \ \ \ \textcolor{keyword}{class\ }LSInternals;}
+\DoxyCodeLine{00429\ \ \ \ \ LSInternals*\ Internals;}
+\DoxyCodeLine{00430\ \ \ \};}
+\DoxyCodeLine{00431\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00433\ }
+\DoxyCodeLine{00439\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_logger_a008a4942dfd437dfb4590a4d5582a7ce}{EnableUnsafeSignalHandler}};}
+\DoxyCodeLine{00440\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ EnableSigabrtHandler;}
+\DoxyCodeLine{00441\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ EnableSigbusHandler;}
+\DoxyCodeLine{00442\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ EnableSigfpeHandler;}
+\DoxyCodeLine{00443\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ EnableSigillHandler;}
+\DoxyCodeLine{00444\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ EnableSigintHandler;}
+\DoxyCodeLine{00445\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ EnableSigsegvHandler;}
+\DoxyCodeLine{00446\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}\ EnableSigtermHandler;}
+\DoxyCodeLine{00447\ }
+\DoxyCodeLine{00448\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00449\ \ \ vtkLogger();}
+\DoxyCodeLine{00450\ \ \ \string~vtkLogger()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00451\ }
+\DoxyCodeLine{00452\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00453\ \ \ vtkLogger(\textcolor{keyword}{const}\ vtkLogger\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00454\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkLogger\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00455\ \ \ \textcolor{keyword}{static}\ vtkLogger::Verbosity\ InternalVerbosityLevel;}
+\DoxyCodeLine{00456\ \};}
+\DoxyCodeLine{00457\ }
+\DoxyCodeLine{00459\ }
+\DoxyCodeLine{00473\ \textcolor{preprocessor}{\#define\ vtkVLogF(level,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00474\ \textcolor{preprocessor}{\ \ ((level)\ >\ vtkLogger::GetCurrentVerbosityCutoff())\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00475\ \textcolor{preprocessor}{\ \ \ \ ?\ (void)0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00476\ \textcolor{preprocessor}{\ \ \ \ :\ vtkLogger::LogF(level,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{\#define\ vtkLogF(verbosity\_name,\ ...)\ vtkVLogF(vtkLogger::VERBOSITY\_\#\#verbosity\_name,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00478\ \textcolor{preprocessor}{\#define\ vtkVLog(level,\ x)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00479\ \textcolor{preprocessor}{\ \ do\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00480\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00481\ \textcolor{preprocessor}{\ \ \ \ if\ ((level)\ <=\ vtkLogger::GetCurrentVerbosityCutoff())\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00482\ \textcolor{preprocessor}{\ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00483\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkOStrStreamWrapper::EndlType\ const\ endl;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00484\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkOStrStreamWrapper::UseEndl(endl);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkOStrStreamWrapper\ vtkmsg;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00486\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkmsg\ <<\ "{}"{}\ x;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00487\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkLogger::Log(level,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ vtkmsg.str());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00488\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkmsg.rdbuf()-\/>freeze(0);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00489\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\ \ \}\ while\ (false)}}
+\DoxyCodeLine{00491\ \textcolor{preprocessor}{\#define\ vtkLog(verbosity\_name,\ x)\ vtkVLog(vtkLogger::VERBOSITY\_\#\#verbosity\_name,\ x)}}
+\DoxyCodeLine{00493\ }
+\DoxyCodeLine{00495\ }
+\DoxyCodeLine{00507\ \textcolor{preprocessor}{\#define\ vtkVLogIfF(level,\ cond,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00508\ \textcolor{preprocessor}{\ \ ((level)\ >\ vtkLogger::GetCurrentVerbosityCutoff()\ ||\ (cond)\ ==\ false)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00509\ \textcolor{preprocessor}{\ \ \ \ ?\ (void)0\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00510\ \textcolor{preprocessor}{\ \ \ \ :\ vtkLogger::LogF(level,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \textcolor{preprocessor}{\#define\ vtkLogIfF(verbosity\_name,\ cond,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00513\ \textcolor{preprocessor}{\ \ vtkVLogIfF(vtkLogger::VERBOSITY\_\#\#verbosity\_name,\ cond,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00514\ }
+\DoxyCodeLine{00515\ \textcolor{preprocessor}{\#define\ vtkVLogIf(level,\ cond,\ x)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00516\ \textcolor{preprocessor}{\ \ do\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00517\ \textcolor{preprocessor}{\ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00518\ \textcolor{preprocessor}{\ \ \ \ if\ ((level)\ <=\ vtkLogger::GetCurrentVerbosityCutoff()\ \&\&\ (cond))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00519\ \textcolor{preprocessor}{\ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00520\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkOStrStreamWrapper::EndlType\ endl;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00521\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkOStrStreamWrapper::UseEndl(endl);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00522\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkOStrStreamWrapper\ vtkmsg;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00523\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkmsg\ <<\ "{}"{}\ x;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00524\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkLogger::Log(level,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ vtkmsg.str());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00525\ \textcolor{preprocessor}{\ \ \ \ \ \ vtkmsg.rdbuf()-\/>freeze(0);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00526\ \textcolor{preprocessor}{\ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00527\ \textcolor{preprocessor}{\ \ \}\ while\ (false)}}
+\DoxyCodeLine{00528\ \textcolor{preprocessor}{\#define\ vtkLogIf(verbosity\_name,\ cond,\ x)\ vtkVLogIf(vtkLogger::VERBOSITY\_\#\#verbosity\_name,\ cond,\ x)}}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00531\ \textcolor{preprocessor}{\#define\ VTKLOG\_CONCAT\_IMPL(s1,\ s2)\ s1\#\#s2}}
+\DoxyCodeLine{00532\ \textcolor{preprocessor}{\#define\ VTKLOG\_CONCAT(s1,\ s2)\ VTKLOG\_CONCAT\_IMPL(s1,\ s2)}}
+\DoxyCodeLine{00533\ \textcolor{preprocessor}{\#define\ VTKLOG\_ANONYMOUS\_VARIABLE(x)\ VTKLOG\_CONCAT(x,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \textcolor{preprocessor}{\#define\ vtkVLogScopeF(level,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00536\ \textcolor{preprocessor}{\ \ auto\ VTKLOG\_ANONYMOUS\_VARIABLE(msg\_context)\ =\ ((level)\ >\ vtkLogger::GetCurrentVerbosityCutoff())\ \(\backslash\)}}
+\DoxyCodeLine{00537\ \textcolor{preprocessor}{\ \ \ \ ?\ vtkLogger::LogScopeRAII()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00538\ \textcolor{preprocessor}{\ \ \ \ :\ vtkLogger::LogScopeRAII(level,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \textcolor{preprocessor}{\#define\ vtkLogScopeF(verbosity\_name,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00541\ \textcolor{preprocessor}{\ \ vtkVLogScopeF(vtkLogger::VERBOSITY\_\#\#verbosity\_name,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00542\ }
+\DoxyCodeLine{00543\ \textcolor{preprocessor}{\#define\ vtkLogScopeFunction(verbosity\_name)\ vtkLogScopeF(verbosity\_name,\ "{}\%s"{},\ \_\_func\_\_)}}
+\DoxyCodeLine{00544\ \textcolor{preprocessor}{\#define\ vtkVLogScopeFunction(level)\ vtkVLogScopeF(level,\ "{}\%s"{},\ \_\_func\_\_)}}
+\DoxyCodeLine{00545\ }
+\DoxyCodeLine{00547\ }
+\DoxyCodeLine{00551\ \textcolor{preprocessor}{\#define\ vtkLogStartScope(verbosity\_name,\ id)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00552\ \textcolor{preprocessor}{\ \ vtkLogger::StartScope(vtkLogger::VERBOSITY\_\#\#verbosity\_name,\ id,\ \_\_FILE\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{00553\ \textcolor{preprocessor}{\#define\ vtkLogEndScope(id)\ vtkLogger::EndScope(id)}}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ \textcolor{preprocessor}{\#define\ vtkLogStartScopeF(verbosity\_name,\ id,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00556\ \textcolor{preprocessor}{\ \ vtkLogger::StartScopeF(vtkLogger::VERBOSITY\_\#\#verbosity\_name,\ id,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00557\ }
+\DoxyCodeLine{00558\ \textcolor{preprocessor}{\#define\ vtkVLogStartScope(level,\ id)\ vtkLogger::StartScope(level,\ id,\ \_\_FILE\_\_,\ \_\_LINE\_\_)}}
+\DoxyCodeLine{00559\ \textcolor{preprocessor}{\#define\ vtkVLogStartScopeF(level,\ id,\ ...)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00560\ \textcolor{preprocessor}{\ \ vtkLogger::StartScopeF(level,\ id,\ \_\_FILE\_\_,\ \_\_LINE\_\_,\ \_\_VA\_ARGS\_\_)}}
+\DoxyCodeLine{00562\ }
+\DoxyCodeLine{00568\ \textcolor{preprocessor}{\#define\ vtkLogIdentifier(vtkobject)\ vtkLogger::GetIdentifier(vtkobject).c\_str()}}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00570\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00571\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

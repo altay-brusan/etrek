@@ -1,0 +1,277 @@
+\doxysection{safe-\/duration-\/cast.h}
+\hypertarget{safe-duration-cast_8h_source}{}\label{safe-duration-cast_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/thirdparty/fmt/safe-\/duration-\/cast.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/thirdparty/fmt/safe-\/duration-\/cast.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ For\ conversion\ between\ std::chrono::durations\ without\ undefined}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ behaviour\ or\ erroneous\ results.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ This\ is\ a\ stripped\ down\ version\ of\ duration\_cast,\ for\ inclusion\ in\ fmt.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ See\ https://github.com/pauldreik/safe\_duration\_cast}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ Copyright\ Paul\ Dreik\ 2019}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ This\ file\ is\ licensed\ under\ the\ fmt\ license,\ see\ format.h}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <cmath>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <limits>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}format.h"{}}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ FMT\_BEGIN\_NAMESPACE}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{namespace\ }safe\_duration\_cast\ \{}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ To,\ \textcolor{keyword}{typename}\ From,}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(!std::is\_same<From,\ To>::value\ \&\&}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::numeric\_limits<From>::is\_signed\ ==}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::numeric\_limits<To>::is\_signed)>}
+\DoxyCodeLine{00027\ FMT\_CONSTEXPR\ To\ lossless\_integral\_conversion(\textcolor{keyword}{const}\ From\ from,\ \textcolor{keywordtype}{int}\&\ ec)\ \{}
+\DoxyCodeLine{00028\ \ \ ec\ =\ 0;}
+\DoxyCodeLine{00029\ \ \ \textcolor{keyword}{using\ }F\ =\ std::numeric\_limits<From>;}
+\DoxyCodeLine{00030\ \ \ \textcolor{keyword}{using\ }T\ =\ std::numeric\_limits<To>;}
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{static\_assert}(F::is\_integer,\ \textcolor{stringliteral}{"{}From\ must\ be\ integral"{}});}
+\DoxyCodeLine{00032\ \ \ \textcolor{keyword}{static\_assert}(T::is\_integer,\ \textcolor{stringliteral}{"{}To\ must\ be\ integral"{}});}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \textcolor{comment}{//\ A\ and\ B\ are\ both\ signed,\ or\ both\ unsigned.}}
+\DoxyCodeLine{00035\ \ \ \textcolor{keywordflow}{if}\ (F::digits\ <=\ T::digits)\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{comment}{//\ From\ fits\ in\ To\ without\ any\ problem.}}
+\DoxyCodeLine{00037\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{//\ From\ does\ not\ always\ fit\ in\ To,\ resort\ to\ a\ dynamic\ check.}}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordflow}{if}\ (from\ <\ T::min()\ ||\ from\ >\ T::max())\ \{}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \textcolor{comment}{//\ outside\ range.}}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ ec\ =\ 1;}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00043\ \ \ \ \ \}}
+\DoxyCodeLine{00044\ \ \ \}}
+\DoxyCodeLine{00045\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}To\textcolor{keyword}{>}(from);}
+\DoxyCodeLine{00046\ \}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ To,\ \textcolor{keyword}{typename}\ From,}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(!std::is\_same<From,\ To>::value\ \&\&}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::numeric\_limits<From>::is\_signed\ !=}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::numeric\_limits<To>::is\_signed)>}
+\DoxyCodeLine{00056\ FMT\_CONSTEXPR\ To\ lossless\_integral\_conversion(\textcolor{keyword}{const}\ From\ from,\ \textcolor{keywordtype}{int}\&\ ec)\ \{}
+\DoxyCodeLine{00057\ \ \ ec\ =\ 0;}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{using\ }F\ =\ std::numeric\_limits<From>;}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{using\ }T\ =\ std::numeric\_limits<To>;}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{static\_assert}(F::is\_integer,\ \textcolor{stringliteral}{"{}From\ must\ be\ integral"{}});}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{static\_assert}(T::is\_integer,\ \textcolor{stringliteral}{"{}To\ must\ be\ integral"{}});}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \textcolor{keywordflow}{if}\ (F::is\_signed\ \&\&\ !T::is\_signed)\ \{}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{//\ From\ may\ be\ negative,\ not\ allowed!}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordflow}{if}\ (from\ <\ 0)\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ ec\ =\ 1;}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00068\ \ \ \ \ \}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{//\ From\ is\ positive.\ Can\ it\ always\ fit\ in\ To?}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (F::digits\ <=\ T::digits)\ \{}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \textcolor{comment}{//\ yes,\ From\ always\ fits\ in\ To.}}
+\DoxyCodeLine{00073\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \textcolor{comment}{//\ from\ may\ not\ fit\ in\ To,\ we\ have\ to\ do\ a\ dynamic\ check}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (from\ >\ \textcolor{keyword}{static\_cast<}From\textcolor{keyword}{>}(T::max()))\ \{}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ ec\ =\ 1;}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00079\ \ \ \ \ \}}
+\DoxyCodeLine{00080\ \ \ \}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \textcolor{keywordflow}{if}\ (!F::is\_signed\ \&\&\ T::is\_signed)\ \{}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{//\ can\ from\ be\ held\ in\ To?}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{if}\ (F::digits\ <\ T::digits)\ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \textcolor{comment}{//\ yes,\ From\ always\ fits\ in\ To.}}
+\DoxyCodeLine{00086\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \textcolor{comment}{//\ from\ may\ not\ fit\ in\ To,\ we\ have\ to\ do\ a\ dynamic\ check}}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (from\ >\ \textcolor{keyword}{static\_cast<}From\textcolor{keyword}{>}(T::max()))\ \{}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ outside\ range.}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ ec\ =\ 1;}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00093\ \ \ \ \ \}}
+\DoxyCodeLine{00094\ \ \ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{//\ reaching\ here\ means\ all\ is\ ok\ for\ lossless\ conversion.}}
+\DoxyCodeLine{00097\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}To\textcolor{keyword}{>}(from);}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \}\ \ \textcolor{comment}{//\ function}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ To,\ \textcolor{keyword}{typename}\ From,}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(std::is\_same<From,\ To>::value)>}
+\DoxyCodeLine{00103\ FMT\_CONSTEXPR\ To\ lossless\_integral\_conversion(\textcolor{keyword}{const}\ From\ from,\ \textcolor{keywordtype}{int}\&\ ec)\ \{}
+\DoxyCodeLine{00104\ \ \ ec\ =\ 0;}
+\DoxyCodeLine{00105\ \ \ \textcolor{keywordflow}{return}\ from;}
+\DoxyCodeLine{00106\ \}\ \ \textcolor{comment}{//\ function}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \textcolor{comment}{//\ clang-\/format\ off}}
+\DoxyCodeLine{00121\ \textcolor{comment}{//\ clang-\/format\ on}}
+\DoxyCodeLine{00122\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ To,\ \textcolor{keyword}{typename}\ From,}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(!std::is\_same<From,\ To>::value)>}
+\DoxyCodeLine{00124\ FMT\_CONSTEXPR\ To\ safe\_float\_conversion(\textcolor{keyword}{const}\ From\ from,\ \textcolor{keywordtype}{int}\&\ ec)\ \{}
+\DoxyCodeLine{00125\ \ \ ec\ =\ 0;}
+\DoxyCodeLine{00126\ \ \ \textcolor{keyword}{using\ }T\ =\ std::numeric\_limits<To>;}
+\DoxyCodeLine{00127\ \ \ \textcolor{keyword}{static\_assert}(std::is\_floating\_point<From>::value,\ \textcolor{stringliteral}{"{}From\ must\ be\ floating"{}});}
+\DoxyCodeLine{00128\ \ \ \textcolor{keyword}{static\_assert}(std::is\_floating\_point<To>::value,\ \textcolor{stringliteral}{"{}To\ must\ be\ floating"{}});}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{comment}{//\ catch\ the\ only\ happy\ case}}
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordflow}{if}\ (std::isfinite(from))\ \{}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keywordflow}{if}\ (from\ >=\ T::lowest()\ \&\&\ from\ <=\ T::max())\ \{}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}To\textcolor{keyword}{>}(from);}
+\DoxyCodeLine{00134\ \ \ \ \ \}}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{comment}{//\ not\ within\ range.}}
+\DoxyCodeLine{00136\ \ \ \ \ ec\ =\ 1;}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00138\ \ \ \}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \textcolor{comment}{//\ nan\ and\ inf\ will\ be\ preserved}}
+\DoxyCodeLine{00141\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}To\textcolor{keyword}{>}(from);}
+\DoxyCodeLine{00142\ \}\ \ \textcolor{comment}{//\ function}}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ To,\ \textcolor{keyword}{typename}\ From,}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(std::is\_same<From,\ To>::value)>}
+\DoxyCodeLine{00146\ FMT\_CONSTEXPR\ To\ safe\_float\_conversion(\textcolor{keyword}{const}\ From\ from,\ \textcolor{keywordtype}{int}\&\ ec)\ \{}
+\DoxyCodeLine{00147\ \ \ ec\ =\ 0;}
+\DoxyCodeLine{00148\ \ \ \textcolor{keyword}{static\_assert}(std::is\_floating\_point<From>::value,\ \textcolor{stringliteral}{"{}From\ must\ be\ floating"{}});}
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordflow}{return}\ from;}
+\DoxyCodeLine{00150\ \}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00155\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ To,\ \textcolor{keyword}{typename}\ FromRep,\ \textcolor{keyword}{typename}\ FromPeriod,}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(std::is\_integral<FromRep>::value),}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(std::is\_integral<typename\ To::rep>::value)>}
+\DoxyCodeLine{00158\ To\ safe\_duration\_cast(std::chrono::duration<FromRep,\ FromPeriod>\ from,}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\&\ ec)\ \{}
+\DoxyCodeLine{00160\ \ \ \textcolor{keyword}{using\ }From\ =\ std::chrono::duration<FromRep,\ FromPeriod>;}
+\DoxyCodeLine{00161\ \ \ ec\ =\ 0;}
+\DoxyCodeLine{00162\ \ \ \textcolor{comment}{//\ the\ basic\ idea\ is\ that\ we\ need\ to\ convert\ from\ count()\ in\ the\ from\ type}}
+\DoxyCodeLine{00163\ \ \ \textcolor{comment}{//\ to\ count()\ in\ the\ To\ type,\ by\ multiplying\ it\ with\ this:}}
+\DoxyCodeLine{00164\ \ \ \textcolor{keyword}{using\ }Factor\ =\ std::ratio\_divide<typename\ From::period,\ typename\ To::period>;}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{static\_assert}(Factor::num\ >\ 0,\ \textcolor{stringliteral}{"{}num\ must\ be\ positive"{}});}
+\DoxyCodeLine{00167\ \ \ \textcolor{keyword}{static\_assert}(Factor::den\ >\ 0,\ \textcolor{stringliteral}{"{}den\ must\ be\ positive"{}});}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \textcolor{comment}{//\ the\ conversion\ is\ like\ this:\ multiply\ from.count()\ with\ Factor::num}}
+\DoxyCodeLine{00170\ \ \ \textcolor{comment}{//\ /Factor::den\ and\ convert\ it\ to\ To::rep,\ all\ this\ without}}
+\DoxyCodeLine{00171\ \ \ \textcolor{comment}{//\ overflow/underflow.\ let's\ start\ by\ finding\ a\ suitable\ type\ that\ can\ hold}}
+\DoxyCodeLine{00172\ \ \ \textcolor{comment}{//\ both\ To,\ From\ and\ Factor::num}}
+\DoxyCodeLine{00173\ \ \ \textcolor{keyword}{using\ }IntermediateRep\ =}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \textcolor{keyword}{typename}\ std::common\_type<\textcolor{keyword}{typename}\ From::rep,\ \textcolor{keyword}{typename}\ To::rep,}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{decltype}(Factor::num)>::type;}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \textcolor{comment}{//\ safe\ conversion\ to\ IntermediateRep}}
+\DoxyCodeLine{00178\ \ \ IntermediateRep\ count\ =}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ lossless\_integral\_conversion<IntermediateRep>(from.count(),\ ec);}
+\DoxyCodeLine{00180\ \ \ \textcolor{keywordflow}{if}\ (ec)\ \{}
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00182\ \ \ \}}
+\DoxyCodeLine{00183\ \ \ \textcolor{comment}{//\ multiply\ with\ Factor::num\ without\ overflow\ or\ underflow}}
+\DoxyCodeLine{00184\ \ \ \textcolor{keywordflow}{if}\ (Factor::num\ !=\ 1)\ \{}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ max1\ =}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ std::numeric\_limits<IntermediateRep>::max()\ /\ Factor::num;}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{if}\ (count\ >\ max1)\ \{}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ ec\ =\ 1;}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00190\ \ \ \ \ \}}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ min1\ =}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ std::numeric\_limits<IntermediateRep>::min()\ /\ Factor::num;}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keywordflow}{if}\ (count\ <\ min1)\ \{}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ ec\ =\ 1;}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00196\ \ \ \ \ \}}
+\DoxyCodeLine{00197\ \ \ \ \ count\ *=\ Factor::num;}
+\DoxyCodeLine{00198\ \ \ \}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \textcolor{comment}{//\ this\ can't\ go\ wrong,\ right?\ den>0\ is\ checked\ earlier.}}
+\DoxyCodeLine{00201\ \ \ \textcolor{keywordflow}{if}\ (Factor::den\ !=\ 1)\ \{}
+\DoxyCodeLine{00202\ \ \ \ \ count\ /=\ Factor::den;}
+\DoxyCodeLine{00203\ \ \ \}}
+\DoxyCodeLine{00204\ \ \ \textcolor{comment}{//\ convert\ to\ the\ to\ type,\ safely}}
+\DoxyCodeLine{00205\ \ \ \textcolor{keyword}{using\ }ToRep\ =\ \textcolor{keyword}{typename}\ To::rep;}
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{const}\ ToRep\ tocount\ =\ lossless\_integral\_conversion<ToRep>(count,\ ec);}
+\DoxyCodeLine{00207\ \ \ \textcolor{keywordflow}{if}\ (ec)\ \{}
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00209\ \ \ \}}
+\DoxyCodeLine{00210\ \ \ \textcolor{keywordflow}{return}\ To\{tocount\};}
+\DoxyCodeLine{00211\ \}}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00216\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ To,\ \textcolor{keyword}{typename}\ FromRep,\ \textcolor{keyword}{typename}\ FromPeriod,}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(std::is\_floating\_point<FromRep>::value),}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ FMT\_ENABLE\_IF(std::is\_floating\_point<typename\ To::rep>::value)>}
+\DoxyCodeLine{00219\ To\ safe\_duration\_cast(std::chrono::duration<FromRep,\ FromPeriod>\ from,}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\&\ ec)\ \{}
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{using\ }From\ =\ std::chrono::duration<FromRep,\ FromPeriod>;}
+\DoxyCodeLine{00222\ \ \ ec\ =\ 0;}
+\DoxyCodeLine{00223\ \ \ \textcolor{keywordflow}{if}\ (std::isnan(from.count()))\ \{}
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{comment}{//\ nan\ in,\ gives\ nan\ out.\ easy.}}
+\DoxyCodeLine{00225\ \ \ \ \ \textcolor{keywordflow}{return}\ To\{std::numeric\_limits<typename\ To::rep>::quiet\_NaN()\};}
+\DoxyCodeLine{00226\ \ \ \}}
+\DoxyCodeLine{00227\ \ \ \textcolor{comment}{//\ maybe\ we\ should\ also\ check\ if\ from\ is\ denormal,\ and\ decide\ what\ to\ do\ about}}
+\DoxyCodeLine{00228\ \ \ \textcolor{comment}{//\ it.}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \textcolor{comment}{//\ +-\/inf\ should\ be\ preserved.}}
+\DoxyCodeLine{00231\ \ \ \textcolor{keywordflow}{if}\ (std::isinf(from.count()))\ \{}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keywordflow}{return}\ To\{from.count()\};}
+\DoxyCodeLine{00233\ \ \ \}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \textcolor{comment}{//\ the\ basic\ idea\ is\ that\ we\ need\ to\ convert\ from\ count()\ in\ the\ from\ type}}
+\DoxyCodeLine{00236\ \ \ \textcolor{comment}{//\ to\ count()\ in\ the\ To\ type,\ by\ multiplying\ it\ with\ this:}}
+\DoxyCodeLine{00237\ \ \ \textcolor{keyword}{using\ }Factor\ =\ std::ratio\_divide<typename\ From::period,\ typename\ To::period>;}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \textcolor{keyword}{static\_assert}(Factor::num\ >\ 0,\ \textcolor{stringliteral}{"{}num\ must\ be\ positive"{}});}
+\DoxyCodeLine{00240\ \ \ \textcolor{keyword}{static\_assert}(Factor::den\ >\ 0,\ \textcolor{stringliteral}{"{}den\ must\ be\ positive"{}});}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \ \ \textcolor{comment}{//\ the\ conversion\ is\ like\ this:\ multiply\ from.count()\ with\ Factor::num}}
+\DoxyCodeLine{00243\ \ \ \textcolor{comment}{//\ /Factor::den\ and\ convert\ it\ to\ To::rep,\ all\ this\ without}}
+\DoxyCodeLine{00244\ \ \ \textcolor{comment}{//\ overflow/underflow.\ let's\ start\ by\ finding\ a\ suitable\ type\ that\ can\ hold}}
+\DoxyCodeLine{00245\ \ \ \textcolor{comment}{//\ both\ To,\ From\ and\ Factor::num}}
+\DoxyCodeLine{00246\ \ \ \textcolor{keyword}{using\ }IntermediateRep\ =}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \textcolor{keyword}{typename}\ std::common\_type<\textcolor{keyword}{typename}\ From::rep,\ \textcolor{keyword}{typename}\ To::rep,}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{decltype}(Factor::num)>::type;}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \textcolor{comment}{//\ force\ conversion\ of\ From::rep\ -\/>\ IntermediateRep\ to\ be\ safe,}}
+\DoxyCodeLine{00251\ \ \ \textcolor{comment}{//\ even\ if\ it\ will\ never\ happen\ be\ narrowing\ in\ this\ context.}}
+\DoxyCodeLine{00252\ \ \ IntermediateRep\ count\ =}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ safe\_float\_conversion<IntermediateRep>(from.count(),\ ec);}
+\DoxyCodeLine{00254\ \ \ \textcolor{keywordflow}{if}\ (ec)\ \{}
+\DoxyCodeLine{00255\ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00256\ \ \ \}}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{comment}{//\ multiply\ with\ Factor::num\ without\ overflow\ or\ underflow}}
+\DoxyCodeLine{00259\ \ \ \textcolor{keywordflow}{if}\ (Factor::num\ !=\ 1)\ \{}
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ max1\ =\ std::numeric\_limits<IntermediateRep>::max()\ /}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}IntermediateRep\textcolor{keyword}{>}(Factor::num);}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordflow}{if}\ (count\ >\ max1)\ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ ec\ =\ 1;}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00265\ \ \ \ \ \}}
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ min1\ =\ std::numeric\_limits<IntermediateRep>::lowest()\ /}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}IntermediateRep\textcolor{keyword}{>}(Factor::num);}
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{keywordflow}{if}\ (count\ <\ min1)\ \{}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ ec\ =\ 1;}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00271\ \ \ \ \ \}}
+\DoxyCodeLine{00272\ \ \ \ \ count\ *=\ \textcolor{keyword}{static\_cast<}IntermediateRep\textcolor{keyword}{>}(Factor::num);}
+\DoxyCodeLine{00273\ \ \ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \textcolor{comment}{//\ this\ can't\ go\ wrong,\ right?\ den>0\ is\ checked\ earlier.}}
+\DoxyCodeLine{00276\ \ \ \textcolor{keywordflow}{if}\ (Factor::den\ !=\ 1)\ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keyword}{using\ }common\_t\ =\ \textcolor{keyword}{typename}\ std::common\_type<IntermediateRep,\ intmax\_t>::type;}
+\DoxyCodeLine{00278\ \ \ \ \ count\ /=\ \textcolor{keyword}{static\_cast<}common\_t\textcolor{keyword}{>}(Factor::den);}
+\DoxyCodeLine{00279\ \ \ \}}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \textcolor{comment}{//\ convert\ to\ the\ to\ type,\ safely}}
+\DoxyCodeLine{00282\ \ \ \textcolor{keyword}{using\ }ToRep\ =\ \textcolor{keyword}{typename}\ To::rep;}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \ \ \textcolor{keyword}{const}\ ToRep\ tocount\ =\ safe\_float\_conversion<ToRep>(count,\ ec);}
+\DoxyCodeLine{00285\ \ \ \textcolor{keywordflow}{if}\ (ec)\ \{}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{keywordflow}{return}\ \{\};}
+\DoxyCodeLine{00287\ \ \ \}}
+\DoxyCodeLine{00288\ \ \ \textcolor{keywordflow}{return}\ To\{tocount\};}
+\DoxyCodeLine{00289\ \}}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \}\ \ \textcolor{comment}{//\ namespace\ safe\_duration\_cast}}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00293\ FMT\_END\_NAMESPACE}
+
+\end{DoxyCode}

@@ -1,0 +1,291 @@
+\doxysection{LSDyna\+Family.\+h}
+\hypertarget{_l_s_dyna_family_8h_source}{}\label{_l_s_dyna_family_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/LSDynaFamily.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/LSDynaFamily.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Sandia\ Corporation}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ .NAME\ LSDynaFamily}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ .SECTION\ Description}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ \ \ \ A\ class\ to\ abstract\ away\ I/O\ from\ families\ of\ output\ files.}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ \ \ \ This\ performs\ the\ actual\ reads\ and\ writes\ plus\ any\ required\ byte\ swapping.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ \ \ \ Also\ contains\ a\ subclass,\ LSDynaFamilyAdaptLevel,\ used\ to\ store}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ \ \ \ file+offset}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ \ \ \ information\ for\ each\ mesh\ adaptation's\ state\ info.}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#ifndef\ \_\_LSDynaFamily\_h}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#define\ \_\_LSDynaFamily\_h}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}vtkType.h"{}}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <fcntl.h>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <stdio.h>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <string.h>}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ <sys/stat.h>}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ <sys/types.h>}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{comment}{//\ this\ is\ needs\ to\ be\ moved\ over\ to\ fseekpos\ and\ ftellpos}}
+\DoxyCodeLine{00028\ \textcolor{comment}{//\ in\ the\ future}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#ifndef\ \_WIN32}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ <unistd.h>}}
+\DoxyCodeLine{00031\ \textcolor{keyword}{typedef}\ off\_t\ vtkLSDynaOff\_t;\ \textcolor{comment}{//\ sanity}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{int}\ vtkLSDynaFile\_t;}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_BADFILE\ -\/1}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_TELL(fid)\ lseek(fid,\ 0,\ SEEK\_CUR)}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_SEEK(fid,\ off,\ whence)\ lseek(fid,\ off,\ whence)}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_SEEKTELL(fid,\ off,\ whence)\ lseek(fid,\ off,\ whence)}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_READ(fid,\ ptr,\ cnt)\ read(fid,\ ptr,\ cnt)}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_ISBADFILE(fid)\ (fid\ <\ 0)}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_CLOSEFILE(fid)\ close(fid)}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ \_WIN32}}
+\DoxyCodeLine{00041\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{long}\ vtkLSDynaOff\_t;\ \textcolor{comment}{//\ insanity}}
+\DoxyCodeLine{00042\ \textcolor{keyword}{typedef}\ FILE*\ vtkLSDynaFile\_t;}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_BADFILE\ 0}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_TELL(fid)\ ftell(fid)}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_SEEK(fid,\ off,\ whence)\ fseek(fid,\ off,\ whence)}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_SEEKTELL(fid,\ off,\ whence)\ fseek(fid,\ off,\ whence),\ ftell(fid)}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_READ(fid,\ ptr,\ cnt)\ fread(ptr,\ 1,\ cnt,\ fid)}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_ISBADFILE(fid)\ (fid\ ==\ 0)}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#define\ VTK\_LSDYNA\_CLOSEFILE(fid)\ fclose(fid)}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#ifdef\ VTKSNL\_HAVE\_ERRNO\_H}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#include\ <errno.h>}}
+\DoxyCodeLine{00053\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00056\ \textcolor{keyword}{class\ }LSDynaFamily}
+\DoxyCodeLine{00057\ \{}
+\DoxyCodeLine{00058\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00059\ \ \ LSDynaFamily();}
+\DoxyCodeLine{00060\ \ \ \string~LSDynaFamily();}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_l_s_dyna_family_1_1_l_s_dyna_family_section_mark}{LSDynaFamilySectionMark}}}
+\DoxyCodeLine{00063\ \ \ \{}
+\DoxyCodeLine{00064\ \ \ \ \ vtkIdType\ FileNumber;}
+\DoxyCodeLine{00065\ \ \ \ \ vtkIdType\ Offset;}
+\DoxyCodeLine{00066\ \ \ \};}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \textcolor{keywordtype}{void}\ SetDatabaseDirectory(\textcolor{keyword}{const}\ std::string\&\ dd);}
+\DoxyCodeLine{00069\ \ \ std::string\ GetDatabaseDirectory();}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \textcolor{keywordtype}{void}\ SetDatabaseBaseName(\textcolor{keyword}{const}\ std::string\&\ bn);}
+\DoxyCodeLine{00072\ \ \ std::string\ GetDatabaseBaseName();}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \textcolor{keywordtype}{int}\ ScanDatabaseDirectory();}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \textcolor{keyword}{enum}\ SectionType}
+\DoxyCodeLine{00077\ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{//\ These\ are\ the\ "{}section"{}\ marks:}}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{comment}{//\ They\ are\ absolute\ (independent\ of\ current\ timestep).}}
+\DoxyCodeLine{00080\ \ \ \ \ ControlSection\ =\ 0,}
+\DoxyCodeLine{00081\ \ \ \ \ StaticSection,}
+\DoxyCodeLine{00082\ \ \ \ \ TimeStepSection,}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{comment}{//\ These\ are\ the\ "{}subsection"{}\ marks:}}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{//\ ==\ ControlSection\ has\ no\ subsections}}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{comment}{//\ ==\ StaticSection\ has\ these\ "{}absolute"{}\ marks:}}
+\DoxyCodeLine{00086\ \ \ \ \ MaterialTypeData,}
+\DoxyCodeLine{00087\ \ \ \ \ FluidMaterialIdData,}
+\DoxyCodeLine{00088\ \ \ \ \ SPHElementData,}
+\DoxyCodeLine{00089\ \ \ \ \ GeometryData,}
+\DoxyCodeLine{00090\ \ \ \ \ UserIdData,}
+\DoxyCodeLine{00091\ \ \ \ \ AdaptedParentData,}
+\DoxyCodeLine{00092\ \ \ \ \ SPHNodeData,}
+\DoxyCodeLine{00093\ \ \ \ \ RigidSurfaceData,}
+\DoxyCodeLine{00094\ \ \ \ \ EndOfStaticSection,}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{comment}{//\ ==\ TimeStepSection\ has\ these\ marks,\ relative\ to\ timestep\ 0\ (so\ they\ are}}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{comment}{//\ \ \ \ not\ valid\ for\ an\ arbitrary\ timestep,\ but\ may\ easily\ be\ used\ to\ compute}}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{comment}{//\ \ \ \ an\ offset\ for\ any\ time\ step\ by\ adding\ a\ multiple\ of\ the\ state\ size):}}
+\DoxyCodeLine{00098\ \ \ \ \ ElementDeletionState,}
+\DoxyCodeLine{00099\ \ \ \ \ SPHNodeState,}
+\DoxyCodeLine{00100\ \ \ \ \ RigidSurfaceState,}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{//\ THIS\ MUST\ BE\ LAST}}
+\DoxyCodeLine{00102\ \ \ \ \ NumberOfSectionTypes}
+\DoxyCodeLine{00103\ \ \ \};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \textcolor{keyword}{class\ }LSDynaFamilyAdaptLevel}
+\DoxyCodeLine{00106\ \ \ \{}
+\DoxyCodeLine{00107\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00108\ \ \ \ \ \doxymbox{\hyperlink{struct_l_s_dyna_family_1_1_l_s_dyna_family_section_mark}{LSDynaFamilySectionMark}}\ Marks[NumberOfSectionTypes];}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ LSDynaFamilyAdaptLevel()}
+\DoxyCodeLine{00111\ \ \ \ \ \{}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \doxymbox{\hyperlink{struct_l_s_dyna_family_1_1_l_s_dyna_family_section_mark}{LSDynaFamilySectionMark}}\ mark;}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ mark.FileNumber\ =\ 0;}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ mark.Offset\ =\ 0;}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ LSDynaFamily::NumberOfSectionTypes;\ ++i)}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ this-\/>Marks[i]\ =\ mark;}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00119\ \ \ \ \ \}}
+\DoxyCodeLine{00120\ \ \ \};}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ SectionTypeNames[];}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{keyword}{enum}\ WordType}
+\DoxyCodeLine{00125\ \ \ \{}
+\DoxyCodeLine{00126\ \ \ \ \ Char,}
+\DoxyCodeLine{00127\ \ \ \ \ Float,}
+\DoxyCodeLine{00128\ \ \ \ \ Int}
+\DoxyCodeLine{00129\ \ \ \};}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ EOFMarker;}
+\DoxyCodeLine{00132\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ SectionTypeToString(SectionType\ s);}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordtype}{int}\ SkipToWord(SectionType\ sType,\ vtkIdType\ sId,\ vtkIdType\ wordNumber);}
+\DoxyCodeLine{00135\ \ \ \textcolor{keywordtype}{int}\ MarkTimeStep();}
+\DoxyCodeLine{00136\ \ \ \textcolor{keywordtype}{int}\ SkipWords(vtkIdType\ numWords);}
+\DoxyCodeLine{00137\ \ \ \textcolor{keywordtype}{int}\ BufferChunk(WordType\ wType,\ vtkIdType\ chunkSizeInWords);}
+\DoxyCodeLine{00138\ \ \ \textcolor{keywordtype}{int}\ ClearBuffer();}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \textcolor{comment}{//\ Description:}}
+\DoxyCodeLine{00141\ \ \ \textcolor{comment}{//\ Setup\ reading\ of\ a\ number\ of\ words\ to\ be\ split\ across\ multiple}}
+\DoxyCodeLine{00142\ \ \ \textcolor{comment}{//\ bufferChunk.\ This\ is\ used\ to\ read\ really\ large\ buffer\ sections}}
+\DoxyCodeLine{00143\ \ \ \textcolor{comment}{//\ in\ more\ reasonable\ sizes.\ The\ parameters\ are\ used\ to\ specify\ the\ total\ buffer}}
+\DoxyCodeLine{00144\ \ \ \textcolor{comment}{//\ size.\ The\ buffer\ size\ will\ always\ be\ evenly\ divisible\ by\ numComps\ and\ total}}
+\DoxyCodeLine{00145\ \ \ \textcolor{comment}{//\ word\ size\ of\ all\ buffers\ will\ be\ numTuples*numComps}}
+\DoxyCodeLine{00146\ \ \ vtkIdType\ InitPartialChunkBuffering(\textcolor{keyword}{const}\ vtkIdType\&\ numTuples,\ \textcolor{keyword}{const}\ vtkIdType\&\ numComps);}
+\DoxyCodeLine{00147\ \ \ vtkIdType\ GetNextChunk(\textcolor{keyword}{const}\ WordType\&\ wType);}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{char}*\ GetNextWordAsChars();}
+\DoxyCodeLine{00150\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ GetNextWordAsFloat();}
+\DoxyCodeLine{00151\ \ \ \textcolor{keyword}{inline}\ vtkIdType\ GetNextWordAsInt();}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \textcolor{comment}{//\ Get\ the\ raw\ chunk\ buffer\ as\ a\ buffer\ of\ type\ T}}
+\DoxyCodeLine{00154\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00155\ \ \ T*\ GetBufferAs();}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \textcolor{comment}{//\ Not\ needed\ (yet):}}
+\DoxyCodeLine{00158\ \ \ \textcolor{comment}{//\ void\ GetCurrentWord(\ SectionType\&\ stype,\ vtkIdType\&\ sId,\ vtkIdType\&\ wN\ );}}
+\DoxyCodeLine{00159\ \ \ \textcolor{keywordtype}{int}\ AdvanceFile();}
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{void}\ MarkSectionStart(\textcolor{keywordtype}{int}\ adaptLevel,\ SectionType\ m);}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{int}\ JumpToMark(SectionType\ m);}
+\DoxyCodeLine{00163\ \ \ \textcolor{keywordtype}{int}\ DetermineStorageModel();}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \textcolor{keywordtype}{void}\ SetStateSize(vtkIdType\ sz);}
+\DoxyCodeLine{00166\ \ \ vtkIdType\ GetStateSize()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ vtkIdType\ GetNumberOfFiles();}
+\DoxyCodeLine{00169\ \ \ std::string\ GetFileName(\textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00170\ \ \ vtkIdType\ GetFileSize(\textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \textcolor{keywordtype}{int}\ GetCurrentAdaptLevel()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a70d7846e4503d9d4d034439c9dbc5c11}{FAdapt}};\ \}}
+\DoxyCodeLine{00173\ \ \ \textcolor{keywordtype}{int}\ TimeAdaptLevel(\textcolor{keywordtype}{int}\ i)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a3ad5b26c522bb00526da59f6ece91609}{TimeAdaptLevels}}[i];\ \}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ vtkIdType\ GetCurrentFWord()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_afc65e4d261e6d1ed59cd6d5f7b824c81}{FWord}};\ \}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \textcolor{keywordtype}{int}\ GetWordSize()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00178\ \ \ \textcolor{comment}{//\ Reset\ erases\ all\ information\ about\ the\ current\ database.}}
+\DoxyCodeLine{00179\ \ \ \textcolor{comment}{//\ It\ does\ not\ free\ memory\ allocated\ for\ the\ current\ chunk.}}
+\DoxyCodeLine{00180\ \ \ \textcolor{keywordtype}{void}\ Reset();}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00183\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_l_s_dyna_family_abc18109ca8729f68c15bf5c11500c464}{DumpMarks}}(std::ostream\&\ os);}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \textcolor{comment}{//\ Closes\ the\ current\ file\ descriptor.\ This\ is\ called\ after}}
+\DoxyCodeLine{00186\ \ \ \textcolor{comment}{//\ we\ are\ done\ reading\ in\ request\ data}}
+\DoxyCodeLine{00187\ \ \ \textcolor{keywordtype}{void}\ CloseFileHandles();}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \textcolor{keywordtype}{void}\ OpenFileHandles();}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00193\ \ \ std::string\ \doxymbox{\hyperlink{class_l_s_dyna_family_aa752b6923faebd3219f69a2eeb897b40}{DatabaseDirectory}};}
+\DoxyCodeLine{00196\ \ \ std::string\ \doxymbox{\hyperlink{class_l_s_dyna_family_ac0dcfffd4bbb759479b25bc68030af69}{DatabaseBaseName}};}
+\DoxyCodeLine{00198\ \ \ std::vector<std::string>\ \doxymbox{\hyperlink{class_l_s_dyna_family_af5aa13308dca9719b27cddb5327da2e1}{Files}};}
+\DoxyCodeLine{00201\ \ \ std::vector<vtkIdType>\ \doxymbox{\hyperlink{class_l_s_dyna_family_a9f9211699bac204d2d77535b84d1a46f}{FileSizes}};}
+\DoxyCodeLine{00203\ \ \ std::vector<int>\ \doxymbox{\hyperlink{class_l_s_dyna_family_aba85b69dcc6958e637e3926ec31786c3}{FileAdaptLevels}};}
+\DoxyCodeLine{00206\ \ \ std::vector<int>\ \doxymbox{\hyperlink{class_l_s_dyna_family_a2e8a270472abe340c05d004dcec4169d}{Adaptations}};}
+\DoxyCodeLine{00208\ \ \ vtkLSDynaFile\_t\ \doxymbox{\hyperlink{class_l_s_dyna_family_aa85fe8963445b6db673c36835e410d60}{FD}};}
+\DoxyCodeLine{00210\ \ \ vtkIdType\ \doxymbox{\hyperlink{class_l_s_dyna_family_a9d424d671cfd50c1970d13afa50c323f}{FNum}};}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_l_s_dyna_family_a70d7846e4503d9d4d034439c9dbc5c11}{FAdapt}};}
+\DoxyCodeLine{00215\ \ \ vtkIdType\ \doxymbox{\hyperlink{class_l_s_dyna_family_afc65e4d261e6d1ed59cd6d5f7b824c81}{FWord}};}
+\DoxyCodeLine{00218\ \ \ \textcolor{comment}{//\ std::vector<double>\ TimeValues;}}
+\DoxyCodeLine{00220\ \ \ vtkIdType\ \doxymbox{\hyperlink{class_l_s_dyna_family_a57312e8b85e11591717ed59aec940bb8}{TimeStep}};}
+\DoxyCodeLine{00222\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_l_s_dyna_family_a84da7a26d7c997c66d620418bb2da11c}{SwapEndian}};}
+\DoxyCodeLine{00224\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_l_s_dyna_family_a24168dee6ae748c842c43a57260d05bd}{WordSize}};}
+\DoxyCodeLine{00226\ \ \ vtkIdType\ \doxymbox{\hyperlink{class_l_s_dyna_family_a17eb9d9648d8962ffe314b66e1c082af}{StateSize}};}
+\DoxyCodeLine{00229\ \ \ std::vector<LSDynaFamilyAdaptLevel>\ \doxymbox{\hyperlink{class_l_s_dyna_family_a49aaca89d3448f9c38fbfbcb38e0eecd}{AdaptationsMarkers}};}
+\DoxyCodeLine{00232\ \ \ std::vector<LSDynaFamilySectionMark>\ \doxymbox{\hyperlink{class_l_s_dyna_family_aec7d1d0239f6bd2343e3f03eb657c8d2}{TimeStepMarks}};}
+\DoxyCodeLine{00234\ \ \ std::vector<int>\ \doxymbox{\hyperlink{class_l_s_dyna_family_a3ad5b26c522bb00526da59f6ece91609}{TimeAdaptLevels}};}
+\DoxyCodeLine{00236\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ \doxymbox{\hyperlink{class_l_s_dyna_family_a124c36f23e21ee1cf893a221b8f08a56}{Chunk}};}
+\DoxyCodeLine{00239\ \ \ vtkIdType\ \doxymbox{\hyperlink{class_l_s_dyna_family_ab4d82a08caf5d1d12c5152d8dab8952f}{ChunkWord}};}
+\DoxyCodeLine{00240\ \ \ \textcolor{comment}{//\ How\ much\ of\ the\ allocated\ space\ is\ filled\ with\ valid\ data\ (assert}}
+\DoxyCodeLine{00241\ \ \ \textcolor{comment}{//\ ChunkValid\ <=\ ChunkAlloc).}}
+\DoxyCodeLine{00242\ \ \ vtkIdType\ ChunkValid;}
+\DoxyCodeLine{00244\ \ \ vtkIdType\ \doxymbox{\hyperlink{class_l_s_dyna_family_abf861c7e391130d63c703b5d880ffaf1}{ChunkAlloc}};}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \ \ \textcolor{keywordtype}{bool}\ FileHandlesClosed;}
+\DoxyCodeLine{00247\ \ \ \textcolor{keyword}{struct\ }BufferingInfo;}
+\DoxyCodeLine{00248\ \ \ BufferingInfo*\ BufferInfo;}
+\DoxyCodeLine{00249\ \};}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00252\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{char}*\ LSDynaFamily::GetNextWordAsChars()}
+\DoxyCodeLine{00253\ \{}
+\DoxyCodeLine{00254\ \ \ \textcolor{keywordflow}{if}\ (this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_ab4d82a08caf5d1d12c5152d8dab8952f}{ChunkWord}}\ >=\ this-\/>ChunkValid)}
+\DoxyCodeLine{00255\ \ \ \ \ fprintf(stderr,\ \textcolor{stringliteral}{"{}Read\ char\ past\ end\ of\ buffer\(\backslash\)n"{}});}
+\DoxyCodeLine{00256\ \ \ \textcolor{keywordflow}{return}\ (\textcolor{keywordtype}{char}*)(\&this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a124c36f23e21ee1cf893a221b8f08a56}{Chunk}}[(this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_ab4d82a08caf5d1d12c5152d8dab8952f}{ChunkWord}}++)\ *\ this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a24168dee6ae748c842c43a57260d05bd}{WordSize}}]);}
+\DoxyCodeLine{00257\ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00260\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{double}\ LSDynaFamily::GetNextWordAsFloat()}
+\DoxyCodeLine{00261\ \{}
+\DoxyCodeLine{00262\ \ \ \textcolor{keywordflow}{if}\ (this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_ab4d82a08caf5d1d12c5152d8dab8952f}{ChunkWord}}\ >=\ this-\/>ChunkValid)}
+\DoxyCodeLine{00263\ \ \ \ \ fprintf(stderr,\ \textcolor{stringliteral}{"{}Read\ float\ past\ end\ of\ buffer\(\backslash\)n"{}});}
+\DoxyCodeLine{00264\ \ \ \textcolor{keywordflow}{switch}\ (this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a24168dee6ae748c842c43a57260d05bd}{WordSize}})}
+\DoxyCodeLine{00265\ \ \ \{}
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{keywordflow}{case}\ 4:}
+\DoxyCodeLine{00267\ \ \ \ \ \{}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ vtkTypeFloat32\ value;}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ memcpy(\&value,\ \&this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a124c36f23e21ee1cf893a221b8f08a56}{Chunk}}[this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_ab4d82a08caf5d1d12c5152d8dab8952f}{ChunkWord}}++\ <<\ 2],\ \textcolor{keyword}{sizeof}(value));}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ value;}
+\DoxyCodeLine{00271\ \ \ \ \ \}}
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keywordflow}{case}\ 8:}
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00274\ \ \ \ \ \{}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ vtkTypeFloat64\ value;}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ memcpy(\&value,\ \&this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a124c36f23e21ee1cf893a221b8f08a56}{Chunk}}[this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_ab4d82a08caf5d1d12c5152d8dab8952f}{ChunkWord}}++\ <<\ 3],\ \textcolor{keyword}{sizeof}(value));}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ value;}
+\DoxyCodeLine{00278\ \ \ \ \ \}}
+\DoxyCodeLine{00279\ \ \ \}}
+\DoxyCodeLine{00280\ \}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00283\ \textcolor{keyword}{inline}\ vtkIdType\ LSDynaFamily::GetNextWordAsInt()}
+\DoxyCodeLine{00284\ \{}
+\DoxyCodeLine{00285\ \ \ \textcolor{keywordflow}{if}\ (this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_ab4d82a08caf5d1d12c5152d8dab8952f}{ChunkWord}}\ >=\ this-\/>ChunkValid)}
+\DoxyCodeLine{00286\ \ \ \{}
+\DoxyCodeLine{00287\ \ \ \ \ fprintf(stderr,\ \textcolor{stringliteral}{"{}Read\ int\ past\ end\ of\ buffer\(\backslash\)n"{}});}
+\DoxyCodeLine{00288\ \ \ \}}
+\DoxyCodeLine{00289\ \ \ \textcolor{keywordflow}{switch}\ (this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a24168dee6ae748c842c43a57260d05bd}{WordSize}})}
+\DoxyCodeLine{00290\ \ \ \{}
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{keywordflow}{case}\ 4:}
+\DoxyCodeLine{00292\ \ \ \ \ \{}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ vtkTypeInt32\ value;}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ memcpy(\&value,\ \&this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a124c36f23e21ee1cf893a221b8f08a56}{Chunk}}[this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_ab4d82a08caf5d1d12c5152d8dab8952f}{ChunkWord}}++\ <<\ 2],\ \textcolor{keyword}{sizeof}(value));}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ value;}
+\DoxyCodeLine{00296\ \ \ \ \ \}}
+\DoxyCodeLine{00297\ \ \ \ \ \textcolor{keywordflow}{case}\ 8:}
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00299\ \ \ \ \ \{}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ vtkIdType\ value;}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ memcpy(\&value,\ \&this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a124c36f23e21ee1cf893a221b8f08a56}{Chunk}}[this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_ab4d82a08caf5d1d12c5152d8dab8952f}{ChunkWord}}++\ <<\ 3],\ \textcolor{keyword}{sizeof}(value));}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ value;}
+\DoxyCodeLine{00303\ \ \ \ \ \}}
+\DoxyCodeLine{00304\ \ \ \}}
+\DoxyCodeLine{00305\ \}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00308\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00309\ \textcolor{keyword}{inline}\ T*\ LSDynaFamily::GetBufferAs()}
+\DoxyCodeLine{00310\ \{}
+\DoxyCodeLine{00311\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{reinterpret\_cast<}T*\textcolor{keyword}{>}(this-\/>\doxymbox{\hyperlink{class_l_s_dyna_family_a124c36f23e21ee1cf893a221b8f08a56}{Chunk}});}
+\DoxyCodeLine{00312\ \}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ \_\_LSDynaFamily\_h}}
+
+\end{DoxyCode}

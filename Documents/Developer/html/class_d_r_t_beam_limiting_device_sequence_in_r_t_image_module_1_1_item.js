@@ -1,0 +1,28 @@
+var class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item =
+[
+    [ "Item", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a1f42720a2591d058db96567e4667b1f5", null ],
+    [ "Item", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#af64cb28c083279c83df3edad0fcd9f26", null ],
+    [ "~Item", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#afaccda53cae44e7e820f3758266ab3cb", null ],
+    [ "clear", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#af3f85bf5f35a50605e40d7e72cee19d7", null ],
+    [ "getLeafJawPositions", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#aaba31cc63e353620eeab0855d7a97c1e", null ],
+    [ "getLeafJawPositions", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a2799a68132ed599ee7126780b26f6792", null ],
+    [ "getLeafJawPositions", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a17191fb04a3b996bd3e1b14cc9cd3ad5", null ],
+    [ "getLeafPositionBoundaries", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#aa6e16ae04123bbf842921d87ba7b3686", null ],
+    [ "getLeafPositionBoundaries", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a0c99a62450b07569785a53093a2d64a0", null ],
+    [ "getLeafPositionBoundaries", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#ad1bb630dbd9bfacf7ea658b7cdb70825", null ],
+    [ "getNumberOfLeafJawPairs", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a5f1f27f75762cd596133ac35d61056ea", null ],
+    [ "getNumberOfLeafJawPairs", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a7a19791fe72e6a7649ce8356fa15fbee", null ],
+    [ "getRTBeamLimitingDeviceType", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a15f01d691dae27d431a62bf9a18474a8", null ],
+    [ "getSourceToBeamLimitingDeviceDistance", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#aa957294f6a50a46870d3fd2315ccc1bd", null ],
+    [ "getSourceToBeamLimitingDeviceDistance", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#ae831423d5ee2ba2806e2f670fc623811", null ],
+    [ "isEmpty", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#acfa12db92ab05538d4349ba0c6aa513d", null ],
+    [ "isValid", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a4e585be4a6030b1f68603c82de15d628", null ],
+    [ "operator=", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a1ffedf72c0cde49458a4c0c5e32e90ef", null ],
+    [ "read", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#aff6bb20f15d40e6ddefe39a1b3723406", null ],
+    [ "setLeafJawPositions", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#afc81454ae6f7ca221dd2fdaebfabdca4", null ],
+    [ "setLeafPositionBoundaries", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a90749be8862e443c2a915cdc662fac1c", null ],
+    [ "setNumberOfLeafJawPairs", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#ae5e3b88889c19baccf9c433e748ae1d5", null ],
+    [ "setRTBeamLimitingDeviceType", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#ace83088ead7ada1c91414fdd66167f5a", null ],
+    [ "setSourceToBeamLimitingDeviceDistance", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#ad6aa90ee5956bdf96cc498809001f03b", null ],
+    [ "write", "class_d_r_t_beam_limiting_device_sequence_in_r_t_image_module_1_1_item.html#a5918c826e3dfb61d39c4fd6504b816b7", null ]
+];

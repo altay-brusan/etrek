@@ -1,0 +1,78 @@
+\doxysection{resolve.\+hpp}
+\hypertarget{resolve_8hpp_source}{}\label{resolve_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/resolve.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/resolve.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_RESOLVE\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_RESOLVE\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}master.hpp"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}assigner.hpp"{}}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00008\ \{}
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{comment}{//\ record\ master\ gids\ in\ assigner\ and\ then\ lookup\ the\ procs\ for\ all\ gids\ in\ the\ links}}
+\DoxyCodeLine{00010\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ fix\_links(diy::Master\&\ master,\ diy::DynamicAssigner\&\ assigner);}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \ \ \ \ \textcolor{comment}{//\ auxiliary\ functions;\ could\ stick\ them\ into\ detail\ namespace,\ but\ they\ might\ be\ useful\ on\ their\ own}}
+\DoxyCodeLine{00013\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ record\_local\_gids(\textcolor{keyword}{const}\ diy::Master\&\ master,\ diy::DynamicAssigner\&\ assigner);}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ update\_links(diy::Master\&\ master,\ \textcolor{keyword}{const}\ diy::DynamicAssigner\&\ assigner);}
+\DoxyCodeLine{00015\ \}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00018\ diy::}
+\DoxyCodeLine{00019\ record\_local\_gids(\textcolor{keyword}{const}\ diy::Master\&\ master,\ diy::DynamicAssigner\&\ assigner)}
+\DoxyCodeLine{00020\ \{}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{comment}{//\ figure\ out\ local\ ranks}}
+\DoxyCodeLine{00022\ \ \ \ \ std::vector<std::tuple<int,int>>\ local\_gids;}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ static\_cast<int>(master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}());\ ++i)}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ local\_gids.emplace\_back(std::make\_tuple(master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().rank(),\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i)));}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \ \ assigner.set\_ranks(local\_gids);}
+\DoxyCodeLine{00027\ \}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00030\ diy::}
+\DoxyCodeLine{00031\ update\_links(diy::Master\&\ master,\ \textcolor{keyword}{const}\ diy::DynamicAssigner\&\ assigner)}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{comment}{//\ figure\ out\ all\ the\ gids\ we\ need}}
+\DoxyCodeLine{00034\ \ \ \ \ std::vector<int>\ nbr\_gids;}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ static\_cast<int>(master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}());\ ++i)}
+\DoxyCodeLine{00036\ \ \ \ \ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}*\ link\ =\ master.link(i);}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ blockid\ :\ link-\/>neighbors())}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ nbr\_gids.emplace\_back(blockid.gid);}
+\DoxyCodeLine{00040\ \ \ \ \ \}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{comment}{//\ keep\ only\ unique\ gids\ to\ avoid\ unnecessary\ lookups}}
+\DoxyCodeLine{00043\ \ \ \ \ std::sort(nbr\_gids.begin(),\ nbr\_gids.end());}
+\DoxyCodeLine{00044\ \ \ \ \ nbr\_gids.resize(std::unique(nbr\_gids.begin(),\ nbr\_gids.end())\ -\/\ nbr\_gids.begin());}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{//\ get\ the\ neighbor\ ranks}}
+\DoxyCodeLine{00047\ \ \ \ \ std::vector<int>\ nbr\_procs\ =\ assigner.\doxymbox{\hyperlink{classdiy_1_1_dynamic_assigner_ac7c94a9201193fdcec733603d944ab58}{ranks}}(nbr\_gids);}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{//\ convert\ to\ a\ map}}
+\DoxyCodeLine{00050\ \ \ \ \ std::unordered\_map<int,\ int>\ \ \ \ gid\_to\_proc;}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ nbr\_gids.size();\ ++i)}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ gid\_to\_proc[nbr\_gids[i]]\ =\ nbr\_procs[i];}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ fix\ the\ procs\ in\ links}}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ static\_cast<int>(master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}());\ ++i)}
+\DoxyCodeLine{00056\ \ \ \ \ \{}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}*\ link\ =\ master.link(i);}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ blockid\ :\ link-\/>neighbors())}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ blockid.proc\ =\ gid\_to\_proc[blockid.gid];}
+\DoxyCodeLine{00060\ \ \ \ \ \}}
+\DoxyCodeLine{00061\ \}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00064\ diy::}
+\DoxyCodeLine{00065\ fix\_links(diy::Master\&\ master,\ diy::DynamicAssigner\&\ assigner)}
+\DoxyCodeLine{00066\ \{}
+\DoxyCodeLine{00067\ \ \ \ \ record\_local\_gids(master,\ assigner);}
+\DoxyCodeLine{00068\ \ \ \ \ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().\doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator_a506f33a274d0ba7ef4e09c45387c0511}{barrier}}();\ \ \ \ \ \ \ \ \textcolor{comment}{//\ make\ sure\ everyone\ has\ set\ ranks}}
+\DoxyCodeLine{00069\ \ \ \ \ update\_links(master,\ assigner);}
+\DoxyCodeLine{00070\ \}}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

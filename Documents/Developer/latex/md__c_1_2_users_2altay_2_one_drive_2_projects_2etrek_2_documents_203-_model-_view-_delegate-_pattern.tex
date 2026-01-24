@@ -1,0 +1,704 @@
+\chapter{Model-\/\+View-\/\+Delegate Pattern in Etrek }
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern}{}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern}\index{Model-\/View-\/Delegate Pattern in Etrek@{Model-\/View-\/Delegate Pattern in Etrek}}
+\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md355}%
+\Hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md355}%
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md356}{}\doxysection{\texorpdfstring{Overview}{Overview}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md356}
+Etrek implements a sophisticated {\bfseries{Model-\/\+View-\/\+Delegate (MVD) pattern}}, which is a variation of the Model-\/\+View-\/\+Controller (MVC) pattern where Delegates act as controllers. This pattern provides excellent separation of concerns between UI presentation, business logic, and data access while managing complex inter-\/component communication.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md357}{}\doxysection{\texorpdfstring{Architecture}{Architecture}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md357}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md358}{}\doxysubsection{\texorpdfstring{Core Concepts}{Core Concepts}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md358}
+\doxylink{requirements_The}{The} MVD pattern in Etrek consists of three main layers:\+
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Model}}:\+ Data entities, repositories, and Qt models (QAbstract\+Table\+Model, QStandard\+Item\+Model)
+\item {\bfseries{View}}:\+ Qt Widgets (Pages, Dialogs, Configuration Widgets) that render UI
+\item {\bfseries{Delegate}}:\+ Controller-\/like objects that mediate between View and Model, handling business logic
+\end{DoxyEnumerate}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ User\ Interface\ Layer\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ ┌──────────┐\ \ ┌──────────┐\ \ ┌──────────┐\ \ ┌──────────┐\ \ \ │}
+\DoxyCodeLine{│\ \ │\ \ Page\ \ \ \ │\ \ │\ \ Dialog\ \ │\ \ │\ \ Widget\ \ │\ \ │\ Qt\ Models│\ \ \ │}
+\DoxyCodeLine{│\ \ └────┬─────┘\ \ └────┬─────┘\ \ └────┬─────┘\ \ └────┬─────┘\ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ signals\ \ \ \ \ │\ signals\ \ \ \ \ │\ signals\ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└───────┼─────────────┼─────────────┼─────────────┼───────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Delegate\ Layer\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ ┌──────────────────────────────────────────────────┐\ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ │\ \ Delegate\ (QObject\ +\ IDelegate\ +\ IPageAction)\ \ \ \ │\ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Receives\ signals\ from\ View\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Calls\ repositories\ for\ data\ access\ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Updates\ Qt\ models\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ │\ \ -\/\ Emits\ signals\ to\ other\ delegates\ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ └────────┬────────────────────────────────────┬────┘\ \ \ \ \ \ \ │}
+\DoxyCodeLine{└───────────┼────────────────────────────────────┼────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Model/Data\ Layer\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ ┌──────────┐\ \ ┌──────────┐\ \ ┌──────────┐\ \ ┌──────────┐\ \ \ │}
+\DoxyCodeLine{│\ \ │Repository│\ \ │\ Entities\ │\ \ │\ Qt\ Models│\ \ │\ Services\ │\ \ \ │}
+\DoxyCodeLine{│\ \ └──────────┘\ \ └──────────┘\ \ └──────────┘\ \ └──────────┘\ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md359}{}\doxysection{\texorpdfstring{Delegate Interfaces}{Delegate Interfaces}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md359}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md360}{}\doxysubsection{\texorpdfstring{IDelegate -\/ Base Interface}{IDelegate -\/ Base Interface}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md360}
+{\bfseries{Location}}:\+ {\ttfamily \doxylink{_i_delegate_8h_source}{Common/\+\+Include/\+\+IDelegate.\+h}}
+
+Every delegate implements this interface to provide identification and dependency injection:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_i_delegate}{IDelegate}}\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \string~IDelegate()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Returns\ unique\ name\ for\ identification}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ QString\ \doxymbox{\hyperlink{class_i_delegate_a3311f37c49184175fb981daba0b821d1}{name}}()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Injects\ prerequisite\ delegates\ this\ delegate\ depends\ on}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_delegate_a5267844d782bc5a29bdb7a2f5c629dbd}{attachDelegates}}(\textcolor{keyword}{const}\ QVector<QObject*>\&\ delegates)\ =\ 0;}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{Q\_DECLARE\_INTERFACE(\doxymbox{\hyperlink{class_i_delegate}{IDelegate}},\ \textcolor{stringliteral}{"{}com.etrek.IDelegate/1.0"{}})}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md361}{}\doxysubsection{\texorpdfstring{IPage\+Action -\/ Page Lifecycle Management}{IPage\+Action -\/ Page Lifecycle Management}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md361}
+{\bfseries{Location}}:\+ {\ttfamily \doxylink{_i_page_action_8h_source}{Common/\+\+Include/\+\+IPage\+Action.\+h}}
+
+Delegates managing configuration pages implement this interface:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_i_page_action}{IPageAction}}\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \string~IPageAction()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Apply\ intermediate\ changes\ without\ finalizing}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a503b226f082d06649b2a6d50f640bfd6}{apply}}()\ =\ 0;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Finalize\ and\ persist\ all\ changes}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a3bba6aded34b5f77cdc4543ad1a0054b}{accept}}()\ =\ 0;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Discard\ changes\ and\ revert\ to\ last\ saved\ state}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a1952f133192230834c11116c7d6ac7c9}{reject}}()\ =\ 0;}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{Q\_DECLARE\_INTERFACE(\doxymbox{\hyperlink{class_i_page_action}{IPageAction}},\ \textcolor{stringliteral}{"{}com.etrek.IPageAction/1.0"{}})}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md362}{}\doxysubsection{\texorpdfstring{Delegate\+Parameter -\/ Dependency Container}{Delegate\+Parameter -\/ Dependency Container}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md362}
+{\bfseries{Location}}:\+ {\ttfamily \doxylink{_delegate_parameter_8h_source}{Common/\+\+Include/\+\+Delegate\+Parameter.\+h}}
+
+This structure carries configuration and context to builders:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Database\ connection\ for\ builders\ to\ create\ repositories}}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<Etrek::Core::Data::Model::DatabaseConnectionSetting>\ \doxymbox{\hyperlink{struct_delegate_parameter_a81308f606468ce23f9de299f48cd7b5a}{dbConnection}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Map\ of\ delegate\ names\ to\ instances\ for\ inter-\/delegate\ dependencies}}
+\DoxyCodeLine{\ \ \ \ QMap<QString,\ QWeakPointer<IDelegate>>\ \doxymbox{\hyperlink{struct_delegate_parameter_a524bc9987e83d9263bf9bd3d2812c45a}{delegates}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Context\ manager\ for\ accessing\ session\ and\ workflow\ contexts}}
+\DoxyCodeLine{\ \ \ \ std::weak\_ptr<Etrek::Context::IContextManager>\ \doxymbox{\hyperlink{struct_delegate_parameter_a3bce0f919f824cec133891383be18ba9}{contextManager}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Pre-\/fetched\ session\ context\ (optional,\ for\ convenience)}}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<Etrek::Context::ISessionContext>\ \doxymbox{\hyperlink{struct_delegate_parameter_a780059a9c3acf94eab8a7ae94595414c}{sessionContext}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Pre-\/fetched\ workflow\ context\ relevant\ to\ the\ delegate}}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<Etrek::Context::IWorkflowContext>\ \doxymbox{\hyperlink{struct_delegate_parameter_a39e9c75bfd1fc9f8dbbf708d5e583f12}{workflowContext}};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Key Pattern}}:\+ \doxylink{struct_delegate_parameter}{Delegate\+Parameter} ONLY contains {\ttfamily db\+Connection}, not repositories. Builders create repositories from {\ttfamily db\+Connection} and pass them to delegates.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md363}{}\doxysection{\texorpdfstring{View Components and Delegates}{View Components and Delegates}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md363}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md364}{}\doxysubsection{\texorpdfstring{Application-\/\+Level Components}{Application-\/\+Level Components}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md364}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}View Component  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Purpose  \\
+{\bfseries{\doxylink{class_main_window}{Main\+Window}}}  &Main\+Window\+Delegate  &Main application window; orchestrates page switching  \\
+{\bfseries{\doxylink{class_work_list_page}{Work\+List\+Page}}}  &Work\+List\+Page\+Delegate  &Displays and manages DICOM worklist entries  \\
+{\bfseries{\doxylink{class_system_setting_page}{System\+Setting\+Page}}}  &System\+Setting\+Page\+Delegate  &Composite page with 12 configuration sub-\/pages  \\
+{\bfseries{\doxylink{class_view_selection_dialog}{View\+Selection\+Dialog}}}  &View\+Selection\+Dialog\+Delegate  &Dialog for selecting procedures and radiographic views  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md365}{}\doxysubsection{\texorpdfstring{Configuration Widgets (System Settings Sub-\/\+Pages)}{Configuration Widgets (System Settings Sub-\/\+Pages)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md365}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md366}{}\doxysubsubsection{\texorpdfstring{Device Module}{Device Module}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md366}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Purpose  \\
+\doxylink{class_generator_configuration_widget}{Generator\+Configuration\+Widget}  &Generator\+Configuration\+Delegate  &X-\/ray generator configuration and management  \\
+\doxylink{class_detector_configuration_widget}{Detector\+Configuration\+Widget}  &Detector\+Configuration\+Delegate  &Digital detector setup and calibration  \\
+\doxylink{class_collimator_configuration_widget}{Collimator\+Configuration\+Widget}  &Collimator\+Configuration\+Delegate  &Collimator configuration  \\
+\doxylink{class_dap_configuration_widget}{Dap\+Configuration\+Widget}  &Dap\+Configuration\+Delegate  &Dose-\/\+Area Product (DAP) meter configuration  \\
+\doxylink{class_workflow_configuration_widget}{Workflow\+Configuration\+Widget}  &Workflow\+Configuration\+Delegate  &General equipment and environment settings  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md367}{}\doxysubsubsection{\texorpdfstring{Scan Protocol Module}{Scan Protocol Module}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md367}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Purpose  \\
+\doxylink{class_procedure_configuration_widget}{Procedure\+Configuration\+Widget}  &Procedure\+Configuration\+Delegate  &Define imaging procedures (exams)  \\
+\doxylink{class_view_configuration_widget}{View\+Configuration\+Widget}  &View\+Configuration\+Delegate  &Configure radiological views (AP, LAT, etc.)  \\
+\doxylink{class_technique_configuration_widget}{Technique\+Configuration\+Widget}  &Technique\+Configuration\+Delegate  &Exposure technique parameters (k\+Vp, m\+As, grid)  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md368}{}\doxysubsubsection{\texorpdfstring{Integration \& Connectivity}{Integration \& Connectivity}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md368}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Widget  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Purpose  \\
+\doxylink{class_connection_setup_widget}{Connection\+Setup\+Widget}  &Connection\+Setup\+Delegate  &RIS/\+\+PACS network connectivity  \\
+\doxylink{class_work_list_configuration_widget}{Work\+List\+Configuration\+Widget}  &Work\+List\+Configuration\+Delegate  &DICOM worklist field mapping  \\
+\doxylink{class_pacs_entity_configuration_widget}{Pacs\+Entity\+Configuration\+Widget}  &Pacs\+Entity\+Configuration\+Delegate  &PACS node configuration (archive, MPPS)  \\
+\doxylink{class_image_comment_configuration_widget}{Image\+Comment\+Configuration\+Widget}  &Image\+Comment\+Configuration\+Delegate  &Predefined image comment templates  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md369}{}\doxysection{\texorpdfstring{Signal-\/\+Slot Communication Pattern}{Signal-\/\+Slot Communication Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md369}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md370}{}\doxysubsection{\texorpdfstring{View → Delegate Communication}{View → Delegate Communication}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md370}
+Views emit signals that delegates receive and handle:\+
+
+{\bfseries{Example:\+ \doxylink{class_work_list_page}{Work\+List\+Page} → Work\+List\+Page\+Delegate}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ View\ (WorkListPage.h)}}
+\DoxyCodeLine{\textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_work_list_page}{WorkListPage}}\ :\ \textcolor{keyword}{public}\ QWidget\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{signals:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ addNewPatient();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ updatePatient();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ worklistItemDoubleClicked(\textcolor{keywordtype}{int}\ entryId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ filterDateSpanChanged(\textcolor{keyword}{const}\ DateTimeSpan\&\ date);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ searchName(\textcolor{keyword}{const}\ QString\&\ name);}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Delegate\ (WorkListPageDelegate.h)}}
+\DoxyCodeLine{\textcolor{keyword}{class\ }WorkListPageDelegate\ :\ \textcolor{keyword}{public}\ QObject,\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_delegate}{IDelegate}},\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_page_action}{IPageAction}}\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{\ \ \ \ Q\_INTERFACES(IDelegate\ IPageAction)}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}\ slots:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onAddNewPatient();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onUpdatePatient();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onWorklistItemDoubleClicked(\textcolor{keywordtype}{int}\ entryId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onFilterDateRangeChanged(\textcolor{keyword}{const}\ DateTimeSpan\&\ date);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onSearchName(\textcolor{keyword}{const}\ QString\&\ name);}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Delegate\ implementation\ (WorkListPageDelegate.cpp)}}
+\DoxyCodeLine{WorkListPageDelegate::WorkListPageDelegate(\doxymbox{\hyperlink{class_work_list_page}{WorkListPage}}*\ ui,\ ...)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Wire\ view\ signals\ to\ delegate\ slots}}
+\DoxyCodeLine{\ \ \ \ connect(ui,\ \&WorkListPage::addNewPatient,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&WorkListPageDelegate::onAddNewPatient);}
+\DoxyCodeLine{\ \ \ \ connect(ui,\ \&WorkListPage::worklistItemDoubleClicked,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&WorkListPageDelegate::onWorklistItemDoubleClicked);}
+\DoxyCodeLine{\ \ \ \ connect(ui,\ \&WorkListPage::filterDateSpanChanged,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&WorkListPageDelegate::onFilterDateRangeChanged);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md371}{}\doxysubsection{\texorpdfstring{Delegate → Delegate Communication}{Delegate → Delegate Communication}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md371}
+Delegates can communicate with each other through signals:\+
+
+{\bfseries{Example:\+ Work\+List\+Page\+Delegate → View\+Selection\+Dialog\+Delegate}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPageDelegate::onWorklistItemDoubleClicked(\textcolor{keywordtype}{int}\ entryId)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Set\ workflow\ context}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ entry\ =\ repository-\/>getWorklistEntryById(entryId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ examContext\ =\ std::make\_shared<ExaminationContext>(entry.value);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ ctxMgr\ =\ contextManager.lock())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ctxMgr-\/>setWorkflowContext(\textcolor{stringliteral}{"{}Examination"{}},\ examContext);}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Open\ view\ selection\ dialog}}
+\DoxyCodeLine{\ \ \ \ ViewSelectionDialogBuilder\ builder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [dialog,\ delegate]\ =\ builder.build(m\_params,\ ui,\ \textcolor{keyword}{this});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Connect\ delegate\ signals}}
+\DoxyCodeLine{\ \ \ \ connect(delegate,\ \&ViewSelectionDialogDelegate::examinationReady,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ [\textcolor{keyword}{this}](\textcolor{keywordtype}{int}\ procedureId,\ \textcolor{keyword}{const}\ QVector<int>\&\ viewIds)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ emit\ startExamination(procedureId);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ dialog-\/>exec();}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md372}{}\doxysubsection{\texorpdfstring{Hierarchical Delegate Pattern}{Hierarchical Delegate Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md372}
+Parent delegates manage child delegates through the {\ttfamily attach\+Delegates()} interface:\+
+
+{\bfseries{Example:\+ System\+Setting\+Page\+Delegate Managing 12 Child Delegates}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }SystemSettingPageDelegate\ :\ \textcolor{keyword}{public}\ QObject,\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_delegate}{IDelegate}},\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_page_action}{IPageAction}}\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_delegate_a5267844d782bc5a29bdb7a2f5c629dbd}{attachDelegates}}(\textcolor{keyword}{const}\ QVector<QObject*>\&\ list)\textcolor{keyword}{\ override\ }\{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}*\ obj\ :\ list)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!delegates.contains(obj))\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ delegates.append(QPointer<QObject>(obj));}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a503b226f082d06649b2a6d50f640bfd6}{apply}}()\textcolor{keyword}{\ override\ }\{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Broadcast\ apply\ to\ all\ child\ delegates}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ delegatePtr\ :\ delegates)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!delegatePtr)\ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}*\ action\ =\ qobject\_cast<IPageAction*>(delegatePtr.data()))\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ action-\/>apply();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a3bba6aded34b5f77cdc4543ad1a0054b}{accept}}()\textcolor{keyword}{\ override\ }\{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Finalize\ all\ child\ delegates}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\&\ delegatePtr\ :\ delegates)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}*\ action\ =\ qobject\_cast<IPageAction*>(delegatePtr.data()))\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ action-\/>accept();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ emit\ closeSettings();}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ QVector<QPointer<QObject>>\ delegates;\ \ \textcolor{comment}{//\ Child\ delegates}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md373}{}\doxysection{\texorpdfstring{Models in MVD Pattern}{Models in MVD Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md373}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md374}{}\doxysubsection{\texorpdfstring{Qt Standard Models}{Qt Standard Models}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md374}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md375}{}\doxysubsubsection{\texorpdfstring{QStandard\+Item\+Model}{QStandard\+Item\+Model}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md375}
+Used for in-\/memory tabular data:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ In\ WorkListPageDelegate}}
+\DoxyCodeLine{baseModel\ =\ \textcolor{keyword}{new}\ QStandardItemModel(\textcolor{keyword}{this});}
+\DoxyCodeLine{baseModel-\/>setColumnCount(10);}
+\DoxyCodeLine{baseModel-\/>setHorizontalHeaderLabels(\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}Patient\ Name"{}},\ \textcolor{stringliteral}{"{}Patient\ ID"{}},\ \textcolor{stringliteral}{"{}Birth\ Date"{}},\ \textcolor{stringliteral}{"{}Gender"{}},}
+\DoxyCodeLine{\ \ \ \ \textcolor{stringliteral}{"{}Accession\ No"{}},\ \textcolor{stringliteral}{"{}Study"{}},\ \textcolor{stringliteral}{"{}Body\ Part"{}},\ \textcolor{stringliteral}{"{}Source"{}},\ \textcolor{stringliteral}{"{}Created"{}},\ \textcolor{stringliteral}{"{}Status"{}}}
+\DoxyCodeLine{\});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Populate\ model}}
+\DoxyCodeLine{QList<QStandardItem*>\ row\ =\ createRowForEntry(worklistEntry);}
+\DoxyCodeLine{baseModel-\/>appendRow(row);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Connect\ to\ view}}
+\DoxyCodeLine{proxyModel-\/>setSourceModel(baseModel);}
+\DoxyCodeLine{ui-\/>setProxyModel(proxyModel);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md376}{}\doxysubsubsection{\texorpdfstring{QSort\+Filter\+Proxy\+Model (Custom)}{QSort\+Filter\+Proxy\+Model (Custom)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md376}
+{\bfseries{Worklist\+Filter\+Proxy\+Model}} provides multi-\/criteria filtering:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }WorklistFilterProxyModel\ :\ \textcolor{keyword}{public}\ QSortFilterProxyModel\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setDateRangeFilter(\textcolor{keyword}{const}\ QDate\&\ from,\ \textcolor{keyword}{const}\ QDate\&\ to);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setSourceFilter(\textcolor{keyword}{const}\ QString\&\ source);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setSearchName(\textcolor{keyword}{const}\ QString\&\ name);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setSearchPatientId(\textcolor{keyword}{const}\ QString\&\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setSearchAccessionNo(\textcolor{keyword}{const}\ QString\&\ accNo);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{protected}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ filterAcceptsRow(\textcolor{keywordtype}{int}\ sourceRow,\ \textcolor{keyword}{const}\ QModelIndex\&\ sourceParent)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md377}{}\doxysubsection{\texorpdfstring{Custom Table Models}{Custom Table Models}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md377}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md378}{}\doxysubsubsection{\texorpdfstring{Generator\+Table\+Model}{Generator\+Table\+Model}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md378}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_generator_table_model}{GeneratorTableModel}}\ :\ \textcolor{keyword}{public}\ QAbstractTableModel\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{enum}\ Columns\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColManufacturer\ =\ 0,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColIsActive,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColModel,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColPartNumber,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColSerial,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColTypeNumber,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColTechSpecs,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColOutput1,\ ColOutput1Active,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColOutput2,\ ColOutput2Active,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColMfgDate,\ ColInstDate,\ ColCalibDate,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ColCount}
+\DoxyCodeLine{\ \ \ \ \};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setDataSource(\textcolor{keyword}{const}\ QVector<Generator>\&\ generators);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ rowCount(\textcolor{keyword}{const}\ QModelIndex\&\ parent\ =\ QModelIndex())\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ columnCount(\textcolor{keyword}{const}\ QModelIndex\&\ parent\ =\ QModelIndex())\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{\ \ \ \ QVariant\ data(\textcolor{keyword}{const}\ QModelIndex\&\ index,\ \textcolor{keywordtype}{int}\ role\ =\ Qt::DisplayRole)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ setData(\textcolor{keyword}{const}\ QModelIndex\&\ index,\ \textcolor{keyword}{const}\ QVariant\&\ value,\ \textcolor{keywordtype}{int}\ role)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md379}{}\doxysubsection{\texorpdfstring{Domain Models}{Domain Models}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md379}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md380}{}\doxysubsubsection{\texorpdfstring{Patient\+Model (Business Logic Model)}{Patient\+Model (Business Logic Model)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md380}
+Converts DICOM worklist entries to application-\/specific patient representation:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }PatientModel\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ QString\ firstName,\ middleName,\ lastName;}
+\DoxyCodeLine{\ \ \ \ QString\ patientId;}
+\DoxyCodeLine{\ \ \ \ QDate\ dateOfBirth;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ age;}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{_scan_protocol_util_8h_a9e76c5bcbddb775a19bafedd1c62f0a3}{Gender}}\ gender;}
+\DoxyCodeLine{\ \ \ \ QString\ referringPhysician;}
+\DoxyCodeLine{\ \ \ \ QString\ patientLocation;}
+\DoxyCodeLine{\ \ \ \ QString\ admissionNumber;}
+\DoxyCodeLine{\ \ \ \ QString\ accessionNumber;}
+\DoxyCodeLine{\ \ \ \ QList<BodyPartSelection>\ selectedBodyParts;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isValid()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{static}\ PatientModel\ fromWorklistEntry(\textcolor{keyword}{const}\ WorklistEntry\&\ entry);}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md381}{}\doxysection{\texorpdfstring{Composite Pattern:\+ System\+Setting\+Page}{Composite Pattern:\+ System\+Setting\+Page}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md381}
+\doxylink{requirements_The}{The} \doxylink{class_system_setting_page}{System\+Setting\+Page} demonstrates hierarchical composition:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{SystemSettingPage\ (QWidget)}
+\DoxyCodeLine{│}
+\DoxyCodeLine{├─\ SystemSettingPageDelegate\ (QObject\ +\ IDelegate\ +\ IPageAction)}
+\DoxyCodeLine{│\ \ \ │}
+\DoxyCodeLine{│\ \ \ ├─\ WorkflowConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ GeneratorConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ DetectorConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ CollimatorConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ DapConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ ProcedureConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ ViewConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ TechniqueConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ WorkListConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ PacsEntityConfigurationDelegate}
+\DoxyCodeLine{│\ \ \ ├─\ ConnectionSetupDelegate}
+\DoxyCodeLine{│\ \ \ └─\ ImageCommentConfigurationDelegate}
+\DoxyCodeLine{│}
+\DoxyCodeLine{└─\ Page\ Signals:\ saveSettings,\ applySettings,\ closeSettings}
+
+\end{DoxyCode}
+
+
+{\bfseries{Event Propagation}}:\+ When user clicks "{}\+Apply"{}:\+
+
+
+\begin{DoxyEnumerate}
+\item \doxylink{class_system_setting_page}{System\+Setting\+Page} emits {\ttfamily apply\+Settings} signal
+\item System\+Setting\+Page\+Delegate receives signal via {\ttfamily apply()} slot
+\item Parent delegate iterates through all 12 child delegates
+\item Each child\textquotesingle{}s {\ttfamily apply()} method is called (polymorphic dispatch)
+\item Each child handles its own state persistence
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md382}{}\doxysection{\texorpdfstring{Repository Injection Pattern}{Repository Injection Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md382}
+Delegates receive repositories (not database connections) for data access:\+
+
+{\bfseries{Example:\+ Work\+List\+Page\+Delegate}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }WorkListPageDelegate\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ WorkListPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ WorkListPage*\ ui,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<WorklistRepository>\ repository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<ScanProtocolRepository>\ scanRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DicomRepository>\ dicomRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DicomTagRepository>\ dicomTagRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DatabaseConnectionSetting>\ dbConnection,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::weak\_ptr<IContextManager>\ contextManager,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QObject*\ parent\ =\ \textcolor{keyword}{nullptr}}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ WorkListPage*\ ui;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<WorklistRepository>\ repository;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<ScanProtocolRepository>\ scanRepository;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DicomRepository>\ dicomRepository;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DicomTagRepository>\ dicomTagRepository;}
+\DoxyCodeLine{\ \ \ \ std::weak\_ptr<IContextManager>\ contextManager;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Key Architectural Rule}}:\+ Delegates NEVER receive {\ttfamily db\+Connection} directly. Builders create repositories from {\ttfamily db\+Connection} and inject them into delegates.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md383}{}\doxysection{\texorpdfstring{Lazy Construction Pattern}{Lazy Construction Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md383}
+Pages are built on-\/demand when user navigates to them:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ MainWindowDelegate::onLoadSystemPageAction()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Clean\ up\ existing\ page}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (m\_systemSettingPageDelegate)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_systemSettingPageDelegate-\/>deleteLater();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ m\_systemSettingPageDelegate\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Build\ new\ page\ using\ builder}}
+\DoxyCodeLine{\ \ \ \ SystemSettingPageBuilder\ builder;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ [page,\ delegate]\ =\ builder.build(m\_params,\ \textcolor{keyword}{nullptr},\ \textcolor{keyword}{this});}
+\DoxyCodeLine{\ \ \ \ m\_systemSettingPageDelegate\ =\ delegate;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Wire\ delegate\ signals}}
+\DoxyCodeLine{\ \ \ \ connect(delegate,\ \&SystemSettingPageDelegate::closeSettings,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ [page,\ \textcolor{keyword}{this}]()\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_mainWindow)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_mainWindow-\/>closePage();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Display\ page}}
+\DoxyCodeLine{\ \ \ \ m\_mainWindow-\/>loadPage(page);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md384}{}\doxysection{\texorpdfstring{Complete Example:\+ Work\+List\+Page\+Delegate}{Complete Example:\+ Work\+List\+Page\+Delegate}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md384}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md385}{}\doxysubsection{\texorpdfstring{View Definition (Work\+List\+Page.\+h)}{View Definition (Work\+List\+Page.\+h)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md385}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_work_list_page}{WorkListPage}}\ :\ \textcolor{keyword}{public}\ QWidget\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{explicit}\ WorkListPage(std::shared\_ptr<IWorklistRepository>\ repository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QWidget*\ parent\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ setProxyModel(WorklistFilterProxyModel*\ model);}
+\DoxyCodeLine{}
+\DoxyCodeLine{signals:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ addNewPatient();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ updatePatient();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ worklistItemDoubleClicked(\textcolor{keywordtype}{int}\ entryId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ filterDateSpanChanged(\textcolor{keyword}{const}\ DateTimeSpan\&\ date);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ filterSourceChanged(\textcolor{keyword}{const}\ QString\&\ source);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ clearAllFilters();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ searchName(\textcolor{keyword}{const}\ QString\&\ name);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ Ui::WorkListPage*\ ui;}
+\DoxyCodeLine{\ \ \ \ WorklistFilterProxyModel*\ proxyModel;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md386}{}\doxysubsection{\texorpdfstring{Delegate Definition (Work\+List\+Page\+Delegate.\+h)}{Delegate Definition (Work\+List\+Page\+Delegate.\+h)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md386}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }WorkListPageDelegate\ :\ \textcolor{keyword}{public}\ QObject,\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_delegate}{IDelegate}},\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_page_action}{IPageAction}}\ \{}
+\DoxyCodeLine{\ \ \ \ Q\_OBJECT}
+\DoxyCodeLine{\ \ \ \ Q\_INTERFACES(IDelegate\ IPageAction)}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{explicit}\ WorkListPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ WorkListPage*\ ui,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<WorklistRepository>\ repository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<ScanProtocolRepository>\ scanRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DicomRepository>\ dicomRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DicomTagRepository>\ dicomTagRepository,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::shared\_ptr<DatabaseConnectionSetting>\ dbConnection,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ std::weak\_ptr<IContextManager>\ contextManager,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QObject*\ parent\ =\ \textcolor{keyword}{nullptr}}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ QString\ \doxymbox{\hyperlink{class_i_delegate_a3311f37c49184175fb981daba0b821d1}{name}}()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}WorkListPageDelegate"{}};\ \}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_delegate_a5267844d782bc5a29bdb7a2f5c629dbd}{attachDelegates}}(\textcolor{keyword}{const}\ QVector<QObject*>\&\ delegates)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{}
+\DoxyCodeLine{signals:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ closeWorklist();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ startExamination(\textcolor{keywordtype}{int}\ entryId);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}\ slots:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onWorklistItemDoubleClicked(\textcolor{keywordtype}{int}\ entryId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onUpdatePatient();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onAddNewPatient();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onFilterDateRangeChanged(\textcolor{keyword}{const}\ DateTimeSpan\&\ date);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onSourceChanged(\textcolor{keyword}{const}\ QString\&\ source);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onClearFilters();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ onSearchName(\textcolor{keyword}{const}\ QString\&\ name);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ IPageAction\ implementation}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a503b226f082d06649b2a6d50f640bfd6}{apply}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a3bba6aded34b5f77cdc4543ad1a0054b}{accept}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_i_page_action_a1952f133192230834c11116c7d6ac7c9}{reject}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ WorkListPage*\ ui;}
+\DoxyCodeLine{\ \ \ \ QPointer<QStandardItemModel>\ baseModel;}
+\DoxyCodeLine{\ \ \ \ QPointer<WorklistFilterProxyModel>\ proxyModel;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<WorklistRepository>\ repository;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<ScanProtocolRepository>\ scanRepository;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DicomRepository>\ dicomRepository;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DicomTagRepository>\ dicomTagRepository;}
+\DoxyCodeLine{\ \ \ \ std::weak\_ptr<IContextManager>\ contextManager;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md387}{}\doxysubsection{\texorpdfstring{Delegate Implementation (Work\+List\+Page\+Delegate.\+cpp)}{Delegate Implementation (Work\+List\+Page\+Delegate.\+cpp)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md387}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{WorkListPageDelegate::WorkListPageDelegate(}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_work_list_page}{WorkListPage}}*\ ui,}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<WorklistRepository>\ repository,}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<ScanProtocolRepository>\ scanRepository,}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DicomRepository>\ dicomRepository,}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DicomTagRepository>\ dicomTagRepository,}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DatabaseConnectionSetting>\ dbConnection,}
+\DoxyCodeLine{\ \ \ \ std::weak\_ptr<IContextManager>\ contextManager,}
+\DoxyCodeLine{\ \ \ \ QObject*\ parent)}
+\DoxyCodeLine{\ \ \ \ :\ QObject(parent),}
+\DoxyCodeLine{\ \ \ \ \ \ ui(ui),}
+\DoxyCodeLine{\ \ \ \ \ \ repository(repository),}
+\DoxyCodeLine{\ \ \ \ \ \ scanRepository(scanRepository),}
+\DoxyCodeLine{\ \ \ \ \ \ dicomRepository(dicomRepository),}
+\DoxyCodeLine{\ \ \ \ \ \ dicomTagRepository(dicomTagRepository),}
+\DoxyCodeLine{\ \ \ \ \ \ contextManager(contextManager)}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Create\ models}}
+\DoxyCodeLine{\ \ \ \ baseModel\ =\ \textcolor{keyword}{new}\ QStandardItemModel(\textcolor{keyword}{this});}
+\DoxyCodeLine{\ \ \ \ proxyModel\ =\ \textcolor{keyword}{new}\ WorklistFilterProxyModel(\textcolor{keyword}{this});}
+\DoxyCodeLine{\ \ \ \ proxyModel-\/>setSourceModel(baseModel);}
+\DoxyCodeLine{\ \ \ \ ui-\/>setProxyModel(proxyModel);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Wire\ view\ signals\ to\ delegate\ slots}}
+\DoxyCodeLine{\ \ \ \ connect(ui,\ \&WorkListPage::addNewPatient,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&WorkListPageDelegate::onAddNewPatient);}
+\DoxyCodeLine{\ \ \ \ connect(ui,\ \&WorkListPage::worklistItemDoubleClicked,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&WorkListPageDelegate::onWorklistItemDoubleClicked);}
+\DoxyCodeLine{\ \ \ \ connect(ui,\ \&WorkListPage::filterDateSpanChanged,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&WorkListPageDelegate::onFilterDateRangeChanged);}
+\DoxyCodeLine{\ \ \ \ connect(ui,\ \&WorkListPage::searchName,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{this},\ \&WorkListPageDelegate::onSearchName);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Load\ initial\ data}}
+\DoxyCodeLine{\ \ \ \ loadWorklistData();}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPageDelegate::onAddNewPatient()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ regionsResult\ =\ scanRepository-\/>getAllAnatomicRegions();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ partsResult\ =\ scanRepository-\/>getAllBodyParts();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \doxymbox{\hyperlink{class_add_patient_dialog}{AddPatientDialog}}\ dlg(regionsResult.value,\ partsResult.value,\ ui);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (dlg.exec()\ ==\ QDialog::Accepted)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ patientModel\ =\ dlg.getPatientModel();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ worklist\ entry\ from\ patient\ model}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ WorklistEntry\ entry\ =\ createWorklistEntry(patientModel);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ result\ =\ repository-\/>createWorklistEntry(entry);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (result.isSuccess)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Add\ to\ model}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ QList<QStandardItem*>\ row\ =\ createRowForEntry(entry);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ baseModel-\/>appendRow(row);}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPageDelegate::onWorklistItemDoubleClicked(\textcolor{keywordtype}{int}\ entryId)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Retrieve\ worklist\ entry}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ entryResult\ =\ repository-\/>getWorklistEntryById(entryId);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (!entryResult.isSuccess)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Set\ examination\ context}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ examContext\ =\ std::make\_shared<ExaminationContext>(entryResult.value);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ ctxMgr\ =\ contextManager.lock())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ctxMgr-\/>setWorkflowContext(\textcolor{stringliteral}{"{}Examination"{}},\ examContext);}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Signal\ to\ start\ examination}}
+\DoxyCodeLine{\ \ \ \ emit\ startExamination(entryId);}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPageDelegate::onFilterDateRangeChanged(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_date_time_span}{DateTimeSpan}}\&\ date)\ \{}
+\DoxyCodeLine{\ \ \ \ proxyModel-\/>setDateRangeFilter(date.fromDate,\ date.toDate);}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPageDelegate::apply()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Apply\ intermediate\ changes\ (if\ any)}}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPageDelegate::accept()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Finalize\ changes\ (if\ any)}}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ WorkListPageDelegate::reject()\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Discard\ changes\ (if\ any)}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md388}{}\doxysection{\texorpdfstring{Best Practices}{Best Practices}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md388}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md389}{}\doxysubsection{\texorpdfstring{1. Clear Separation of Concerns}{1. Clear Separation of Concerns}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md389}
+
+\begin{DoxyItemize}
+\item {\bfseries{Views}}:\+ Only UI rendering, emit signals for user actions
+\item {\bfseries{Delegates}}:\+ Business logic, repository calls, model updates
+\item {\bfseries{Models}}:\+ Data representation and storage
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md390}{}\doxysubsection{\texorpdfstring{2. Signal-\/\+Slot for Communication}{2. Signal-\/\+Slot for Communication}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md390}
+
+\begin{DoxyItemize}
+\item Use Qt\textquotesingle{}s signal-\/slot mechanism for loose coupling
+\item Views signal user actions, delegates handle them
+\item Delegates signal workflow events, other delegates respond
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md391}{}\doxysubsection{\texorpdfstring{3. Repository Abstraction}{3. Repository Abstraction}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md391}
+
+\begin{DoxyItemize}
+\item Delegates interact with repositories, not raw database connections
+\item Repositories encapsulate SQL queries and data access logic
+\item Use interfaces ({\ttfamily IWorklist\+Repository}) for testability
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md392}{}\doxysubsection{\texorpdfstring{4. Qt Parent-\/\+Child Ownership}{4. Qt Parent-\/\+Child Ownership}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md392}
+
+\begin{DoxyItemize}
+\item Delegates are QObjects with parent ownership
+\item Qt automatically destroys children when parent is destroyed
+\item No manual memory management needed for most objects
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md393}{}\doxysubsection{\texorpdfstring{5. Weak Pointers for Delegates}{5. Weak Pointers for Delegates}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md393}
+
+\begin{DoxyItemize}
+\item Use {\ttfamily QWeak\+Pointer} for delegate references to avoid circular dependencies
+\item Context manager and inter-\/delegate references use weak pointers
+\item Check validity before dereferencing:\+ {\ttfamily if (auto ptr = weak\+Ptr.\+lock())}
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md394}{}\doxysubsection{\texorpdfstring{6. Context Injection}{6. Context Injection}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md394}
+
+\begin{DoxyItemize}
+\item Use {\ttfamily \doxylink{struct_delegate_parameter}{Delegate\+Parameter}} to inject context, database connection, and other dependencies
+\item Context manager provides session and workflow context
+\item Pre-\/fetch frequently used context for performance
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md395}{}\doxysection{\texorpdfstring{Summary}{Summary}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_203-_model-_view-_delegate-_pattern_autotoc_md395}
+\doxylink{requirements_The}{The} Model-\/\+View-\/\+Delegate pattern in Etrek provides:\+
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Clear separation}}:\+ UI, business logic, and data access are distinct
+\item {\bfseries{Loose coupling}}:\+ Signal-\/slot communication, interface-\/based design
+\item {\bfseries{Reusability}}:\+ Delegates can be composed hierarchically
+\item {\bfseries{Testability}}:\+ Repository injection enables unit testing
+\item {\bfseries{Qt integration}}:\+ Leverages Qt\textquotesingle{}s parent-\/child ownership and meta-\/object system
+\item {\bfseries{Scalability}}:\+ Easily add new pages, widgets, and delegates following the established pattern
+\end{DoxyItemize}
+
+This pattern is consistently applied across all 15+ pages, 12+ configuration widgets, and their corresponding delegates throughout the application.
+
+\DoxyHorRuler{0}
+
+
+{\bfseries{See Also}}:\+
+\begin{DoxyItemize}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_204-_builder-_pattern}{Builder Pattern Documentation}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_201-_architecture-_overview}{Architecture Overview}{0}
+\item \doxysectlink{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_206-_application-_workflows}{Workflow Documentation}{0} 
+\end{DoxyItemize}

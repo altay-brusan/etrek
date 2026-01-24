@@ -1,0 +1,26 @@
+var class_d_r_t_fixation_device_sequence_1_1_item =
+[
+    [ "Item", "class_d_r_t_fixation_device_sequence_1_1_item.html#ab25fd08023dc4646829edb9f2e45fd10", null ],
+    [ "Item", "class_d_r_t_fixation_device_sequence_1_1_item.html#a6d33168202e1ce83c281207c3269efb3", null ],
+    [ "~Item", "class_d_r_t_fixation_device_sequence_1_1_item.html#a71fe580d4b3b4596613f22a5a662ca4b", null ],
+    [ "clear", "class_d_r_t_fixation_device_sequence_1_1_item.html#af2eefa62d7bd116cb7986650e3d40790", null ],
+    [ "getAccessoryCode", "class_d_r_t_fixation_device_sequence_1_1_item.html#ac066e31e01f5b123b52843324b83d554", null ],
+    [ "getFixationDeviceDescription", "class_d_r_t_fixation_device_sequence_1_1_item.html#a43bf09033074e289cea7ac41a2e35188", null ],
+    [ "getFixationDeviceLabel", "class_d_r_t_fixation_device_sequence_1_1_item.html#a06dda691cb48e24075380948b999acac", null ],
+    [ "getFixationDevicePitchAngle", "class_d_r_t_fixation_device_sequence_1_1_item.html#af07f115418e92c9af9800daa351cc4cc", null ],
+    [ "getFixationDevicePosition", "class_d_r_t_fixation_device_sequence_1_1_item.html#a93d474a09a70b37d04547f66b29dc070", null ],
+    [ "getFixationDeviceRollAngle", "class_d_r_t_fixation_device_sequence_1_1_item.html#aca4d568f0d5dd322c2ee34ba501f318f", null ],
+    [ "getFixationDeviceType", "class_d_r_t_fixation_device_sequence_1_1_item.html#a2a39bb88457b72dde9a6a66f3c82157e", null ],
+    [ "isEmpty", "class_d_r_t_fixation_device_sequence_1_1_item.html#a182e8964d54a2f075859bdda7e4fea54", null ],
+    [ "isValid", "class_d_r_t_fixation_device_sequence_1_1_item.html#afc0671dcaa43d2bc2652fee435bd2e3a", null ],
+    [ "operator=", "class_d_r_t_fixation_device_sequence_1_1_item.html#a252393d8be504a21eb7093b1e3a06ff1", null ],
+    [ "read", "class_d_r_t_fixation_device_sequence_1_1_item.html#ae1879a76a8e17793095ea6a6f4a3a37f", null ],
+    [ "setAccessoryCode", "class_d_r_t_fixation_device_sequence_1_1_item.html#a3e958cd49e68bcd84c627230cd6fd084", null ],
+    [ "setFixationDeviceDescription", "class_d_r_t_fixation_device_sequence_1_1_item.html#a37a586d4ae5b4759d93050314f868213", null ],
+    [ "setFixationDeviceLabel", "class_d_r_t_fixation_device_sequence_1_1_item.html#a3c93b7fd7c54b3908b9cb44c392ffab8", null ],
+    [ "setFixationDevicePitchAngle", "class_d_r_t_fixation_device_sequence_1_1_item.html#a531ee4a42680c2e2196569b1e9a5f408", null ],
+    [ "setFixationDevicePosition", "class_d_r_t_fixation_device_sequence_1_1_item.html#a878ae7b31fdcba7b5c94e48288eb2599", null ],
+    [ "setFixationDeviceRollAngle", "class_d_r_t_fixation_device_sequence_1_1_item.html#a348a7aaec7cd9df67757be2a698bba99", null ],
+    [ "setFixationDeviceType", "class_d_r_t_fixation_device_sequence_1_1_item.html#ab9ce83f414c0f18ae7130f7af53c22c7", null ],
+    [ "write", "class_d_r_t_fixation_device_sequence_1_1_item.html#a2cc75a898e6e767ea3d9bea9e27693bc", null ]
+];

@@ -1,0 +1,240 @@
+\chapter{Context Management System }
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager}{}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager}\index{Context Management System@{Context Management System}}
+\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md586}%
+\Hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md586}%
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md587}{}\doxysection{\texorpdfstring{Overview}{Overview}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md587}
+\doxylink{requirements_The}{The} Context Management system provides a centralized mechanism for tracking and sharing context information across the Etrek application. It enables decoupled communication between different parts of the application without creating tight dependencies.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md588}{}\doxysection{\texorpdfstring{Architecture}{Architecture}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md588}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md589}{}\doxysubsection{\texorpdfstring{Context Types}{Context Types}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md589}
+\doxylink{requirements_The}{The} system supports two main categories of context:\+
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Session Context}} ({\ttfamily ISession\+Context})
+\begin{DoxyItemize}
+\item Persists for the duration of a user session
+\item Contains:\+ logged-\/in user, sign-\/in time, workstation name, institution info
+\item Created after successful authentication
+\end{DoxyItemize}
+\item {\bfseries{Workflow Context}} ({\ttfamily IWorkflow\+Context})
+\begin{DoxyItemize}
+\item Transient state for specific workflows
+\item Example:\+ {\ttfamily Examination\+Context} for Worklist → Examination flow
+\item Created when user initiates a workflow (e.\+g., double-\/clicks worklist item)
+\end{DoxyItemize}
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md590}{}\doxysubsection{\texorpdfstring{Module Structure}{Module Structure}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md590}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{Common/Include/Context/}
+\DoxyCodeLine{├──\ IContext.h\ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Base\ interface\ for\ all\ contexts}
+\DoxyCodeLine{├──\ ISessionContext.h\ \ \ \ \ \ \ \#\ Session\ context\ interface}
+\DoxyCodeLine{├──\ IWorkflowContext.h\ \ \ \ \ \ \#\ Workflow\ context\ base\ interface}
+\DoxyCodeLine{├──\ IExaminationContext.h\ \ \ \#\ Examination\ workflow\ interface}
+\DoxyCodeLine{└──\ IContextManager.h\ \ \ \ \ \ \ \#\ Context\ manager\ interface}
+\DoxyCodeLine{}
+\DoxyCodeLine{Core/Context/}
+\DoxyCodeLine{├──\ ContextManager.h/.cpp\ \ \ \#\ Concrete\ context\ manager}
+\DoxyCodeLine{├──\ SessionContext.h/.cpp\ \ \ \#\ Session\ context\ implementation}
+\DoxyCodeLine{└──\ ExaminationContext.h/.cpp\ \#\ Examination\ context\ implementation}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md591}{}\doxysubsection{\texorpdfstring{Dependency Flow}{Dependency Flow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md591}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{Common\ (interfaces\ only,\ no\ implementation)}
+\DoxyCodeLine{\ \ \ \ ↑}
+\DoxyCodeLine{Core\ (ContextManager,\ concrete\ contexts)}
+\DoxyCodeLine{\ \ \ \ ↑}
+\DoxyCodeLine{Application/Worklist/View\ (uses\ context\ via\ injection)}
+
+\end{DoxyCode}
+
+
+This ensures no circular dependencies -\/ lower-\/level modules depend on interfaces in Common, while Core provides implementations. Both Application and Worklist can depend on Core without creating circular dependencies.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md592}{}\doxysection{\texorpdfstring{Usage}{Usage}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md592}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md593}{}\doxysubsection{\texorpdfstring{1. Session Context -\/ After Login}{1. Session Context -\/ After Login}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md593}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ In\ ApplicationService::authenticateUser()}}
+\DoxyCodeLine{\textcolor{keywordflow}{if}\ (authResult.isSuccess\ \&\&\ m\_contextManager)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ sessionContext\ =\ std::make\_shared<SessionContext>(}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ authResult.value,\ \ \textcolor{comment}{//\ User}}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QString()\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Workstation\ (auto-\/detected)}}
+\DoxyCodeLine{\ \ \ \ );}
+\DoxyCodeLine{\ \ \ \ m\_contextManager-\/>setSessionContext(sessionContext);}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md594}{}\doxysubsection{\texorpdfstring{2. Workflow Context -\/ Worklist Selection}{2. Workflow Context -\/ Worklist Selection}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md594}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ In\ WorkListPageDelegate::onWorklistItemDoubleClicked()}}
+\DoxyCodeLine{\textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ ctxMgr\ =\ contextManager.lock())\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{auto}\ examContext\ =\ std::make\_shared<ExaminationContext>(selectedEntry);}
+\DoxyCodeLine{\ \ \ \ ctxMgr-\/>setWorkflowContext(\textcolor{stringliteral}{"{}Examination"{}},\ examContext);}
+\DoxyCodeLine{\}}
+\DoxyCodeLine{emit\ startExamination(entryId);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md595}{}\doxysubsection{\texorpdfstring{3. Consuming Context in Delegates}{3. Consuming Context in Delegates}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md595}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ In\ a\ delegate\ that\ needs\ examination\ context}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ ExaminationDelegate::initialize(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\&\ params)\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Option\ 1:\ Use\ pre-\/fetched\ context\ from\ params}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ examCtx\ =\ std::dynamic\_pointer\_cast<IExaminationContext>(params.workflowContext))\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QString\ patientName\ =\ examCtx-\/>patientName();}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ QString\ bodyPart\ =\ examCtx-\/>bodyPartExamined();}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Option\ 2:\ Access\ via\ ContextManager}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{if}\ (\textcolor{keyword}{auto}\ ctxMgr\ =\ params.contextManager.lock())\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ ctx\ =\ ctxMgr-\/>workflowContext(\textcolor{stringliteral}{"{}Examination"{}});}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{comment}{//\ ...}}
+\DoxyCodeLine{\ \ \ \ \}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md596}{}\doxysubsection{\texorpdfstring{4. Builder Pattern Integration}{4. Builder Pattern Integration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md596}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ In\ a\ builder\ class}}
+\DoxyCodeLine{\doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\ params;}
+\DoxyCodeLine{params.\doxymbox{\hyperlink{struct_delegate_parameter_a81308f606468ce23f9de299f48cd7b5a}{dbConnection}}\ =\ databaseConnection;}
+\DoxyCodeLine{params.contextManager\ =\ contextManager;}
+\DoxyCodeLine{params.sessionContext\ =\ contextManager-\/>sessionContext();}
+\DoxyCodeLine{params.workflowContext\ =\ contextManager-\/>workflowContext(\textcolor{stringliteral}{"{}Examination"{}});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{auto}\ [widget,\ delegate]\ =\ builder.build(params,\ parentWidget,\ parentDelegate);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md597}{}\doxysection{\texorpdfstring{Delegate\+Parameter Extension}{Delegate\+Parameter Extension}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md597}
+\doxylink{requirements_The}{The} {\ttfamily \doxylink{struct_delegate_parameter}{Delegate\+Parameter}} struct has been extended to carry context:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_delegate_parameter}{DelegateParameter}}\ \{}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DatabaseConnectionSetting>\ \doxymbox{\hyperlink{struct_delegate_parameter_a81308f606468ce23f9de299f48cd7b5a}{dbConnection}};}
+\DoxyCodeLine{\ \ \ \ QMap<QString,\ QWeakPointer<IDelegate>>\ \doxymbox{\hyperlink{struct_delegate_parameter_a524bc9987e83d9263bf9bd3d2812c45a}{delegates}};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Context\ additions}}
+\DoxyCodeLine{\ \ \ \ std::weak\_ptr<IContextManager>\ \doxymbox{\hyperlink{struct_delegate_parameter_a3bce0f919f824cec133891383be18ba9}{contextManager}};}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<ISessionContext>\ \doxymbox{\hyperlink{struct_delegate_parameter_a780059a9c3acf94eab8a7ae94595414c}{sessionContext}};}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<IWorkflowContext>\ \doxymbox{\hyperlink{struct_delegate_parameter_a39e9c75bfd1fc9f8dbbf708d5e583f12}{workflowContext}};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md598}{}\doxysection{\texorpdfstring{Sequence Diagram:\+ Worklist → Examination}{Sequence Diagram:\+ Worklist → Examination}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md598}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{User\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ WorkListPage\ \ \ \ WorkListPageDelegate\ \ \ \ ContextManager\ \ \ \ ExaminationBuilder}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{\ \ |-\/-\/double-\/click-\/-\/-\/-\/-\/-\/-\/>|\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |-\/-\/itemDoubleClicked-\/-\/>|\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |-\/-\/setWorkflowContext-\/-\/>|\ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |<-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/|\ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |-\/-\/startExamination-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/>|}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |<-\/-\/getWorkflowCtx-\/|}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |-\/-\/return\ ctx-\/-\/-\/-\/-\/>|}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |}
+\DoxyCodeLine{\ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ |\ \ \ build\ with\ ctx\ |}
+\DoxyCodeLine{\ \ |<-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/Examination\ Page\ Opens-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/|-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/|}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md599}{}\doxysection{\texorpdfstring{API Reference}{API Reference}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md599}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md600}{}\doxysubsection{\texorpdfstring{IContext\+Manager}{IContext\+Manager}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md600}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Method  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\ttfamily set\+Session\+Context(ctx)}  &Store session context  \\
+{\ttfamily session\+Context()}  &Get session context  \\
+{\ttfamily clear\+Session\+Context()}  &Clear on logout  \\
+{\ttfamily set\+Workflow\+Context(key, ctx)}  &Store workflow context by key  \\
+{\ttfamily workflow\+Context(key)}  &Get workflow context by key  \\
+{\ttfamily clear\+Workflow\+Context(key)}  &Clear specific workflow  \\
+{\ttfamily clear\+All\+Workflow\+Contexts()}  &Clear all workflows  \\
+{\ttfamily has\+Session\+Context()}  &Check if session exists  \\
+{\ttfamily has\+Workflow\+Context(key)}  &Check if workflow exists  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md601}{}\doxysubsection{\texorpdfstring{ISession\+Context}{ISession\+Context}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md601}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Method  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\ttfamily current\+User()}  &Get logged-\/in user  \\
+{\ttfamily username()}  &Get username string  \\
+{\ttfamily user\+Full\+Name()}  &Get "{}\+Name Surname"{}  \\
+{\ttfamily sign\+In\+Time()}  &Get login timestamp  \\
+{\ttfamily workstation\+Name()}  &Get machine name  \\
+{\ttfamily institution()}  &Get institution entity  \\
+{\ttfamily institution\+Name()}  &Get institution name  \\
+{\ttfamily is\+Logged\+In()}  &Check login status  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md602}{}\doxysubsection{\texorpdfstring{IExamination\+Context}{IExamination\+Context}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md602}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Method  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\ttfamily worklist\+Entry()}  &Get full Worklist\+Entry  \\
+{\ttfamily worklist\+Entry\+Id()}  &Get entry ID  \\
+{\ttfamily patient\+Name()}  &Get formatted patient name  \\
+{\ttfamily patient\+Id()}  &Get patient ID  \\
+{\ttfamily patient\+Birth\+Date()}  &Get birth date  \\
+{\ttfamily patient\+Gender()}  &Get gender (M/\+\+F/\+O)  \\
+{\ttfamily accession\+Number()}  &Get accession number  \\
+{\ttfamily study\+Description()}  &Get study description  \\
+{\ttfamily body\+Part\+Examined()}  &Get body part  \\
+{\ttfamily referring\+Physician()}  &Get referring physician  \\
+{\ttfamily attribute\+Value(tag\+Name)}  &Get any DICOM attribute  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md603}{}\doxysection{\texorpdfstring{Signals}{Signals}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md603}
+\doxylink{requirements_The}{The} {\ttfamily Context\+Manager} emits signals when context changes:\+
+
+
+\begin{DoxyItemize}
+\item {\ttfamily session\+Context\+Changed()} -\/ Session set/\+cleared
+\item {\ttfamily workflow\+Context\+Changed(key)} -\/ Workflow set/\+updated
+\item {\ttfamily workflow\+Context\+Cleared(key)} -\/ Workflow cleared
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md604}{}\doxysection{\texorpdfstring{Thread Safety}{Thread Safety}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md604}
+{\ttfamily Context\+Manager} uses {\ttfamily QMutex} for thread-\/safe access to context data. All public methods are safe to call from any thread.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md605}{}\doxysection{\texorpdfstring{Future Extensions}{Future Extensions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md605}
+\doxylink{requirements_The}{The} system is designed to be extensible:\+
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{New workflow contexts}}:\+ Create new classes implementing {\ttfamily IWorkflow\+Context}
+\item {\bfseries{Additional session data}}:\+ Extend {\ttfamily Session\+Context} with new fields
+\item {\bfseries{Context persistence}}:\+ Add save/\+restore for session recovery
+\item {\bfseries{Context events}}:\+ Subscribe to context changes via signals
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md607}{}\doxysection{\texorpdfstring{Context Injection Audit}{Context Injection Audit}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md607}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md608}{}\doxysubsection{\texorpdfstring{Delegates WITH Context Injection}{Delegates WITH Context Injection}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md608}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}File  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}context\+Manager param  \\
+Work\+List\+Page\+Delegate  &\doxylink{_work_list_page_delegate_8h_source}{Application/\+\+Delegate/\+\+Work\+List\+Page\+Delegate.\+h}:\+46  &{\ttfamily std::\+weak\+\_\+ptr\texorpdfstring{$<$}{<}IContext\+Manager\texorpdfstring{$>$}{>}}  \\
+Exam\+Page\+Delegate  &\doxylink{_exam_page_delegate_8h_source}{Application/\+\+Delegate/\+\+Exam\+Page\+Delegate.\+h}:\+99  &{\ttfamily std::\+weak\+\_\+ptr\texorpdfstring{$<$}{<}IContext\+Manager\texorpdfstring{$>$}{>}}  \\
+View\+Selection\+Dialog\+Delegate  &\doxylink{_view_selection_dialog_delegate_8h_source}{Application/\+\+Delegate/\+\+View\+Selection\+Dialog\+Delegate.\+h}:\+37  &{\ttfamily std::\+weak\+\_\+ptr\texorpdfstring{$<$}{<}IContext\+Manager\texorpdfstring{$>$}{>}}  \\
+Image\+Viewer\+Page\+Delegate  &\doxylink{_image_viewer_page_delegate_8h_source}{Application/\+\+Delegate/\+\+Image\+Viewer\+Page\+Delegate.\+h}:\+77  &{\ttfamily std::\+weak\+\_\+ptr\texorpdfstring{$<$}{<}IContext\+Manager\texorpdfstring{$>$}{>}}  \\
+Main\+Window\+Delegate  &\doxylink{_main_window_delegate_8h_source}{Application/\+\+Delegate/\+\+Main\+Window\+Delegate.\+h}:\+20  &Via {\ttfamily \doxylink{struct_delegate_parameter}{Delegate\+Parameter}}  \\
+System\+Setting\+Page\+Delegate  &\doxylink{_system_setting_page_delegate_8h_source}{Application/\+\+Delegate/\+\+System\+Setting\+Page\+Delegate.\+h}:\+25  &{\ttfamily std::\+weak\+\_\+ptr\texorpdfstring{$<$}{<}IContext\+Manager\texorpdfstring{$>$}{>}}  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md609}{}\doxysubsection{\texorpdfstring{Configuration Delegates (Context via Delegate\+Parameter)}{Configuration Delegates (Context via Delegate\+Parameter)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_209-_context_manager_autotoc_md609}
+Configuration delegates are child delegates of {\ttfamily System\+Setting\+Page\+Delegate} and receive context via {\ttfamily \doxylink{struct_delegate_parameter}{Delegate\+Parameter}} from {\ttfamily System\+Setting\+Page\+Builder.\+cpp}. They access context through the builder pattern rather than direct constructor injection.
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Delegate  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Module  \\
+Work\+List\+Configuration\+Delegate  &Worklist  \\
+Workflow\+Configuration\+Delegate  &Device  \\
+View\+Configuration\+Delegate  &Scan\+Protocol  \\
+Procedure\+Configuration\+Delegate  &Scan\+Protocol  \\
+Technique\+Configuration\+Delegate  &Scan\+Protocol  \\
+Generator\+Configuration\+Delegate  &Device  \\
+Detector\+Configuration\+Delegate  &Device  \\
+Dap\+Configuration\+Delegate  &Device  \\
+Collimator\+Configuration\+Delegate  &Device  \\
+Connection\+Setup\+Delegate  &Device  \\
+Pacs\+Entity\+Configuration\+Delegate  &Pacs  \\
+Image\+Comment\+Configuration\+Delegate  &Dicom  \\
+\end{DoxyTable}

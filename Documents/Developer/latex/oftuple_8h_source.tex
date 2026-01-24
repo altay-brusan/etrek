@@ -1,0 +1,407 @@
+\doxysection{oftuple.\+h}
+\hypertarget{oftuple_8h_source}{}\label{oftuple_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/oftuple.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/oftuple.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2014-\/2017,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ ofstd}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Jan\ Schlamelcher}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ Implementing\ generic\ tuples\ similar\ to\ C++11's\ std::tuple.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ OFTUPLE\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ OFTUPLE\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}\ \ \ \ \textcolor{comment}{/*\ make\ sure\ OS\ specific\ configuration\ is\ included\ first\ */}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ofutil_8h}{dcmtk/ofstd/ofutil.h}}"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofdefine.h"{}}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{comment}{//\ use\ native\ tuple\ if\ available}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#ifdef\ HAVE\_STL\_TUPLE}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <tuple>}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#define\ OFignore\ STD\_NAMESPACE\ ignore}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#define\ OFmake\_tuple\ STD\_NAMESPACE\ make\_tuple}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#define\ OFtie\ STD\_NAMESPACE\ tie}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#ifdef\ HAVE\_CXX11}}
+\DoxyCodeLine{00039\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00040\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{class_o_ftuple}{OFtuple}}\ =\ std::tuple<Args...>;}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ HAVE\_CXX11}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/variadic/helpers.h"{}}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#define\ OFtuple\ STD\_NAMESPACE\ tuple}}
+\DoxyCodeLine{00044\ \textcolor{keyword}{template}<OFVARIADIC\_DECLARE\_TEMPLATE\_PARAMETER\_PACK(T)>}
+\DoxyCodeLine{00045\ \textcolor{keywordtype}{void}\ OFswap(\doxymbox{\hyperlink{class_o_ftuple}{OFtuple}}<OFVARIADIC\_TEMPLATE\_PARAMETER\_PACK(T)>\&\ lhs,}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_ftuple}{OFtuple}}<OFVARIADIC\_TEMPLATE\_PARAMETER\_PACK(T)>\&\ rhs)}
+\DoxyCodeLine{00047\ \{}
+\DoxyCodeLine{00048\ \ \ \ \ lhs.swap(rhs);}
+\DoxyCodeLine{00049\ \}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ HAVE\_CXX11}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#elif\ !defined(DOXYGEN)\ }\textcolor{comment}{//\ fallback\ implementations}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#include\ <cstdarg>}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofdiag.h"{}}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#include\ DCMTK\_DIAGNOSTIC\_PUSH}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#include\ DCMTK\_DIAGNOSTIC\_IGNORE\_MISMATCHED\_TAGS}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{comment}{//\ Implementation\ of\ OFignore:\ struct\ OFignore\_t}}
+\DoxyCodeLine{00060\ \textcolor{comment}{//\ that\ can\ be\ constructed\ and\ assigned\ to\ anything}}
+\DoxyCodeLine{00061\ \textcolor{comment}{//\ which\ it\ then\ simply\ ignores.}}
+\DoxyCodeLine{00062\ \textcolor{keyword}{struct\ }DCMTK\_OFSTD\_EXPORT\ OFignore\_t}
+\DoxyCodeLine{00063\ \{}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keyword}{inline}\ OFignore\_t()\ \{\}}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keyword}{inline}\ OFignore\_t(\textcolor{keyword}{const}\ X\&)\ \{\}}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keyword}{inline}\ OFignore\_t\&\ operator=(\textcolor{keyword}{const}\ X\&)\ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ OFignore\_t\&\ operator=(\textcolor{keyword}{const}\ X\&)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00071\ \};}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{comment}{//\ OFignore\ is\ a\ reference\ to\ an\ object\ of\ type\ OFignore\_t,\ to}}
+\DoxyCodeLine{00074\ \textcolor{comment}{//\ fix\ some\ external\ linkage\ problems\ in\ MinGW}}
+\DoxyCodeLine{00075\ \textcolor{keyword}{extern}\ DCMTK\_OFSTD\_EXPORT\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_fignore__t}{OFignore\_t}}\&\ OFignore;}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \textcolor{comment}{//\ Helper\ metatemplate\ for\ OFget\ for\ OFtuple.\ The\ first}}
+\DoxyCodeLine{00078\ \textcolor{comment}{//\ parameter\ is\ the\ return\ type.\ This\ way\ OFtuple\_element}}
+\DoxyCodeLine{00079\ \textcolor{comment}{//\ has\ to\ be\ instantiated\ only\ once\ instead\ of\ at\ every}}
+\DoxyCodeLine{00080\ \textcolor{comment}{//\ (template-\/recursive)\ instantiation\ of\ OFget\_tuple\_element.}}
+\DoxyCodeLine{00081\ \textcolor{comment}{//\ This\ should\ increase\ compiletime\ performance.}}
+\DoxyCodeLine{00082\ \textcolor{comment}{//\ Unspecialized\ version\ implements\ recursion\ step:}}
+\DoxyCodeLine{00083\ \textcolor{comment}{//\ N\ -\/>\ OFget\_tuple\_element<N-\/1>(\ tail\ )}}
+\DoxyCodeLine{00084\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\textcolor{keywordtype}{size\_t}\ N>}
+\DoxyCodeLine{00085\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_fget__tuple__element}{OFget\_tuple\_element}}}
+\DoxyCodeLine{00086\ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Seq>}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keyword}{static}\ T\&\ from(\ Seq\&\ seq\ )\ \{\ \textcolor{keywordflow}{return}\ OFget\_tuple\_element<T,N-\/1>::from(\ seq.tail()\ );\ \}}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Seq>}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ T\&\ from(\ \textcolor{keyword}{const}\ Seq\&\ seq\ )\ \{\ \textcolor{keywordflow}{return}\ OFget\_tuple\_element<T,N-\/1>::from(\ seq.tail()\ );\ \}}
+\DoxyCodeLine{00091\ \};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{comment}{//\ Specialization\ to\ implement\ recursion\ base:}}
+\DoxyCodeLine{00094\ \textcolor{comment}{//\ 0\ -\/>\ head}}
+\DoxyCodeLine{00095\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00096\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_fget__tuple__element}{OFget\_tuple\_element}}<T,0>}
+\DoxyCodeLine{00097\ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Seq>}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keyword}{static}\ T\&\ from(\ Seq\&\ seq\ )\ \{\ \textcolor{keywordflow}{return}\ seq.head;\ \}}
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Seq>}
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ T\&\ from(\ \textcolor{keyword}{const}\ Seq\&\ seq\ )\ \{\ \textcolor{keywordflow}{return}\ seq.head;\ \}}
+\DoxyCodeLine{00102\ \};}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \textcolor{comment}{//\ Helper\ template\ for\ resolving\ recursive\ definition}}
+\DoxyCodeLine{00105\ \textcolor{comment}{//\ of\ content\ tail.}}
+\DoxyCodeLine{00106\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Tail>}
+\DoxyCodeLine{00107\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__content__tail}{OFtuple\_content\_tail}}}
+\DoxyCodeLine{00108\ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keyword}{typedef}\ Tail\ type;}
+\DoxyCodeLine{00110\ \};}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{comment}{//\ Metafunction\ to\ determine\ appropriate\ parameter\ types}}
+\DoxyCodeLine{00113\ \textcolor{comment}{//\ for\ constructing\ a\ tuple\ from\ a\ sequence\ of\ arguments.}}
+\DoxyCodeLine{00114\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00115\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__param}{OFtuple\_param}}}
+\DoxyCodeLine{00116\ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ T\&\ type;}
+\DoxyCodeLine{00118\ \};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{comment}{//\ Specialization\ for\ pointers\ that\ allows\ passing}}
+\DoxyCodeLine{00121\ \textcolor{comment}{//\ pointers\ by\ value\ instead\ of\ by\ reference.}}
+\DoxyCodeLine{00122\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00123\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__param}{OFtuple\_param}}<T*>}
+\DoxyCodeLine{00124\ \{}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ T*\ type;}
+\DoxyCodeLine{00126\ \};}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \textcolor{comment}{//\ Specialization\ for\ compilers\ that\ can't\ ignore}}
+\DoxyCodeLine{00129\ \textcolor{comment}{//\ "{}double\ references"{}\ themselves.}}
+\DoxyCodeLine{00130\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00131\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__param}{OFtuple\_param}}<T\&>}
+\DoxyCodeLine{00132\ \{}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{const}\ T\&\ type;}
+\DoxyCodeLine{00134\ \};}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \textcolor{comment}{//\ The\ actual\ implementation\ of\ OFtuple's\ content}}
+\DoxyCodeLine{00137\ \textcolor{comment}{//\ OFtuple\_content\ is\ used\ as\ a\ sequence\ of\ nested\ instances}}
+\DoxyCodeLine{00138\ \textcolor{comment}{//\ of\ OFtuple\_content.\ The\ argument\ 'Head'\ declares\ the\ element}}
+\DoxyCodeLine{00139\ \textcolor{comment}{//\ type\ of\ the\ current\ instance,\ where\ 'Tail'\ is\ used\ to}}
+\DoxyCodeLine{00140\ \textcolor{comment}{//\ pass\ the\ next\ instance.\ The\ last\ sequence\ element\ is\ always}}
+\DoxyCodeLine{00141\ \textcolor{comment}{//\ OFtuple\_content<>\ \string~\ OFtuple\_content<OFtuple\_nil,void>,}}
+\DoxyCodeLine{00142\ \textcolor{comment}{//\ so\ the\ end\ of\ the\ sequence\ can\ be\ 'detected'\ when\ using}}
+\DoxyCodeLine{00143\ \textcolor{comment}{//\ OFtuple\_content\ in\ template-\/recursion.}}
+\DoxyCodeLine{00144\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Head\ =\ OFtuple\_nil,\textcolor{keyword}{typename}\ Tail\ =\ \textcolor{keywordtype}{void}>}
+\DoxyCodeLine{00145\ \textcolor{keyword}{class\ }OFtuple\_content\ :\ \doxymbox{\hyperlink{struct_o_ftuple__content__tail}{OFtuple\_content\_tail}}<Tail>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}}
+\DoxyCodeLine{00146\ \{}
+\DoxyCodeLine{00147\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{comment}{//\ Helper\ typedef\ to\ resolve\ the\ matching\ OFtuple\_content}}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{comment}{//\ type\ on\ compilers\ that\ don't\ support\ accessing\ this}}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{comment}{//\ directly\ (older\ versions\ of\ GCC).}}
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{comment}{//\ Needs\ to\ be\ accessible\ in\ global\ scope,\ therefore\ public.}}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keyword}{typedef}\ OFtuple\_content\ content\_type;}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{comment}{//\ Friend\ declarations.\ OFtuple\_content\ only\ has\ private}}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{comment}{//\ members,\ since\ these\ are\ accessed\ via\ free\ standing}}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{comment}{//\ functions\ (OFget,\ ...)\ only.\ Therefore\ this\ API}}
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{comment}{//\ has\ to\ be\ declared\ OFtuple\_contents\ friend.}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/variadic/tuplefrd.h"{}}}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename},\textcolor{keyword}{typename}>}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }OFtuple\_content;}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,\textcolor{keywordtype}{size\_t}\ N>}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }OFget\_tuple\_element;}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{comment}{//\ Helper\ class\ that\ wraps\ 'va\_list'\ in\ a\ portable\ way.}}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{comment}{//\ This\ is\ for\ example\ necessary\ on\ platforms\ where}}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{comment}{//\ va\_list\ is\ implemented\ as\ an\ array-\/type\ and\ therefore}}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{comment}{//\ can't\ be\ used\ as\ a\ function\ argument\ directly.}}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{comment}{//\ This\ is\ also\ used\ for\ ensuring\ the\ correct\ overload}}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{//\ of\ the\ constructor\ gets\ picked.}}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{keyword}{struct\ }va\_args\{\ va\_args()\ \{\}\ \textcolor{keyword}{mutable}\ va\_list\ args;\ \};}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{comment}{//\ Determine\ real\ Tailtype,\ see\ specialization\ of}}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{comment}{//\ OFtuple\_content\_tail\ for\ details.}}
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ OFtuple\_content\_tail<Tail>::type\ tail\_type;}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{comment}{//\ Default\ constructor,\ default\ constructs\ all\ the\ elements.}}
+\DoxyCodeLine{00178\ \ \ \ \ OFtuple\_content()}
+\DoxyCodeLine{00179\ \ \ \ \ :\ tail\_type()}
+\DoxyCodeLine{00180\ \ \ \ \ ,\ head()\ \{\}}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{comment}{//\ Copy\ constructor,\ copy\ elements\ from\ any\ other\ tuple,}}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{comment}{//\ as\ long\ ans\ the\ elements\ themselves\ are\ fine\ with\ that.}}
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ UH,\textcolor{keyword}{typename}\ UT>}
+\DoxyCodeLine{00185\ \ \ \ \ OFtuple\_content(\ \textcolor{keyword}{const}\ OFtuple\_content<UH,UT>\&\ rhs\ )}
+\DoxyCodeLine{00186\ \ \ \ \ :\ tail\_type(\ rhs.tail()\ )}
+\DoxyCodeLine{00187\ \ \ \ \ ,\ head(\ rhs.head\ )\ \{\}}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{comment}{//\ Construct\ from\ OFPair.}}
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{comment}{//\ Note:\ Ensuring\ only\ sequences\ with\ two\ elements\ are}}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{comment}{//\ \ constructed\ from\ OFPair\ is\ done\ in\ OFtuple\ itself.}}
+\DoxyCodeLine{00192\ \ \ \ \ \textcolor{comment}{//\ \ It's\ not\ verified\ in\ this\ constructor\ (again)\ to}}
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{comment}{//\ \ improve\ compiletime\ performance.}}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ U0,\textcolor{keyword}{typename}\ U1>}
+\DoxyCodeLine{00195\ \ \ \ \ OFtuple\_content(\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_pair}{OFPair<U0,U1>}}\&\ p\ )}
+\DoxyCodeLine{00196\ \ \ \ \ :\ tail\_type(\ p\ )}
+\DoxyCodeLine{00197\ \ \ \ \ ,\ head(\ OFget<2-\/\doxymbox{\hyperlink{struct_o_ftuple__size}{OFtuple\_size<OFtuple\_content>::value}}>(\ p\ )\ )\ \{\}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{comment}{//\ Construct\ a\ tuple\ element\ sequence\ via\ C-\/style\ variadic}}
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{comment}{//\ arguments.\ This\ overload\ initializes\ the\ va\_list\ and}}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{comment}{//\ passes\ a\ pointer\ to\ it\ to\ the\ tail's\ constructor.}}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{comment}{//\ Note:\ Since\ 'tail\_type'\ is\ a\ base\ class,\ it\ has\ to}}
+\DoxyCodeLine{00203\ \ \ \ \ \textcolor{comment}{//\ \ \ be\ initialized\ before\ 'head'.\ Therefore\ the\ arguments}}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{comment}{//\ \ \ need\ to\ be\ given\ to\ this\ method\ in\ the\ reversed\ order!}}
+\DoxyCodeLine{00205\ \ \ \ \ OFtuple\_content(\ va\_args\ args,\ ...\ )}
+\DoxyCodeLine{00206\ \ \ \ \ :\ tail\_type(\ (\ va\_start(\ args.args,\ args\ ),\ \&args.args\ )\ )}
+\DoxyCodeLine{00207\ \ \ \ \ ,\ head(\ *va\_arg(\ args.args,\ \textcolor{keyword}{typename}\ OFadd\_pointer<Head>::type\ )\ )\ \{\ va\_end(\ args.args\ );\ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \textcolor{comment}{//\ Overload\ that\ takes\ a\ 'va\_list'\ pointer\ and\ passes\ it\ to}}
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{comment}{//\ its\ tail.\ Then\ takes\ its\ 'head'\ from\ the\ va\_list.}}
+\DoxyCodeLine{00211\ \ \ \ \ OFtuple\_content(\ va\_list*\ args\ )}
+\DoxyCodeLine{00212\ \ \ \ \ :\ tail\_type(\ args\ )}
+\DoxyCodeLine{00213\ \ \ \ \ ,\ head(\ *va\_arg(\ *args,\ \textcolor{keyword}{typename}\ OFadd\_pointer<Head>::type\ )\ )\ \{\}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{comment}{//\ Implementation\ of\ tuple\ assignment.}}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{comment}{//\ Effectively:\ head\ -\/>\ rhs.head}}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ tail().head\ -\/>\ rhs.tail().head}}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ tail().tail()\ ...}}
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ UH,\textcolor{keyword}{typename}\ UT>}
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{keywordtype}{void}\ assign(\ \textcolor{keyword}{const}\ OFtuple\_content<UH,UT>\&\ rhs\ )}
+\DoxyCodeLine{00221\ \ \ \ \ \{}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ head\ =\ rhs.head;}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ tail().assign(\ rhs.tail()\ );}
+\DoxyCodeLine{00224\ \ \ \ \ \}}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \ \ \ \ \textcolor{comment}{//\ Assign\ an\ OFPair.\ No\ recursion\ required\ since}}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{comment}{//\ a\ pair\ always\ has\ just\ two\ arguments.}}
+\DoxyCodeLine{00228\ \ \ \ \ \textcolor{comment}{//\ Note:\ Ensuring\ only\ sequences\ with\ two\ elements\ are}}
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{comment}{//\ \ assigned\ an\ OFPair\ to\ is\ done\ in\ OFtuple\ itself.}}
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{comment}{//\ \ It's\ not\ verified\ in\ this\ method\ (again)\ to}}
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{comment}{//\ \ improve\ compiletime\ performance.}}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keywordtype}{void}\ assign(\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_pair}{OFPair<K,V>}}\&\ p\ )}
+\DoxyCodeLine{00234\ \ \ \ \ \{}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ head\ =\ p.\doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}};}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ tail().head\ =\ p.\doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}};}
+\DoxyCodeLine{00237\ \ \ \ \ \}}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{comment}{//\ Check\ if\ two\ tuple\ element\ sequences\ are\ equal.}}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{comment}{//\ Effectively:\ OFget<0>(\ a\ )\ ==\ OFget<0>(\ b\ )\ \&\&}}
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ OFget<1>(\ a\ )\ ==\ OFget<1>(\ b\ )\ \&\&}}
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ...}}
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ OFget<N>(\ a\ )\ ==\ OFget<N>(\ b\ )}}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ UH,\textcolor{keyword}{typename}\ UT>}
+\DoxyCodeLine{00245\ \ \ \ \ OFBool\ equal(\ \textcolor{keyword}{const}\ OFtuple\_content<UH,UT>\&\ rhs\ )\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00246\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ head\ ==\ rhs.head\ \&\&\ tail().equal(\ rhs.tail()\ );}
+\DoxyCodeLine{00248\ \ \ \ \ \}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{comment}{//\ Check\ if\ two\ tuple\ element\ sequences\ are\ not\ equal.}}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{comment}{//\ Effectively:\ OFget<0>(\ a\ )\ !=\ OFget<0>(\ b\ )\ ||}}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ OFget<1>(\ a\ )\ !=\ OFget<1>(\ b\ )\ ||}}
+\DoxyCodeLine{00253\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ...}}
+\DoxyCodeLine{00254\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ OFget<N>(\ a\ )\ !=\ OFget<N>(\ b\ )}}
+\DoxyCodeLine{00255\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ UH,\textcolor{keyword}{typename}\ UT>}
+\DoxyCodeLine{00256\ \ \ \ \ OFBool\ not\_equal(\ \textcolor{keyword}{const}\ OFtuple\_content<UH,UT>\&\ rhs\ )\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00257\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ head\ !=\ rhs.head\ ||\ tail().not\_equal(\ rhs.tail()\ );}
+\DoxyCodeLine{00259\ \ \ \ \ \}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{comment}{//\ Check\ if\ one\ tuple\ element\ sequences\ is\ less\ then\ another.}}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ UH,\textcolor{keyword}{typename}\ UT>}
+\DoxyCodeLine{00263\ \ \ \ \ OFBool\ less(\ \textcolor{keyword}{const}\ OFtuple\_content<UH,UT>\&\ rhs\ )\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00264\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ head\ <\ rhs.head\ ||\ (\ !(\ rhs.head\ <\ head\ )\ \&\&\ tail().less(\ rhs.tail()\ )\ );}
+\DoxyCodeLine{00266\ \ \ \ \ \}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ \textcolor{comment}{//\ Check\ if\ one\ tuple\ element\ sequences\ is\ less\ then\ or\ equal\ to\ another.}}
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ UH,\textcolor{keyword}{typename}\ UT>}
+\DoxyCodeLine{00270\ \ \ \ \ OFBool\ less\_equal(\ \textcolor{keyword}{const}\ OFtuple\_content<UH,UT>\&\ rhs\ )\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00271\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ head\ <\ rhs.head\ ||\ (\ !(\ rhs.head\ <\ head\ )\ \&\&\ tail().less\_equal(\ rhs.tail()\ )\ );}
+\DoxyCodeLine{00273\ \ \ \ \ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{comment}{//\ Implementation\ of\ swap.}}
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{comment}{//\ Swaps\ 'head'\ and\ recurses\ to\ 'tail()'}}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keywordtype}{void}\ swap\_content(\ OFtuple\_content\&\ rhs\ )}
+\DoxyCodeLine{00278\ \ \ \ \ \{}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ OFswap(\ head,\ rhs.head\ );}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ tail().swap\_content(\ rhs.tail()\ );}
+\DoxyCodeLine{00281\ \ \ \ \ \}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{comment}{//\ Helper\ methods\ to\ access\ the\ base\ class\ (tail\_type)}}
+\DoxyCodeLine{00284\ \ \ \ \ \textcolor{comment}{//\ without\ the\ need\ to\ specify\ its\ type.}}
+\DoxyCodeLine{00285\ \ \ \ \ tail\_type\&\ tail()\ \{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{keyword}{const}\ tail\_type\&\ tail()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \ \ \ \ \textcolor{comment}{//\ The\ actual\ content\ of\ the\ current\ sequence\ element.}}
+\DoxyCodeLine{00289\ \ \ \ \ Head\ head;}
+\DoxyCodeLine{00290\ \};}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \textcolor{comment}{//\ Specialization\ that\ resolves\ passing}}
+\DoxyCodeLine{00293\ \textcolor{comment}{//\ 'void'\ for\ OFtuple\_content's\ 'Tail'\ argument}}
+\DoxyCodeLine{00294\ \textcolor{comment}{//\ to\ OFtuple\_content<>.}}
+\DoxyCodeLine{00295\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00296\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__content__tail}{OFtuple\_content\_tail}}<void>}
+\DoxyCodeLine{00297\ \{}
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{struct_o_ftuple__content_3_4}{OFtuple\_content<>}}\ type;}
+\DoxyCodeLine{00299\ \};}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \textcolor{comment}{//\ Specialization\ of\ OFtuple\_content's\ sentinel}}
+\DoxyCodeLine{00302\ \textcolor{comment}{//\ element\ 'OFtuple\_content<>'.\ This\ class}}
+\DoxyCodeLine{00303\ \textcolor{comment}{//\ supplies\ the\ recursion\ base\ for\ all\ the\ required}}
+\DoxyCodeLine{00304\ \textcolor{comment}{//\ methods,\ ignoring\ any\ given\ arguments\ and\ returning}}
+\DoxyCodeLine{00305\ \textcolor{comment}{//\ the\ appropriate\ values.}}
+\DoxyCodeLine{00306\ \textcolor{comment}{//\ This\ is\ especially\ important\ for\ the\ comparison}}
+\DoxyCodeLine{00307\ \textcolor{comment}{//\ methods,\ where\ two\ instances\ of\ OFtuple\_content<>}}
+\DoxyCodeLine{00308\ \textcolor{comment}{//\ are\ considered\ 'equal'\ and\ 'less\_equal'\ but\ not}}
+\DoxyCodeLine{00309\ \textcolor{comment}{//\ 'less'\ or\ 'not\_equal'.}}
+\DoxyCodeLine{00310\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00311\ \textcolor{keyword}{struct\ }OFtuple\_content<>}
+\DoxyCodeLine{00312\ \{}
+\DoxyCodeLine{00313\ \ \ \ \ OFtuple\_content()\ \{\}}
+\DoxyCodeLine{00314\ \ \ \ \ OFtuple\_content(va\_list*)\ \{\}}
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00316\ \ \ \ \ \textcolor{keywordtype}{void}\ assign(\textcolor{keyword}{const}\ X\&)\ \{\}}
+\DoxyCodeLine{00317\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00318\ \ \ \ \ OFBool\ equal(\textcolor{keyword}{const}\ X\&)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ OFTrue;\ \}}
+\DoxyCodeLine{00319\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00320\ \ \ \ \ OFBool\ not\_equal(\textcolor{keyword}{const}\ X\&)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ OFFalse;\ \}}
+\DoxyCodeLine{00321\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00322\ \ \ \ \ OFBool\ less(\textcolor{keyword}{const}\ X\&)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ OFFalse;\ \}}
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00324\ \ \ \ \ OFBool\ less\_equal(\textcolor{keyword}{const}\ X\&)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ OFTrue;\ \}}
+\DoxyCodeLine{00325\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00326\ \ \ \ \ \textcolor{keywordtype}{void}\ swap\_content(\textcolor{keyword}{const}\ X\&)\ \{\}}
+\DoxyCodeLine{00327\ \};}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \textcolor{comment}{//\ Specialization\ of\ OFtuple\_element\ for\ OFtuple.}}
+\DoxyCodeLine{00330\ \textcolor{comment}{//\ This\ implements\ the\ recursion\ base:\ 0\ -\/>\ Head.}}
+\DoxyCodeLine{00331\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Head,\textcolor{keyword}{typename}\ Tail>}
+\DoxyCodeLine{00332\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element}}<0,\doxymbox{\hyperlink{class_o_ftuple__content}{OFtuple\_content}}<Head,Tail>\ >}
+\DoxyCodeLine{00333\ \{}
+\DoxyCodeLine{00334\ \ \ \ \ \textcolor{keyword}{typedef}\ Head\ type;}
+\DoxyCodeLine{00335\ \};}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \textcolor{comment}{//\ Specialization\ of\ OFtuple\_element\ for\ OFtuple.}}
+\DoxyCodeLine{00338\ \textcolor{comment}{//\ This\ implements\ the\ recursion\ step:\ Index\ -\/>\ OFtuple\_element<Index-\/1,Tail>.}}
+\DoxyCodeLine{00339\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ Head,\textcolor{keyword}{typename}\ Tail>}
+\DoxyCodeLine{00340\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element}}<Index,\doxymbox{\hyperlink{class_o_ftuple__content}{OFtuple\_content}}<Head,Tail>\ >}
+\DoxyCodeLine{00341\ \{}
+\DoxyCodeLine{00342\ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element}}<Index-\/1,Tail>::type\ type;}
+\DoxyCodeLine{00343\ \};}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00345\ \textcolor{comment}{//\ Specialization\ of\ OFtuple\_size\ for\ OFtuple.}}
+\DoxyCodeLine{00346\ \textcolor{comment}{//\ This\ implements\ the\ recursion\ base:\ OFtuple\_content<>\ -\/>\ 0.}}
+\DoxyCodeLine{00347\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00348\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__size}{OFtuple\_size}}<\doxymbox{\hyperlink{class_o_ftuple__content}{OFtuple\_content}}<>\ >}
+\DoxyCodeLine{00349\ :\ \doxymbox{\hyperlink{struct_o_fintegral__constant}{OFintegral\_constant}}<size\_t,0>\ \{\};}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \textcolor{comment}{//\ Specialization\ of\ OFtuple\_size\ for\ OFtuple.}}
+\DoxyCodeLine{00352\ \textcolor{comment}{//\ This\ implements\ the\ recursion\ step:\ X\ -\/>\ OFtuple\_size<X::tail\_type>.}}
+\DoxyCodeLine{00353\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Head,\textcolor{keyword}{typename}\ Tail>}
+\DoxyCodeLine{00354\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__size}{OFtuple\_size}}<\doxymbox{\hyperlink{class_o_ftuple__content}{OFtuple\_content}}<Head,Tail>\ >}
+\DoxyCodeLine{00355\ :\ \doxymbox{\hyperlink{struct_o_fintegral__constant}{OFintegral\_constant}}<size\_t,OFtuple\_size<typename\ OFtuple\_content\_tail<Tail>::type>::value\ +\ 1>\ \{\};}
+\DoxyCodeLine{00356\ }
+\DoxyCodeLine{00357\ \textcolor{comment}{//\ Specialization\ of\ OFtuple\ to\ implement\ empty\ tuples.}}
+\DoxyCodeLine{00358\ \textcolor{comment}{//\ This\ is\ not\ generated,\ since\ it's\ so\ different\ to\ the}}
+\DoxyCodeLine{00359\ \textcolor{comment}{//\ other\ specializations.}}
+\DoxyCodeLine{00360\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00361\ \textcolor{keyword}{struct\ }OFtuple<>\ :\ OFtuple\_content<>}
+\DoxyCodeLine{00362\ \{}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \};}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \doxymbox{\hyperlink{struct_o_ftuple_3_4}{OFtuple<>}}\ OFmake\_tuple();}
+\DoxyCodeLine{00367\ \doxymbox{\hyperlink{struct_o_ftuple_3_4}{OFtuple<>}}\ OFtie();}
+\DoxyCodeLine{00368\ }
+\DoxyCodeLine{00369\ \textcolor{comment}{//\ Include\ the\ generated\ implementation\ of\ OFtuple.}}
+\DoxyCodeLine{00370\ \textcolor{comment}{//\ This\ contains\ the\ implementation\ of\ the\ general\ case}}
+\DoxyCodeLine{00371\ \textcolor{comment}{//\ and\ specializations\ for\ different\ element\ numbers.}}
+\DoxyCodeLine{00372\ \textcolor{comment}{//\ Each\ provide\ appropriate\ constructors\ and\ assignment}}
+\DoxyCodeLine{00373\ \textcolor{comment}{//\ operators\ as\ well\ as\ the\ 'swap'\ method.}}
+\DoxyCodeLine{00374\ \textcolor{comment}{//\ The\ specialization\ for\ two\ elements\ also\ provides}}
+\DoxyCodeLine{00375\ \textcolor{comment}{//\ constructors\ and\ assignment\ operators\ for\ OFPair.}}
+\DoxyCodeLine{00376\ \textcolor{comment}{//\ This\ file\ also\ contains\ the\ implementations\ of\ the}}
+\DoxyCodeLine{00377\ \textcolor{comment}{//\ comparators,\ OFmake\_tuple,\ OFtie\ and\ OFswap\ for}}
+\DoxyCodeLine{00378\ \textcolor{comment}{//\ OFtuple.}}
+\DoxyCodeLine{00379\ \textcolor{comment}{//\ Note\ that\ for\ OFmake\_tuple\ and\ OFtie\ an\ overload}}
+\DoxyCodeLine{00380\ \textcolor{comment}{//\ is\ required\ for\ every\ different\ number\ of\ elements.}}
+\DoxyCodeLine{00381\ \textcolor{comment}{//\ The\ comparators\ and\ OFswap\ instead\ only\ need\ an}}
+\DoxyCodeLine{00382\ \textcolor{comment}{//\ implementation\ /\ overload\ for\ the\ maximum\ number}}
+\DoxyCodeLine{00383\ \textcolor{comment}{//\ of\ elements\ currently\ supported.}}
+\DoxyCodeLine{00384\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/variadic/tuple.h"{}}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\#include\ DCMTK\_DIAGNOSTIC\_POP}}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ NOT\ C++11\ \&\&\ NOT\ DOXYGEN}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00667\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}...\ Types>}
+\DoxyCodeLine{00668\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_o_ftuple}{OFtuple}}\ \{\};}
+\DoxyCodeLine{00669\ }
+\DoxyCodeLine{00688\ const\ <unspecified>\ OFignore;}
+\DoxyCodeLine{00689\ }
+\DoxyCodeLine{00709\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}...\ Types>}
+\DoxyCodeLine{00710\ \doxymbox{\hyperlink{class_o_ftuple}{OFtuple<typename\ OFdecay<Types>::type}}...>\ OFmake\_tuple(\ Types\&\&...\ args\ );}
+\DoxyCodeLine{00711\ }
+\DoxyCodeLine{00742\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}...\ Types>}
+\DoxyCodeLine{00743\ \doxymbox{\hyperlink{class_o_ftuple}{OFtuple}}<Types\&...>\ OFtie(\ Types\&...\ args\ );}
+\DoxyCodeLine{00744\ }
+\DoxyCodeLine{00745\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DOXYGEN}}
+\DoxyCodeLine{00746\ }
+\DoxyCodeLine{00747\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ OFTUPLE\_H}}
+
+\end{DoxyCode}

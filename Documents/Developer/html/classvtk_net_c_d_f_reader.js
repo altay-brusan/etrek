@@ -1,0 +1,26 @@
+var classvtk_net_c_d_f_reader =
+[
+    [ "ComputeArraySelection", "classvtk_net_c_d_f_reader.html#a2e6298fd7108e6305413b2fce7d650e0", null ],
+    [ "DescribeDimensions", "classvtk_net_c_d_f_reader.html#a7b57cc9b74dfe4c9e5b1cb64d5337096", null ],
+    [ "DimensionsAreForPointData", "classvtk_net_c_d_f_reader.html#aab5e9880bbefec6f3a629330aab075ff", null ],
+    [ "FillVariableDimensions", "classvtk_net_c_d_f_reader.html#aab97804a02a13f88d2b3226766d2356f", null ],
+    [ "GetAllVariableArrayNames", "classvtk_net_c_d_f_reader.html#a3e5b91f53186d4ccabea7f4ae0ed75d6", null ],
+    [ "GetNumberOfVariableArrays", "classvtk_net_c_d_f_reader.html#ab457b03b7de7908dd6437b14fcfc7538", null ],
+    [ "GetTimeValues", "classvtk_net_c_d_f_reader.html#ae1648e065d513acbe97a4bbcb37da2ab", null ],
+    [ "GetUpdateExtentForOutput", "classvtk_net_c_d_f_reader.html#a343c02a1bbaaf9eef1798d7d698446ae", null ],
+    [ "IsTimeDimension", "classvtk_net_c_d_f_reader.html#ab5b8dd835d352107d9869eb1d5167a4b", null ],
+    [ "LoadVariable", "classvtk_net_c_d_f_reader.html#a17f4024e6cf6fb37fcd65b2c26f320f1", null ],
+    [ "PrintSelf", "classvtk_net_c_d_f_reader.html#a8182b1b0dfbe5bf1d657374b6d95ab1b", null ],
+    [ "QueryArrayUnits", "classvtk_net_c_d_f_reader.html#a1a8536a6034ff195e5603cd4a09c472f", null ],
+    [ "ReadMetaData", "classvtk_net_c_d_f_reader.html#abfdd3823d5c6443a8802bd7351ea407e", null ],
+    [ "RequestDataObject", "classvtk_net_c_d_f_reader.html#a1fbf444ba6d565d2ac6a4b9891433933", null ],
+    [ "SetDimensions", "classvtk_net_c_d_f_reader.html#ae5ee7e14a911a9129366fbee87936cad", null ],
+    [ "UpdateMetaData", "classvtk_net_c_d_f_reader.html#a0a3bb34995c7c5582c1695b9d78bbb61", null ],
+    [ "vtkGetMacro", "classvtk_net_c_d_f_reader.html#a93a5b9d384aa7d8712de5cb9e925ad33", null ],
+    [ "vtkGetObjectMacro", "classvtk_net_c_d_f_reader.html#a92f50d62d51e613fffb702adbbe5faad", null ],
+    [ "vtkGetObjectMacro", "classvtk_net_c_d_f_reader.html#a2612789b7bbb6f4aa20d66e4d93da3f7", null ],
+    [ "vtkGetStringMacro", "classvtk_net_c_d_f_reader.html#a19c496d1ece7a58b5dc078b5a5d48120", null ],
+    [ "AllDimensions", "classvtk_net_c_d_f_reader.html#aef13cbc794248873a42f70c8d2739b0a", null ],
+    [ "LoadingDimensions", "classvtk_net_c_d_f_reader.html#aae93f7e04f7ad07de2b263e35b6535c8", null ],
+    [ "VariableDimensions", "classvtk_net_c_d_f_reader.html#ab4cabf0bed081414fa6b664f9c17f62f", null ]
+];

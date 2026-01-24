@@ -1,0 +1,1538 @@
+\doxysection{vtk\+Multi\+Process\+Controller.\+h}
+\hypertarget{vtk_multi_process_controller_8h_source}{}\label{vtk_multi_process_controller_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMultiProcessController.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkMultiProcessController.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#ifndef\ vtkMultiProcessController\_h}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#define\ vtkMultiProcessController\_h}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#include\ "{}vtkParallelCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#include\ "{}vtkCommunicator.h"{}}\ \textcolor{comment}{//\ Needed\ for\ direct\ access\ to\ communicator}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00046\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}};}
+\DoxyCodeLine{00047\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_collection}{vtkCollection}};}
+\DoxyCodeLine{00048\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}};}
+\DoxyCodeLine{00049\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_data_set}{vtkDataSet}};}
+\DoxyCodeLine{00050\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}};}
+\DoxyCodeLine{00051\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_process_controller}{vtkMultiProcessController}};}
+\DoxyCodeLine{00052\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_multi_process_stream}{vtkMultiProcessStream}};}
+\DoxyCodeLine{00053\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_output_window}{vtkOutputWindow}};}
+\DoxyCodeLine{00054\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_process_group}{vtkProcessGroup}};}
+\DoxyCodeLine{00055\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_process}{vtkProcess}};}
+\DoxyCodeLine{00056\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_data_array_selection}{vtkDataArraySelection}};}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{comment}{//\ The\ type\ of\ function\ that\ gets\ called\ when\ new\ processes\ are\ initiated.}}
+\DoxyCodeLine{00059\ \textcolor{keyword}{typedef}\ void\ (*vtkProcessFunctionType)(\doxymbox{\hyperlink{classvtk_multi_process_controller}{vtkMultiProcessController}}*\ controller,\ \textcolor{keywordtype}{void}*\ userData);}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{comment}{//\ The\ type\ of\ function\ that\ gets\ called\ when\ an\ RMI\ is\ triggered.}}
+\DoxyCodeLine{00062\ \textcolor{keyword}{typedef}\ void\ (*vtkRMIFunctionType)(}
+\DoxyCodeLine{00063\ \ \ \textcolor{keywordtype}{void}*\ localArg,\ \textcolor{keywordtype}{void}*\ remoteArg,\ \textcolor{keywordtype}{int}\ remoteArgLength,\ \textcolor{keywordtype}{int}\ remoteProcessId);}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \textcolor{keyword}{class\ }VTKPARALLELCORE\_EXPORT\ vtkMultiProcessController\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00066\ \{}
+\DoxyCodeLine{00067\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00068\ \ \ vtkTypeMacro(vtkMultiProcessController,\ vtkObject);}
+\DoxyCodeLine{00069\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aba22d3ac7d0016d81159e1410ebdd264}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00076\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a86e7245d8b5cb698c87ae4c05c91b010}{Initialize}}(\textcolor{keywordtype}{int}*\ vtkNotUsed(argc),\ \textcolor{keywordtype}{char}***\ vtkNotUsed(argv))\ =\ 0;}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00083\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a8e8d9372e6f06e4c1d6e770062db949f}{Initialize}}(}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{int}*\ vtkNotUsed(argc),\ \textcolor{keywordtype}{char}***\ vtkNotUsed(argv),\ \textcolor{keywordtype}{int}\ initializedExternally)\ =\ 0;}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_af005efd76a46b0bc6e226dcf4dc85563}{Finalize}}()\ =\ 0;}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00098\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aa0e050b11850f2c1812625f73b88645c}{Finalize}}(\textcolor{keywordtype}{int}\ finalizedExternally)\ =\ 0;}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aa88760b544de6f5befd8100f152797e9}{SetNumberOfProcesses}}(\textcolor{keywordtype}{int}\ num);}
+\DoxyCodeLine{00107\ \ \ \textcolor{keywordtype}{int}\ GetNumberOfProcesses();}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00116\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ac532da15b96744cb7bf25c823b1acc4c}{SetSingleMethod}}(vtkProcessFunctionType,\ \textcolor{keywordtype}{void}*\ data);}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00123\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a573dd2daf3e8fb016225c2c30f31ceaf}{SetSingleProcessObject}}(\doxymbox{\hyperlink{classvtk_process}{vtkProcess}}*\ p);}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00130\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a6c67676b78f2d8c16640191c6cae2920}{SingleMethodExecute}}()\ =\ 0;}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00138\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a4d1603f6adf71e820bdb2cc36b9b064d}{SetMultipleMethod}}(\textcolor{keywordtype}{int}\ index,\ vtkProcessFunctionType,\ \textcolor{keywordtype}{void}*\ data);}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00145\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad342fd0e93395ff97c708491792375e3}{MultipleMethodExecute}}()\ =\ 0;}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ab26b25ca9d08549847f42e0df4fabdac}{GetLocalProcessId}}();}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{keyword}{static}\ vtkMultiProcessController*\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a38a2ae0ee8caf7d271d5aa5a844d71e4}{GetGlobalController}}();}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00165\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aecacba79270b45d37e0fbd838d38c826}{CreateOutputWindow}}()\ =\ 0;}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00178\ \ \ \textcolor{keyword}{virtual}\ vtkMultiProcessController*\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a61ddba9a90f216ba0bbece5649a9dcca}{CreateSubController}}(\doxymbox{\hyperlink{classvtk_process_group}{vtkProcessGroup}}*\ group);}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00190\ \ \ \textcolor{keyword}{virtual}\ vtkMultiProcessController*\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a7706536ee8d6002882ee8054e43db05d}{PartitionController}}(\textcolor{keywordtype}{int}\ localColor,\ \textcolor{keywordtype}{int}\ localKey);}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ RMIs\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a1a0d1bc647e641765ec4eb63d2711fe3}{AddRMI}}(vtkRMIFunctionType,\ \textcolor{keywordtype}{void}*\ localArg,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00211\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a294cda3d4c7279cb6244d4d76182ac56}{RemoveFirstRMI}}(\textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00217\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aadbc3e3ca397f63f886b97b317badb99}{RemoveRMI}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00222\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a3b45e3a2b89beff954556a6d90a4a0c4}{RemoveRMI}}(vtkRMIFunctionType\ f,\ \textcolor{keywordtype}{void}*\ arg,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{00223\ \ \ \{}
+\DoxyCodeLine{00224\ \ \ \ \ (void)f;}
+\DoxyCodeLine{00225\ \ \ \ \ (void)arg;}
+\DoxyCodeLine{00226\ \ \ \ \ (void)tag;}
+\DoxyCodeLine{00227\ \ \ \ \ vtkErrorMacro(\textcolor{stringliteral}{"{}RemoveRMI\ Not\ Implemented\ Yet"{}});}
+\DoxyCodeLine{00228\ \ \ \}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00235\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad9fe0c065be90469b31ca41fcb314429}{AddRMICallback}}(vtkRMIFunctionType,\ \textcolor{keywordtype}{void}*\ localArg,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00242\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a5c105ca570572bd728a231f473025b30}{RemoveAllRMICallbacks}}(\textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00247\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_afd34a0c20ea73bdca9c9fd281b1a873c}{RemoveRMICallback}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ae3e1d44073ee66fd4b49c7050aba9de6}{TriggerRMI}}(\textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{void}*\ arg,\ \textcolor{keywordtype}{int}\ argLength,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a04572edaa20d99d679eeea0940809acb}{TriggerBreakRMIs}}();}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00263\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a0553d0767c8ae8897248e661de2ad9a9}{TriggerRMI}}(\textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arg,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{00264\ \ \ \{}
+\DoxyCodeLine{00265\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_multi_process_controller_ae3e1d44073ee66fd4b49c7050aba9de6}{TriggerRMI}}(remoteProcessId,\ (\textcolor{keywordtype}{void}*)arg,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(strlen(arg))\ +\ 1,\ tag);}
+\DoxyCodeLine{00266\ \ \ \}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00271\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a84913d3edc9c69ea7a469701955ae9c3}{TriggerRMI}}(\textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{00272\ \ \ \{}
+\DoxyCodeLine{00273\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_multi_process_controller_ae3e1d44073ee66fd4b49c7050aba9de6}{TriggerRMI}}(remoteProcessId,\ \textcolor{keyword}{nullptr},\ 0,\ tag);}
+\DoxyCodeLine{00274\ \ \ \}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00285\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a250889fcb482b8efa71c7ca90b395604}{TriggerRMIOnAllChildren}}(\textcolor{keywordtype}{void}*\ arg,\ \textcolor{keywordtype}{int}\ argLength,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00286\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a250889fcb482b8efa71c7ca90b395604}{TriggerRMIOnAllChildren}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ arg,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{00287\ \ \ \{}
+\DoxyCodeLine{00288\ \ \ \ \ this-\/>\doxymbox{\hyperlink{classvtk_multi_process_controller_a250889fcb482b8efa71c7ca90b395604}{TriggerRMIOnAllChildren}}((\textcolor{keywordtype}{void}*)arg,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(strlen(arg))\ +\ 1,\ tag);}
+\DoxyCodeLine{00289\ \ \ \}}
+\DoxyCodeLine{00290\ \ \ \textcolor{keywordtype}{void}\ TriggerRMIOnAllChildren(\textcolor{keywordtype}{int}\ tag)\ \{\ this-\/>TriggerRMIOnAllChildren(\textcolor{keyword}{nullptr},\ 0,\ tag);\ \}}
+\DoxyCodeLine{00291\ \ \ \textcolor{keywordtype}{void}\ BroadcastTriggerRMIOnAllChildren(\textcolor{keywordtype}{void}*\ arg,\ \textcolor{keywordtype}{int}\ argLength,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00293\ }
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00306\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a3fce4e738fcd48fb70525ee609a70bb0}{ProcessRMIs}}(\textcolor{keywordtype}{int}\ reportErrors,\ \textcolor{keywordtype}{int}\ dont\_loop\ =\ 0);}
+\DoxyCodeLine{00307\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a3fce4e738fcd48fb70525ee609a70bb0}{ProcessRMIs}}();}
+\DoxyCodeLine{00308\ \ \ \textcolor{keywordtype}{int}\ BroadcastProcessRMIs(\textcolor{keywordtype}{int}\ reportErrors,\ \textcolor{keywordtype}{int}\ dont\_loop\ =\ 0);}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00317\ \ \ \doxymbox{\hyperlink{classvtk_multi_process_controller_aed164a17b1433ba3f26ae911be68c167}{vtkSetMacro}}(BreakFlag,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00318\ \ \ vtkGetMacro(BreakFlag,\ \textcolor{keywordtype}{int});}
+\DoxyCodeLine{00320\ }
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00327\ \ \ \doxymbox{\hyperlink{classvtk_multi_process_controller_a814e309b8f671caa7d13fd1161b09aea}{vtkSetMacro}}(BroadcastTriggerRMI,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00328\ \ \ vtkGetMacro(BroadcastTriggerRMI,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00329\ \ \ vtkBooleanMacro(BroadcastTriggerRMI,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00333\ }
+\DoxyCodeLine{00337\ \ \ \doxymbox{\hyperlink{classvtk_multi_process_controller_a38ac81009137a7ef84be1e799224b98f}{vtkGetObjectMacro}}(Communicator,\ \doxymbox{\hyperlink{classvtk_communicator}{vtkCommunicator}});}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00343\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a6101588216da171e75c4d51868f830e0}{GetBreakRMITag}}()\ \{\ \textcolor{keywordflow}{return}\ BREAK\_RMI\_TAG;\ \}}
+\DoxyCodeLine{00344\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ GetRMITag()\ \{\ \textcolor{keywordflow}{return}\ RMI\_TAG;\ \}}
+\DoxyCodeLine{00345\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{int}\ GetRMIArgTag()\ \{\ \textcolor{keywordflow}{return}\ RMI\_ARG\_TAG;\ \}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \ \ \textcolor{keyword}{enum}\ Errors}
+\DoxyCodeLine{00348\ \ \ \{}
+\DoxyCodeLine{00349\ \ \ \ \ RMI\_NO\_ERROR,}
+\DoxyCodeLine{00350\ \ \ \ \ RMI\_TAG\_ERROR,}
+\DoxyCodeLine{00351\ \ \ \ \ RMI\_ARG\_ERROR}
+\DoxyCodeLine{00352\ \ \ \};}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \ \ \textcolor{keyword}{enum}\ Consts}
+\DoxyCodeLine{00355\ \ \ \{}
+\DoxyCodeLine{00356\ \ \ \ \ ANY\_SOURCE\ =\ -\/1,}
+\DoxyCodeLine{00357\ \ \ \ \ INVALID\_SOURCE\ =\ -\/2}
+\DoxyCodeLine{00358\ \ \ \};}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \textcolor{keyword}{enum}\ Tags}
+\DoxyCodeLine{00361\ \ \ \{}
+\DoxyCodeLine{00362\ \ \ \ \ RMI\_TAG\ =\ 1,}
+\DoxyCodeLine{00363\ \ \ \ \ RMI\_ARG\_TAG\ =\ 2,}
+\DoxyCodeLine{00364\ \ \ \ \ BREAK\_RMI\_TAG\ =\ 3,}
+\DoxyCodeLine{00365\ \ \ \ \ XML\_WRITER\_DATA\_INFO\ =\ 4}
+\DoxyCodeLine{00366\ \ \ \};}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00371\ \ \ \textcolor{keywordtype}{void}\ Barrier();}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ SetGlobalController(vtkMultiProcessController*\ controller);}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ Communication\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00385\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00386\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00387\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00388\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00389\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00390\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00391\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00392\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00393\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00394\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00396\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00397\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00398\ \ \ \textcolor{keywordtype}{int}\ Send(vtkDataObject*\ data,\ \textcolor{keywordtype}{int}\ remoteId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00399\ \ \ \textcolor{keywordtype}{int}\ Send(vtkDataArray*\ data,\ \textcolor{keywordtype}{int}\ remoteId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00409\ \ \ \textcolor{keywordtype}{int}\ Send(\textcolor{keyword}{const}\ vtkMultiProcessStream\&\ stream,\ \textcolor{keywordtype}{int}\ remoteId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00421\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{int}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00422\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00423\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{short}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00424\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00425\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{long}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00426\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00427\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{char}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00428\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00429\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00430\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{float}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00431\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{double}*\ data,\ vtkIdType\ maxlength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00432\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ maxLength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00433\ \ \ \textcolor{keywordtype}{int}\ Receive(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ maxLength,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00434\ \ \ \textcolor{keywordtype}{int}\ Receive(vtkDataObject*\ data,\ \textcolor{keywordtype}{int}\ remoteId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00435\ \ \ \textcolor{keywordtype}{int}\ Receive(vtkDataArray*\ data,\ \textcolor{keywordtype}{int}\ remoteId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00441\ \ \ \textcolor{keywordtype}{int}\ Receive(vtkMultiProcessStream\&\ stream,\ \textcolor{keywordtype}{int}\ remoteId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \ \ vtkDataObject*\ ReceiveDataObject(\textcolor{keywordtype}{int}\ remoteId,\ \textcolor{keywordtype}{int}\ tag);}
+\DoxyCodeLine{00444\ }
+\DoxyCodeLine{00453\ \ \ vtkIdType\ GetCount();}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \ \ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ Collective\ Operations\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00463\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a94133e0208ef7a75ec848f47fe883304}{Broadcast}}(\textcolor{keywordtype}{int}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00464\ \ \ \{}
+\DoxyCodeLine{00465\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00466\ \ \ \}}
+\DoxyCodeLine{00467\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00468\ \ \ \{}
+\DoxyCodeLine{00469\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00470\ \ \ \}}
+\DoxyCodeLine{00471\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{short}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00472\ \ \ \{}
+\DoxyCodeLine{00473\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00474\ \ \ \}}
+\DoxyCodeLine{00475\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00476\ \ \ \{}
+\DoxyCodeLine{00477\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00478\ \ \ \}}
+\DoxyCodeLine{00479\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00480\ \ \ \{}
+\DoxyCodeLine{00481\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00482\ \ \ \}}
+\DoxyCodeLine{00483\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00484\ \ \ \{}
+\DoxyCodeLine{00485\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00486\ \ \ \}}
+\DoxyCodeLine{00487\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00488\ \ \ \{}
+\DoxyCodeLine{00489\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00490\ \ \ \}}
+\DoxyCodeLine{00491\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00492\ \ \ \{}
+\DoxyCodeLine{00493\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00494\ \ \ \}}
+\DoxyCodeLine{00495\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00496\ \ \ \{}
+\DoxyCodeLine{00497\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00498\ \ \ \}}
+\DoxyCodeLine{00499\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{float}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00500\ \ \ \{}
+\DoxyCodeLine{00501\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00502\ \ \ \}}
+\DoxyCodeLine{00503\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{double}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00504\ \ \ \{}
+\DoxyCodeLine{00505\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00506\ \ \ \}}
+\DoxyCodeLine{00507\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00508\ \ \ \{}
+\DoxyCodeLine{00509\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00510\ \ \ \}}
+\DoxyCodeLine{00511\ \ \ \textcolor{keywordtype}{int}\ Broadcast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00512\ \ \ \{}
+\DoxyCodeLine{00513\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ length,\ srcProcessId);}
+\DoxyCodeLine{00514\ \ \ \}}
+\DoxyCodeLine{00515\ \ \ \textcolor{keywordtype}{int}\ Broadcast(vtkDataObject*\ data,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00516\ \ \ \{}
+\DoxyCodeLine{00517\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ srcProcessId);}
+\DoxyCodeLine{00518\ \ \ \}}
+\DoxyCodeLine{00519\ \ \ \textcolor{keywordtype}{int}\ Broadcast(vtkDataArray*\ data,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00520\ \ \ \{}
+\DoxyCodeLine{00521\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(data,\ srcProcessId);}
+\DoxyCodeLine{00522\ \ \ \}}
+\DoxyCodeLine{00524\ }
+\DoxyCodeLine{00525\ \ \ \textcolor{keywordtype}{int}\ Broadcast(vtkMultiProcessStream\&\ stream,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00526\ \ \ \{}
+\DoxyCodeLine{00527\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Broadcast(stream,\ srcProcessId);}
+\DoxyCodeLine{00528\ \ \ \}}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00531\ }
+\DoxyCodeLine{00540\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a6c40d982fcdff57e5df7f2dabb1dfb48}{Gather}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00541\ \ \ \{}
+\DoxyCodeLine{00542\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00543\ \ \ \}}
+\DoxyCodeLine{00544\ \ \ \textcolor{keywordtype}{int}\ Gather(}
+\DoxyCodeLine{00545\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00546\ \ \ \{}
+\DoxyCodeLine{00547\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00548\ \ \ \}}
+\DoxyCodeLine{00549\ \ \ \textcolor{keywordtype}{int}\ Gather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00550\ \ \ \{}
+\DoxyCodeLine{00551\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00552\ \ \ \}}
+\DoxyCodeLine{00553\ \ \ \textcolor{keywordtype}{int}\ Gather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{00554\ \ \ \ \ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00555\ \ \ \{}
+\DoxyCodeLine{00556\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00557\ \ \ \}}
+\DoxyCodeLine{00558\ \ \ \textcolor{keywordtype}{int}\ Gather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00559\ \ \ \{}
+\DoxyCodeLine{00560\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00561\ \ \ \}}
+\DoxyCodeLine{00562\ \ \ \textcolor{keywordtype}{int}\ Gather(}
+\DoxyCodeLine{00563\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00564\ \ \ \{}
+\DoxyCodeLine{00565\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00566\ \ \ \}}
+\DoxyCodeLine{00567\ \ \ \textcolor{keywordtype}{int}\ Gather(}
+\DoxyCodeLine{00568\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00569\ \ \ \{}
+\DoxyCodeLine{00570\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00571\ \ \ \}}
+\DoxyCodeLine{00572\ \ \ \textcolor{keywordtype}{int}\ Gather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00573\ \ \ \{}
+\DoxyCodeLine{00574\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00575\ \ \ \}}
+\DoxyCodeLine{00576\ \ \ \textcolor{keywordtype}{int}\ Gather(}
+\DoxyCodeLine{00577\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00578\ \ \ \{}
+\DoxyCodeLine{00579\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00580\ \ \ \}}
+\DoxyCodeLine{00581\ \ \ \textcolor{keywordtype}{int}\ Gather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00582\ \ \ \{}
+\DoxyCodeLine{00583\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00584\ \ \ \}}
+\DoxyCodeLine{00585\ \ \ \textcolor{keywordtype}{int}\ Gather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00586\ \ \ \{}
+\DoxyCodeLine{00587\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00588\ \ \ \}}
+\DoxyCodeLine{00589\ \ \ \textcolor{keywordtype}{int}\ Gather(}
+\DoxyCodeLine{00590\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00591\ \ \ \{}
+\DoxyCodeLine{00592\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00593\ \ \ \}}
+\DoxyCodeLine{00594\ \ \ \textcolor{keywordtype}{int}\ Gather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{00595\ \ \ \ \ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00596\ \ \ \{}
+\DoxyCodeLine{00597\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ length,\ destProcessId);}
+\DoxyCodeLine{00598\ \ \ \}}
+\DoxyCodeLine{00599\ \ \ \textcolor{keywordtype}{int}\ Gather(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00600\ \ \ \{}
+\DoxyCodeLine{00601\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ destProcessId);}
+\DoxyCodeLine{00602\ \ \ \}}
+\DoxyCodeLine{00604\ }
+\DoxyCodeLine{00614\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_acd3949d2f1fa8f8d46af75585b4c3cf5}{Gather}}(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ sendBuffer,\ std::vector<\doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkDataObject>}}>\&\ recvBuffer,}
+\DoxyCodeLine{00615\ \ \ \ \ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00616\ \ \ \{}
+\DoxyCodeLine{00617\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ destProcessId);}
+\DoxyCodeLine{00618\ \ \ \}}
+\DoxyCodeLine{00619\ }
+\DoxyCodeLine{00629\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_af83c829fbf439622004ae76601beca89}{Gather}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_multi_process_stream}{vtkMultiProcessStream}}\&\ sendBuffer,}
+\DoxyCodeLine{00630\ \ \ \ \ std::vector<vtkMultiProcessStream>\&\ recvBuffer,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00631\ \ \ \{}
+\DoxyCodeLine{00632\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Gather(sendBuffer,\ recvBuffer,\ destProcessId);}
+\DoxyCodeLine{00633\ \ \ \}}
+\DoxyCodeLine{00634\ }
+\DoxyCodeLine{00636\ }
+\DoxyCodeLine{00647\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aa6af0021af50423646cf9d80d519e8fe}{GatherV}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ sendLength,\ vtkIdType*\ recvLengths,}
+\DoxyCodeLine{00648\ \ \ \ \ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00649\ \ \ \{}
+\DoxyCodeLine{00650\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00652\ \ \ \}}
+\DoxyCodeLine{00653\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00654\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00655\ \ \ \{}
+\DoxyCodeLine{00656\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00657\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00658\ \ \ \}}
+\DoxyCodeLine{00659\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00660\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00661\ \ \ \{}
+\DoxyCodeLine{00662\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00664\ \ \ \}}
+\DoxyCodeLine{00665\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00666\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00667\ \ \ \{}
+\DoxyCodeLine{00668\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00670\ \ \ \}}
+\DoxyCodeLine{00671\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00672\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00673\ \ \ \{}
+\DoxyCodeLine{00674\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00675\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00676\ \ \ \}}
+\DoxyCodeLine{00677\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00678\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00679\ \ \ \{}
+\DoxyCodeLine{00680\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00681\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00682\ \ \ \}}
+\DoxyCodeLine{00683\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00684\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00685\ \ \ \{}
+\DoxyCodeLine{00686\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00687\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00688\ \ \ \}}
+\DoxyCodeLine{00689\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00690\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00691\ \ \ \{}
+\DoxyCodeLine{00692\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00693\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00694\ \ \ \}}
+\DoxyCodeLine{00695\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00696\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00697\ \ \ \{}
+\DoxyCodeLine{00698\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00699\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00700\ \ \ \}}
+\DoxyCodeLine{00701\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00702\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00703\ \ \ \{}
+\DoxyCodeLine{00704\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00705\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00706\ \ \ \}}
+\DoxyCodeLine{00707\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00708\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00709\ \ \ \{}
+\DoxyCodeLine{00710\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00711\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00712\ \ \ \}}
+\DoxyCodeLine{00713\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{00714\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00715\ \ \ \{}
+\DoxyCodeLine{00716\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00717\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00718\ \ \ \}}
+\DoxyCodeLine{00719\ \ \ \textcolor{keywordtype}{int}\ GatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,}
+\DoxyCodeLine{00720\ \ \ \ \ vtkIdType\ sendLength,\ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00721\ \ \ \{}
+\DoxyCodeLine{00722\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(}
+\DoxyCodeLine{00723\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00724\ \ \ \}}
+\DoxyCodeLine{00726\ }
+\DoxyCodeLine{00727\ \ \ \textcolor{keywordtype}{int}\ GatherV(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,\ vtkIdType*\ recvLengths,}
+\DoxyCodeLine{00728\ \ \ \ \ vtkIdType*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00729\ \ \ \{}
+\DoxyCodeLine{00730\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(sendBuffer,\ recvBuffer,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00731\ \ \ \}}
+\DoxyCodeLine{00732\ \ \ \textcolor{keywordtype}{int}\ GatherV(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,\ vtkIdTypeArray*\ recvLengths,}
+\DoxyCodeLine{00733\ \ \ \ \ vtkIdTypeArray*\ offsets,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00734\ \ \ \{}
+\DoxyCodeLine{00735\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(sendBuffer,\ recvBuffer,\ recvLengths,\ offsets,\ destProcessId);}
+\DoxyCodeLine{00736\ \ \ \}}
+\DoxyCodeLine{00737\ }
+\DoxyCodeLine{00739\ }
+\DoxyCodeLine{00745\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_abd592a317d948ea96e1b7d2977674f9a}{GatherV}}(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00746\ \ \ \{}
+\DoxyCodeLine{00747\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(sendBuffer,\ recvBuffer,\ destProcessId);}
+\DoxyCodeLine{00748\ \ \ \}}
+\DoxyCodeLine{00749\ \ \ \textcolor{keywordtype}{int}\ GatherV(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ sendData,\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkDataObject>}}*\ recvData,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{00750\ \ \ \{}
+\DoxyCodeLine{00751\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GatherV(sendData,\ recvData,\ destProcessId);}
+\DoxyCodeLine{00752\ \ \ \}}
+\DoxyCodeLine{00754\ }
+\DoxyCodeLine{00756\ }
+\DoxyCodeLine{00763\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_af761b4261236a4f3aafa0d97ab6b9be8}{Scatter}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00764\ \ \ \{}
+\DoxyCodeLine{00765\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00766\ \ \ \}}
+\DoxyCodeLine{00767\ \ \ \textcolor{keywordtype}{int}\ Scatter(}
+\DoxyCodeLine{00768\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00769\ \ \ \{}
+\DoxyCodeLine{00770\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00771\ \ \ \}}
+\DoxyCodeLine{00772\ \ \ \textcolor{keywordtype}{int}\ Scatter(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00773\ \ \ \{}
+\DoxyCodeLine{00774\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00775\ \ \ \}}
+\DoxyCodeLine{00776\ \ \ \textcolor{keywordtype}{int}\ Scatter(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{00777\ \ \ \ \ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00778\ \ \ \{}
+\DoxyCodeLine{00779\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00780\ \ \ \}}
+\DoxyCodeLine{00781\ \ \ \textcolor{keywordtype}{int}\ Scatter(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00782\ \ \ \{}
+\DoxyCodeLine{00783\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00784\ \ \ \}}
+\DoxyCodeLine{00785\ \ \ \textcolor{keywordtype}{int}\ Scatter(}
+\DoxyCodeLine{00786\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00787\ \ \ \{}
+\DoxyCodeLine{00788\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00789\ \ \ \}}
+\DoxyCodeLine{00790\ \ \ \textcolor{keywordtype}{int}\ Scatter(}
+\DoxyCodeLine{00791\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00792\ \ \ \{}
+\DoxyCodeLine{00793\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00794\ \ \ \}}
+\DoxyCodeLine{00795\ \ \ \textcolor{keywordtype}{int}\ Scatter(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00796\ \ \ \{}
+\DoxyCodeLine{00797\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00798\ \ \ \}}
+\DoxyCodeLine{00799\ \ \ \textcolor{keywordtype}{int}\ Scatter(}
+\DoxyCodeLine{00800\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00801\ \ \ \{}
+\DoxyCodeLine{00802\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00803\ \ \ \}}
+\DoxyCodeLine{00804\ \ \ \textcolor{keywordtype}{int}\ Scatter(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00805\ \ \ \{}
+\DoxyCodeLine{00806\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00807\ \ \ \}}
+\DoxyCodeLine{00808\ \ \ \textcolor{keywordtype}{int}\ Scatter(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00809\ \ \ \{}
+\DoxyCodeLine{00810\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00811\ \ \ \}}
+\DoxyCodeLine{00812\ \ \ \textcolor{keywordtype}{int}\ Scatter(}
+\DoxyCodeLine{00813\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00814\ \ \ \{}
+\DoxyCodeLine{00815\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00816\ \ \ \}}
+\DoxyCodeLine{00817\ \ \ \textcolor{keywordtype}{int}\ Scatter(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,}
+\DoxyCodeLine{00818\ \ \ \ \ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00819\ \ \ \{}
+\DoxyCodeLine{00820\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ length,\ srcProcessId);}
+\DoxyCodeLine{00821\ \ \ \}}
+\DoxyCodeLine{00822\ \ \ \textcolor{keywordtype}{int}\ Scatter(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00823\ \ \ \{}
+\DoxyCodeLine{00824\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Scatter(sendBuffer,\ recvBuffer,\ srcProcessId);}
+\DoxyCodeLine{00825\ \ \ \}}
+\DoxyCodeLine{00827\ }
+\DoxyCodeLine{00829\ }
+\DoxyCodeLine{00836\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ae34efb01d017ae49b1ea19f2f05dcd11}{ScatterV}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType*\ sendLengths,\ vtkIdType*\ offsets,}
+\DoxyCodeLine{00837\ \ \ \ \ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00838\ \ \ \{}
+\DoxyCodeLine{00839\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00840\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00841\ \ \ \}}
+\DoxyCodeLine{00842\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType*\ sendLengths,}
+\DoxyCodeLine{00843\ \ \ \ \ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00844\ \ \ \{}
+\DoxyCodeLine{00845\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00846\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00847\ \ \ \}}
+\DoxyCodeLine{00848\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType*\ sendLengths,}
+\DoxyCodeLine{00849\ \ \ \ \ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00850\ \ \ \{}
+\DoxyCodeLine{00851\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00852\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00853\ \ \ \}}
+\DoxyCodeLine{00854\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType*\ sendLengths,}
+\DoxyCodeLine{00855\ \ \ \ \ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00856\ \ \ \{}
+\DoxyCodeLine{00857\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00858\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00859\ \ \ \}}
+\DoxyCodeLine{00860\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType*\ sendLengths,\ vtkIdType*\ offsets,}
+\DoxyCodeLine{00861\ \ \ \ \ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00862\ \ \ \{}
+\DoxyCodeLine{00863\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00864\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00865\ \ \ \}}
+\DoxyCodeLine{00866\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType*\ sendLengths,}
+\DoxyCodeLine{00867\ \ \ \ \ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00868\ \ \ \{}
+\DoxyCodeLine{00869\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00870\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00871\ \ \ \}}
+\DoxyCodeLine{00872\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType*\ sendLengths,}
+\DoxyCodeLine{00873\ \ \ \ \ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00874\ \ \ \{}
+\DoxyCodeLine{00875\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00876\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00877\ \ \ \}}
+\DoxyCodeLine{00878\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType*\ sendLengths,\ vtkIdType*\ offsets,}
+\DoxyCodeLine{00879\ \ \ \ \ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00880\ \ \ \{}
+\DoxyCodeLine{00881\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00883\ \ \ \}}
+\DoxyCodeLine{00884\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType*\ sendLengths,}
+\DoxyCodeLine{00885\ \ \ \ \ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00886\ \ \ \{}
+\DoxyCodeLine{00887\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00888\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00889\ \ \ \}}
+\DoxyCodeLine{00890\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType*\ sendLengths,}
+\DoxyCodeLine{00891\ \ \ \ \ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00892\ \ \ \{}
+\DoxyCodeLine{00893\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00894\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00895\ \ \ \}}
+\DoxyCodeLine{00896\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType*\ sendLengths,}
+\DoxyCodeLine{00897\ \ \ \ \ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00898\ \ \ \{}
+\DoxyCodeLine{00899\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00900\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00901\ \ \ \}}
+\DoxyCodeLine{00902\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType*\ sendLengths,}
+\DoxyCodeLine{00903\ \ \ \ \ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00904\ \ \ \{}
+\DoxyCodeLine{00905\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00906\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00907\ \ \ \}}
+\DoxyCodeLine{00908\ \ \ \textcolor{keywordtype}{int}\ ScatterV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,}
+\DoxyCodeLine{00909\ \ \ \ \ vtkIdType*\ sendLengths,\ vtkIdType*\ offsets,\ vtkIdType\ recvLength,\ \textcolor{keywordtype}{int}\ srcProcessId)}
+\DoxyCodeLine{00910\ \ \ \{}
+\DoxyCodeLine{00911\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ScatterV(}
+\DoxyCodeLine{00912\ \ \ \ \ \ \ sendBuffer,\ recvBuffer,\ sendLengths,\ offsets,\ recvLength,\ srcProcessId);}
+\DoxyCodeLine{00913\ \ \ \}}
+\DoxyCodeLine{00915\ }
+\DoxyCodeLine{00917\ }
+\DoxyCodeLine{00920\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ae232dbdf9213f8dc66dbd6c6c1d31e53}{AllGather}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00921\ \ \ \{}
+\DoxyCodeLine{00922\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00923\ \ \ \}}
+\DoxyCodeLine{00924\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00925\ \ \ \{}
+\DoxyCodeLine{00926\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00927\ \ \ \}}
+\DoxyCodeLine{00928\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00929\ \ \ \{}
+\DoxyCodeLine{00930\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00931\ \ \ \}}
+\DoxyCodeLine{00932\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00933\ \ \ \{}
+\DoxyCodeLine{00934\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00935\ \ \ \}}
+\DoxyCodeLine{00936\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00937\ \ \ \{}
+\DoxyCodeLine{00938\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00939\ \ \ \}}
+\DoxyCodeLine{00940\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00941\ \ \ \{}
+\DoxyCodeLine{00942\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00943\ \ \ \}}
+\DoxyCodeLine{00944\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00945\ \ \ \{}
+\DoxyCodeLine{00946\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00947\ \ \ \}}
+\DoxyCodeLine{00948\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00949\ \ \ \{}
+\DoxyCodeLine{00950\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00951\ \ \ \}}
+\DoxyCodeLine{00952\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00953\ \ \ \{}
+\DoxyCodeLine{00954\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00955\ \ \ \}}
+\DoxyCodeLine{00956\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00957\ \ \ \{}
+\DoxyCodeLine{00958\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00959\ \ \ \}}
+\DoxyCodeLine{00960\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00961\ \ \ \{}
+\DoxyCodeLine{00962\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00963\ \ \ \}}
+\DoxyCodeLine{00964\ \ \ \textcolor{keywordtype}{int}\ AllGather(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00965\ \ \ \{}
+\DoxyCodeLine{00966\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00967\ \ \ \}}
+\DoxyCodeLine{00968\ \ \ \textcolor{keywordtype}{int}\ AllGather(}
+\DoxyCodeLine{00969\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length)}
+\DoxyCodeLine{00970\ \ \ \{}
+\DoxyCodeLine{00971\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer,\ length);}
+\DoxyCodeLine{00972\ \ \ \}}
+\DoxyCodeLine{00973\ \ \ \textcolor{keywordtype}{int}\ AllGather(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer)}
+\DoxyCodeLine{00974\ \ \ \{}
+\DoxyCodeLine{00975\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer);}
+\DoxyCodeLine{00976\ \ \ \}}
+\DoxyCodeLine{00978\ }
+\DoxyCodeLine{00986\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a9da33bff8cc4f9cf11d504db4c410ccc}{AllGather}}(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ sendBuffer,\ std::vector<\doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkDataObject>}}>\&\ recvBuffer)}
+\DoxyCodeLine{00987\ \ \ \{}
+\DoxyCodeLine{00988\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer);}
+\DoxyCodeLine{00989\ \ \ \}}
+\DoxyCodeLine{00990\ }
+\DoxyCodeLine{00998\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ab5e450d89970740045fb0f0b1a275f67}{AllGather}}(}
+\DoxyCodeLine{00999\ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_multi_process_stream}{vtkMultiProcessStream}}\&\ sendBuffer,\ std::vector<vtkMultiProcessStream>\&\ recvBuffer)}
+\DoxyCodeLine{01000\ \ \ \{}
+\DoxyCodeLine{01001\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGather(sendBuffer,\ recvBuffer);}
+\DoxyCodeLine{01002\ \ \ \}}
+\DoxyCodeLine{01003\ }
+\DoxyCodeLine{01005\ }
+\DoxyCodeLine{01008\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a31160ff4ffc80a6cbd27a4afc9f2c5a9}{AllGatherV}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01009\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01010\ \ \ \{}
+\DoxyCodeLine{01011\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01012\ \ \ \}}
+\DoxyCodeLine{01013\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01014\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01015\ \ \ \{}
+\DoxyCodeLine{01016\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01017\ \ \ \}}
+\DoxyCodeLine{01018\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01019\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01020\ \ \ \{}
+\DoxyCodeLine{01021\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01022\ \ \ \}}
+\DoxyCodeLine{01023\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01024\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01025\ \ \ \{}
+\DoxyCodeLine{01026\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01027\ \ \ \}}
+\DoxyCodeLine{01028\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01029\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01030\ \ \ \{}
+\DoxyCodeLine{01031\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01032\ \ \ \}}
+\DoxyCodeLine{01033\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01034\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01035\ \ \ \{}
+\DoxyCodeLine{01036\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01037\ \ \ \}}
+\DoxyCodeLine{01038\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01039\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01040\ \ \ \{}
+\DoxyCodeLine{01041\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01042\ \ \ \}}
+\DoxyCodeLine{01043\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01044\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01045\ \ \ \{}
+\DoxyCodeLine{01046\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01047\ \ \ \}}
+\DoxyCodeLine{01048\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01049\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01050\ \ \ \{}
+\DoxyCodeLine{01051\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01052\ \ \ \}}
+\DoxyCodeLine{01053\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01054\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01055\ \ \ \{}
+\DoxyCodeLine{01056\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01057\ \ \ \}}
+\DoxyCodeLine{01058\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01059\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01060\ \ \ \{}
+\DoxyCodeLine{01061\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01062\ \ \ \}}
+\DoxyCodeLine{01063\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ sendLength,}
+\DoxyCodeLine{01064\ \ \ \ \ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01065\ \ \ \{}
+\DoxyCodeLine{01066\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01067\ \ \ \}}
+\DoxyCodeLine{01068\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,}
+\DoxyCodeLine{01069\ \ \ \ \ vtkIdType\ sendLength,\ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01070\ \ \ \{}
+\DoxyCodeLine{01071\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ sendLength,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01072\ \ \ \}}
+\DoxyCodeLine{01073\ \ \ \textcolor{keywordtype}{int}\ AllGatherV(}
+\DoxyCodeLine{01074\ \ \ \ \ vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,\ vtkIdType*\ recvLengths,\ vtkIdType*\ offsets)}
+\DoxyCodeLine{01075\ \ \ \{}
+\DoxyCodeLine{01076\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer,\ recvLengths,\ offsets);}
+\DoxyCodeLine{01077\ \ \ \}}
+\DoxyCodeLine{01079\ }
+\DoxyCodeLine{01086\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a80c5f7a83eb99d0ca6980c5a26ae21dc}{AllGatherV}}(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer)}
+\DoxyCodeLine{01087\ \ \ \{}
+\DoxyCodeLine{01088\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllGatherV(sendBuffer,\ recvBuffer);}
+\DoxyCodeLine{01089\ \ \ \}}
+\DoxyCodeLine{01090\ }
+\DoxyCodeLine{01092\ }
+\DoxyCodeLine{01097\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a53b5760c2339d1a04890623f3014c0e6}{Reduce}}(}
+\DoxyCodeLine{01098\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespaceoperation}{operation}},\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01099\ \ \ \{}
+\DoxyCodeLine{01100\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ \doxymbox{\hyperlink{namespaceoperation}{operation}},\ destProcessId);}
+\DoxyCodeLine{01101\ \ \ \}}
+\DoxyCodeLine{01102\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01103\ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespaceoperation}{operation}},\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01104\ \ \ \{}
+\DoxyCodeLine{01105\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ \doxymbox{\hyperlink{namespaceoperation}{operation}},\ destProcessId);}
+\DoxyCodeLine{01106\ \ \ \}}
+\DoxyCodeLine{01107\ \ \ \textcolor{keywordtype}{int}\ Reduce(}
+\DoxyCodeLine{01108\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01109\ \ \ \{}
+\DoxyCodeLine{01110\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01111\ \ \ \}}
+\DoxyCodeLine{01112\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01113\ \ \ \ \ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01114\ \ \ \{}
+\DoxyCodeLine{01115\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01116\ \ \ \}}
+\DoxyCodeLine{01117\ \ \ \textcolor{keywordtype}{int}\ Reduce(}
+\DoxyCodeLine{01118\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01119\ \ \ \{}
+\DoxyCodeLine{01120\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01121\ \ \ \}}
+\DoxyCodeLine{01122\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01123\ \ \ \ \ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01124\ \ \ \{}
+\DoxyCodeLine{01125\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01126\ \ \ \}}
+\DoxyCodeLine{01127\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01128\ \ \ \ \ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01129\ \ \ \{}
+\DoxyCodeLine{01130\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01131\ \ \ \}}
+\DoxyCodeLine{01132\ \ \ \textcolor{keywordtype}{int}\ Reduce(}
+\DoxyCodeLine{01133\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01134\ \ \ \{}
+\DoxyCodeLine{01135\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01136\ \ \ \}}
+\DoxyCodeLine{01137\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01138\ \ \ \ \ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01139\ \ \ \{}
+\DoxyCodeLine{01140\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01141\ \ \ \}}
+\DoxyCodeLine{01142\ \ \ \textcolor{keywordtype}{int}\ Reduce(}
+\DoxyCodeLine{01143\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01144\ \ \ \{}
+\DoxyCodeLine{01145\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01146\ \ \ \}}
+\DoxyCodeLine{01147\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation,}
+\DoxyCodeLine{01148\ \ \ \ \ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01149\ \ \ \{}
+\DoxyCodeLine{01150\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01151\ \ \ \}}
+\DoxyCodeLine{01152\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation,}
+\DoxyCodeLine{01153\ \ \ \ \ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01154\ \ \ \{}
+\DoxyCodeLine{01155\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01156\ \ \ \}}
+\DoxyCodeLine{01157\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01158\ \ \ \ \ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01159\ \ \ \{}
+\DoxyCodeLine{01160\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01161\ \ \ \}}
+\DoxyCodeLine{01162\ \ \ \textcolor{keywordtype}{int}\ Reduce(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,\ \textcolor{keywordtype}{int}\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01163\ \ \ \{}
+\DoxyCodeLine{01164\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ operation,\ destProcessId);}
+\DoxyCodeLine{01165\ \ \ \}}
+\DoxyCodeLine{01167\ }
+\DoxyCodeLine{01169\ }
+\DoxyCodeLine{01173\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_af87f3cf699ea2cbdee1096fdb3e97b63}{Reduce}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01174\ \ \ \ \ \doxymbox{\hyperlink{classvtk_communicator_1_1_operation}{vtkCommunicator::Operation}}*\ \doxymbox{\hyperlink{namespaceoperation}{operation}},\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01175\ \ \ \{}
+\DoxyCodeLine{01176\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ \doxymbox{\hyperlink{namespaceoperation}{operation}},\ destProcessId);}
+\DoxyCodeLine{01177\ \ \ \}}
+\DoxyCodeLine{01178\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01179\ \ \ \ \ \doxymbox{\hyperlink{classvtk_communicator_1_1_operation}{vtkCommunicator::Operation}}*\ \doxymbox{\hyperlink{namespaceoperation}{operation}},\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01180\ \ \ \{}
+\DoxyCodeLine{01181\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ \doxymbox{\hyperlink{namespaceoperation}{operation}},\ destProcessId);}
+\DoxyCodeLine{01182\ \ \ \}}
+\DoxyCodeLine{01183\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01184\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01185\ \ \ \{}
+\DoxyCodeLine{01186\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01187\ \ \ \}}
+\DoxyCodeLine{01188\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01189\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01190\ \ \ \{}
+\DoxyCodeLine{01191\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01192\ \ \ \}}
+\DoxyCodeLine{01193\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01194\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01195\ \ \ \{}
+\DoxyCodeLine{01196\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01197\ \ \ \}}
+\DoxyCodeLine{01198\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01199\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01200\ \ \ \{}
+\DoxyCodeLine{01201\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01202\ \ \ \}}
+\DoxyCodeLine{01203\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01204\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01205\ \ \ \{}
+\DoxyCodeLine{01206\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01207\ \ \ \}}
+\DoxyCodeLine{01208\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01209\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01210\ \ \ \{}
+\DoxyCodeLine{01211\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01212\ \ \ \}}
+\DoxyCodeLine{01213\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01214\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01215\ \ \ \{}
+\DoxyCodeLine{01216\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01217\ \ \ \}}
+\DoxyCodeLine{01218\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01219\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01220\ \ \ \{}
+\DoxyCodeLine{01221\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01222\ \ \ \}}
+\DoxyCodeLine{01223\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01224\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01225\ \ \ \{}
+\DoxyCodeLine{01226\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01227\ \ \ \}}
+\DoxyCodeLine{01228\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01229\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01230\ \ \ \{}
+\DoxyCodeLine{01231\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01232\ \ \ \}}
+\DoxyCodeLine{01233\ \ \ \textcolor{keywordtype}{int}\ Reduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01234\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01235\ \ \ \{}
+\DoxyCodeLine{01236\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ length,\ operation,\ destProcessId);}
+\DoxyCodeLine{01237\ \ \ \}}
+\DoxyCodeLine{01238\ \ \ \textcolor{keywordtype}{int}\ Reduce(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,}
+\DoxyCodeLine{01239\ \ \ \ \ vtkCommunicator::Operation*\ operation,\ \textcolor{keywordtype}{int}\ destProcessId)}
+\DoxyCodeLine{01240\ \ \ \{}
+\DoxyCodeLine{01241\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Reduce(sendBuffer,\ recvBuffer,\ operation,\ destProcessId);}
+\DoxyCodeLine{01242\ \ \ \}}
+\DoxyCodeLine{01244\ }
+\DoxyCodeLine{01246\ }
+\DoxyCodeLine{01249\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aedf8e20c8f24748844f832ead98b68eb}{AllReduce}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespaceoperation}{operation}})}
+\DoxyCodeLine{01250\ \ \ \{}
+\DoxyCodeLine{01251\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ \doxymbox{\hyperlink{namespaceoperation}{operation}});}
+\DoxyCodeLine{01252\ \ \ \}}
+\DoxyCodeLine{01253\ \ \ \textcolor{keywordtype}{int}\ AllReduce(}
+\DoxyCodeLine{01254\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{namespaceoperation}{operation}})}
+\DoxyCodeLine{01255\ \ \ \{}
+\DoxyCodeLine{01256\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ \doxymbox{\hyperlink{namespaceoperation}{operation}});}
+\DoxyCodeLine{01257\ \ \ \}}
+\DoxyCodeLine{01258\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01259\ \ \ \{}
+\DoxyCodeLine{01260\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01261\ \ \ \}}
+\DoxyCodeLine{01262\ \ \ \textcolor{keywordtype}{int}\ AllReduce(}
+\DoxyCodeLine{01263\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01264\ \ \ \{}
+\DoxyCodeLine{01265\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01266\ \ \ \}}
+\DoxyCodeLine{01267\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01268\ \ \ \{}
+\DoxyCodeLine{01269\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01270\ \ \ \}}
+\DoxyCodeLine{01271\ \ \ \textcolor{keywordtype}{int}\ AllReduce(}
+\DoxyCodeLine{01272\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01273\ \ \ \{}
+\DoxyCodeLine{01274\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01275\ \ \ \}}
+\DoxyCodeLine{01276\ \ \ \textcolor{keywordtype}{int}\ AllReduce(}
+\DoxyCodeLine{01277\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01278\ \ \ \{}
+\DoxyCodeLine{01279\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01280\ \ \ \}}
+\DoxyCodeLine{01281\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01282\ \ \ \{}
+\DoxyCodeLine{01283\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01284\ \ \ \}}
+\DoxyCodeLine{01285\ \ \ \textcolor{keywordtype}{int}\ AllReduce(}
+\DoxyCodeLine{01286\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01287\ \ \ \{}
+\DoxyCodeLine{01288\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01289\ \ \ \}}
+\DoxyCodeLine{01290\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01291\ \ \ \{}
+\DoxyCodeLine{01292\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01293\ \ \ \}}
+\DoxyCodeLine{01294\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01295\ \ \ \{}
+\DoxyCodeLine{01296\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01297\ \ \ \}}
+\DoxyCodeLine{01298\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01299\ \ \ \{}
+\DoxyCodeLine{01300\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01301\ \ \ \}}
+\DoxyCodeLine{01302\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,}
+\DoxyCodeLine{01303\ \ \ \ \ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01304\ \ \ \{}
+\DoxyCodeLine{01305\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01306\ \ \ \}}
+\DoxyCodeLine{01307\ \ \ \textcolor{keywordtype}{int}\ AllReduce(vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,\ \textcolor{keywordtype}{int}\ operation)}
+\DoxyCodeLine{01308\ \ \ \{}
+\DoxyCodeLine{01309\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ operation);}
+\DoxyCodeLine{01310\ \ \ \}}
+\DoxyCodeLine{01312\ }
+\DoxyCodeLine{01313\ \ \ \textcolor{keywordtype}{int}\ AllReduce(}
+\DoxyCodeLine{01314\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,\ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01315\ \ \ \{}
+\DoxyCodeLine{01316\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01317\ \ \ \}}
+\DoxyCodeLine{01318\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01319\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01320\ \ \ \{}
+\DoxyCodeLine{01321\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01322\ \ \ \}}
+\DoxyCodeLine{01323\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01324\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01325\ \ \ \{}
+\DoxyCodeLine{01326\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01327\ \ \ \}}
+\DoxyCodeLine{01328\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01329\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01330\ \ \ \{}
+\DoxyCodeLine{01331\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01332\ \ \ \}}
+\DoxyCodeLine{01333\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01334\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01335\ \ \ \{}
+\DoxyCodeLine{01336\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01337\ \ \ \}}
+\DoxyCodeLine{01338\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01339\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01340\ \ \ \{}
+\DoxyCodeLine{01341\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01342\ \ \ \}}
+\DoxyCodeLine{01343\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01344\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01345\ \ \ \{}
+\DoxyCodeLine{01346\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01347\ \ \ \}}
+\DoxyCodeLine{01348\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01349\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01350\ \ \ \{}
+\DoxyCodeLine{01351\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01352\ \ \ \}}
+\DoxyCodeLine{01353\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ sendBuffer,\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01354\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01355\ \ \ \{}
+\DoxyCodeLine{01356\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01357\ \ \ \}}
+\DoxyCodeLine{01358\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ sendBuffer,\ \textcolor{keywordtype}{float}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01359\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01360\ \ \ \{}
+\DoxyCodeLine{01361\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01362\ \ \ \}}
+\DoxyCodeLine{01363\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ sendBuffer,\ \textcolor{keywordtype}{double}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01364\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01365\ \ \ \{}
+\DoxyCodeLine{01366\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01367\ \ \ \}}
+\DoxyCodeLine{01368\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,\ vtkIdType\ length,}
+\DoxyCodeLine{01369\ \ \ \ \ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01370\ \ \ \{}
+\DoxyCodeLine{01371\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01372\ \ \ \}}
+\DoxyCodeLine{01373\ \ \ \textcolor{keywordtype}{int}\ AllReduce(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ sendBuffer,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ recvBuffer,}
+\DoxyCodeLine{01374\ \ \ \ \ vtkIdType\ length,\ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01375\ \ \ \{}
+\DoxyCodeLine{01376\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ length,\ operation);}
+\DoxyCodeLine{01377\ \ \ \}}
+\DoxyCodeLine{01378\ \ \ \textcolor{keywordtype}{int}\ AllReduce(}
+\DoxyCodeLine{01379\ \ \ \ \ vtkDataArray*\ sendBuffer,\ vtkDataArray*\ recvBuffer,\ vtkCommunicator::Operation*\ operation)}
+\DoxyCodeLine{01380\ \ \ \{}
+\DoxyCodeLine{01381\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>AllReduce(sendBuffer,\ recvBuffer,\ operation);}
+\DoxyCodeLine{01382\ \ \ \}}
+\DoxyCodeLine{01383\ }
+\DoxyCodeLine{01385\ }
+\DoxyCodeLine{01388\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aba39b77bd7893790048a34320f2b4133}{Reduce}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}}\&\ sendBuffer,\ \doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}}\&\ recvBuffer,\ \textcolor{keywordtype}{int}\ destProcessId);}
+\DoxyCodeLine{01389\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aedf8e20c8f24748844f832ead98b68eb}{AllReduce}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}}\&\ sendBuffer,\ \doxymbox{\hyperlink{classvtk_bounding_box}{vtkBoundingBox}}\&\ recvBuffer);}
+\DoxyCodeLine{01391\ }
+\DoxyCodeLine{01393\ }
+\DoxyCodeLine{01396\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a537da9d0d2b3b5eb19f7c7698f38363b}{Reduce}}(}
+\DoxyCodeLine{01397\ \ \ \ \ \doxymbox{\hyperlink{classvtk_data_array_selection}{vtkDataArraySelection}}*\ sendBuffer,\ \doxymbox{\hyperlink{classvtk_data_array_selection}{vtkDataArraySelection}}*\ recvBuffer,\ \textcolor{keywordtype}{int}\ destProcessId);}
+\DoxyCodeLine{01398\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_aedf8e20c8f24748844f832ead98b68eb}{AllReduce}}(\doxymbox{\hyperlink{classvtk_data_array_selection}{vtkDataArraySelection}}*\ sendBuffer,\ \doxymbox{\hyperlink{classvtk_data_array_selection}{vtkDataArraySelection}}*\ recvBuffer);}
+\DoxyCodeLine{01400\ }
+\DoxyCodeLine{01404\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a6b86eb1cf09e686488b8e1f402b54218}{CanProbe}}()\ \{\ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>CanProbe();\ \}}
+\DoxyCodeLine{01405\ }
+\DoxyCodeLine{01416\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_affd6cc05eaf51ec8c758c9b06ec9a82e}{Probe}}(\textcolor{keywordtype}{int}\ source,\ \textcolor{keywordtype}{int}\ tag,\ \textcolor{keywordtype}{int}*\ actualSource)}
+\DoxyCodeLine{01417\ \ \ \{}
+\DoxyCodeLine{01418\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Probe(source,\ tag,\ actualSource);}
+\DoxyCodeLine{01419\ \ \ \}}
+\DoxyCodeLine{01420\ }
+\DoxyCodeLine{01421\ \ \ \textcolor{comment}{//\ Internally\ implemented\ RMI\ to\ break\ the\ process\ loop.}}
+\DoxyCodeLine{01422\ }
+\DoxyCodeLine{01423\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{01424\ \ \ \doxymbox{\hyperlink{classvtk_multi_process_controller}{vtkMultiProcessController}}();}
+\DoxyCodeLine{01425\ \ \ \doxymbox{\hyperlink{classvtk_multi_process_controller}{\string~vtkMultiProcessController}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{01426\ }
+\DoxyCodeLine{01432\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a52499878bfa3f6d640be69191d24d3e4}{TriggerRMIInternal}}(}
+\DoxyCodeLine{01433\ \ \ \ \ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{void}*\ arg,\ \textcolor{keywordtype}{int}\ argLength,\ \textcolor{keywordtype}{int}\ rmiTag,\ \textcolor{keywordtype}{bool}\ propagate);}
+\DoxyCodeLine{01434\ }
+\DoxyCodeLine{01435\ \ \ vtkProcessFunctionType\ SingleMethod;}
+\DoxyCodeLine{01436\ \ \ \textcolor{keywordtype}{void}*\ SingleData;}
+\DoxyCodeLine{01437\ }
+\DoxyCodeLine{01438\ \ \ \textcolor{keywordtype}{void}\ GetMultipleMethod(\textcolor{keywordtype}{int}\ index,\ vtkProcessFunctionType\&\ func,\ \textcolor{keywordtype}{void}*\&\ data);}
+\DoxyCodeLine{01439\ }
+\DoxyCodeLine{01440\ \ \ \textcolor{comment}{//\ This\ is\ a\ flag\ that\ can\ be\ used\ by\ the\ ports\ to\ break}}
+\DoxyCodeLine{01441\ \ \ \textcolor{comment}{//\ their\ update\ loop.\ (same\ as\ ProcessRMIs)}}
+\DoxyCodeLine{01442\ \ \ \textcolor{keywordtype}{int}\ BreakFlag;}
+\DoxyCodeLine{01443\ }
+\DoxyCodeLine{01444\ \ \ \textcolor{keywordtype}{void}\ ProcessRMI(\textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{void}*\ arg,\ \textcolor{keywordtype}{int}\ argLength,\ \textcolor{keywordtype}{int}\ rmiTag);}
+\DoxyCodeLine{01445\ }
+\DoxyCodeLine{01446\ \ \ \textcolor{comment}{//\ This\ method\ implements\ "{}GetGlobalController"{}.}}
+\DoxyCodeLine{01447\ \ \ \textcolor{comment}{//\ It\ needs\ to\ be\ virtual\ and\ static.}}
+\DoxyCodeLine{01448\ \ \ \textcolor{keyword}{virtual}\ vtkMultiProcessController*\ GetLocalController();}
+\DoxyCodeLine{01449\ }
+\DoxyCodeLine{01450\ \ \ \textcolor{comment}{//\ This\ flag\ can\ force\ deep\ copies\ during\ send.}}
+\DoxyCodeLine{01451\ \ \ \textcolor{keywordtype}{int}\ ForceDeepCopy;}
+\DoxyCodeLine{01452\ }
+\DoxyCodeLine{01453\ \ \ \textcolor{comment}{//\ This\ flag\ can\ be\ used\ to\ indicate\ that\ an\ MPI\ Broadcast\ will\ be\ used}}
+\DoxyCodeLine{01454\ \ \ \textcolor{comment}{//\ when\ calling\ TriggerRMIOnAllChildren(),\ instead\ of\ the\ binary\ tree}}
+\DoxyCodeLine{01455\ \ \ \textcolor{comment}{//\ propagation\ of\ the\ data\ to\ the\ satellite\ ranks\ from\ rank\ 0.}}
+\DoxyCodeLine{01456\ \ \ \textcolor{keywordtype}{bool}\ BroadcastTriggerRMI;}
+\DoxyCodeLine{01457\ }
+\DoxyCodeLine{01458\ \ \ \doxymbox{\hyperlink{classvtk_output_window}{vtkOutputWindow}}*\ OutputWindow;}
+\DoxyCodeLine{01459\ }
+\DoxyCodeLine{01460\ \ \ \textcolor{comment}{//\ Note\ that\ since\ the\ communicators\ can\ be\ created\ differently}}
+\DoxyCodeLine{01461\ \ \ \textcolor{comment}{//\ depending\ on\ the\ type\ of\ controller,\ the\ subclasses\ are}}
+\DoxyCodeLine{01462\ \ \ \textcolor{comment}{//\ responsible\ of\ deleting\ them.}}
+\DoxyCodeLine{01463\ \ \ \doxymbox{\hyperlink{classvtk_communicator}{vtkCommunicator}}*\ Communicator;}
+\DoxyCodeLine{01464\ }
+\DoxyCodeLine{01465\ \ \ \textcolor{comment}{//\ Communicator\ which\ is\ a\ copy\ of\ the\ current\ user}}
+\DoxyCodeLine{01466\ \ \ \textcolor{comment}{//\ level\ communicator\ except\ the\ context;\ i.e.\ even\ if\ the\ tags}}
+\DoxyCodeLine{01467\ \ \ \textcolor{comment}{//\ are\ the\ same,\ the\ RMI\ messages\ will\ not\ interfere\ with\ user}}
+\DoxyCodeLine{01468\ \ \ \textcolor{comment}{//\ level\ messages.}}
+\DoxyCodeLine{01469\ \ \ \textcolor{comment}{//\ Note\ that\ since\ the\ communicators\ can\ be\ created\ differently}}
+\DoxyCodeLine{01470\ \ \ \textcolor{comment}{//\ depending\ on\ the\ type\ of\ controller,\ the\ subclasses\ are}}
+\DoxyCodeLine{01471\ \ \ \textcolor{comment}{//\ responsible\ of\ deleting\ them.}}
+\DoxyCodeLine{01472\ \ \ \doxymbox{\hyperlink{classvtk_communicator}{vtkCommunicator}}*\ RMICommunicator;}
+\DoxyCodeLine{01473\ }
+\DoxyCodeLine{01474\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01475\ \ \ vtkMultiProcessController(\textcolor{keyword}{const}\ vtkMultiProcessController\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{01476\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkMultiProcessController\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{01477\ }
+\DoxyCodeLine{01478\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ RMICount;}
+\DoxyCodeLine{01479\ }
+\DoxyCodeLine{01480\ \ \ \textcolor{keyword}{class\ }vtkInternal;}
+\DoxyCodeLine{01481\ \ \ vtkInternal*\ Internal;}
+\DoxyCodeLine{01482\ \};}
+\DoxyCodeLine{01483\ }
+\DoxyCodeLine{01484\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ data,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01485\ \{}
+\DoxyCodeLine{01486\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01487\ \ \ \{}
+\DoxyCodeLine{01488\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>\doxymbox{\hyperlink{classvtk_communicator_a7a1a1f0cd9caa9fee42ce6f42d210293}{Send}}(data,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01489\ \ \ \}}
+\DoxyCodeLine{01490\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01491\ \ \ \{}
+\DoxyCodeLine{01492\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01493\ \ \ \}}
+\DoxyCodeLine{01494\ \}}
+\DoxyCodeLine{01495\ }
+\DoxyCodeLine{01496\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(vtkDataArray*\ data,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01497\ \{}
+\DoxyCodeLine{01498\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01499\ \ \ \{}
+\DoxyCodeLine{01500\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01501\ \ \ \}}
+\DoxyCodeLine{01502\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01503\ \ \ \{}
+\DoxyCodeLine{01504\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01505\ \ \ \}}
+\DoxyCodeLine{01506\ \}}
+\DoxyCodeLine{01507\ }
+\DoxyCodeLine{01508\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01509\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{int}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01510\ \{}
+\DoxyCodeLine{01511\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01512\ \ \ \{}
+\DoxyCodeLine{01513\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01514\ \ \ \}}
+\DoxyCodeLine{01515\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01516\ \ \ \{}
+\DoxyCodeLine{01517\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01518\ \ \ \}}
+\DoxyCodeLine{01519\ \}}
+\DoxyCodeLine{01520\ }
+\DoxyCodeLine{01521\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01522\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{short}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01523\ \{}
+\DoxyCodeLine{01524\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01525\ \ \ \{}
+\DoxyCodeLine{01526\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>\doxymbox{\hyperlink{classvtk_communicator_a7a1a1f0cd9caa9fee42ce6f42d210293}{Send}}(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01527\ \ \ \}}
+\DoxyCodeLine{01528\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01529\ \ \ \{}
+\DoxyCodeLine{01530\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01531\ \ \ \}}
+\DoxyCodeLine{01532\ \}}
+\DoxyCodeLine{01533\ }
+\DoxyCodeLine{01534\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01535\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01536\ \{}
+\DoxyCodeLine{01537\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01538\ \ \ \{}
+\DoxyCodeLine{01539\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01540\ \ \ \}}
+\DoxyCodeLine{01541\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01542\ \ \ \{}
+\DoxyCodeLine{01543\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01544\ \ \ \}}
+\DoxyCodeLine{01545\ \}}
+\DoxyCodeLine{01546\ }
+\DoxyCodeLine{01547\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01548\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01549\ \{}
+\DoxyCodeLine{01550\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01551\ \ \ \{}
+\DoxyCodeLine{01552\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01553\ \ \ \}}
+\DoxyCodeLine{01554\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01555\ \ \ \{}
+\DoxyCodeLine{01556\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01557\ \ \ \}}
+\DoxyCodeLine{01558\ \}}
+\DoxyCodeLine{01559\ }
+\DoxyCodeLine{01560\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01561\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01562\ \{}
+\DoxyCodeLine{01563\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01564\ \ \ \{}
+\DoxyCodeLine{01565\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01566\ \ \ \}}
+\DoxyCodeLine{01567\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01568\ \ \ \{}
+\DoxyCodeLine{01569\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01570\ \ \ \}}
+\DoxyCodeLine{01571\ \}}
+\DoxyCodeLine{01572\ }
+\DoxyCodeLine{01573\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01574\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01575\ \{}
+\DoxyCodeLine{01576\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01577\ \ \ \{}
+\DoxyCodeLine{01578\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01579\ \ \ \}}
+\DoxyCodeLine{01580\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01581\ \ \ \{}
+\DoxyCodeLine{01582\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01583\ \ \ \}}
+\DoxyCodeLine{01584\ \}}
+\DoxyCodeLine{01585\ }
+\DoxyCodeLine{01586\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01587\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01588\ \{}
+\DoxyCodeLine{01589\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01590\ \ \ \{}
+\DoxyCodeLine{01591\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01592\ \ \ \}}
+\DoxyCodeLine{01593\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01594\ \ \ \{}
+\DoxyCodeLine{01595\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01596\ \ \ \}}
+\DoxyCodeLine{01597\ \}}
+\DoxyCodeLine{01598\ }
+\DoxyCodeLine{01599\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01600\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01601\ \{}
+\DoxyCodeLine{01602\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01603\ \ \ \{}
+\DoxyCodeLine{01604\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01605\ \ \ \}}
+\DoxyCodeLine{01606\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01607\ \ \ \{}
+\DoxyCodeLine{01608\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01609\ \ \ \}}
+\DoxyCodeLine{01610\ \}}
+\DoxyCodeLine{01611\ }
+\DoxyCodeLine{01612\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01613\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01614\ \{}
+\DoxyCodeLine{01615\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01616\ \ \ \{}
+\DoxyCodeLine{01617\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01618\ \ \ \}}
+\DoxyCodeLine{01619\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01620\ \ \ \{}
+\DoxyCodeLine{01621\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01622\ \ \ \}}
+\DoxyCodeLine{01623\ \}}
+\DoxyCodeLine{01624\ }
+\DoxyCodeLine{01625\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01626\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01627\ \{}
+\DoxyCodeLine{01628\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01629\ \ \ \{}
+\DoxyCodeLine{01630\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01631\ \ \ \}}
+\DoxyCodeLine{01632\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01633\ \ \ \{}
+\DoxyCodeLine{01634\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01635\ \ \ \}}
+\DoxyCodeLine{01636\ \}}
+\DoxyCodeLine{01637\ }
+\DoxyCodeLine{01638\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01639\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{double}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01640\ \{}
+\DoxyCodeLine{01641\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01642\ \ \ \{}
+\DoxyCodeLine{01643\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01644\ \ \ \}}
+\DoxyCodeLine{01645\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01646\ \ \ \{}
+\DoxyCodeLine{01647\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01648\ \ \ \}}
+\DoxyCodeLine{01649\ \}}
+\DoxyCodeLine{01650\ }
+\DoxyCodeLine{01651\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01652\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01653\ \{}
+\DoxyCodeLine{01654\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01655\ \ \ \{}
+\DoxyCodeLine{01656\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01657\ \ \ \}}
+\DoxyCodeLine{01658\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01659\ \ \ \{}
+\DoxyCodeLine{01660\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01661\ \ \ \}}
+\DoxyCodeLine{01662\ \}}
+\DoxyCodeLine{01663\ }
+\DoxyCodeLine{01664\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01665\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01666\ \{}
+\DoxyCodeLine{01667\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01668\ \ \ \{}
+\DoxyCodeLine{01669\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01670\ \ \ \}}
+\DoxyCodeLine{01671\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01672\ \ \ \{}
+\DoxyCodeLine{01673\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01674\ \ \ \}}
+\DoxyCodeLine{01675\ \}}
+\DoxyCodeLine{01676\ }
+\DoxyCodeLine{01677\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a20a955a91bbfda11309e98a73e4e6697}{vtkMultiProcessController::Send}}(}
+\DoxyCodeLine{01678\ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classvtk_multi_process_stream}{vtkMultiProcessStream}}\&\ stream,\ \textcolor{keywordtype}{int}\ remoteId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01679\ \{}
+\DoxyCodeLine{01680\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01681\ \ \ \{}
+\DoxyCodeLine{01682\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Send(stream,\ remoteId,\ tag);}
+\DoxyCodeLine{01683\ \ \ \}}
+\DoxyCodeLine{01684\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01685\ \}}
+\DoxyCodeLine{01686\ }
+\DoxyCodeLine{01687\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(\doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ data,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01688\ \{}
+\DoxyCodeLine{01689\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01690\ \ \ \{}
+\DoxyCodeLine{01691\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>\doxymbox{\hyperlink{classvtk_communicator_a7ab8e127ad9f1cbfc55df68f2b4b5fc5}{Receive}}(data,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01692\ \ \ \}}
+\DoxyCodeLine{01693\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01694\ \ \ \{}
+\DoxyCodeLine{01695\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01696\ \ \ \}}
+\DoxyCodeLine{01697\ \}}
+\DoxyCodeLine{01698\ }
+\DoxyCodeLine{01699\ \textcolor{keyword}{inline}\ \doxymbox{\hyperlink{classvtk_data_object}{vtkDataObject}}*\ vtkMultiProcessController::ReceiveDataObject(\textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01700\ \{}
+\DoxyCodeLine{01701\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01702\ \ \ \{}
+\DoxyCodeLine{01703\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>ReceiveDataObject(remoteProcessId,\ tag);}
+\DoxyCodeLine{01704\ \ \ \}}
+\DoxyCodeLine{01705\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01706\ \ \ \{}
+\DoxyCodeLine{01707\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{01708\ \ \ \}}
+\DoxyCodeLine{01709\ \}}
+\DoxyCodeLine{01710\ }
+\DoxyCodeLine{01711\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(vtkDataArray*\ data,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01712\ \{}
+\DoxyCodeLine{01713\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01714\ \ \ \{}
+\DoxyCodeLine{01715\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01716\ \ \ \}}
+\DoxyCodeLine{01717\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01718\ \ \ \{}
+\DoxyCodeLine{01719\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01720\ \ \ \}}
+\DoxyCodeLine{01721\ \}}
+\DoxyCodeLine{01722\ }
+\DoxyCodeLine{01723\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01724\ \ \ \textcolor{keywordtype}{int}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01725\ \{}
+\DoxyCodeLine{01726\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01727\ \ \ \{}
+\DoxyCodeLine{01728\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01729\ \ \ \}}
+\DoxyCodeLine{01730\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01731\ \ \ \{}
+\DoxyCodeLine{01732\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01733\ \ \ \}}
+\DoxyCodeLine{01734\ \}}
+\DoxyCodeLine{01735\ }
+\DoxyCodeLine{01736\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01737\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01738\ \{}
+\DoxyCodeLine{01739\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01740\ \ \ \{}
+\DoxyCodeLine{01741\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>\doxymbox{\hyperlink{classvtk_communicator_a7ab8e127ad9f1cbfc55df68f2b4b5fc5}{Receive}}(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01742\ \ \ \}}
+\DoxyCodeLine{01743\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01744\ \ \ \{}
+\DoxyCodeLine{01745\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01746\ \ \ \}}
+\DoxyCodeLine{01747\ \}}
+\DoxyCodeLine{01748\ }
+\DoxyCodeLine{01749\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01750\ \ \ \textcolor{keywordtype}{short}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01751\ \{}
+\DoxyCodeLine{01752\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01753\ \ \ \{}
+\DoxyCodeLine{01754\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01755\ \ \ \}}
+\DoxyCodeLine{01756\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01757\ \ \ \{}
+\DoxyCodeLine{01758\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01759\ \ \ \}}
+\DoxyCodeLine{01760\ \}}
+\DoxyCodeLine{01761\ }
+\DoxyCodeLine{01762\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01763\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01764\ \{}
+\DoxyCodeLine{01765\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01766\ \ \ \{}
+\DoxyCodeLine{01767\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01768\ \ \ \}}
+\DoxyCodeLine{01769\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01770\ \ \ \{}
+\DoxyCodeLine{01771\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01772\ \ \ \}}
+\DoxyCodeLine{01773\ \}}
+\DoxyCodeLine{01774\ }
+\DoxyCodeLine{01775\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01776\ \ \ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01777\ \{}
+\DoxyCodeLine{01778\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01779\ \ \ \{}
+\DoxyCodeLine{01780\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01781\ \ \ \}}
+\DoxyCodeLine{01782\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01783\ \ \ \{}
+\DoxyCodeLine{01784\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01785\ \ \ \}}
+\DoxyCodeLine{01786\ \}}
+\DoxyCodeLine{01787\ }
+\DoxyCodeLine{01788\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01789\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01790\ \{}
+\DoxyCodeLine{01791\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01792\ \ \ \{}
+\DoxyCodeLine{01793\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01794\ \ \ \}}
+\DoxyCodeLine{01795\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01796\ \ \ \{}
+\DoxyCodeLine{01797\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01798\ \ \ \}}
+\DoxyCodeLine{01799\ \}}
+\DoxyCodeLine{01800\ }
+\DoxyCodeLine{01801\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01802\ \ \ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01803\ \{}
+\DoxyCodeLine{01804\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01805\ \ \ \{}
+\DoxyCodeLine{01806\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01807\ \ \ \}}
+\DoxyCodeLine{01808\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01809\ \ \ \{}
+\DoxyCodeLine{01810\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01811\ \ \ \}}
+\DoxyCodeLine{01812\ \}}
+\DoxyCodeLine{01813\ }
+\DoxyCodeLine{01814\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01815\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01816\ \{}
+\DoxyCodeLine{01817\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01818\ \ \ \{}
+\DoxyCodeLine{01819\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01820\ \ \ \}}
+\DoxyCodeLine{01821\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01822\ \ \ \{}
+\DoxyCodeLine{01823\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01824\ \ \ \}}
+\DoxyCodeLine{01825\ \}}
+\DoxyCodeLine{01826\ }
+\DoxyCodeLine{01827\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01828\ \ \ \textcolor{keywordtype}{signed}\ \textcolor{keywordtype}{char}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01829\ \{}
+\DoxyCodeLine{01830\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01831\ \ \ \{}
+\DoxyCodeLine{01832\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01833\ \ \ \}}
+\DoxyCodeLine{01834\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01835\ \ \ \{}
+\DoxyCodeLine{01836\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01837\ \ \ \}}
+\DoxyCodeLine{01838\ \}}
+\DoxyCodeLine{01839\ }
+\DoxyCodeLine{01840\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01841\ \ \ \textcolor{keywordtype}{float}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01842\ \{}
+\DoxyCodeLine{01843\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01844\ \ \ \{}
+\DoxyCodeLine{01845\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01846\ \ \ \}}
+\DoxyCodeLine{01847\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01848\ \ \ \{}
+\DoxyCodeLine{01849\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01850\ \ \ \}}
+\DoxyCodeLine{01851\ \}}
+\DoxyCodeLine{01852\ }
+\DoxyCodeLine{01853\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01854\ \ \ \textcolor{keywordtype}{double}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01855\ \{}
+\DoxyCodeLine{01856\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01857\ \ \ \{}
+\DoxyCodeLine{01858\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01859\ \ \ \}}
+\DoxyCodeLine{01860\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01861\ \ \ \{}
+\DoxyCodeLine{01862\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01863\ \ \ \}}
+\DoxyCodeLine{01864\ \}}
+\DoxyCodeLine{01865\ }
+\DoxyCodeLine{01866\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01867\ \ \ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01868\ \{}
+\DoxyCodeLine{01869\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01870\ \ \ \{}
+\DoxyCodeLine{01871\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01872\ \ \ \}}
+\DoxyCodeLine{01873\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01874\ \ \ \{}
+\DoxyCodeLine{01875\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01876\ \ \ \}}
+\DoxyCodeLine{01877\ \}}
+\DoxyCodeLine{01878\ }
+\DoxyCodeLine{01879\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(}
+\DoxyCodeLine{01880\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \textcolor{keywordtype}{long}*\ data,\ vtkIdType\ length,\ \textcolor{keywordtype}{int}\ remoteProcessId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01881\ \{}
+\DoxyCodeLine{01882\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01883\ \ \ \{}
+\DoxyCodeLine{01884\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(data,\ length,\ remoteProcessId,\ tag);}
+\DoxyCodeLine{01885\ \ \ \}}
+\DoxyCodeLine{01886\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01887\ \ \ \{}
+\DoxyCodeLine{01888\ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01889\ \ \ \}}
+\DoxyCodeLine{01890\ \}}
+\DoxyCodeLine{01891\ }
+\DoxyCodeLine{01892\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_ad09a46e615721c8d4c058afc82d319f2}{vtkMultiProcessController::Receive}}(\doxymbox{\hyperlink{classvtk_multi_process_stream}{vtkMultiProcessStream}}\&\ stream,\ \textcolor{keywordtype}{int}\ remoteId,\ \textcolor{keywordtype}{int}\ tag)}
+\DoxyCodeLine{01893\ \{}
+\DoxyCodeLine{01894\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01895\ \ \ \{}
+\DoxyCodeLine{01896\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>Receive(stream,\ remoteId,\ tag);}
+\DoxyCodeLine{01897\ \ \ \}}
+\DoxyCodeLine{01898\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01899\ \}}
+\DoxyCodeLine{01900\ }
+\DoxyCodeLine{01901\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a8ebf7a53021a4e751c196ffaad9c0d78}{vtkMultiProcessController::Barrier}}()}
+\DoxyCodeLine{01902\ \{}
+\DoxyCodeLine{01903\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01904\ \ \ \{}
+\DoxyCodeLine{01905\ \ \ \ \ this-\/>Communicator-\/>Barrier();}
+\DoxyCodeLine{01906\ \ \ \}}
+\DoxyCodeLine{01907\ \}}
+\DoxyCodeLine{01908\ }
+\DoxyCodeLine{01909\ \textcolor{keyword}{inline}\ vtkIdType\ \doxymbox{\hyperlink{classvtk_multi_process_controller_a0888819972f0ae4df95eac059a008812}{vtkMultiProcessController::GetCount}}()}
+\DoxyCodeLine{01910\ \{}
+\DoxyCodeLine{01911\ \ \ \textcolor{keywordflow}{if}\ (this-\/>Communicator)}
+\DoxyCodeLine{01912\ \ \ \{}
+\DoxyCodeLine{01913\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Communicator-\/>GetCount();}
+\DoxyCodeLine{01914\ \ \ \}}
+\DoxyCodeLine{01915\ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{01916\ \}}
+\DoxyCodeLine{01917\ }
+\DoxyCodeLine{01918\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{01919\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,27 @@
+var class_t_i_d1500___measurement_report =
+[
+    [ "TID1500_MeasurementReport", "class_t_i_d1500___measurement_report.html#add7b761d7b029a7923c6be7fcbd2d6d8", null ],
+    [ "addIndividualMeasurements", "class_t_i_d1500___measurement_report.html#a16c0b65b5029d20630dae09d5675213b", null ],
+    [ "addProcedureReported", "class_t_i_d1500___measurement_report.html#a3fd0bb4fa879bcdb7b0cac0ab13886db", null ],
+    [ "addQualitativeEvaluation", "class_t_i_d1500___measurement_report.html#abb83297468eaa9bc39dedea9f29d9125", null ],
+    [ "addQualitativeEvaluation", "class_t_i_d1500___measurement_report.html#acf1f2b8c554c8252477bd75448ebff6f", null ],
+    [ "addVolumetricROIMeasurements", "class_t_i_d1500___measurement_report.html#a7a1626afff95e3a42f1ea2bd5cf22e90", null ],
+    [ "clear", "class_t_i_d1500___measurement_report.html#afd38ab8fb5cafde81f72b83f7d099871", null ],
+    [ "createMeasurementReport", "class_t_i_d1500___measurement_report.html#a428ed7f325e5cda675d6a40c4fa51096", null ],
+    [ "createNewMeasurementReport", "class_t_i_d1500___measurement_report.html#ae3e8f61d3b7629c6d431e032143334ca", null ],
+    [ "createQualitativeEvaluations", "class_t_i_d1500___measurement_report.html#ab6cdeee48209eff5ae33e257f1abbdf5", null ],
+    [ "getDocumentTitle", "class_t_i_d1500___measurement_report.html#ae52dd11db3296a68bc7bd2a646bbfd77", null ],
+    [ "getImageLibrary", "class_t_i_d1500___measurement_report.html#a5e0aba2a4d276518f5a98dce130bba28", null ],
+    [ "getIndividualMeasurements", "class_t_i_d1500___measurement_report.html#a64fd0c32fe74ba77c9efe3e115fb8f0b", null ],
+    [ "getLanguage", "class_t_i_d1500___measurement_report.html#a049b597401768733c2dd8b59eacf8728", null ],
+    [ "getObservationContext", "class_t_i_d1500___measurement_report.html#a6ca22c39e30db1a4da62678ed3ca390b", null ],
+    [ "getVolumetricROIMeasurements", "class_t_i_d1500___measurement_report.html#ae1853e476760484627a91430ec5cbdfc", null ],
+    [ "hasImageLibrary", "class_t_i_d1500___measurement_report.html#ab3b1f4cf38c55cea69c6f11f076eaf19", null ],
+    [ "hasImagingMeasurements", "class_t_i_d1500___measurement_report.html#a9dd35b44972b82132b2b2aa067f68e38", null ],
+    [ "hasIndividualMeasurements", "class_t_i_d1500___measurement_report.html#afacfdbea078b1c94bd3c2e30d72639fb", null ],
+    [ "hasProcedureReported", "class_t_i_d1500___measurement_report.html#a02df5bf5909fc518dc87cd98a4abd4b4", null ],
+    [ "hasQualitativeEvaluations", "class_t_i_d1500___measurement_report.html#a10091fdbce617fae5d705487272301e6", null ],
+    [ "hasVolumetricROIMeasurements", "class_t_i_d1500___measurement_report.html#ac2eb07dc4d93024e62a8f2fbf0fce95d", null ],
+    [ "isValid", "class_t_i_d1500___measurement_report.html#aa86757b8a5aca0e7faaedf452d605df7", null ],
+    [ "setLanguage", "class_t_i_d1500___measurement_report.html#a4a7c3e17ae4fdf05b8f33e34ea579962", null ]
+];

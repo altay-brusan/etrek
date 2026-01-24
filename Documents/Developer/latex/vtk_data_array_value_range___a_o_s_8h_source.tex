@@ -1,0 +1,181 @@
+\doxysection{vtk\+Data\+Array\+Value\+Range\+\_\+\+AOS.\+h}
+\hypertarget{vtk_data_array_value_range___a_o_s_8h_source}{}\label{vtk_data_array_value_range___a_o_s_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataArrayValueRange\_AOS.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkDataArrayValueRange\_AOS.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#ifndef\ vtkDataArrayValueRange\_AOS\_h}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#define\ vtkDataArrayValueRange\_AOS\_h}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}vtkAOSDataArrayTemplate.h"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{vtk_data_array_meta_8h}{vtkDataArrayMeta.h}}"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}vtkDataArrayValueRange\_Generic.h"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}vtkDebugRangeIterators.h"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ Disable\ this\ specialization\ when\ iterator\ debugging\ is\ requested:}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifndef\ VTK\_DEBUG\_RANGE\_ITERATORS}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ VTK\_ITER\_OPTIMIZE\_START}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00028\ \{}
+\DoxyCodeLine{00029\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ ValueRange}}
+\DoxyCodeLine{00033\ \textcolor{comment}{//\ For\ vtkAOSDataArrayTemplate,\ the\ \`{}ForceValueTypeForVtkDataArray`\ template\ parameter\ is\ not\ used}}
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ at\ all.}}
+\DoxyCodeLine{00035\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ValueTypeT,\ ComponentIdType\ TupleSize,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00036\ \textcolor{keyword}{struct\ }ValueRange<\doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate}}<ValueTypeT>,\ TupleSize,\ ForceValueTypeForVtkDataArray>}
+\DoxyCodeLine{00037\ \{}
+\DoxyCodeLine{00038\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00039\ \ \ \textcolor{keyword}{static\_assert}(\doxymbox{\hyperlink{structvtk_1_1detail_1_1_is_valid_tuple_size}{IsValidTupleSize<TupleSize>::value}},\ \textcolor{stringliteral}{"{}Invalid\ tuple\ size."{}});}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \textcolor{keyword}{using\ }IdStorageType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_id_storage}{IdStorage<TupleSize>}};}
+\DoxyCodeLine{00042\ \ \ \textcolor{keyword}{using\ }NumCompsType\ =\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_generic_tuple_size}{GenericTupleSize<TupleSize>}};}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00045\ \ \ \textcolor{keyword}{using\ }ArrayType\ =\ \doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate<ValueTypeT>}};}
+\DoxyCodeLine{00046\ \ \ \textcolor{keyword}{using\ }ValueType\ =\ ValueTypeT;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{using\ }IteratorType\ =\ ValueType*;}
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{using\ }ConstIteratorType\ =\ ValueType\ \textcolor{keyword}{const}*;}
+\DoxyCodeLine{00050\ \ \ \textcolor{keyword}{using\ }ReferenceType\ =\ ValueType\&;}
+\DoxyCodeLine{00051\ \ \ \textcolor{keyword}{using\ }ConstReferenceType\ =\ ValueType\ \textcolor{keyword}{const}\&;}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{//\ May\ be\ DynamicTupleSize,\ or\ the\ actual\ tuple\ size.}}
+\DoxyCodeLine{00054\ \ \ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{static}\ ComponentIdType\ TupleSizeTag\ =\ TupleSize;}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \textcolor{comment}{//\ STL-\/compat}}
+\DoxyCodeLine{00057\ \ \ \textcolor{keyword}{using\ }value\_type\ =\ ValueType;}
+\DoxyCodeLine{00058\ \ \ \textcolor{keyword}{using\ }size\_type\ =\ ValueIdType;}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{using\ }iterator\ =\ IteratorType;}
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{using\ }const\_iterator\ =\ ConstIteratorType;}
+\DoxyCodeLine{00061\ \ \ \textcolor{keyword}{using\ }reference\ =\ ReferenceType;}
+\DoxyCodeLine{00062\ \ \ \textcolor{keyword}{using\ }const\_reference\ =\ ConstReferenceType;}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00065\ \ \ ValueRange()\ \textcolor{keyword}{noexcept}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00068\ \ \ ValueRange(ArrayType*\ arr,\ ValueIdType\ beginValue,\ ValueIdType\ endValue)\ noexcept}
+\DoxyCodeLine{00069\ \ \ \ \ :\ Array(arr)}
+\DoxyCodeLine{00070\ \ \ \ \ ,\ NumComps(arr)}
+\DoxyCodeLine{00071\ \ \ \ \ ,\ BeginValue(beginValue)}
+\DoxyCodeLine{00072\ \ \ \ \ ,\ EndValue(endValue)}
+\DoxyCodeLine{00073\ \ \ \{}
+\DoxyCodeLine{00074\ \ \ \ \ assert(this-\/>Array);}
+\DoxyCodeLine{00075\ \ \ \ \ assert(beginValue\ >=\ 0\ \&\&\ beginValue\ <=\ endValue);}
+\DoxyCodeLine{00076\ \ \ \ \ assert(endValue\ >=\ 0\ \&\&\ endValue\ <=\ this-\/>Array-\/>GetNumberOfValues());}
+\DoxyCodeLine{00077\ \ \ \}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00080\ \ \ ValueRange\ GetSubRange(ValueIdType\ beginValue\ =\ 0,\ ValueIdType\ endValue\ =\ -\/1)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00081\ \ \ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keyword}{const}\ ValueIdType\ realBegin\ =}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ std::distance(this-\/>Array-\/>GetPointer(0),\ this-\/>Array-\/>GetPointer(this-\/>BeginValue))\ +}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ beginValue;}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keyword}{const}\ ValueIdType\ realEnd\ =\ endValue\ >=\ 0}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ ?\ std::distance(this-\/>Array-\/>GetPointer(0),\ this-\/>Array-\/>GetPointer(this-\/>BeginValue))\ +}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ endValue}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ :\ std::distance(this-\/>Array-\/>GetPointer(0),\ this-\/>Array-\/>GetPointer(this-\/>EndValue));}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordflow}{return}\ ValueRange<ArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>\{\ this-\/>Array,\ realBegin,}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ realEnd\ \};}
+\DoxyCodeLine{00092\ \ \ \}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00095\ \ \ ArrayType*\ GetArray()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array;\ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00098\ \ \ ComponentIdType\ GetTupleSize()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>NumComps.value;\ \}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00101\ \ \ ValueIdType\ GetBeginValueId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00102\ \ \ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}ValueIdType\textcolor{keyword}{>}(}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ this-\/>Array-\/>GetPointer(this-\/>BeginValue)\ -\/\ this-\/>Array-\/>GetPointer(0));}
+\DoxyCodeLine{00105\ \ \ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00108\ \ \ ValueIdType\ GetEndValueId()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00109\ \ \ \{}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}ValueIdType\textcolor{keyword}{>}(}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ this-\/>Array-\/>GetPointer(this-\/>EndValue)\ -\/\ this-\/>Array-\/>GetPointer(0));}
+\DoxyCodeLine{00112\ \ \ \}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00115\ \ \ size\_type\ size()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00116\ \ \ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}size\_type\textcolor{keyword}{>}(}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ this-\/>Array-\/>GetPointer(this-\/>EndValue)\ -\/\ this-\/>Array-\/>GetPointer(this-\/>BeginValue));}
+\DoxyCodeLine{00119\ \ \ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00122\ \ \ iterator\ begin()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetPointer(this-\/>BeginValue);\ \}}
+\DoxyCodeLine{00123\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00124\ \ \ iterator\ end()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetPointer(this-\/>EndValue);\ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00127\ \ \ const\_iterator\ begin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetPointer(this-\/>BeginValue);\ \}}
+\DoxyCodeLine{00128\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00129\ \ \ const\_iterator\ end()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetPointer(this-\/>EndValue);\ \}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00132\ \ \ const\_iterator\ cbegin()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetPointer(this-\/>BeginValue);\ \}}
+\DoxyCodeLine{00133\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00134\ \ \ const\_iterator\ cend()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array-\/>GetPointer(this-\/>EndValue);\ \}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00137\ \ \ reference\ operator[](size\_type\ i)\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00138\ \ \ \{}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Array-\/>Buffer-\/>GetBuffer()[this-\/>BeginValue\ +\ i];}
+\DoxyCodeLine{00140\ \ \ \}}
+\DoxyCodeLine{00141\ \ \ VTK\_ITER\_INLINE}
+\DoxyCodeLine{00142\ \ \ const\_reference\ operator[](size\_type\ i)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}}
+\DoxyCodeLine{00143\ \ \ \{}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordflow}{return}\ this-\/>Array-\/>Buffer-\/>GetBuffer()[this-\/>BeginValue\ +\ i];}
+\DoxyCodeLine{00145\ \ \ \}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{comment}{//\ Danger!\ pointer\ is\ non-\/const!}}
+\DoxyCodeLine{00148\ \ \ value\_type*\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_range_a2a5fcc2ed2064f7e5cb47d7cf0266a1a}{data}}()\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array-\/>Buffer-\/>GetBuffer();\ \}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ value\_type*\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_range_a2a5fcc2ed2064f7e5cb47d7cf0266a1a}{data}}()\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept}\ \{\ \textcolor{keywordflow}{return}\ this-\/>Array-\/>Buffer-\/>GetBuffer();\ \}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00153\ \ \ \textcolor{keyword}{mutable}\ ArrayType*\ Array\{\ \textcolor{keyword}{nullptr}\ \};}
+\DoxyCodeLine{00154\ \ \ NumCompsType\ NumComps\{\};}
+\DoxyCodeLine{00155\ \ \ ValueIdType\ BeginValue\{\ 0\ \};}
+\DoxyCodeLine{00156\ \ \ ValueIdType\ EndValue\{\ 0\ \};}
+\DoxyCodeLine{00157\ \};}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \textcolor{comment}{//\ Unimplemented,\ only\ used\ inside\ decltype\ in\ SelectValueRange:}}
+\DoxyCodeLine{00160\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ ArrayType,\ ComponentIdType\ TupleSize,\ \textcolor{keyword}{typename}\ ForceValueTypeForVtkDataArray,}
+\DoxyCodeLine{00161\ \ \ \textcolor{comment}{//\ Convenience:}}
+\DoxyCodeLine{00162\ \ \ \textcolor{keyword}{typename}\ ValueType\ =\ \textcolor{keyword}{typename}\ ArrayType::ValueType,}
+\DoxyCodeLine{00163\ \ \ \textcolor{keyword}{typename}\ AOSArrayType\ =\ \doxymbox{\hyperlink{classvtk_a_o_s_data_array_template}{vtkAOSDataArrayTemplate<ValueType>}},}
+\DoxyCodeLine{00164\ \ \ \textcolor{comment}{//\ SFINAE\ to\ select\ AOS\ arrays:}}
+\DoxyCodeLine{00165\ \ \ \textcolor{keyword}{typename}\ =\ \textcolor{keyword}{typename}\ std::enable\_if<IsAOSDataArray<ArrayType>::value>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}>}
+\DoxyCodeLine{00166\ \doxymbox{\hyperlink{structvtk_1_1detail_1_1_value_range}{ValueRange<AOSArrayType,\ TupleSize,\ ForceValueTypeForVtkDataArray>}}\ DeclareValueRangeSpecialization(}
+\DoxyCodeLine{00167\ \ \ ArrayType*);}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00170\ \}}
+\DoxyCodeLine{00171\ \}\ \textcolor{comment}{//\ end\ namespace\ vtk::detail}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ VTK\_ITER\_OPTIMIZE\_END}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ VTK\_DEBUG\_RANGE\_ITERATORS}}
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ vtkDataArrayValueRange\_AOS\_h}}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkDataArrayValueRange\_AOS.h}}
+
+\end{DoxyCode}

@@ -1,0 +1,150 @@
+\doxysection{vtk\+Parse\+String.\+h}
+\hypertarget{vtk_parse_string_8h_source}{}\label{vtk_parse_string_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkParseString.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkParseString.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ 2012\ David\ Gobbi}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#ifndef\ vtkParseString\_h}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#define\ vtkParseString\_h}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}vtkWrappingToolsModule.h"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ <stddef.h>}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00032\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}}
+\DoxyCodeLine{00033\ \{}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00039\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ parse\_char\_type\_}
+\DoxyCodeLine{00040\ \ \ \{}
+\DoxyCodeLine{00041\ \ \ \ \ CPRE\_NONDIGIT\ =\ 0x01,\ \textcolor{comment}{/*\ A-\/Z\ a-\/z\ and\ \_\ */}}
+\DoxyCodeLine{00042\ \ \ \ \ CPRE\_DIGIT\ =\ 0x02,\ \ \ \ \textcolor{comment}{/*\ 0-\/9\ */}}
+\DoxyCodeLine{00043\ \ \ \ \ CPRE\_XDIGIT\ =\ 0x03,\ \ \ \textcolor{comment}{/*\ 0-\/9\ A-\/Z\ a-\/z\ and\ \_\ */}}
+\DoxyCodeLine{00044\ \ \ \ \ CPRE\_EXTEND\ =\ 0x04,\ \ \ \textcolor{comment}{/*\ non-\/ascii\ character\ */}}
+\DoxyCodeLine{00045\ \ \ \ \ CPRE\_ID\ =\ 0x05,\ \ \ \ \ \ \ \textcolor{comment}{/*\ starting\ char\ for\ identifier\ */}}
+\DoxyCodeLine{00046\ \ \ \ \ CPRE\_XID\ =\ 0x07,\ \ \ \ \ \ \textcolor{comment}{/*\ continuing\ char\ for\ identifier\ */}}
+\DoxyCodeLine{00047\ \ \ \ \ CPRE\_HEX\ =\ 0x08,\ \ \ \ \ \ \textcolor{comment}{/*\ 0-\/9\ A-\/F\ a-\/f\ hexadecimal\ digits\ */}}
+\DoxyCodeLine{00048\ \ \ \ \ CPRE\_SIGN\ =\ 0x10,\ \ \ \ \ \textcolor{comment}{/*\ +-\/\ (sign\ for\ floats)\ */}}
+\DoxyCodeLine{00049\ \ \ \ \ CPRE\_QUOTE\ =\ 0x20,\ \ \ \ \textcolor{comment}{/*\ "{}\ and\ '\ */}}
+\DoxyCodeLine{00050\ \ \ \ \ CPRE\_HSPACE\ =\ 0x40,\ \ \ \textcolor{comment}{/*\ space,\ tab,\ carriage\ return\ */}}
+\DoxyCodeLine{00051\ \ \ \ \ CPRE\_VSPACE\ =\ 0x80,\ \ \ \textcolor{comment}{/*\ newline,\ vertical\ tab,\ form\ feed\ */}}
+\DoxyCodeLine{00052\ \ \ \ \ CPRE\_WHITE\ =\ 0xC0,\ \ \ \ \textcolor{comment}{/*\ all\ whitespace\ characters\ */}}
+\DoxyCodeLine{00053\ \ \ \}\ parse\_char\_type;}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00058\ \ \ VTKWRAPPINGTOOLS\_EXPORT\ \textcolor{keywordtype}{int}\ vtkParse\_CharType(\textcolor{keywordtype}{char}\ c,\ \textcolor{keywordtype}{int}\ bits);}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00066\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ parse\_space\_t\_}
+\DoxyCodeLine{00067\ \ \ \{}
+\DoxyCodeLine{00068\ \ \ \ \ WS\_DEFAULT\ =\ CPRE\_WHITE,\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ skip\ all\ whitespace\ */}}
+\DoxyCodeLine{00069\ \ \ \ \ WS\_PREPROC\ =\ CPRE\_HSPACE,\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ skip\ horizontal\ whitespace\ only\ */}}
+\DoxyCodeLine{00070\ \ \ \ \ WS\_COMMENT\ =\ (CPRE\_WHITE\ |\ 0x100),\ \textcolor{comment}{/*\ comments\ as\ tokens\ */}}
+\DoxyCodeLine{00071\ \ \ \}\ parse\_space\_t;}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00076\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ preproc\_token\_t\_}
+\DoxyCodeLine{00077\ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \ \ TOK\_OTHER\ =\ 257,}
+\DoxyCodeLine{00079\ \ \ \ \ TOK\_ID,\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ any\ id\ */}}
+\DoxyCodeLine{00080\ \ \ \ \ TOK\_CHAR,\ \ \ \ \ \ \ \textcolor{comment}{/*\ char\ literal\ */}}
+\DoxyCodeLine{00081\ \ \ \ \ TOK\_STRING,\ \ \ \ \ \textcolor{comment}{/*\ string\ literal\ */}}
+\DoxyCodeLine{00082\ \ \ \ \ TOK\_NUMBER,\ \ \ \ \ \textcolor{comment}{/*\ any\ numeric\ literal\ */}}
+\DoxyCodeLine{00083\ \ \ \ \ TOK\_COMMENT,\ \ \ \ \textcolor{comment}{/*\ C\ or\ C++\ comment\ */}}
+\DoxyCodeLine{00084\ \ \ \ \ TOK\_DBLHASH,\ \ \ \ \textcolor{comment}{/*\ \#\#\ */}}
+\DoxyCodeLine{00085\ \ \ \ \ TOK\_SCOPE,\ \ \ \ \ \ \textcolor{comment}{/*\ ::\ */}}
+\DoxyCodeLine{00086\ \ \ \ \ TOK\_INCR,\ \ \ \ \ \ \ \textcolor{comment}{/*\ ++\ */}}
+\DoxyCodeLine{00087\ \ \ \ \ TOK\_DECR,\ \ \ \ \ \ \ \textcolor{comment}{/*\ -\/-\/\ */}}
+\DoxyCodeLine{00088\ \ \ \ \ TOK\_RSHIFT,\ \ \ \ \ \textcolor{comment}{/*\ >>\ */}}
+\DoxyCodeLine{00089\ \ \ \ \ TOK\_LSHIFT,\ \ \ \ \ \textcolor{comment}{/*\ <<\ */}}
+\DoxyCodeLine{00090\ \ \ \ \ TOK\_AND,\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ \&\&\ */}}
+\DoxyCodeLine{00091\ \ \ \ \ TOK\_OR,\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ ||\ */}}
+\DoxyCodeLine{00092\ \ \ \ \ TOK\_EQ,\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ ==\ */}}
+\DoxyCodeLine{00093\ \ \ \ \ TOK\_NE,\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ !=\ */}}
+\DoxyCodeLine{00094\ \ \ \ \ TOK\_GE,\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ >=\ */}}
+\DoxyCodeLine{00095\ \ \ \ \ TOK\_LE,\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ <=\ */}}
+\DoxyCodeLine{00096\ \ \ \ \ TOK\_ADD\_EQ,\ \ \ \ \ \textcolor{comment}{/*\ +=\ */}}
+\DoxyCodeLine{00097\ \ \ \ \ TOK\_SUB\_EQ,\ \ \ \ \ \textcolor{comment}{/*\ -\/=\ */}}
+\DoxyCodeLine{00098\ \ \ \ \ TOK\_MUL\_EQ,\ \ \ \ \ \textcolor{comment}{/*\ *=\ */}}
+\DoxyCodeLine{00099\ \ \ \ \ TOK\_DIV\_EQ,\ \ \ \ \ \textcolor{comment}{/*\ /=\ */}}
+\DoxyCodeLine{00100\ \ \ \ \ TOK\_MOD\_EQ,\ \ \ \ \ \textcolor{comment}{/*\ \%=\ */}}
+\DoxyCodeLine{00101\ \ \ \ \ TOK\_AND\_EQ,\ \ \ \ \ \textcolor{comment}{/*\ \&=\ */}}
+\DoxyCodeLine{00102\ \ \ \ \ TOK\_OR\_EQ,\ \ \ \ \ \ \textcolor{comment}{/*\ |=\ */}}
+\DoxyCodeLine{00103\ \ \ \ \ TOK\_XOR\_EQ,\ \ \ \ \ \textcolor{comment}{/*\ \string^=\ */}}
+\DoxyCodeLine{00104\ \ \ \ \ TOK\_ARROW,\ \ \ \ \ \ \textcolor{comment}{/*\ -\/>\ */}}
+\DoxyCodeLine{00105\ \ \ \ \ TOK\_DOT\_STAR,\ \ \ \textcolor{comment}{/*\ .*\ */}}
+\DoxyCodeLine{00106\ \ \ \ \ TOK\_ARROW\_STAR,\ \textcolor{comment}{/*\ -\/>*\ */}}
+\DoxyCodeLine{00107\ \ \ \ \ TOK\_RSHIFT\_EQ,\ \ \textcolor{comment}{/*\ >>=\ */}}
+\DoxyCodeLine{00108\ \ \ \ \ TOK\_LSHIFT\_EQ,\ \ \textcolor{comment}{/*\ <<=\ */}}
+\DoxyCodeLine{00109\ \ \ \ \ TOK\_ELLIPSIS,\ \ \ \textcolor{comment}{/*\ ...\ */}}
+\DoxyCodeLine{00110\ \ \ \}\ preproc\_token\_t;}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_string_tokenizer__}{StringTokenizer\_}}}
+\DoxyCodeLine{00122\ \ \ \{}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keywordtype}{int}\ tok;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ the\ current\ token\ */}}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ hash;\ \textcolor{comment}{/*\ the\ hash\ of\ the\ current\ token,\ if\ it\ is\ an\ id\ */}}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ text;\ \ \textcolor{comment}{/*\ the\ text\ for\ the\ current\ token,\ not\ null-\/teminated\ */}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ len;\ \ \ \ \ \ \ \ \textcolor{comment}{/*\ the\ length\ of\ the\ current\ token\ */}}
+\DoxyCodeLine{00127\ \ \ \ \ parse\_space\_t\ ws;\ \ \textcolor{comment}{/*\ controls\ what\ to\ consider\ as\ whitespace\ */}}
+\DoxyCodeLine{00128\ \ \ \}\ StringTokenizer;}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00133\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00134\ \ \ \textcolor{keywordtype}{void}\ vtkParse\_InitTokenizer(StringTokenizer*\ tokens,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ text,\ parse\_space\_t\ wstype);}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00139\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00140\ \ \ \textcolor{keywordtype}{int}\ vtkParse\_NextToken(StringTokenizer*\ tokens);}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00147\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00148\ \ \ \textcolor{keywordtype}{size\_t}\ vtkParse\_SkipWhitespace(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ cp,\ parse\_space\_t\ spacetype);}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00154\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00155\ \ \ \textcolor{keywordtype}{size\_t}\ vtkParse\_SkipComment(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ cp);}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00161\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00162\ \ \ \textcolor{keywordtype}{size\_t}\ vtkParse\_SkipQuotes(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ cp);}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00168\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00169\ \ \ \textcolor{keywordtype}{size\_t}\ vtkParse\_SkipNumber(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ cp);}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00175\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00176\ \ \ \textcolor{keywordtype}{size\_t}\ vtkParse\_SkipId(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ cp);}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00185\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00186\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vtkParse\_HashId(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ cp);}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00193\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00194\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vtkParse\_DecodeUtf8(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}**\ cpp,\ \textcolor{keywordtype}{int}*\ error\_flag);}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00201\ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_string_cache__}{StringCache\_}}}
+\DoxyCodeLine{00202\ \ \ \{}
+\DoxyCodeLine{00203\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ NumberOfChunks;}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordtype}{char}**\ Chunks;}
+\DoxyCodeLine{00205\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ ChunkSize;}
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ Position;}
+\DoxyCodeLine{00207\ \ \ \}\ StringCache;}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00212\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00213\ \ \ \textcolor{keywordtype}{void}\ vtkParse\_InitStringCache(StringCache*\ cache);}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00219\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00220\ \ \ \textcolor{keywordtype}{char}*\ vtkParse\_NewString(StringCache*\ cache,\ \textcolor{keywordtype}{size\_t}\ n);}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00228\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00229\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ vtkParse\_CacheString(StringCache*\ cache,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ cp,\ \textcolor{keywordtype}{size\_t}\ n);}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00235\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00236\ \ \ \textcolor{keywordtype}{void}\ vtkParse\_MergeStringCache(StringCache*\ cache,\ StringCache*\ other);}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00242\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00243\ \ \ \textcolor{keywordtype}{void}\ vtkParse\_FreeStringCache(StringCache*\ cache);}
+\DoxyCodeLine{00244\ }
+\DoxyCodeLine{00248\ \ \ VTKWRAPPINGTOOLS\_EXPORT}
+\DoxyCodeLine{00249\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ vtkParse\_HashString(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ cp,\ \textcolor{keywordtype}{size\_t}\ n);}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \textcolor{preprocessor}{\#ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00252\ \}\ \textcolor{comment}{/*\ extern\ "{}C"{}\ */}}
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00256\ \textcolor{comment}{/*\ VTK-\/HeaderTest-\/Exclude:\ vtkParseString.h\ */}}
+
+\end{DoxyCode}

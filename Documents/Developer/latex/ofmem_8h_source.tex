@@ -1,0 +1,263 @@
+\doxysection{ofmem.\+h}
+\hypertarget{ofmem_8h_source}{}\label{ofmem_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofmem.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofmem.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2012-\/2017,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ ofstd}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Jan\ Schlamelcher}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ Implement\ fallback\ support\ for\ modern\ memory\ management}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ approaches\ (e.g.\ smart\ pointers)\ for\ older\ compilers.}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#ifndef\ OFMEM\_H}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ OFMEM\_H}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}\ \textcolor{comment}{//\ make\ sure\ OS\ specific\ configuration\ is\ included\ first}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{ofutil_8h}{dcmtk/ofstd/ofutil.h}}"{}}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{comment}{//\ use\ native\ classes\ when\ c++11\ is\ supported}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#if\ defined(HAVE\_STL\_MEMORY)\ \&\&\ defined(HAVE\_CXX11)}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00033\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}...\ ARGS>}
+\DoxyCodeLine{00034\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{class_o_fshared__ptr}{OFshared\_ptr}}\ =\ std::shared\_ptr<ARGS...>;}
+\DoxyCodeLine{00035\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}...\ ARGS>}
+\DoxyCodeLine{00036\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{class_o_funique__ptr}{OFunique\_ptr}}\ =\ std::unique\_ptr<ARGS...>;}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//fallback\ implementations}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\#if\ defined\ HAVE\_SYNC\_ADD\_AND\_FETCH\ \&\&\ defined\ HAVE\_SYNC\_SUB\_AND\_FETCH}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#define\ OF\_SHARED\_PTR\_COUNTER\_TYPE\ size\_t}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#elif\ defined\ HAVE\_INTERLOCKED\_INCREMENT\ \&\&\ defined\ HAVE\_INTERLOCKED\_DECREMENT}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#if\ \_MSC\_VER\ <=\ 1200}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#define\ OF\_SHARED\_PTR\_COUNTER\_TYPE\ LONG}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#define\ OF\_SHARED\_PTR\_COUNTER\_TYPE\ volatile\ LONG}}
+\DoxyCodeLine{00047\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#define\ OF\_SHARED\_PTR\_COUNTER\_TYPE\ size\_t}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#define\ OF\_SHARED\_PTR\_NEED\_MUTEX\ 1}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofthread.h"{}}}
+\DoxyCodeLine{00052\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{preprocessor}{\#ifdef\ HAVE\_WINDOWS\_H}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#ifndef\ WIN32\_LEAN\_AND\_MEAN}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#define\ WIN32\_LEAN\_AND\_MEAN}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#include\ <windows.h>}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00076\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_o_fshared__ptr_a3ef1afee8c03727b242f960b036617ef}{OFshared\_ptr}}}
+\DoxyCodeLine{00077\ \{}
+\DoxyCodeLine{00078\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00083\ \ \ \ \ \doxymbox{\hyperlink{class_o_fshared__ptr_a3ef1afee8c03727b242f960b036617ef}{OFshared\_ptr}}(\ T*\ \textcolor{keyword}{const}\ pt\ =\ OFnullptr\ )}
+\DoxyCodeLine{00084\ \ \ \ \ :\ m\_pData(\ new\ Data(\ pt\ )\ )}
+\DoxyCodeLine{00085\ \ \ \ \ \{}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \ \ \}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00093\ \ \ \ \ \doxymbox{\hyperlink{class_o_fshared__ptr_a5288691f25537a778f62a4000e2b4d03}{OFshared\_ptr}}(\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_fshared__ptr_a3ef1afee8c03727b242f960b036617ef}{OFshared\_ptr}}\&\ other\ )}
+\DoxyCodeLine{00094\ \ \ \ \ :\ m\_pData(\ other.m\_pData\ )}
+\DoxyCodeLine{00095\ \ \ \ \ \{}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ m\_pData-\/>increment\_count();}
+\DoxyCodeLine{00097\ \ \ \ \ \}}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00102\ \ \ \ \ \doxymbox{\hyperlink{class_o_fshared__ptr_a3ef1afee8c03727b242f960b036617ef}{OFshared\_ptr}}\&\ \doxymbox{\hyperlink{class_o_fshared__ptr_ae90a3fa4ac0ab0bcc96a8f9b4eff1fde}{operator=}}(\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_fshared__ptr_a3ef1afee8c03727b242f960b036617ef}{OFshared\_ptr}}\&\ other\ )}
+\DoxyCodeLine{00103\ \ \ \ \ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ \textcolor{keyword}{this}\ !=\ \&other\ )}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ destroy();}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pData\ =\ other.m\_pData;}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pData-\/>increment\_count();}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00111\ \ \ \ \ \}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00116\ \ \ \ \ \doxymbox{\hyperlink{class_o_fshared__ptr_a1ee20805c6425c29d44f4ad520bd4ffa}{\string~OFshared\_ptr}}()}
+\DoxyCodeLine{00117\ \ \ \ \ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ destroy();}
+\DoxyCodeLine{00119\ \ \ \ \ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keyword}{operator}\ OFBool()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00125\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_pData-\/>pointer()\ !=\ OFnullptr;}
+\DoxyCodeLine{00127\ \ \ \ \ \}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00132\ \ \ \ \ OFBool\ \doxymbox{\hyperlink{class_o_fshared__ptr_ac06eabaf999e8afed89087d791582601}{operator!}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00133\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ !m\_pData-\/>pointer();}
+\DoxyCodeLine{00135\ \ \ \ \ \}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00140\ \ \ \ \ T\&\ \doxymbox{\hyperlink{class_o_fshared__ptr_a6d638dc1d1881a423123c2c057901be9}{operator*}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00141\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *m\_pData-\/>pointer();}
+\DoxyCodeLine{00143\ \ \ \ \ \}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00148\ \ \ \ \ T*\ \doxymbox{\hyperlink{class_o_fshared__ptr_a9ca12e33cd2a630d2b83c69f5cd730d8}{operator-\/>}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00149\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_pData-\/>pointer();}
+\DoxyCodeLine{00151\ \ \ \ \ \}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00156\ \ \ \ \ T*\ \doxymbox{\hyperlink{class_o_fshared__ptr_a23e35850a9fcaf10f6648590a9cb0842}{get}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00157\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_pData-\/>pointer();}
+\DoxyCodeLine{00159\ \ \ \ \ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_fshared__ptr_a0780004abc3b85973e07882ce0870d1b}{reset}}(\ T*\ \textcolor{keyword}{const}\ pt\ =\ OFnullptr\ )}
+\DoxyCodeLine{00165\ \ \ \ \ \{}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ destroy();}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ m\_pData\ =\ \textcolor{keyword}{new}\ Data(\ pt\ );}
+\DoxyCodeLine{00168\ \ \ \ \ \}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keyword}{class\ }Data}
+\DoxyCodeLine{00175\ \ \ \ \ \{}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ Data(\ T*\ \textcolor{keyword}{const}\ pt\ )}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ :\ m\_Count(\ 1\ )}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ ,\ m\_pT(\ pt\ )}
+\DoxyCodeLine{00183\ \#ifdef\ OF\_SHARED\_PTR\_NEED\_MUTEX}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ ,\ m\_Mutex()}
+\DoxyCodeLine{00185\ \#endif}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \string~Data()}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ m\_pT;}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ increment\_count()}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\#ifdef\ HAVE\_SYNC\_ADD\_AND\_FETCH}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \_\_sync\_add\_and\_fetch(\ \&m\_Count,\ 1\ );}
+\DoxyCodeLine{00206\ \textcolor{preprocessor}{\#elif\ defined\ HAVE\_INTERLOCKED\_INCREMENT}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ InterlockedIncrement(\ \&m\_Count\ );}
+\DoxyCodeLine{00208\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ m\_Mutex.lock();}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ ++m\_Count;}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ m\_Mutex.unlock();}
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ OFBool\ decrement\_count()}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00221\ \textcolor{preprocessor}{\#ifdef\ HAVE\_SYNC\_SUB\_AND\_FETCH}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ !\_\_sync\_sub\_and\_fetch(\ \&m\_Count,\ 1\ );}
+\DoxyCodeLine{00223\ \textcolor{preprocessor}{\#elif\ defined\ HAVE\_INTERLOCKED\_DECREMENT}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ !InterlockedDecrement(\ \&m\_Count\ );}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ m\_Mutex.lock();}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OFBool\ result\ =\ !-\/-\/m\_Count;}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ m\_Mutex.unlock();}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ T*\ pointer()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00237\ \textcolor{keyword}{\ \ \ \ \ \ \ \ }\{}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_pT;}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Just\ to\ silence\ some\ warnings.}}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ Data(\textcolor{keyword}{const}\ Data\&);}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ Data\&\ operator=(\textcolor{keyword}{const}\ Data\&);}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ OF\_SHARED\_PTR\_COUNTER\_TYPE\ m\_Count;}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ T*\ \textcolor{keyword}{const}\ m\_pT;}
+\DoxyCodeLine{00250\ \textcolor{preprocessor}{\#ifdef\ OF\_SHARED\_PTR\_NEED\_MUTEX}}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ OFMutex\ m\_Mutex;}
+\DoxyCodeLine{00253\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00254\ \ \ \ \ \};}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keywordtype}{void}\ destroy()}
+\DoxyCodeLine{00260\ \ \ \ \ \{}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_pData-\/>decrement\_count()\ )}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ m\_pData;}
+\DoxyCodeLine{00263\ \ \ \ \ \}}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00268\ \ \ \ \ Data*\ m\_pData;}
+\DoxyCodeLine{00269\ \};}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00287\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00288\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_o_funique__ptr_ab55318a3a176d1baf6043b8affeef250}{OFunique\_ptr}}}
+\DoxyCodeLine{00289\ \{}
+\DoxyCodeLine{00290\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{keyword}{typedef}\ T*\ \doxymbox{\hyperlink{class_o_funique__ptr_a5804969047d92ef1a49e2200bdaa5f6c}{pointer}};}
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{keyword}{typedef}\ T\ \doxymbox{\hyperlink{class_o_funique__ptr_a526ccff2284133b79ac9ee142f13e226}{element\_type}};}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00300\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_ab55318a3a176d1baf6043b8affeef250}{OFunique\_ptr}}()\ :\ m\_pData(\ OFnullptr\ )\ \{\}}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{class_o_funique__ptr_a9398aa4d057d1e12e08782ccd79108ff}{OFunique\_ptr}}(\ \doxymbox{\hyperlink{class_o_funique__ptr_a5804969047d92ef1a49e2200bdaa5f6c}{pointer}}\ p\ )\ :\ m\_pData(\ p\ )\ \{\}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00337\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_aa953800df4ff38c76f0b7fc322c9af67}{OFunique\_ptr}}(\ OFrvalue\_ref(\doxymbox{\hyperlink{class_o_funique__ptr_ab55318a3a176d1baf6043b8affeef250}{OFunique\_ptr}})\ rhs\ )}
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN}}
+\DoxyCodeLine{00339\ \ \ \ \ :\ m\_pData(\ rhs.m\_pData\ )}
+\DoxyCodeLine{00340\ \ \ \ \ \{}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{ofutil_8h_a21f26b07ac3dfdeb8ea48c49847dcc7f}{OFrvalue\_access}}(rhs).m\_pData\ =\ OFnullptr;}
+\DoxyCodeLine{00342\ \ \ \ \ \}}
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00344\ \ \ \ \ ;}
+\DoxyCodeLine{00345\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00355\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_ab55318a3a176d1baf6043b8affeef250}{OFunique\_ptr}}\&\ \doxymbox{\hyperlink{class_o_funique__ptr_a35a1f98b9da3b87e1d38b5f6ad0144f2}{operator=}}(\ OFrvalue\_ref(\doxymbox{\hyperlink{class_o_funique__ptr_ab55318a3a176d1baf6043b8affeef250}{OFunique\_ptr}})\ rhs\ )}
+\DoxyCodeLine{00356\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN}}
+\DoxyCodeLine{00357\ \ \ \ \ \{}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_ab55318a3a176d1baf6043b8affeef250}{OFunique\_ptr}}\&\ other\ =\ \doxymbox{\hyperlink{ofutil_8h_a21f26b07ac3dfdeb8ea48c49847dcc7f}{OFrvalue\_access}}(rhs);}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ \&other\ !=\ \textcolor{keyword}{this}\ )}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_a0d434716f38f89091f8dd262038a78d1}{reset}}(\ other.m\_pData\ );}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \ \ \ \ other.m\_pData\ =\ OFnullptr;}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00365\ \ \ \ \ \}}
+\DoxyCodeLine{00366\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00367\ \ \ \ \ ;}
+\DoxyCodeLine{00368\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00369\ }
+\DoxyCodeLine{00372\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_a19590075eb9c368c87aa7e71bbfcb6e1}{\string~OFunique\_ptr}}()\ \{\ \textcolor{keyword}{delete}\ m\_pData;\ \}}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00378\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_funique__ptr_a0d434716f38f89091f8dd262038a78d1}{reset}}(\ \doxymbox{\hyperlink{class_o_funique__ptr_a5804969047d92ef1a49e2200bdaa5f6c}{pointer}}\ p\ =\ OFnullptr\ )\ \{\ \textcolor{keyword}{delete}\ m\_pData;\ m\_pData\ =\ p;\ \}}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00384\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_a5804969047d92ef1a49e2200bdaa5f6c}{pointer}}\ \doxymbox{\hyperlink{class_o_funique__ptr_abe6af35ee23f4d044e4016ebc4341786}{release}}()\ \{\ \doxymbox{\hyperlink{class_o_funique__ptr_a5804969047d92ef1a49e2200bdaa5f6c}{pointer}}\ \textcolor{keyword}{const}\ p\ =\ m\_pData;\ m\_pData\ =\ OFnullptr;\ \textcolor{keywordflow}{return}\ p;\ \}}
+\DoxyCodeLine{00385\ }
+\DoxyCodeLine{00389\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_a5804969047d92ef1a49e2200bdaa5f6c}{pointer}}\ \doxymbox{\hyperlink{class_o_funique__ptr_abd231abda62e52824b7888652abed7d0}{get}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_pData;\ \}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00394\ \ \ \ \ \textcolor{keyword}{operator}\ bool()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_pData\ !=\ OFnullptr;\ \}}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00399\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_o_funique__ptr_ab0abf5796d9221c8e5d13574d3f52583}{operator!}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_pData\ ==\ OFnullptr;\ \}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00404\ \ \ \ \ T\&\ \doxymbox{\hyperlink{class_o_funique__ptr_a4e9f43713980032f8af0b5e8c9bcb6b9}{operator*}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ *m\_pData;\ \}}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00409\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_a5804969047d92ef1a49e2200bdaa5f6c}{pointer}}\ \doxymbox{\hyperlink{class_o_funique__ptr_a9287165fadb2ca68e0852e668a4610d1}{operator-\/>}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_pData;\ \}}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00413\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_ab55318a3a176d1baf6043b8affeef250}{OFunique\_ptr}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_funique__ptr}{OFunique\_ptr}}\&);}
+\DoxyCodeLine{00415\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr}{OFunique\_ptr}}\&\ \doxymbox{\hyperlink{class_o_funique__ptr_a35a1f98b9da3b87e1d38b5f6ad0144f2}{operator=}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_funique__ptr}{OFunique\_ptr}}\&);}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00418\ \ \ \ \ \doxymbox{\hyperlink{class_o_funique__ptr_a5804969047d92ef1a49e2200bdaa5f6c}{pointer}}\ m\_pData;}
+\DoxyCodeLine{00419\ \};}
+\DoxyCodeLine{00420\ }
+\DoxyCodeLine{00421\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//c++11}}
+\DoxyCodeLine{00422\ }
+\DoxyCodeLine{00423\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//OFMEM\_H}}
+
+\end{DoxyCode}

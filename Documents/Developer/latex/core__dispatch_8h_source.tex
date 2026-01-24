@@ -1,0 +1,1147 @@
+\doxysection{core\+\_\+dispatch.\+h}
+\hypertarget{core__dispatch_8h_source}{}\label{core__dispatch_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/core\_dispatch.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/openssl/include/openssl/core\_dispatch.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *\ Copyright\ 2019-\/2025\ The\ OpenSSL\ Project\ Authors.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Licensed\ under\ the\ Apache\ License\ 2.0\ (the\ "{}License"{}).\ \ You\ may\ not\ use}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ this\ file\ except\ in\ compliance\ with\ the\ License.\ \ You\ can\ obtain\ a\ copy}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ in\ the\ file\ LICENSE\ in\ the\ source\ distribution\ or\ at}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *\ https://www.openssl.org/source/license.html}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#ifndef\ OPENSSL\_CORE\_NUMBERS\_H}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#\ define\ OPENSSL\_CORE\_NUMBERS\_H}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#\ pragma\ once}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#\ include\ <stdarg.h>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#\ include\ <openssl/core.h>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#\ include\ <openssl/indicator.h>}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#\ ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{00019\ \textcolor{keyword}{extern}\ \textcolor{stringliteral}{"{}C"{}}\ \{}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *\ Generic\ function\ pointer\ for\ provider\ method\ arrays,\ or\ other\ contexts\ where}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ functions\ of\ various\ signatures\ must\ occupy\ a\ common\ slot\ in\ an\ array\ of}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ structures.}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{typedef}\ void\ (*OSSL\_FUNC)(void);}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00030\ \textcolor{comment}{\ *\ Identities}}
+\DoxyCodeLine{00031\ \textcolor{comment}{\ *\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00033\ \textcolor{comment}{\ *\ All\ series\ start\ with\ 1,\ to\ allow\ 0\ to\ be\ an\ array\ terminator.}}
+\DoxyCodeLine{00034\ \textcolor{comment}{\ *\ For\ any\ FUNC\ identity,\ we\ also\ provide\ a\ function\ signature\ typedef}}
+\DoxyCodeLine{00035\ \textcolor{comment}{\ *\ and\ a\ static\ inline\ function\ to\ extract\ a\ function\ pointer\ from\ a}}
+\DoxyCodeLine{00036\ \textcolor{comment}{\ *\ OSSL\_DISPATCH\ element\ in\ a\ type\ safe\ manner.}}
+\DoxyCodeLine{00037\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00038\ \textcolor{comment}{\ *\ Names:}}
+\DoxyCodeLine{00039\ \textcolor{comment}{\ *\ for\ any\ function\ base\ name\ 'foo'\ (uppercase\ form\ 'FOO'),\ we\ will\ have}}
+\DoxyCodeLine{00040\ \textcolor{comment}{\ *\ the\ following:}}
+\DoxyCodeLine{00041\ \textcolor{comment}{\ *\ -\/\ a\ macro\ for\ the\ identity\ with\ the\ name\ OSSL\_FUNC\_'FOO'\ or\ derivatives}}
+\DoxyCodeLine{00042\ \textcolor{comment}{\ *\ \ \ thereof\ (to\ be\ specified\ further\ down)}}
+\DoxyCodeLine{00043\ \textcolor{comment}{\ *\ -\/\ a\ function\ signature\ typedef\ with\ the\ name\ OSSL\_FUNC\_'foo'\_fn}}
+\DoxyCodeLine{00044\ \textcolor{comment}{\ *\ -\/\ a\ function\ pointer\ extractor\ function\ with\ the\ name\ OSSL\_FUNC\_'foo'}}
+\DoxyCodeLine{00045\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00048\ \textcolor{comment}{\ *\ Helper\ macro\ to\ create\ the\ function\ signature\ typedef\ and\ the\ extractor}}
+\DoxyCodeLine{00049\ \textcolor{comment}{\ *\ |type|\ is\ the\ return-\/type\ of\ the\ function,\ |name|\ is\ the\ name\ of\ the}}
+\DoxyCodeLine{00050\ \textcolor{comment}{\ *\ function\ to\ fetch,\ and\ |args|\ is\ a\ parenthesized\ list\ of\ parameters}}
+\DoxyCodeLine{00051\ \textcolor{comment}{\ *\ for\ the\ function\ (that\ is,\ it\ is\ |name|'s\ function\ signature).}}
+\DoxyCodeLine{00052\ \textcolor{comment}{\ *\ Note:\ This\ is\ considered\ a\ "{}reserved"{}\ internal\ macro.\ Applications\ should}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ not\ use\ this\ or\ assume\ its\ existence.}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#define\ OSSL\_CORE\_MAKE\_FUNC(type,name,args)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\ \ \ \ typedef\ type\ (OSSL\_FUNC\_\#\#name\#\#\_fn)args;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\ \ \ \ static\ ossl\_unused\ ossl\_inline\ \(\backslash\)}}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\ \ \ \ OSSL\_FUNC\_\#\#name\#\#\_fn\ *OSSL\_FUNC\_\#\#name(const\ OSSL\_DISPATCH\ *opf)\ \ \ \(\backslash\)}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ return\ (OSSL\_FUNC\_\#\#name\#\#\_fn\ *)opf-\/>function;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\ \ \ \ \}}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00064\ \textcolor{comment}{\ *\ Core\ function\ identities,\ for\ the\ two\ OSSL\_DISPATCH\ tables\ being\ passed}}
+\DoxyCodeLine{00065\ \textcolor{comment}{\ *\ in\ the\ OSSL\_provider\_init\ call.}}
+\DoxyCodeLine{00066\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00067\ \textcolor{comment}{\ *\ 0\ serves\ as\ a\ marker\ for\ the\ end\ of\ the\ OSSL\_DISPATCH\ array,\ and\ must}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\ *\ therefore\ NEVER\ be\ used\ as\ a\ function\ identity.}}
+\DoxyCodeLine{00069\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00070\ \textcolor{comment}{/*\ Functions\ provided\ by\ the\ Core\ to\ the\ provider,\ reserved\ numbers\ 1-\/1023\ */}}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00072\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ core\_gettable\_params,(\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov))}
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00075\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},core\_get\_params,(\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov,}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_THREAD\_START\ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00078\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},core\_thread\_start,(\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov,}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_thread\_stop\_handler\_fn\ handfn,}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *arg))}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_GET\_LIBCTX\ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00082\ OSSL\_CORE\_MAKE\_FUNC(OPENSSL\_CORE\_CTX\ *,core\_get\_libctx,}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov))}
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_NEW\_ERROR\ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00085\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},core\_new\_error,(\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov))}
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_SET\_ERROR\_DEBUG\ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00087\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},core\_set\_error\_debug,}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov,}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *func))}
+\DoxyCodeLine{00090\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_VSET\_ERROR\ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00091\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},core\_vset\_error,}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov,}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ uint32\_t\ reason,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *fmt,\ va\_list\ args))}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_SET\_ERROR\_MARK\ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00095\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ core\_set\_error\_mark,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov))}
+\DoxyCodeLine{00096\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_CLEAR\_LAST\_ERROR\_MARK\ \ 9}}
+\DoxyCodeLine{00097\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ core\_clear\_last\_error\_mark,}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov))}
+\DoxyCodeLine{00099\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CORE\_POP\_ERROR\_TO\_MARK\ \ \ \ \ 10}}
+\DoxyCodeLine{00100\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ core\_pop\_error\_to\_mark,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov))}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \textcolor{comment}{/*\ Functions\ to\ access\ the\ OBJ\ database\ */}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CORE\_OBJ\_ADD\_SIGID\ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00106\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CORE\_OBJ\_CREATE\ \ \ \ \ \ \ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ core\_obj\_add\_sigid,}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ \ *sign\_name,}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *digest\_name,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *pkey\_name))}
+\DoxyCodeLine{00111\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ core\_obj\_create,}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *oid,}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *sn,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *ln))}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \textcolor{comment}{/*\ Memory\ allocation,\ freeing,\ clearing.\ */}}
+\DoxyCodeLine{00116\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_MALLOC\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 20}}
+\DoxyCodeLine{00117\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ CRYPTO\_malloc,\ (\textcolor{keywordtype}{size\_t}\ num,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00119\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_ZALLOC\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 21}}
+\DoxyCodeLine{00120\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ CRYPTO\_zalloc,\ (\textcolor{keywordtype}{size\_t}\ num,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00122\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_FREE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 22}}
+\DoxyCodeLine{00123\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ CRYPTO\_free,\ (\textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00125\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_CLEAR\_FREE\ \ \ \ \ \ \ \ \ \ \ 23}}
+\DoxyCodeLine{00126\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ CRYPTO\_clear\_free,\ (\textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keywordtype}{size\_t}\ num,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00128\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_REALLOC\ \ \ \ \ \ \ \ \ \ \ \ \ \ 24}}
+\DoxyCodeLine{00129\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ CRYPTO\_realloc,\ (\textcolor{keywordtype}{void}\ *addr,\ \textcolor{keywordtype}{size\_t}\ num,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00131\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_CLEAR\_REALLOC\ \ \ \ \ \ \ \ 25}}
+\DoxyCodeLine{00132\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ CRYPTO\_clear\_realloc,\ (\textcolor{keywordtype}{void}\ *addr,\ \textcolor{keywordtype}{size\_t}\ old\_num,\ \textcolor{keywordtype}{size\_t}\ num,}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00135\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_SECURE\_MALLOC\ \ \ \ \ \ \ \ 26}}
+\DoxyCodeLine{00136\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ CRYPTO\_secure\_malloc,\ (\textcolor{keywordtype}{size\_t}\ num,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00138\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_SECURE\_ZALLOC\ \ \ \ \ \ \ \ 27}}
+\DoxyCodeLine{00139\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ CRYPTO\_secure\_zalloc,\ (\textcolor{keywordtype}{size\_t}\ num,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00141\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_SECURE\_FREE\ \ \ \ \ \ \ \ \ \ 28}}
+\DoxyCodeLine{00142\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ CRYPTO\_secure\_free,\ (\textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,\ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00144\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_SECURE\_CLEAR\_FREE\ \ \ \ 29}}
+\DoxyCodeLine{00145\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ CRYPTO\_secure\_clear\_free,\ (\textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keywordtype}{size\_t}\ num,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *file,}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ line))}
+\DoxyCodeLine{00148\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CRYPTO\_SECURE\_ALLOCATED\ \ \ \ \ 30}}
+\DoxyCodeLine{00149\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ CRYPTO\_secure\_allocated,\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr))}
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_OPENSSL\_CLEANSE\ \ \ \ \ \ \ \ \ \ \ \ \ 31}}
+\DoxyCodeLine{00152\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ OPENSSL\_cleanse,\ (\textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keywordtype}{size\_t}\ len))}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \textcolor{comment}{/*\ Bio\ functions\ provided\ by\ the\ core\ */}}
+\DoxyCodeLine{00156\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_NEW\_FILE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 40}}
+\DoxyCodeLine{00157\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_NEW\_MEMBUF\ \ \ \ \ \ \ \ \ \ \ \ \ \ 41}}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_READ\_EX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 42}}
+\DoxyCodeLine{00159\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_WRITE\_EX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 43}}
+\DoxyCodeLine{00160\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_UP\_REF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 44}}
+\DoxyCodeLine{00161\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_FREE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 45}}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_VPRINTF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 46}}
+\DoxyCodeLine{00163\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_VSNPRINTF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 47}}
+\DoxyCodeLine{00164\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_PUTS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 48}}
+\DoxyCodeLine{00165\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_GETS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 49}}
+\DoxyCodeLine{00166\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_BIO\_CTRL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 50}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ OSSL\_CORE\_MAKE\_FUNC(OSSL\_CORE\_BIO\ *,\ BIO\_new\_file,\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *mode))}
+\DoxyCodeLine{00171\ OSSL\_CORE\_MAKE\_FUNC(OSSL\_CORE\_BIO\ *,\ BIO\_new\_membuf,\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *buf,\ \textcolor{keywordtype}{int}\ len))}
+\DoxyCodeLine{00172\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ BIO\_read\_ex,\ (OSSL\_CORE\_BIO\ *bio,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_len,\ \textcolor{keywordtype}{size\_t}\ *bytes\_read))}
+\DoxyCodeLine{00174\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ BIO\_write\_ex,\ (OSSL\_CORE\_BIO\ *bio,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_len,\ \textcolor{keywordtype}{size\_t}\ *written))}
+\DoxyCodeLine{00176\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ BIO\_gets,\ (OSSL\_CORE\_BIO\ *bio,\ \textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{int}\ size))}
+\DoxyCodeLine{00177\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ BIO\_puts,\ (OSSL\_CORE\_BIO\ *bio,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *str))}
+\DoxyCodeLine{00178\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ BIO\_up\_ref,\ (OSSL\_CORE\_BIO\ *bio))}
+\DoxyCodeLine{00179\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ BIO\_free,\ (OSSL\_CORE\_BIO\ *bio))}
+\DoxyCodeLine{00180\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ BIO\_vprintf,\ (OSSL\_CORE\_BIO\ *bio,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *format,}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ va\_list\ args))}
+\DoxyCodeLine{00182\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ BIO\_vsnprintf,}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ n,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *fmt,\ va\_list\ args))}
+\DoxyCodeLine{00184\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ BIO\_ctrl,\ (OSSL\_CORE\_BIO\ *bio,}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ cmd,\ \textcolor{keywordtype}{long}\ num,\ \textcolor{keywordtype}{void}\ *ptr))}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{comment}{/*\ New\ seeding\ functions\ prototypes\ with\ the\ 101-\/104\ series\ */}}
+\DoxyCodeLine{00188\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CLEANUP\_USER\_ENTROPY\ \ \ \ \ \ \ \ 96}}
+\DoxyCodeLine{00189\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CLEANUP\_USER\_NONCE\ \ \ \ \ \ \ \ \ \ 97}}
+\DoxyCodeLine{00190\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_GET\_USER\_ENTROPY\ \ \ \ \ \ \ \ \ \ \ \ 98}}
+\DoxyCodeLine{00191\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_GET\_USER\_NONCE\ \ \ \ \ \ \ \ \ \ \ \ \ \ 99}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_INDICATOR\_CB\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 95}}
+\DoxyCodeLine{00194\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ indicator\_cb,\ (OPENSSL\_CORE\_CTX\ *ctx,}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_INDICATOR\_CALLBACK\ **cb))}
+\DoxyCodeLine{00196\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_SELF\_TEST\_CB\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 100}}
+\DoxyCodeLine{00197\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ self\_test\_cb,\ (OPENSSL\_CORE\_CTX\ *ctx,\ OSSL\_CALLBACK\ **cb,}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ **cbarg))}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \textcolor{comment}{/*\ Functions\ to\ get\ seed\ material\ from\ the\ operating\ system\ */}}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_GET\_ENTROPY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 101}}
+\DoxyCodeLine{00202\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CLEANUP\_ENTROPY\ \ \ \ \ \ \ \ \ \ \ \ 102}}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_GET\_NONCE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 103}}
+\DoxyCodeLine{00204\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_CLEANUP\_NONCE\ \ \ \ \ \ \ \ \ \ \ \ \ \ 104}}
+\DoxyCodeLine{00205\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{size\_t},\ get\_entropy,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle,}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **pout,\ \textcolor{keywordtype}{int}\ entropy,}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ min\_len,\ \textcolor{keywordtype}{size\_t}\ max\_len))}
+\DoxyCodeLine{00208\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{size\_t},\ get\_user\_entropy,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle,}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **pout,\ \textcolor{keywordtype}{int}\ entropy,}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ min\_len,\ \textcolor{keywordtype}{size\_t}\ max\_len))}
+\DoxyCodeLine{00211\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ cleanup\_entropy,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle,}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ len))}
+\DoxyCodeLine{00213\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ cleanup\_user\_entropy,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle,}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ len))}
+\DoxyCodeLine{00215\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{size\_t},\ get\_nonce,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle,}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **pout,\ \textcolor{keywordtype}{size\_t}\ min\_len,}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ max\_len,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *salt,}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ salt\_len))}
+\DoxyCodeLine{00219\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{size\_t},\ get\_user\_nonce,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle,}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **pout,\ \textcolor{keywordtype}{size\_t}\ min\_len,}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ max\_len,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *salt,}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ salt\_len))}
+\DoxyCodeLine{00223\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ cleanup\_nonce,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle,}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ len))}
+\DoxyCodeLine{00225\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ cleanup\_user\_nonce,\ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle,}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ len))}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \textcolor{comment}{/*\ Functions\ to\ access\ the\ core's\ providers\ */}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_PROVIDER\_REGISTER\_CHILD\_CB\ \ \ 105}}
+\DoxyCodeLine{00230\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_PROVIDER\_DEREGISTER\_CHILD\_CB\ 106}}
+\DoxyCodeLine{00231\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_PROVIDER\_NAME\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 107}}
+\DoxyCodeLine{00232\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_PROVIDER\_GET0\_PROVIDER\_CTX\ \ \ 108}}
+\DoxyCodeLine{00233\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_PROVIDER\_GET0\_DISPATCH\ \ \ \ \ \ \ 109}}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_PROVIDER\_UP\_REF\ \ \ \ \ \ \ \ \ \ \ \ \ \ 110}}
+\DoxyCodeLine{00235\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_PROVIDER\_FREE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 111}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ provider\_register\_child\_cb,}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle,}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ (*create\_cb)(\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *provider,\ \textcolor{keywordtype}{void}\ *cbdata),}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ (*remove\_cb)(\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *provider,\ \textcolor{keywordtype}{void}\ *cbdata),}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ (*global\_props\_cb)(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *props,\ \textcolor{keywordtype}{void}\ *cbdata),}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *cbdata))}
+\DoxyCodeLine{00243\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ provider\_deregister\_child\_cb,}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *handle))}
+\DoxyCodeLine{00245\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ provider\_name,}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov))}
+\DoxyCodeLine{00247\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ provider\_get0\_provider\_ctx,}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov))}
+\DoxyCodeLine{00249\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_DISPATCH\ *,\ provider\_get0\_dispatch,}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov))}
+\DoxyCodeLine{00251\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ provider\_up\_ref,}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov,\ \textcolor{keywordtype}{int}\ activate))}
+\DoxyCodeLine{00253\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ provider\_free,}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ OSSL\_CORE\_HANDLE\ *prov,\ \textcolor{keywordtype}{int}\ deactivate))}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \textcolor{comment}{/*\ Functions\ provided\ by\ the\ provider\ to\ the\ Core,\ reserved\ numbers\ 1024-\/1535\ */}}
+\DoxyCodeLine{00257\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_PROVIDER\_TEARDOWN\ \ \ \ \ \ \ \ \ \ \ 1024}}
+\DoxyCodeLine{00258\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ provider\_teardown,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00259\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_PROVIDER\_GETTABLE\_PARAMS\ \ \ \ 1025}}
+\DoxyCodeLine{00260\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ provider\_gettable\_params,(\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_PROVIDER\_GET\_PARAMS\ \ \ \ \ \ \ \ \ 1026}}
+\DoxyCodeLine{00263\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ provider\_get\_params,\ (\textcolor{keywordtype}{void}\ *provctx,}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00265\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_PROVIDER\_QUERY\_OPERATION\ \ \ \ 1027}}
+\DoxyCodeLine{00266\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_ALGORITHM\ *,provider\_query\_operation,}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{int}\ operation\_id,\ \textcolor{keywordtype}{int}\ *no\_store))}
+\DoxyCodeLine{00268\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_PROVIDER\_UNQUERY\_OPERATION\ \ 1028}}
+\DoxyCodeLine{00269\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ provider\_unquery\_operation,}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{int}\ operation\_id,\ \textcolor{keyword}{const}\ OSSL\_ALGORITHM\ *))}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_PROVIDER\_GET\_REASON\_STRINGS\ 1029}}
+\DoxyCodeLine{00272\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_ITEM\ *,provider\_get\_reason\_strings,}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00274\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_PROVIDER\_GET\_CAPABILITIES\ \ \ 1030}}
+\DoxyCodeLine{00275\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ provider\_get\_capabilities,\ (\textcolor{keywordtype}{void}\ *provctx,}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *capability,\ OSSL\_CALLBACK\ *cb,\ \textcolor{keywordtype}{void}\ *arg))}
+\DoxyCodeLine{00277\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_PROVIDER\_SELF\_TEST\ \ \ \ \ \ \ \ \ \ 1031}}
+\DoxyCodeLine{00278\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ provider\_self\_test,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_PROVIDER\_RANDOM\_BYTES\ \ \ \ \ \ \ 1032}}
+\DoxyCodeLine{00280\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ provider\_random\_bytes,\ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{int}\ which,}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *buf,\ \textcolor{keywordtype}{size\_t}\ n,}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ strength))}
+\DoxyCodeLine{00283\ }
+\DoxyCodeLine{00284\ \textcolor{comment}{/*\ Libssl\ related\ functions\ */}}
+\DoxyCodeLine{00285\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_SSL\_QUIC\_TLS\_CRYPTO\_SEND\ \ \ \ \ \ \ \ \ \ 2001}}
+\DoxyCodeLine{00286\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ SSL\_QUIC\_TLS\_crypto\_send,}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (SSL\ *s,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ buf\_len,}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *consumed,\ \textcolor{keywordtype}{void}\ *arg))}
+\DoxyCodeLine{00289\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_SSL\_QUIC\_TLS\_CRYPTO\_RECV\_RCD\ \ \ \ \ \ 2002}}
+\DoxyCodeLine{00290\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ SSL\_QUIC\_TLS\_crypto\_recv\_rcd,}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (SSL\ *s,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **buf,\ \textcolor{keywordtype}{size\_t}\ *bytes\_read,}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *arg))}
+\DoxyCodeLine{00293\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_SSL\_QUIC\_TLS\_CRYPTO\_RELEASE\_RCD\ \ \ 2003}}
+\DoxyCodeLine{00294\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ SSL\_QUIC\_TLS\_crypto\_release\_rcd,}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (SSL\ *s,\ \textcolor{keywordtype}{size\_t}\ bytes\_read,\ \textcolor{keywordtype}{void}\ *arg))}
+\DoxyCodeLine{00296\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_SSL\_QUIC\_TLS\_YIELD\_SECRET\ \ \ \ \ \ \ \ \ 2004}}
+\DoxyCodeLine{00297\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ SSL\_QUIC\_TLS\_yield\_secret,}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (SSL\ *s,\ uint32\_t\ prot\_level,\ \textcolor{keywordtype}{int}\ direction,}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *secret,\ \textcolor{keywordtype}{size\_t}\ secret\_len,\ \textcolor{keywordtype}{void}\ *arg))}
+\DoxyCodeLine{00300\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_SSL\_QUIC\_TLS\_GOT\_TRANSPORT\_PARAMS\ 2005}}
+\DoxyCodeLine{00301\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ SSL\_QUIC\_TLS\_got\_transport\_params,}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (SSL\ *s,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *params,\ \textcolor{keywordtype}{size\_t}\ params\_len,}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *arg))}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_SSL\_QUIC\_TLS\_ALERT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2006}}
+\DoxyCodeLine{00305\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ SSL\_QUIC\_TLS\_alert,}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (SSL\ *s,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ alert\_code,\ \textcolor{keywordtype}{void}\ *arg))}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ \textcolor{comment}{/*\ Operations\ */}}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_DIGEST\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00311\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_CIPHER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2\ \ \ }\textcolor{comment}{/*\ Symmetric\ Ciphers\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_MAC\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00313\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_KDF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00314\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_RAND\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_KEYMGMT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_KEYEXCH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00317\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_SIGNATURE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00318\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_ASYM\_CIPHER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00319\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_KEM\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 14}}
+\DoxyCodeLine{00320\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_SKEYMGMT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 15}}
+\DoxyCodeLine{00321\ \textcolor{comment}{/*\ New\ section\ for\ non-\/EVP\ operations\ */}}
+\DoxyCodeLine{00322\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_ENCODER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 20}}
+\DoxyCodeLine{00323\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_DECODER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 21}}
+\DoxyCodeLine{00324\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_STORE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 22}}
+\DoxyCodeLine{00325\ \textcolor{comment}{/*\ Highest\ known\ operation\ number\ */}}
+\DoxyCodeLine{00326\ \textcolor{preprocessor}{\#\ define\ OSSL\_OP\_\_HIGHEST\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 22}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \textcolor{comment}{/*\ Digests\ */}}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00331\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_INIT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00332\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_UPDATE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00333\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_FINAL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00334\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_DIGEST\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00335\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00336\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_DUPCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00337\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00338\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ 9}}
+\DoxyCodeLine{00339\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_GET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00340\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00341\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_SETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00342\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_GETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00343\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_SQUEEZE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 14}}
+\DoxyCodeLine{00344\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DIGEST\_COPYCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 15}}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ digest\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00347\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ digest\_init,\ (\textcolor{keywordtype}{void}\ *dctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00348\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ digest\_update,}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *dctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,\ \textcolor{keywordtype}{size\_t}\ inl))}
+\DoxyCodeLine{00350\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ digest\_final,}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *dctx,}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ *outl,\ \textcolor{keywordtype}{size\_t}\ outsz))}
+\DoxyCodeLine{00353\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ digest\_squeeze,}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *dctx,}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ *outl,\ \textcolor{keywordtype}{size\_t}\ outsz))}
+\DoxyCodeLine{00356\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ digest\_digest,}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,\ \textcolor{keywordtype}{size\_t}\ inl,}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ *outl,\ \textcolor{keywordtype}{size\_t}\ outsz))}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ digest\_freectx,\ (\textcolor{keywordtype}{void}\ *dctx))}
+\DoxyCodeLine{00361\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ digest\_dupctx,\ (\textcolor{keywordtype}{void}\ *dctx))}
+\DoxyCodeLine{00362\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ digest\_copyctx,\ (\textcolor{keywordtype}{void}\ *outctx,\ \textcolor{keywordtype}{void}\ *inctx))}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ digest\_get\_params,\ (OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00365\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ digest\_set\_ctx\_params,}
+\DoxyCodeLine{00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00367\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ digest\_get\_ctx\_params,}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00369\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ digest\_gettable\_params,}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00371\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ digest\_settable\_ctx\_params,}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *dctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00373\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ digest\_gettable\_ctx\_params,}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *dctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \textcolor{comment}{/*\ Symmetric\ Ciphers\ */}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00379\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_ENCRYPT\_INIT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00380\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_DECRYPT\_INIT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00381\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_UPDATE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00382\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_FINAL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00383\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_CIPHER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00384\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_DUPCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00386\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 9}}
+\DoxyCodeLine{00387\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_GET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00388\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00389\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00390\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_GETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00391\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_SETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ 14}}
+\DoxyCodeLine{00392\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_PIPELINE\_ENCRYPT\_INIT\ \ \ \ \ 15}}
+\DoxyCodeLine{00393\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_PIPELINE\_DECRYPT\_INIT\ \ \ \ \ 16}}
+\DoxyCodeLine{00394\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_PIPELINE\_UPDATE\ \ \ \ \ \ \ \ \ \ \ 17}}
+\DoxyCodeLine{00395\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_PIPELINE\_FINAL\ \ \ \ \ \ \ \ \ \ \ \ 18}}
+\DoxyCodeLine{00396\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_ENCRYPT\_SKEY\_INIT\ \ \ \ \ \ \ \ \ 19}}
+\DoxyCodeLine{00397\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_CIPHER\_DECRYPT\_SKEY\_INIT\ \ \ \ \ \ \ \ \ 20}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ cipher\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00400\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_encrypt\_init,\ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *key,}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ keylen,}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *iv,}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ ivlen,}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00406\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_decrypt\_init,\ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *key,}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ keylen,}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *iv,}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ ivlen,}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00412\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_update,}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ *outl,\ \textcolor{keywordtype}{size\_t}\ outsize,}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,\ \textcolor{keywordtype}{size\_t}\ inl))}
+\DoxyCodeLine{00416\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_final,}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ *outl,\ \textcolor{keywordtype}{size\_t}\ outsize))}
+\DoxyCodeLine{00419\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_cipher,}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ *outl,\ \textcolor{keywordtype}{size\_t}\ outsize,}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,\ \textcolor{keywordtype}{size\_t}\ inl))}
+\DoxyCodeLine{00423\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_pipeline\_encrypt\_init,}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *key,\ \textcolor{keywordtype}{size\_t}\ keylen,}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ numpipes,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **iv,\ \textcolor{keywordtype}{size\_t}\ ivlen,}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00428\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_pipeline\_decrypt\_init,}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *key,\ \textcolor{keywordtype}{size\_t}\ keylen,}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ numpipes,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **iv,\ \textcolor{keywordtype}{size\_t}\ ivlen,}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00433\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_pipeline\_update,}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *cctx,\ \textcolor{keywordtype}{size\_t}\ numpipes,}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **out,\ \textcolor{keywordtype}{size\_t}\ *outl,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ *outsize,}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **in,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ *inl))}
+\DoxyCodeLine{00437\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_pipeline\_final,}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *cctx,\ \textcolor{keywordtype}{size\_t}\ numpipes,}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **out,\ \textcolor{keywordtype}{size\_t}\ *outl,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ *outsize))}
+\DoxyCodeLine{00440\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ cipher\_freectx,\ (\textcolor{keywordtype}{void}\ *cctx))}
+\DoxyCodeLine{00441\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ cipher\_dupctx,\ (\textcolor{keywordtype}{void}\ *cctx))}
+\DoxyCodeLine{00442\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_get\_params,\ (OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00443\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_get\_ctx\_params,\ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00445\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_set\_ctx\_params,\ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00447\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ cipher\_gettable\_params,}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00449\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ cipher\_settable\_ctx\_params,}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *cctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00451\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ cipher\_gettable\_ctx\_params,}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *cctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00453\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_encrypt\_skey\_init,\ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *skeydata,}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *iv,}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ ivlen,}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00458\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ cipher\_decrypt\_skey\_init,\ (\textcolor{keywordtype}{void}\ *cctx,}
+\DoxyCodeLine{00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *skeydata,}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *iv,}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ ivlen,}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00463\ }
+\DoxyCodeLine{00464\ \textcolor{comment}{/*\ MACs\ */}}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00467\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_DUPCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00468\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00469\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_INIT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00470\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_UPDATE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00471\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_FINAL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00472\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00473\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_GET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00474\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 9}}
+\DoxyCodeLine{00475\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00476\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_GETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00477\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_SETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00478\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_MAC\_INIT\_SKEY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00479\ }
+\DoxyCodeLine{00480\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ mac\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00481\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ mac\_dupctx,\ (\textcolor{keywordtype}{void}\ *src))}
+\DoxyCodeLine{00482\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ mac\_freectx,\ (\textcolor{keywordtype}{void}\ *mctx))}
+\DoxyCodeLine{00483\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ mac\_init,\ (\textcolor{keywordtype}{void}\ *mctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *key,}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ keylen,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00485\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ mac\_update,}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *mctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,\ \textcolor{keywordtype}{size\_t}\ inl))}
+\DoxyCodeLine{00487\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ mac\_final,}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *mctx,}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ *outl,\ \textcolor{keywordtype}{size\_t}\ outsize))}
+\DoxyCodeLine{00490\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ mac\_gettable\_params,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00491\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ mac\_gettable\_ctx\_params,}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *mctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00493\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ mac\_settable\_ctx\_params,}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *mctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00495\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ mac\_get\_params,\ (OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00496\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ mac\_get\_ctx\_params,}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *mctx,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00498\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ mac\_set\_ctx\_params,}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *mctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00500\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ mac\_init\_skey,\ (\textcolor{keywordtype}{void}\ *mctx,\ \textcolor{keywordtype}{void}\ *key,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00501\ }
+\DoxyCodeLine{00502\ \textcolor{comment}{/*\ KDFs\ and\ PRFs\ */}}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00505\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_DUPCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00506\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00507\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_RESET\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00508\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_DERIVE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00509\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00510\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_GETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00511\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_SETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00512\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 9}}
+\DoxyCodeLine{00513\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_GET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00514\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KDF\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ kdf\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00517\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ kdf\_dupctx,\ (\textcolor{keywordtype}{void}\ *src))}
+\DoxyCodeLine{00518\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ kdf\_freectx,\ (\textcolor{keywordtype}{void}\ *kctx))}
+\DoxyCodeLine{00519\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ kdf\_reset,\ (\textcolor{keywordtype}{void}\ *kctx))}
+\DoxyCodeLine{00520\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kdf\_derive,\ (\textcolor{keywordtype}{void}\ *kctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *key,}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ keylen,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00522\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ kdf\_gettable\_params,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00523\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ kdf\_gettable\_ctx\_params,}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *kctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00525\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ kdf\_settable\_ctx\_params,}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *kctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00527\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kdf\_get\_params,\ (OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00528\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kdf\_get\_ctx\_params,}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *kctx,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00530\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kdf\_set\_ctx\_params,}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *kctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00532\ }
+\DoxyCodeLine{00533\ \textcolor{comment}{/*\ RAND\ */}}
+\DoxyCodeLine{00534\ }
+\DoxyCodeLine{00535\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00536\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00537\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_INSTANTIATE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00538\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_UNINSTANTIATE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00539\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_GENERATE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00540\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_RESEED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00541\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_NONCE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00542\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_ENABLE\_LOCKING\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00543\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_LOCK\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 9}}
+\DoxyCodeLine{00544\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_UNLOCK\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00545\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00546\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_GETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00547\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_SETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00548\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 14}}
+\DoxyCodeLine{00549\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_GET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 15}}
+\DoxyCodeLine{00550\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 16}}
+\DoxyCodeLine{00551\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_VERIFY\_ZEROIZATION\ \ \ \ \ \ \ \ \ \ \ 17}}
+\DoxyCodeLine{00552\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_GET\_SEED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 18}}
+\DoxyCodeLine{00553\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_RAND\_CLEAR\_SEED\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 19}}
+\DoxyCodeLine{00554\ }
+\DoxyCodeLine{00555\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,rand\_newctx,}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{void}\ *parent,}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_DISPATCH\ *parent\_calls))}
+\DoxyCodeLine{00558\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},rand\_freectx,\ (\textcolor{keywordtype}{void}\ *vctx))}
+\DoxyCodeLine{00559\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_instantiate,}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vdrbg,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ strength,}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ prediction\_resistance,}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *pstr,\ \textcolor{keywordtype}{size\_t}\ pstr\_len,}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00564\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_uninstantiate,\ (\textcolor{keywordtype}{void}\ *vdrbg))}
+\DoxyCodeLine{00565\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_generate,}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ outlen,}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ strength,\ \textcolor{keywordtype}{int}\ prediction\_resistance,}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *addin,\ \textcolor{keywordtype}{size\_t}\ addin\_len))}
+\DoxyCodeLine{00569\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_reseed,}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ \textcolor{keywordtype}{int}\ prediction\_resistance,}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{namespace_etrek_1_1_worklist_1_1_data_1_1_entity}{ent}},\ \textcolor{keywordtype}{size\_t}\ ent\_len,}
+\DoxyCodeLine{00572\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *addin,\ \textcolor{keywordtype}{size\_t}\ addin\_len))}
+\DoxyCodeLine{00573\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{size\_t},rand\_nonce,}
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ strength,}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ min\_noncelen,\ \textcolor{keywordtype}{size\_t}\ max\_noncelen))}
+\DoxyCodeLine{00576\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_enable\_locking,\ (\textcolor{keywordtype}{void}\ *vctx))}
+\DoxyCodeLine{00577\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_lock,\ (\textcolor{keywordtype}{void}\ *vctx))}
+\DoxyCodeLine{00578\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},rand\_unlock,\ (\textcolor{keywordtype}{void}\ *vctx))}
+\DoxyCodeLine{00579\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,rand\_gettable\_params,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00580\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,rand\_gettable\_ctx\_params,}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00582\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,rand\_settable\_ctx\_params,}
+\DoxyCodeLine{00583\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00584\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_get\_params,\ (OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00585\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_get\_ctx\_params,}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00587\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_set\_ctx\_params,}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00589\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},rand\_set\_callbacks,}
+\DoxyCodeLine{00590\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ OSSL\_INOUT\_CALLBACK\ *get\_entropy,}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CALLBACK\ *cleanup\_entropy,}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_INOUT\_CALLBACK\ *get\_nonce,}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CALLBACK\ *cleanup\_nonce,\ \textcolor{keywordtype}{void}\ *arg))}
+\DoxyCodeLine{00594\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},rand\_verify\_zeroization,}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx))}
+\DoxyCodeLine{00596\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{size\_t},rand\_get\_seed,}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ **buffer,}
+\DoxyCodeLine{00598\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ entropy,\ \textcolor{keywordtype}{size\_t}\ min\_len,\ \textcolor{keywordtype}{size\_t}\ max\_len,}
+\DoxyCodeLine{00599\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ prediction\_resistance,}
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *adin,\ \textcolor{keywordtype}{size\_t}\ adin\_len))}
+\DoxyCodeLine{00601\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},rand\_clear\_seed,}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *vctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *buffer,\ \textcolor{keywordtype}{size\_t}\ b\_len))}
+\DoxyCodeLine{00603\ }
+\DoxyCodeLine{00604\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00605\ \textcolor{comment}{\ *\ Key\ management}}
+\DoxyCodeLine{00606\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00607\ \textcolor{comment}{\ *\ The\ Key\ Management\ takes\ care\ of\ provider\ side\ key\ objects,\ and\ includes}}
+\DoxyCodeLine{00608\ \textcolor{comment}{\ *\ all\ current\ functionality\ to\ create\ them,\ destroy\ them,\ set\ parameters}}
+\DoxyCodeLine{00609\ \textcolor{comment}{\ *\ and\ key\ material,\ etc,\ essentially\ everything\ that\ manipulates\ the\ keys}}
+\DoxyCodeLine{00610\ \textcolor{comment}{\ *\ themselves\ and\ their\ parameters.}}
+\DoxyCodeLine{00611\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00612\ \textcolor{comment}{\ *\ The\ key\ objects\ are\ commonly\ referred\ to\ as\ |keydata|,\ and\ it\ MUST\ be\ able}}
+\DoxyCodeLine{00613\ \textcolor{comment}{\ *\ to\ contain\ parameters\ if\ the\ key\ has\ any,\ the\ public\ key\ and\ the\ private}}
+\DoxyCodeLine{00614\ \textcolor{comment}{\ *\ key.\ \ All\ parts\ are\ optional,\ but\ their\ presence\ determines\ what\ can\ be}}
+\DoxyCodeLine{00615\ \textcolor{comment}{\ *\ done\ with\ the\ key\ object\ in\ terms\ of\ encryption,\ signature,\ and\ so\ on.}}
+\DoxyCodeLine{00616\ \textcolor{comment}{\ *\ The\ assumption\ from\ libcrypto\ is\ that\ the\ key\ object\ contains\ any\ of\ the}}
+\DoxyCodeLine{00617\ \textcolor{comment}{\ *\ following\ data\ combinations:}}
+\DoxyCodeLine{00618\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00619\ \textcolor{comment}{\ *\ -\/\ parameters\ only}}
+\DoxyCodeLine{00620\ \textcolor{comment}{\ *\ -\/\ public\ key\ only}}
+\DoxyCodeLine{00621\ \textcolor{comment}{\ *\ -\/\ public\ key\ +\ private\ key}}
+\DoxyCodeLine{00622\ \textcolor{comment}{\ *\ -\/\ parameters\ +\ public\ key}}
+\DoxyCodeLine{00623\ \textcolor{comment}{\ *\ -\/\ parameters\ +\ public\ key\ +\ private\ key}}
+\DoxyCodeLine{00624\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00625\ \textcolor{comment}{\ *\ What\ "{}parameters"{},\ "{}public\ key"{}\ and\ "{}private\ key"{}\ means\ in\ detail\ is\ left}}
+\DoxyCodeLine{00626\ \textcolor{comment}{\ *\ to\ the\ implementation.\ \ In\ the\ case\ of\ DH\ and\ DSA,\ they\ would\ typically}}
+\DoxyCodeLine{00627\ \textcolor{comment}{\ *\ include\ domain\ parameters,\ while\ for\ certain\ variants\ of\ RSA,\ they\ would}}
+\DoxyCodeLine{00628\ \textcolor{comment}{\ *\ typically\ include\ PSS\ or\ OAEP\ parameters.}}
+\DoxyCodeLine{00629\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00630\ \textcolor{comment}{\ *\ Key\ objects\ are\ created\ with\ OSSL\_FUNC\_keymgmt\_new()\ and\ destroyed\ with}}
+\DoxyCodeLine{00631\ \textcolor{comment}{\ *\ OSSL\_FUNC\_keymgmt\_free().\ \ Key\ objects\ can\ have\ data\ filled\ in\ with}}
+\DoxyCodeLine{00632\ \textcolor{comment}{\ *\ OSSL\_FUNC\_keymgmt\_import().}}
+\DoxyCodeLine{00633\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00634\ \textcolor{comment}{\ *\ Three\ functions\ are\ made\ available\ to\ check\ what\ selection\ of\ data\ is}}
+\DoxyCodeLine{00635\ \textcolor{comment}{\ *\ present\ in\ a\ key\ object:\ OSSL\_FUNC\_keymgmt\_has\_parameters(),}}
+\DoxyCodeLine{00636\ \textcolor{comment}{\ *\ OSSL\_FUNC\_keymgmt\_has\_public\_key(),\ and\ OSSL\_FUNC\_keymgmt\_has\_private\_key(),}}
+\DoxyCodeLine{00637\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00638\ }
+\DoxyCodeLine{00639\ \textcolor{comment}{/*\ Key\ data\ subset\ selection\ -\/\ individual\ bits\ */}}
+\DoxyCodeLine{00640\ \textcolor{preprocessor}{\#\ define\ OSSL\_KEYMGMT\_SELECT\_PRIVATE\_KEY\ \ \ \ \ \ \ \ \ \ \ \ 0x01}}
+\DoxyCodeLine{00641\ \textcolor{preprocessor}{\#\ define\ OSSL\_KEYMGMT\_SELECT\_PUBLIC\_KEY\ \ \ \ \ \ \ \ \ \ \ \ \ 0x02}}
+\DoxyCodeLine{00642\ \textcolor{preprocessor}{\#\ define\ OSSL\_KEYMGMT\_SELECT\_DOMAIN\_PARAMETERS\ \ \ \ \ \ 0x04}}
+\DoxyCodeLine{00643\ \textcolor{preprocessor}{\#\ define\ OSSL\_KEYMGMT\_SELECT\_OTHER\_PARAMETERS\ \ \ \ \ \ \ 0x80}}
+\DoxyCodeLine{00644\ }
+\DoxyCodeLine{00645\ \textcolor{comment}{/*\ Key\ data\ subset\ selection\ -\/\ combinations\ */}}
+\DoxyCodeLine{00646\ \textcolor{preprocessor}{\#\ define\ OSSL\_KEYMGMT\_SELECT\_ALL\_PARAMETERS\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00647\ \textcolor{preprocessor}{\ \ \ \ (\ OSSL\_KEYMGMT\_SELECT\_DOMAIN\_PARAMETERS\ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00648\ \textcolor{preprocessor}{\ \ \ \ \ \ |\ OSSL\_KEYMGMT\_SELECT\_OTHER\_PARAMETERS)}}
+\DoxyCodeLine{00649\ \textcolor{preprocessor}{\#\ define\ OSSL\_KEYMGMT\_SELECT\_KEYPAIR\ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00650\ \textcolor{preprocessor}{\ \ \ \ (\ OSSL\_KEYMGMT\_SELECT\_PRIVATE\_KEY\ |\ OSSL\_KEYMGMT\_SELECT\_PUBLIC\_KEY\ )}}
+\DoxyCodeLine{00651\ \textcolor{preprocessor}{\#\ define\ OSSL\_KEYMGMT\_SELECT\_ALL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00652\ \textcolor{preprocessor}{\ \ \ \ (\ OSSL\_KEYMGMT\_SELECT\_KEYPAIR\ |\ OSSL\_KEYMGMT\_SELECT\_ALL\_PARAMETERS\ )}}
+\DoxyCodeLine{00653\ }
+\DoxyCodeLine{00654\ \textcolor{preprocessor}{\#\ define\ OSSL\_KEYMGMT\_VALIDATE\_FULL\_CHECK\ \ \ \ \ \ \ \ \ \ \ \ \ \ 0}}
+\DoxyCodeLine{00655\ \textcolor{preprocessor}{\#\ define\ OSSL\_KEYMGMT\_VALIDATE\_QUICK\_CHECK\ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \textcolor{comment}{/*\ Basic\ key\ object\ creation\ */}}
+\DoxyCodeLine{00658\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_NEW\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00659\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ keymgmt\_new,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00660\ }
+\DoxyCodeLine{00661\ \textcolor{comment}{/*\ Generation,\ a\ more\ complex\ constructor\ */}}
+\DoxyCodeLine{00662\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_GEN\_INIT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00663\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_GEN\_SET\_TEMPLATE\ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00664\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_GEN\_SET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00665\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_GEN\_SETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00666\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_GEN\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00667\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_GEN\_CLEANUP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00668\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_GEN\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 15}}
+\DoxyCodeLine{00669\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_GEN\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ 16}}
+\DoxyCodeLine{00670\ }
+\DoxyCodeLine{00671\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ keymgmt\_gen\_init,}
+\DoxyCodeLine{00672\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{int}\ selection,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00673\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_gen\_set\_template,}
+\DoxyCodeLine{00674\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *genctx,\ \textcolor{keywordtype}{void}\ *templ))}
+\DoxyCodeLine{00675\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_gen\_set\_params,}
+\DoxyCodeLine{00676\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *genctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00677\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,}
+\DoxyCodeLine{00678\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ keymgmt\_gen\_settable\_params,}
+\DoxyCodeLine{00679\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *genctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00680\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_gen\_get\_params,}
+\DoxyCodeLine{00681\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *genctx,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00682\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ keymgmt\_gen\_gettable\_params,}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *genctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00684\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ keymgmt\_gen,}
+\DoxyCodeLine{00685\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *genctx,\ OSSL\_CALLBACK\ *cb,\ \textcolor{keywordtype}{void}\ *cbarg))}
+\DoxyCodeLine{00686\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ keymgmt\_gen\_cleanup,\ (\textcolor{keywordtype}{void}\ *genctx))}
+\DoxyCodeLine{00687\ }
+\DoxyCodeLine{00688\ \textcolor{comment}{/*\ Key\ loading\ by\ object\ reference\ */}}
+\DoxyCodeLine{00689\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_LOAD\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00690\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ keymgmt\_load,}
+\DoxyCodeLine{00691\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *reference,\ \textcolor{keywordtype}{size\_t}\ reference\_sz))}
+\DoxyCodeLine{00692\ }
+\DoxyCodeLine{00693\ \textcolor{comment}{/*\ Basic\ key\ object\ destruction\ */}}
+\DoxyCodeLine{00694\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_FREE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00695\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ keymgmt\_free,\ (\textcolor{keywordtype}{void}\ *keydata))}
+\DoxyCodeLine{00696\ }
+\DoxyCodeLine{00697\ \textcolor{comment}{/*\ Key\ object\ information,\ with\ discovery\ */}}
+\DoxyCodeLine{00698\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_KEYMGMT\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00699\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_KEYMGMT\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ 12}}
+\DoxyCodeLine{00700\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_get\_params,}
+\DoxyCodeLine{00701\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *keydata,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00702\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ keymgmt\_gettable\_params,}
+\DoxyCodeLine{00703\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00704\ }
+\DoxyCodeLine{00705\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_KEYMGMT\_SET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 13}}
+\DoxyCodeLine{00706\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_KEYMGMT\_SETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ 14}}
+\DoxyCodeLine{00707\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_set\_params,}
+\DoxyCodeLine{00708\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *keydata,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00709\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ keymgmt\_settable\_params,}
+\DoxyCodeLine{00710\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00711\ }
+\DoxyCodeLine{00712\ \textcolor{comment}{/*\ Key\ checks\ -\/\ discovery\ of\ supported\ operations\ */}}
+\DoxyCodeLine{00713\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_QUERY\_OPERATION\_NAME\ \ \ \ \ \ \ 20}}
+\DoxyCodeLine{00714\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ keymgmt\_query\_operation\_name,}
+\DoxyCodeLine{00715\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{int}\ operation\_id))}
+\DoxyCodeLine{00716\ }
+\DoxyCodeLine{00717\ \textcolor{comment}{/*\ Key\ checks\ -\/\ key\ data\ content\ checks\ */}}
+\DoxyCodeLine{00718\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_HAS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 21}}
+\DoxyCodeLine{00719\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_has,\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *keydata,\ \textcolor{keywordtype}{int}\ selection))}
+\DoxyCodeLine{00720\ }
+\DoxyCodeLine{00721\ \textcolor{comment}{/*\ Key\ checks\ -\/\ validation\ */}}
+\DoxyCodeLine{00722\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_VALIDATE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 22}}
+\DoxyCodeLine{00723\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_validate,\ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *keydata,\ \textcolor{keywordtype}{int}\ selection,}
+\DoxyCodeLine{00724\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ checktype))}
+\DoxyCodeLine{00725\ }
+\DoxyCodeLine{00726\ \textcolor{comment}{/*\ Key\ checks\ -\/\ matching\ */}}
+\DoxyCodeLine{00727\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_MATCH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 23}}
+\DoxyCodeLine{00728\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_match,}
+\DoxyCodeLine{00729\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *keydata1,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *keydata2,}
+\DoxyCodeLine{00730\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ selection))}
+\DoxyCodeLine{00731\ }
+\DoxyCodeLine{00732\ \textcolor{comment}{/*\ Import\ and\ export\ functions,\ with\ discovery\ */}}
+\DoxyCodeLine{00733\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_IMPORT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 40}}
+\DoxyCodeLine{00734\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_IMPORT\_TYPES\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 41}}
+\DoxyCodeLine{00735\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_EXPORT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 42}}
+\DoxyCodeLine{00736\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_EXPORT\_TYPES\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 43}}
+\DoxyCodeLine{00737\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_import,}
+\DoxyCodeLine{00738\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *keydata,\ \textcolor{keywordtype}{int}\ selection,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00739\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ keymgmt\_import\_types,}
+\DoxyCodeLine{00740\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{int}\ selection))}
+\DoxyCodeLine{00741\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keymgmt\_export,}
+\DoxyCodeLine{00742\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *keydata,\ \textcolor{keywordtype}{int}\ selection,}
+\DoxyCodeLine{00743\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CALLBACK\ *param\_cb,\ \textcolor{keywordtype}{void}\ *cbarg))}
+\DoxyCodeLine{00744\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ keymgmt\_export\_types,}
+\DoxyCodeLine{00745\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{int}\ selection))}
+\DoxyCodeLine{00746\ }
+\DoxyCodeLine{00747\ \textcolor{comment}{/*\ Dup\ function,\ constructor\ */}}
+\DoxyCodeLine{00748\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_DUP\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 44}}
+\DoxyCodeLine{00749\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ keymgmt\_dup,}
+\DoxyCodeLine{00750\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *keydata\_from,\ \textcolor{keywordtype}{int}\ selection))}
+\DoxyCodeLine{00751\ }
+\DoxyCodeLine{00752\ \textcolor{comment}{/*\ Extended\ import\ and\ export\ functions\ */}}
+\DoxyCodeLine{00753\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_IMPORT\_TYPES\_EX\ \ \ \ \ \ \ \ \ \ \ \ 45}}
+\DoxyCodeLine{00754\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYMGMT\_EXPORT\_TYPES\_EX\ \ \ \ \ \ \ \ \ \ \ \ 46}}
+\DoxyCodeLine{00755\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ keymgmt\_import\_types\_ex,}
+\DoxyCodeLine{00756\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{int}\ selection))}
+\DoxyCodeLine{00757\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ keymgmt\_export\_types\_ex,}
+\DoxyCodeLine{00758\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{int}\ selection))}
+\DoxyCodeLine{00759\ }
+\DoxyCodeLine{00760\ \textcolor{comment}{/*\ Key\ Exchange\ */}}
+\DoxyCodeLine{00761\ }
+\DoxyCodeLine{00762\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00763\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_INIT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00764\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_DERIVE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00765\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_SET\_PEER\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00766\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00767\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_DUPCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00768\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00769\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_SETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00770\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_GET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 9}}
+\DoxyCodeLine{00771\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEYEXCH\_GETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00772\ }
+\DoxyCodeLine{00773\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ keyexch\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00774\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keyexch\_init,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{00775\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00776\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keyexch\_derive,\ (\textcolor{keywordtype}{void}\ *ctx,\ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *secret,}
+\DoxyCodeLine{00777\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *secretlen,\ \textcolor{keywordtype}{size\_t}\ outlen))}
+\DoxyCodeLine{00778\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keyexch\_set\_peer,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey))}
+\DoxyCodeLine{00779\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ keyexch\_freectx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{00780\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ keyexch\_dupctx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{00781\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keyexch\_set\_ctx\_params,\ (\textcolor{keywordtype}{void}\ *ctx,}
+\DoxyCodeLine{00782\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00783\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ keyexch\_settable\_ctx\_params,}
+\DoxyCodeLine{00784\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00785\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ keyexch\_get\_ctx\_params,\ (\textcolor{keywordtype}{void}\ *ctx,}
+\DoxyCodeLine{00786\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00787\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ keyexch\_gettable\_ctx\_params,}
+\DoxyCodeLine{00788\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00789\ }
+\DoxyCodeLine{00790\ \textcolor{comment}{/*\ Signature\ */}}
+\DoxyCodeLine{00791\ }
+\DoxyCodeLine{00792\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00793\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_SIGN\_INIT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00794\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_SIGN\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00795\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_VERIFY\_INIT\ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00796\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_VERIFY\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00797\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_VERIFY\_RECOVER\_INIT\ \ \ \ \ 6}}
+\DoxyCodeLine{00798\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_VERIFY\_RECOVER\ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00799\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_DIGEST\_SIGN\_INIT\ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00800\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_DIGEST\_SIGN\_UPDATE\ \ \ \ \ \ 9}}
+\DoxyCodeLine{00801\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_DIGEST\_SIGN\_FINAL\ \ \ \ \ \ 10}}
+\DoxyCodeLine{00802\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_DIGEST\_SIGN\ \ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{00803\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_DIGEST\_VERIFY\_INIT\ \ \ \ \ 12}}
+\DoxyCodeLine{00804\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_DIGEST\_VERIFY\_UPDATE\ \ \ 13}}
+\DoxyCodeLine{00805\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_DIGEST\_VERIFY\_FINAL\ \ \ \ 14}}
+\DoxyCodeLine{00806\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_DIGEST\_VERIFY\ \ \ \ \ \ \ \ \ \ 15}}
+\DoxyCodeLine{00807\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 16}}
+\DoxyCodeLine{00808\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_DUPCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 17}}
+\DoxyCodeLine{00809\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_GET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ 18}}
+\DoxyCodeLine{00810\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_GETTABLE\_CTX\_PARAMS\ \ \ \ 19}}
+\DoxyCodeLine{00811\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ 20}}
+\DoxyCodeLine{00812\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_SETTABLE\_CTX\_PARAMS\ \ \ \ 21}}
+\DoxyCodeLine{00813\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_GET\_CTX\_MD\_PARAMS\ \ \ \ \ \ 22}}
+\DoxyCodeLine{00814\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_GETTABLE\_CTX\_MD\_PARAMS\ 23}}
+\DoxyCodeLine{00815\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_SET\_CTX\_MD\_PARAMS\ \ \ \ \ \ 24}}
+\DoxyCodeLine{00816\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_SETTABLE\_CTX\_MD\_PARAMS\ 25}}
+\DoxyCodeLine{00817\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_QUERY\_KEY\_TYPES\ \ \ \ \ \ \ \ 26}}
+\DoxyCodeLine{00818\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_SIGN\_MESSAGE\_INIT\ \ \ \ \ \ 27}}
+\DoxyCodeLine{00819\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_SIGN\_MESSAGE\_UPDATE\ \ \ \ 28}}
+\DoxyCodeLine{00820\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_SIGN\_MESSAGE\_FINAL\ \ \ \ \ 29}}
+\DoxyCodeLine{00821\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_VERIFY\_MESSAGE\_INIT\ \ \ \ 30}}
+\DoxyCodeLine{00822\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_VERIFY\_MESSAGE\_UPDATE\ \ 31}}
+\DoxyCodeLine{00823\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SIGNATURE\_VERIFY\_MESSAGE\_FINAL\ \ \ 32}}
+\DoxyCodeLine{00824\ }
+\DoxyCodeLine{00825\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ signature\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx,}
+\DoxyCodeLine{00826\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *propq))}
+\DoxyCodeLine{00827\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_sign\_init,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{00828\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00829\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_sign,\ (\textcolor{keywordtype}{void}\ *ctx,\ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *sig,}
+\DoxyCodeLine{00830\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *siglen,\ \textcolor{keywordtype}{size\_t}\ sigsize,}
+\DoxyCodeLine{00831\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *tbs,}
+\DoxyCodeLine{00832\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ tbslen))}
+\DoxyCodeLine{00833\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_sign\_message\_init,}
+\DoxyCodeLine{00834\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00835\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_sign\_message\_update,}
+\DoxyCodeLine{00836\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,\ \textcolor{keywordtype}{size\_t}\ inlen))}
+\DoxyCodeLine{00837\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_sign\_message\_final,}
+\DoxyCodeLine{00838\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *sig,}
+\DoxyCodeLine{00839\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *siglen,\ \textcolor{keywordtype}{size\_t}\ sigsize))}
+\DoxyCodeLine{00840\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_verify\_init,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{00841\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00842\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_verify,\ (\textcolor{keywordtype}{void}\ *ctx,}
+\DoxyCodeLine{00843\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *sig,}
+\DoxyCodeLine{00844\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ siglen,}
+\DoxyCodeLine{00845\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *tbs,}
+\DoxyCodeLine{00846\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ tbslen))}
+\DoxyCodeLine{00847\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_verify\_message\_init,}
+\DoxyCodeLine{00848\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00849\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_verify\_message\_update,}
+\DoxyCodeLine{00850\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,\ \textcolor{keywordtype}{size\_t}\ inlen))}
+\DoxyCodeLine{00851\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00852\ \textcolor{comment}{\ *\ signature\_verify\_final\ requires\ that\ the\ signature\ to\ be\ verified\ against}}
+\DoxyCodeLine{00853\ \textcolor{comment}{\ *\ is\ specified\ via\ an\ OSSL\_PARAM.}}
+\DoxyCodeLine{00854\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00855\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_verify\_message\_final,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{00856\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_verify\_recover\_init,}
+\DoxyCodeLine{00857\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00858\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_verify\_recover,}
+\DoxyCodeLine{00859\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *rout,\ \textcolor{keywordtype}{size\_t}\ *routlen,}
+\DoxyCodeLine{00860\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ routsize,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *sig,\ \textcolor{keywordtype}{size\_t}\ siglen))}
+\DoxyCodeLine{00861\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_digest\_sign\_init,}
+\DoxyCodeLine{00862\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *mdname,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{00863\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00864\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_digest\_sign\_update,}
+\DoxyCodeLine{00865\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *data,\ \textcolor{keywordtype}{size\_t}\ datalen))}
+\DoxyCodeLine{00866\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_digest\_sign\_final,}
+\DoxyCodeLine{00867\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *sig,\ \textcolor{keywordtype}{size\_t}\ *siglen,}
+\DoxyCodeLine{00868\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ sigsize))}
+\DoxyCodeLine{00869\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_digest\_sign,}
+\DoxyCodeLine{00870\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *sigret,\ \textcolor{keywordtype}{size\_t}\ *siglen,}
+\DoxyCodeLine{00871\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ sigsize,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *tbs,\ \textcolor{keywordtype}{size\_t}\ tbslen))}
+\DoxyCodeLine{00872\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_digest\_verify\_init,}
+\DoxyCodeLine{00873\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *mdname,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{00874\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00875\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_digest\_verify\_update,}
+\DoxyCodeLine{00876\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *data,\ \textcolor{keywordtype}{size\_t}\ datalen))}
+\DoxyCodeLine{00877\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_digest\_verify\_final,}
+\DoxyCodeLine{00878\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *sig,\ \textcolor{keywordtype}{size\_t}\ siglen))}
+\DoxyCodeLine{00879\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_digest\_verify,}
+\DoxyCodeLine{00880\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *sig,\ \textcolor{keywordtype}{size\_t}\ siglen,}
+\DoxyCodeLine{00881\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *tbs,\ \textcolor{keywordtype}{size\_t}\ tbslen))}
+\DoxyCodeLine{00882\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ signature\_freectx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{00883\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ signature\_dupctx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{00884\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_get\_ctx\_params,}
+\DoxyCodeLine{00885\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00886\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ signature\_gettable\_ctx\_params,}
+\DoxyCodeLine{00887\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00888\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_set\_ctx\_params,}
+\DoxyCodeLine{00889\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00890\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ signature\_settable\_ctx\_params,}
+\DoxyCodeLine{00891\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00892\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_get\_ctx\_md\_params,}
+\DoxyCodeLine{00893\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00894\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ signature\_gettable\_ctx\_md\_params,}
+\DoxyCodeLine{00895\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{00896\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ signature\_set\_ctx\_md\_params,}
+\DoxyCodeLine{00897\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00898\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ signature\_settable\_ctx\_md\_params,}
+\DoxyCodeLine{00899\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{00900\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ **,\ signature\_query\_key\_types,\ (\textcolor{keywordtype}{void}))}
+\DoxyCodeLine{00901\ }
+\DoxyCodeLine{00902\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{00903\ \textcolor{comment}{\ *\ Symmetric\ key\ management}}
+\DoxyCodeLine{00904\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00905\ \textcolor{comment}{\ *\ The\ Key\ Management\ takes\ care\ of\ provider\ side\ of\ symmetric\ key\ objects,\ and}}
+\DoxyCodeLine{00906\ \textcolor{comment}{\ *\ includes\ essentially\ everything\ that\ manipulates\ the\ keys\ \ themselves\ and}}
+\DoxyCodeLine{00907\ \textcolor{comment}{\ *\ their\ parameters.}}
+\DoxyCodeLine{00908\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00909\ \textcolor{comment}{\ *\ The\ key\ objects\ are\ commonly\ referred\ to\ as\ |keydata|,\ and\ it\ MUST\ be\ able}}
+\DoxyCodeLine{00910\ \textcolor{comment}{\ *\ to\ contain\ parameters\ if\ the\ key\ has\ any,\ and\ the\ secret\ key.}}
+\DoxyCodeLine{00911\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00912\ \textcolor{comment}{\ *\ Key\ objects\ are\ created\ with\ OSSL\_FUNC\_skeymgmt\_import()\ (there\ is\ no}}
+\DoxyCodeLine{00913\ \textcolor{comment}{\ *\ dedicated\ memory\ allocation\ function),\ exported\ with}}
+\DoxyCodeLine{00914\ \textcolor{comment}{\ *\ OSSL\_FUNC\_skeymgmt\_export()\ and\ destroyed\ with\ OSSL\_FUNC\_keymgmt\_free().}}
+\DoxyCodeLine{00915\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00916\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00917\ }
+\DoxyCodeLine{00918\ \textcolor{comment}{/*\ Key\ data\ subset\ selection\ -\/\ individual\ bits\ */}}
+\DoxyCodeLine{00919\ \textcolor{preprocessor}{\#\ define\ OSSL\_SKEYMGMT\_SELECT\_PARAMETERS\ \ \ \ \ \ 0x01}}
+\DoxyCodeLine{00920\ \textcolor{preprocessor}{\#\ define\ OSSL\_SKEYMGMT\_SELECT\_SECRET\_KEY\ \ \ \ \ \ 0x02}}
+\DoxyCodeLine{00921\ }
+\DoxyCodeLine{00922\ \textcolor{comment}{/*\ Key\ data\ subset\ selection\ -\/\ combinations\ */}}
+\DoxyCodeLine{00923\ \textcolor{preprocessor}{\#\ define\ OSSL\_SKEYMGMT\_SELECT\_ALL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00924\ \textcolor{preprocessor}{\ \ \ \ (OSSL\_SKEYMGMT\_SELECT\_PARAMETERS\ |\ OSSL\_SKEYMGMT\_SELECT\_SECRET\_KEY)}}
+\DoxyCodeLine{00925\ }
+\DoxyCodeLine{00926\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SKEYMGMT\_FREE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00927\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SKEYMGMT\_IMPORT\ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00928\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SKEYMGMT\_EXPORT\ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00929\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SKEYMGMT\_GENERATE\ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00930\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SKEYMGMT\_GET\_KEY\_ID\ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00931\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SKEYMGMT\_IMP\_SETTABLE\_PARAMS\ 6}}
+\DoxyCodeLine{00932\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_SKEYMGMT\_GEN\_SETTABLE\_PARAMS\ 7}}
+\DoxyCodeLine{00933\ }
+\DoxyCodeLine{00934\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ skeymgmt\_free,\ (\textcolor{keywordtype}{void}\ *keydata))}
+\DoxyCodeLine{00935\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,}
+\DoxyCodeLine{00936\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ skeymgmt\_imp\_settable\_params,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00937\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ skeymgmt\_import,\ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{int}\ selection,}
+\DoxyCodeLine{00938\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00939\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ skeymgmt\_export,}
+\DoxyCodeLine{00940\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *keydata,\ \textcolor{keywordtype}{int}\ selection,}
+\DoxyCodeLine{00941\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CALLBACK\ *param\_cb,\ \textcolor{keywordtype}{void}\ *cbarg))}
+\DoxyCodeLine{00942\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,}
+\DoxyCodeLine{00943\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ skeymgmt\_gen\_settable\_params,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00944\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ skeymgmt\_generate,\ (\textcolor{keywordtype}{void}\ *provctx,}
+\DoxyCodeLine{00945\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00946\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *,\ skeymgmt\_get\_key\_id,\ (\textcolor{keywordtype}{void}\ *keydata))}
+\DoxyCodeLine{00947\ }
+\DoxyCodeLine{00948\ \textcolor{comment}{/*\ Asymmetric\ Ciphers\ */}}
+\DoxyCodeLine{00949\ }
+\DoxyCodeLine{00950\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00951\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_ENCRYPT\_INIT\ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00952\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_ENCRYPT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00953\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_DECRYPT\_INIT\ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00954\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_DECRYPT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00955\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00956\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_DUPCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00957\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_GET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00958\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_GETTABLE\_CTX\_PARAMS\ \ \ \ \ 9}}
+\DoxyCodeLine{00959\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00960\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ASYM\_CIPHER\_SETTABLE\_CTX\_PARAMS\ \ \ \ 11}}
+\DoxyCodeLine{00961\ }
+\DoxyCodeLine{00962\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ asym\_cipher\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00963\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ asym\_cipher\_encrypt\_init,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{00964\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00965\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ asym\_cipher\_encrypt,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,}
+\DoxyCodeLine{00966\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *outlen,}
+\DoxyCodeLine{00967\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ outsize,}
+\DoxyCodeLine{00968\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,}
+\DoxyCodeLine{00969\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ inlen))}
+\DoxyCodeLine{00970\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ asym\_cipher\_decrypt\_init,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{00971\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00972\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ asym\_cipher\_decrypt,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,}
+\DoxyCodeLine{00973\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *outlen,}
+\DoxyCodeLine{00974\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ outsize,}
+\DoxyCodeLine{00975\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,}
+\DoxyCodeLine{00976\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ inlen))}
+\DoxyCodeLine{00977\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ asym\_cipher\_freectx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{00978\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ asym\_cipher\_dupctx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{00979\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ asym\_cipher\_get\_ctx\_params,}
+\DoxyCodeLine{00980\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00981\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ asym\_cipher\_gettable\_ctx\_params,}
+\DoxyCodeLine{00982\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00983\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ asym\_cipher\_set\_ctx\_params,}
+\DoxyCodeLine{00984\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{00985\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ asym\_cipher\_settable\_ctx\_params,}
+\DoxyCodeLine{00986\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{00987\ }
+\DoxyCodeLine{00988\ \textcolor{comment}{/*\ Asymmetric\ Key\ encapsulation\ */}}
+\DoxyCodeLine{00989\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{00990\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_ENCAPSULATE\_INIT\ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{00991\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_ENCAPSULATE\ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{00992\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_DECAPSULATE\_INIT\ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{00993\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_DECAPSULATE\ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{00994\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{00995\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_DUPCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{00996\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_GET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{00997\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_GETTABLE\_CTX\_PARAMS\ \ \ \ \ 9}}
+\DoxyCodeLine{00998\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{00999\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_SETTABLE\_CTX\_PARAMS\ \ \ \ 11}}
+\DoxyCodeLine{01000\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_AUTH\_ENCAPSULATE\_INIT\ \ 12}}
+\DoxyCodeLine{01001\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_KEM\_AUTH\_DECAPSULATE\_INIT\ \ 13}}
+\DoxyCodeLine{01002\ }
+\DoxyCodeLine{01003\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ kem\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01004\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kem\_encapsulate\_init,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{01005\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01006\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kem\_auth\_encapsulate\_init,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{01007\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *authprivkey,}
+\DoxyCodeLine{01008\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01009\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kem\_encapsulate,\ (\textcolor{keywordtype}{void}\ *ctx,}
+\DoxyCodeLine{01010\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ *outlen,}
+\DoxyCodeLine{01011\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *secret,}
+\DoxyCodeLine{01012\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *secretlen))}
+\DoxyCodeLine{01013\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kem\_decapsulate\_init,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{01014\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01015\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kem\_auth\_decapsulate\_init,\ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provkey,}
+\DoxyCodeLine{01016\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ *authpubkey,}
+\DoxyCodeLine{01017\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01018\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kem\_decapsulate,\ (\textcolor{keywordtype}{void}\ *ctx,}
+\DoxyCodeLine{01019\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *out,\ \textcolor{keywordtype}{size\_t}\ *outlen,}
+\DoxyCodeLine{01020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *in,\ \textcolor{keywordtype}{size\_t}\ inlen))}
+\DoxyCodeLine{01021\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ kem\_freectx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{01022\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ kem\_dupctx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{01023\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kem\_get\_ctx\_params,\ (\textcolor{keywordtype}{void}\ *ctx,\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01024\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ kem\_gettable\_ctx\_params,}
+\DoxyCodeLine{01025\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01026\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ kem\_set\_ctx\_params,}
+\DoxyCodeLine{01027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01028\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ kem\_settable\_ctx\_params,}
+\DoxyCodeLine{01029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01030\ }
+\DoxyCodeLine{01031\ \textcolor{comment}{/*\ Encoders\ and\ decoders\ */}}
+\DoxyCodeLine{01032\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{01033\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{01034\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{01035\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{01036\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{01037\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_SETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{01038\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_DOES\_SELECTION\ \ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{01039\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_ENCODE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{01040\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_IMPORT\_OBJECT\ \ \ \ \ \ \ \ \ \ \ \ \ \ 20}}
+\DoxyCodeLine{01041\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_ENCODER\_FREE\_OBJECT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 21}}
+\DoxyCodeLine{01042\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ encoder\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01043\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ encoder\_freectx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{01044\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ encoder\_get\_params,\ (OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01045\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ encoder\_gettable\_params,}
+\DoxyCodeLine{01046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01047\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ encoder\_set\_ctx\_params,}
+\DoxyCodeLine{01048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01049\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ encoder\_settable\_ctx\_params,}
+\DoxyCodeLine{01050\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01051\ }
+\DoxyCodeLine{01052\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ encoder\_does\_selection,}
+\DoxyCodeLine{01053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{int}\ selection))}
+\DoxyCodeLine{01054\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ encoder\_encode,}
+\DoxyCodeLine{01055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ OSSL\_CORE\_BIO\ *out,}
+\DoxyCodeLine{01056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *obj\_raw,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ obj\_abstract[],}
+\DoxyCodeLine{01057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ selection,}
+\DoxyCodeLine{01058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_PASSPHRASE\_CALLBACK\ *cb,\ \textcolor{keywordtype}{void}\ *cbarg))}
+\DoxyCodeLine{01059\ }
+\DoxyCodeLine{01060\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ encoder\_import\_object,}
+\DoxyCodeLine{01061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keywordtype}{int}\ selection,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01062\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ encoder\_free\_object,\ (\textcolor{keywordtype}{void}\ *obj))}
+\DoxyCodeLine{01063\ }
+\DoxyCodeLine{01064\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DECODER\_NEWCTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{01065\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DECODER\_FREECTX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{01066\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DECODER\_GET\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{01067\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DECODER\_GETTABLE\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{01068\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DECODER\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{01069\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DECODER\_SETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{01070\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DECODER\_DOES\_SELECTION\ \ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{01071\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DECODER\_DECODE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 11}}
+\DoxyCodeLine{01072\ \textcolor{preprocessor}{\#\ define\ OSSL\_FUNC\_DECODER\_EXPORT\_OBJECT\ \ \ \ \ \ \ \ \ \ \ \ \ \ 20}}
+\DoxyCodeLine{01073\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ decoder\_newctx,\ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01074\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void},\ decoder\_freectx,\ (\textcolor{keywordtype}{void}\ *ctx))}
+\DoxyCodeLine{01075\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ decoder\_get\_params,\ (OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01076\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ decoder\_gettable\_params,}
+\DoxyCodeLine{01077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01078\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ decoder\_set\_ctx\_params,}
+\DoxyCodeLine{01079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01080\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ decoder\_settable\_ctx\_params,}
+\DoxyCodeLine{01081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01082\ }
+\DoxyCodeLine{01083\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ decoder\_does\_selection,}
+\DoxyCodeLine{01084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keywordtype}{int}\ selection))}
+\DoxyCodeLine{01085\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ decoder\_decode,}
+\DoxyCodeLine{01086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ OSSL\_CORE\_BIO\ *in,\ \textcolor{keywordtype}{int}\ selection,}
+\DoxyCodeLine{01087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CALLBACK\ *data\_cb,\ \textcolor{keywordtype}{void}\ *data\_cbarg,}
+\DoxyCodeLine{01088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_PASSPHRASE\_CALLBACK\ *pw\_cb,\ \textcolor{keywordtype}{void}\ *pw\_cbarg))}
+\DoxyCodeLine{01089\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ decoder\_export\_object,}
+\DoxyCodeLine{01090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *ctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *objref,\ \textcolor{keywordtype}{size\_t}\ objref\_sz,}
+\DoxyCodeLine{01091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CALLBACK\ *export\_cb,\ \textcolor{keywordtype}{void}\ *export\_cbarg))}
+\DoxyCodeLine{01092\ }
+\DoxyCodeLine{01093\ \textcolor{comment}{/*-\/}}
+\DoxyCodeLine{01094\ \textcolor{comment}{\ *\ Store}}
+\DoxyCodeLine{01095\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{01096\ \textcolor{comment}{\ *\ Objects\ are\ scanned\ by\ using\ the\ 'open',\ 'load',\ 'eof'\ and\ 'close'}}
+\DoxyCodeLine{01097\ \textcolor{comment}{\ *\ functions,\ which\ implement\ an\ OSSL\_STORE\ loader.}}
+\DoxyCodeLine{01098\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{01099\ \textcolor{comment}{\ *\ store\_load()\ works\ in\ a\ way\ that's\ very\ similar\ to\ the\ decoders,\ in}}
+\DoxyCodeLine{01100\ \textcolor{comment}{\ *\ that\ they\ pass\ an\ abstract\ object\ through\ a\ callback,\ either\ as\ a\ DER}}
+\DoxyCodeLine{01101\ \textcolor{comment}{\ *\ octet\ string\ or\ as\ an\ object\ reference,\ which\ libcrypto\ will\ have\ to}}
+\DoxyCodeLine{01102\ \textcolor{comment}{\ *\ deal\ with.}}
+\DoxyCodeLine{01103\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{01104\ }
+\DoxyCodeLine{01105\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_OPEN\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1}}
+\DoxyCodeLine{01106\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_ATTACH\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 2}}
+\DoxyCodeLine{01107\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_SETTABLE\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ 3}}
+\DoxyCodeLine{01108\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_SET\_CTX\_PARAMS\ \ \ \ \ \ \ \ \ \ \ \ \ \ 4}}
+\DoxyCodeLine{01109\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_LOAD\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 5}}
+\DoxyCodeLine{01110\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_EOF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 6}}
+\DoxyCodeLine{01111\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_CLOSE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 7}}
+\DoxyCodeLine{01112\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_EXPORT\_OBJECT\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 8}}
+\DoxyCodeLine{01113\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_DELETE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 9}}
+\DoxyCodeLine{01114\ \textcolor{preprocessor}{\#define\ OSSL\_FUNC\_STORE\_OPEN\_EX\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10}}
+\DoxyCodeLine{01115\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ store\_open,\ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *uri))}
+\DoxyCodeLine{01116\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ store\_attach,\ (\textcolor{keywordtype}{void}\ *provctx,\ OSSL\_CORE\_BIO\ *in))}
+\DoxyCodeLine{01117\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keyword}{const}\ OSSL\_PARAM\ *,\ store\_settable\_ctx\_params,}
+\DoxyCodeLine{01118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx))}
+\DoxyCodeLine{01119\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ store\_set\_ctx\_params,}
+\DoxyCodeLine{01120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *loaderctx,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[]))}
+\DoxyCodeLine{01121\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ store\_load,}
+\DoxyCodeLine{01122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *loaderctx,}
+\DoxyCodeLine{01123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CALLBACK\ *object\_cb,\ \textcolor{keywordtype}{void}\ *object\_cbarg,}
+\DoxyCodeLine{01124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_PASSPHRASE\_CALLBACK\ *pw\_cb,\ \textcolor{keywordtype}{void}\ *pw\_cbarg))}
+\DoxyCodeLine{01125\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ store\_eof,\ (\textcolor{keywordtype}{void}\ *loaderctx))}
+\DoxyCodeLine{01126\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ store\_close,\ (\textcolor{keywordtype}{void}\ *loaderctx))}
+\DoxyCodeLine{01127\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ store\_export\_object,}
+\DoxyCodeLine{01128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *loaderctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *objref,\ \textcolor{keywordtype}{size\_t}\ objref\_sz,}
+\DoxyCodeLine{01129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_CALLBACK\ *export\_cb,\ \textcolor{keywordtype}{void}\ *export\_cbarg))}
+\DoxyCodeLine{01130\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{int},\ store\_delete,}
+\DoxyCodeLine{01131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *uri,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[],}
+\DoxyCodeLine{01132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_PASSPHRASE\_CALLBACK\ *pw\_cb,\ \textcolor{keywordtype}{void}\ *pw\_cbarg))}
+\DoxyCodeLine{01133\ OSSL\_CORE\_MAKE\_FUNC(\textcolor{keywordtype}{void}\ *,\ store\_open\_ex,}
+\DoxyCodeLine{01134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\textcolor{keywordtype}{void}\ *provctx,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *uri,\ \textcolor{keyword}{const}\ OSSL\_PARAM\ params[],}
+\DoxyCodeLine{01135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OSSL\_PASSPHRASE\_CALLBACK\ *pw\_cb,\ \textcolor{keywordtype}{void}\ *pw\_cbarg))}
+\DoxyCodeLine{01136\ }
+\DoxyCodeLine{01137\ \textcolor{preprocessor}{\#\ ifdef\ \_\_cplusplus}}
+\DoxyCodeLine{01138\ \}}
+\DoxyCodeLine{01139\ \textcolor{preprocessor}{\#\ endif}}
+\DoxyCodeLine{01140\ }
+\DoxyCodeLine{01141\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,1478 @@
+\doxysection{coordinateoperation.\+hpp}
+\hypertarget{coordinateoperation_8hpp_source}{}\label{coordinateoperation_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibproj/include/proj/coordinateoperation.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtklibproj/include/proj/coordinateoperation.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/******************************************************************************}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ Project:\ \ PROJ}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ Purpose:\ \ ISO19111:2019\ implementation}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *\ Author:\ \ \ Even\ Rouault\ <even\ dot\ rouault\ at\ spatialys\ dot\ com>}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ ******************************************************************************}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ Copyright\ (c)\ 2018,\ Even\ Rouault\ <even\ dot\ rouault\ at\ spatialys\ dot\ com>}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ Permission\ is\ hereby\ granted,\ free\ of\ charge,\ to\ any\ person\ obtaining\ a}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ copy\ of\ this\ software\ and\ associated\ documentation\ files\ (the\ "{}Software"{}),}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *\ to\ deal\ in\ the\ Software\ without\ restriction,\ including\ without\ limitation}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *\ the\ rights\ to\ use,\ copy,\ modify,\ merge,\ publish,\ distribute,\ sublicense,}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ and/or\ sell\ copies\ of\ the\ Software,\ and\ to\ permit\ persons\ to\ whom\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *\ Software\ is\ furnished\ to\ do\ so,\ subject\ to\ the\ following\ conditions:}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *\ The\ above\ copyright\ notice\ and\ this\ permission\ notice\ shall\ be\ included}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ in\ all\ copies\ or\ substantial\ portions\ of\ the\ Software.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ THE\ SOFTWARE\ IS\ PROVIDED\ "{}AS\ IS"{},\ WITHOUT\ WARRANTY\ OF\ ANY\ KIND,\ EXPRESS}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ *\ OR\ IMPLIED,\ INCLUDING\ BUT\ NOT\ LIMITED\ TO\ THE\ WARRANTIES\ OF\ MERCHANTABILITY,}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ FITNESS\ FOR\ A\ PARTICULAR\ PURPOSE\ AND\ NONINFRINGEMENT.\ IN\ NO\ EVENT\ SHALL}}
+\DoxyCodeLine{00023\ \textcolor{comment}{\ *\ THE\ AUTHORS\ OR\ COPYRIGHT\ HOLDERS\ BE\ LIABLE\ FOR\ ANY\ CLAIM,\ DAMAGES\ OR\ OTHER}}
+\DoxyCodeLine{00024\ \textcolor{comment}{\ *\ LIABILITY,\ WHETHER\ IN\ AN\ ACTION\ OF\ CONTRACT,\ TORT\ OR\ OTHERWISE,\ ARISING}}
+\DoxyCodeLine{00025\ \textcolor{comment}{\ *\ FROM,\ OUT\ OF\ OR\ IN\ CONNECTION\ WITH\ THE\ SOFTWARE\ OR\ THE\ USE\ OR\ OTHER}}
+\DoxyCodeLine{00026\ \textcolor{comment}{\ *\ DEALINGS\ IN\ THE\ SOFTWARE.}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ ****************************************************************************/}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#ifndef\ COORDINATEOPERATION\_HH\_INCLUDED}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#define\ COORDINATEOPERATION\_HH\_INCLUDED}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#include\ "{}common.hpp"{}}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#include\ "{}io.hpp"{}}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#include\ "{}metadata.hpp"{}}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ NS\_PROJ\_START}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacecrs}{crs}}\ \{}
+\DoxyCodeLine{00044\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classcrs_1_1_c_r_s}{CRS}};}
+\DoxyCodeLine{00045\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{CRSPtr}}\ =\ std::shared\_ptr<CRS>;}
+\DoxyCodeLine{00046\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{CRSNNPtr}}\ =\ util::nn<CRSPtr>;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classcrs_1_1_derived_c_r_s}{DerivedCRS}};}
+\DoxyCodeLine{00049\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classcrs_1_1_projected_c_r_s}{ProjectedCRS}};}
+\DoxyCodeLine{00050\ \}\ \textcolor{comment}{//\ namespace\ crs}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00060\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceoperation}{operation}}\ \{}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00065\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structoperation_1_1_grid_description}{GridDescription}}\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ std::string\ \doxymbox{\hyperlink{structoperation_1_1_grid_description_a721a8f435c97cf3d39a784d11010dee1}{shortName}};\ \ \ }
+\DoxyCodeLine{00067\ \ \ \ \ std::string\ \doxymbox{\hyperlink{structoperation_1_1_grid_description_ade849e02ac305f2e3dcde1697ed659b6}{fullName}};\ \ \ \ }
+\DoxyCodeLine{00068\ \ \ \ \ std::string\ \doxymbox{\hyperlink{structoperation_1_1_grid_description_aad600c93881139957ae74be68f20e4c7}{packageName}};\ }
+\DoxyCodeLine{00069\ \ \ \ \ std::string\ \doxymbox{\hyperlink{structoperation_1_1_grid_description_aab9c89bbf42096c31c5aa486aed86349}{url}};\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structoperation_1_1_grid_description_aaf3f823b6b37eea9998c72b310d9330b}{directDownload}};\ \ \ \ \ }
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structoperation_1_1_grid_description_a4c3f6d54596ca8ecf6490777330c0ac4}{openLicense}};}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{structoperation_1_1_grid_description_a65115977748aa18022405caffab4b937}{available}};\ }
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordtype}{bool}\ operator<(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structoperation_1_1_grid_description}{GridDescription}}\ \&other)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{structoperation_1_1_grid_description_a721a8f435c97cf3d39a784d11010dee1}{shortName}}\ <\ other.\doxymbox{\hyperlink{structoperation_1_1_grid_description_a721a8f435c97cf3d39a784d11010dee1}{shortName}};}
+\DoxyCodeLine{00079\ \ \ \ \ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{structoperation_1_1_grid_description}{GridDescription}}();}
+\DoxyCodeLine{00082\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{structoperation_1_1_grid_description}{\string~GridDescription}}();}
+\DoxyCodeLine{00083\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{structoperation_1_1_grid_description}{GridDescription}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structoperation_1_1_grid_description}{GridDescription}}\ \&);}
+\DoxyCodeLine{00084\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{structoperation_1_1_grid_description}{GridDescription}}(\doxymbox{\hyperlink{structoperation_1_1_grid_description}{GridDescription}}\ \&\&)\ noexcept;}
+\DoxyCodeLine{00086\ \};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ class\ \doxymbox{\hyperlink{classoperation_1_1_coordinate_operation}{CoordinateOperation}};}
+\DoxyCodeLine{00092\ using\ \doxymbox{\hyperlink{namespaceoperation_a39467a04c89c906ccf3bbe3680f2bd4e}{CoordinateOperationPtr}}\ =\ std::shared\_ptr<\doxymbox{\hyperlink{classoperation_1_1_coordinate_operation}{CoordinateOperation}}>;}
+\DoxyCodeLine{00094\ using\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ =\ \doxymbox{\hyperlink{namespaceutil}{util}}::nn<\doxymbox{\hyperlink{namespaceoperation_a39467a04c89c906ccf3bbe3680f2bd4e}{CoordinateOperationPtr}}>;}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00118\ class\ PROJ\_GCC\_DLL\ CoordinateOperation\ :\ public\ \doxymbox{\hyperlink{namespacecommon}{common}}::ObjectUsage,}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ public\ \doxymbox{\hyperlink{namespaceio}{io}}::IPROJStringExportable,}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ public\ \doxymbox{\hyperlink{namespaceio}{io}}::IJSONExportable\ \{}
+\DoxyCodeLine{00121\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00123\ \ \ \ \ PROJ\_DLL\ \string~CoordinateOperation()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1optional}{util::optional<std::string>}}\ \&operationVersion()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00127\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&}
+\DoxyCodeLine{00128\ \ \ \ \ coordinateOperationAccuracies()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ sourceCRS()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00131\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ targetCRS()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00132\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ \&interpolationCRS()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00133\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1optional}{util::optional<common::DataEpoch>}}\ \&}
+\DoxyCodeLine{00134\ \ \ \ \ sourceCoordinateEpoch()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00135\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1optional}{util::optional<common::DataEpoch>}}\ \&}
+\DoxyCodeLine{00136\ \ \ \ \ targetCoordinateEpoch()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{comment}{//\ virtual\ void\ transform(...)\ =\ 0;\ \ TODO}}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00143\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ \doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_a73d6d91104e7c54b3489e243c26f51be}{inverse}}()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00146\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{virtual}\ std::set<GridDescription>}
+\DoxyCodeLine{00147\ \ \ \ \ \doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_a6368687eca9b3ab88e66ffce649acb7e}{gridsNeeded}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&databaseContext,}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ considerKnownGridsAsAvailable)\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00151\ \ \ \ \ isPROJInstantiable(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&databaseContext,}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ considerKnownGridsAsAvailable)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{bool}\ hasBallparkTransformation()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ std::string\ OPERATION\_VERSION\_KEY;}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ normalizeForVisualization()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ PROJ\_FOR\_TEST\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ shallowClone()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00165\ }
+\DoxyCodeLine{00166\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00167\ \ \ \ \ PROJ\_INTERNAL\ CoordinateOperation();}
+\DoxyCodeLine{00168\ \ \ \ \ PROJ\_INTERNAL\ CoordinateOperation(\textcolor{keyword}{const}\ CoordinateOperation\ \&other);}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classcrs_1_1_derived_c_r_s}{crs::DerivedCRS}});}
+\DoxyCodeLine{00171\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classio_1_1_authority_factory}{io::AuthorityFactory}});}
+\DoxyCodeLine{00172\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_factory}{CoordinateOperationFactory}});}
+\DoxyCodeLine{00173\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classoperation_1_1_concatenated_operation}{ConcatenatedOperation}});}
+\DoxyCodeLine{00174\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00175\ \ \ \ \ setWeakSourceTargetCRS(std::weak\_ptr<crs::CRS>\ sourceCRSIn,}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::weak\_ptr<crs::CRS>\ targetCRSIn);}
+\DoxyCodeLine{00177\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ setCRSs(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ \&interpolationCRSIn);}
+\DoxyCodeLine{00180\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ setCRSs(\textcolor{keyword}{const}\ CoordinateOperation\ *in,}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ inverseSourceTarget);}
+\DoxyCodeLine{00182\ \ \ \ \ PROJ\_INTERNAL}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keywordtype}{void}\ setAccuracies(}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{00185\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ setHasBallparkTransformation(\textcolor{keywordtype}{bool}\ b);}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00188\ \ \ \ \ setProperties(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&properties);\ \textcolor{comment}{//\ throw(InvalidValueTypeException)}}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ \_shallowClone()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00194\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00195\ \ \ \ \ CoordinateOperation\ \&operator=(\textcolor{keyword}{const}\ CoordinateOperation\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00196\ \};}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00205\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ GeneralOperationParameter\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classcommon_1_1_identified_object}{common::IdentifiedObject}}\ \{}
+\DoxyCodeLine{00206\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00208\ \ \ \ \ PROJ\_DLL\ \string~GeneralOperationParameter()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00212\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ \_isEquivalentTo(}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ *other,}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ util::IComparable::Criterion\ criterion\ =}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ util::IComparable::Criterion::STRICT,}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{const\ override}\ =\ 0;}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00220\ \ \ \ \ PROJ\_INTERNAL\ GeneralOperationParameter();}
+\DoxyCodeLine{00221\ \ \ \ \ PROJ\_INTERNAL}
+\DoxyCodeLine{00222\ \ \ \ \ GeneralOperationParameter(\textcolor{keyword}{const}\ GeneralOperationParameter\ \&other);}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00225\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00226\ \ \ \ \ GeneralOperationParameter\ \&}
+\DoxyCodeLine{00227\ \ \ \ \ operator=(\textcolor{keyword}{const}\ GeneralOperationParameter\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00228\ \};}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00231\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a51c8e9542c13aaa8bc4d7de9bc2aab5d}{GeneralOperationParameterPtr}}\ =\ std::shared\_ptr<GeneralOperationParameter>;}
+\DoxyCodeLine{00233\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a096721d9c73b94c51c70d42dc5b3a28a}{GeneralOperationParameterNNPtr}}\ =\ util::nn<GeneralOperationParameterPtr>;}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_operation_parameter}{OperationParameter}};}
+\DoxyCodeLine{00239\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_aa98f7517d056bc47ec1a128010f476d2}{OperationParameterPtr}}\ =\ std::shared\_ptr<OperationParameter>;}
+\DoxyCodeLine{00241\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a8657283dda99e4da7d02b6ae0e552e69}{OperationParameterNNPtr}}\ =\ util::nn<OperationParameterPtr>;}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00250\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ OperationParameter\ final\ :\ \textcolor{keyword}{public}\ GeneralOperationParameter\ \{}
+\DoxyCodeLine{00251\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00253\ \ \ \ \ PROJ\_DLL\ \string~OperationParameter()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00257\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ \_isEquivalentTo(}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ *other,}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ util::IComparable::Criterion\ criterion\ =}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \ \ \ \ util::IComparable::Criterion::STRICT,}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00263\ }
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{comment}{//\ non-\/standard}}
+\DoxyCodeLine{00265\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a8657283dda99e4da7d02b6ae0e552e69}{OperationParameterNNPtr}}}
+\DoxyCodeLine{00266\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties);}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{int}\ getEPSGCode()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *getNameForEPSGCode(\textcolor{keywordtype}{int}\ epsg\_code)\ \textcolor{keyword}{noexcept};}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00273\ \ \ \ \ PROJ\_INTERNAL\ OperationParameter();}
+\DoxyCodeLine{00274\ \ \ \ \ PROJ\_INTERNAL\ OperationParameter(\textcolor{keyword}{const}\ OperationParameter\ \&other);}
+\DoxyCodeLine{00275\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{00276\ }
+\DoxyCodeLine{00277\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00278\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00279\ \ \ \ \ OperationParameter\ \&operator=(\textcolor{keyword}{const}\ OperationParameter\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \ \ \textcolor{comment}{//\ cppcheck-\/suppress\ functionStatic}}
+\DoxyCodeLine{00282\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{00284\ \};}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00289\ \textcolor{keyword}{struct\ }MethodMapping;}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00297\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ \doxymbox{\hyperlink{classoperation_1_1_general_parameter_value}{GeneralParameterValue}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_base_object}{util::BaseObject}},}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classio_1_1_i_w_k_t_exportable}{io::IWKTExportable}},}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classio_1_1_i_j_s_o_n_exportable}{io::IJSONExportable}},}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ \{}
+\DoxyCodeLine{00301\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00303\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{classoperation_1_1_general_parameter_value}{\string~GeneralParameterValue}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override}\ =\ 0;\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToJSON(\doxymbox{\hyperlink{classio_1_1_j_s_o_n_formatter}{io::JSONFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override}\ =\ 0;\ \textcolor{comment}{//\ throw(FormattingException)}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ \_isEquivalentTo(}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ *other,}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ util::IComparable::Criterion\ criterion\ =}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ util::IComparable::Criterion::STRICT,}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{const\ override}\ =\ 0;}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00320\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{classoperation_1_1_general_parameter_value}{GeneralParameterValue}}();}
+\DoxyCodeLine{00321\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{classoperation_1_1_general_parameter_value}{GeneralParameterValue}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classoperation_1_1_general_parameter_value}{GeneralParameterValue}}\ \&other);}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_conversion}{Conversion}};}
+\DoxyCodeLine{00324\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_single_operation}{SingleOperation}};}
+\DoxyCodeLine{00325\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}},}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MethodMapping\ *mapping)}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ =\ 0;\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00331\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00332\ \ \ \ \ \doxymbox{\hyperlink{classoperation_1_1_general_parameter_value}{GeneralParameterValue}}\ \&}
+\DoxyCodeLine{00333\ \ \ \ \ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classoperation_1_1_general_parameter_value}{GeneralParameterValue}}\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00334\ \};}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00337\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a3cdd273f11706d45b65cc1022c039038}{GeneralParameterValuePtr}}\ =\ std::shared\_ptr<GeneralParameterValue>;}
+\DoxyCodeLine{00339\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_ad3881fbdc92292ff756f2dd687561bcb}{GeneralParameterValueNNPtr}}\ =\ util::nn<GeneralParameterValuePtr>;}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_parameter_value}{ParameterValue}};}
+\DoxyCodeLine{00345\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_ad4ad310f3d2db4aab1f485a9797dc739}{ParameterValuePtr}}\ =\ std::shared\_ptr<ParameterValue>;}
+\DoxyCodeLine{00347\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}\ =\ util::nn<ParameterValuePtr>;}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00356\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ ParameterValue\ final\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_base_object}{util::BaseObject}},}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classio_1_1_i_w_k_t_exportable}{io::IWKTExportable}},}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ \{}
+\DoxyCodeLine{00359\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{classoperation_1_1_parameter_value_a435332c0ff7fb9eb95d9866e2317b1b4}{Type}}\ \{}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ MEASURE,}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ STRING,}
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ INTEGER,}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ BOOLEAN,}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ FILENAME}
+\DoxyCodeLine{00372\ \ \ \ \ \};}
+\DoxyCodeLine{00374\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{classoperation_1_1_parameter_value}{\string~ParameterValue}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}}
+\DoxyCodeLine{00381\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_measure}{common::Measure}}\ \&measureIn);}
+\DoxyCodeLine{00382\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}\ create(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *stringValueIn);}
+\DoxyCodeLine{00383\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}}
+\DoxyCodeLine{00384\ \ \ \ \ create(\textcolor{keyword}{const}\ std::string\ \&stringValueIn);}
+\DoxyCodeLine{00385\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}\ create(\textcolor{keywordtype}{int}\ integerValueIn);}
+\DoxyCodeLine{00386\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}\ create(\textcolor{keywordtype}{bool}\ booleanValueIn);}
+\DoxyCodeLine{00387\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}}
+\DoxyCodeLine{00388\ \ \ \ \ createFilename(\textcolor{keyword}{const}\ std::string\ \&stringValueIn);}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ Type\ \&\doxymbox{\hyperlink{struct_o_fremove__volatile}{type}}()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00391\ \ \ \ \ PROJ\_DLL\ const\ \doxymbox{\hyperlink{namespacecommon}{common}}::Measure\ \&value()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00392\ \ \ \ \ PROJ\_DLL\ const\ std::\textcolor{keywordtype}{string}\ \&stringValue()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00393\ \ \ \ \ PROJ\_DLL\ const\ std::\textcolor{keywordtype}{string}\ \&valueFile()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00394\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{int}\ integerValue()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00395\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{bool}\ booleanValue()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00398\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ \_isEquivalentTo(}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ const\ \doxymbox{\hyperlink{namespaceutil}{util}}::IComparable\ *other,}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceutil}{util}}::IComparable::Criterion\ criterion\ =}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceutil}{util}}::IComparable::Criterion::STRICT,}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ const\ \doxymbox{\hyperlink{namespaceio}{io}}::DatabaseContextPtr\ \&dbContext\ =\ \textcolor{keywordtype}{nullptr})\ const\ override;}
+\DoxyCodeLine{00404\ }
+\DoxyCodeLine{00405\ \ \ protected:}
+\DoxyCodeLine{00406\ \ \ \ \ PROJ\_INTERNAL\ explicit\ \doxymbox{\hyperlink{classoperation_1_1_parameter_value}{ParameterValue}}(const\ \doxymbox{\hyperlink{namespacecommon}{common}}::Measure\ \&measureIn);}
+\DoxyCodeLine{00407\ \ \ \ \ PROJ\_INTERNAL\ explicit\ \doxymbox{\hyperlink{classoperation_1_1_parameter_value}{ParameterValue}}(const\ std::\textcolor{keywordtype}{string}\ \&stringValueIn,}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Type\ typeIn);}
+\DoxyCodeLine{00409\ \ \ \ \ PROJ\_INTERNAL\ explicit\ \doxymbox{\hyperlink{classoperation_1_1_parameter_value}{ParameterValue}}(\textcolor{keywordtype}{int}\ integerValueIn);}
+\DoxyCodeLine{00410\ \ \ \ \ PROJ\_INTERNAL\ explicit\ \doxymbox{\hyperlink{classoperation_1_1_parameter_value}{ParameterValue}}(\textcolor{keywordtype}{bool}\ booleanValueIn);}
+\DoxyCodeLine{00411\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{00412\ \ \ private:}
+\DoxyCodeLine{00413\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00414\ \ \ \ \ \doxymbox{\hyperlink{classoperation_1_1_parameter_value}{ParameterValue}}\ \&operator=(const\ \doxymbox{\hyperlink{classoperation_1_1_parameter_value}{ParameterValue}}\ \&other)\ =\ delete;}
+\DoxyCodeLine{00415\ \};}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ class\ \doxymbox{\hyperlink{classoperation_1_1_operation_parameter_value}{OperationParameterValue}};}
+\DoxyCodeLine{00421\ using\ \doxymbox{\hyperlink{namespaceoperation_a7f61046fde3be22232384152df07a06d}{OperationParameterValuePtr}}\ =\ std::shared\_ptr<\doxymbox{\hyperlink{classoperation_1_1_operation_parameter_value}{OperationParameterValue}}>;}
+\DoxyCodeLine{00423\ using\ \doxymbox{\hyperlink{namespaceoperation_a78a9d433ffccc7d787cf8cd73a676dd8}{OperationParameterValueNNPtr}}\ =\ \doxymbox{\hyperlink{namespaceutil}{util}}::nn<\doxymbox{\hyperlink{namespaceoperation_a7f61046fde3be22232384152df07a06d}{OperationParameterValuePtr}}>;}
+\DoxyCodeLine{00424\ }
+\DoxyCodeLine{00432\ class\ PROJ\_GCC\_DLL\ OperationParameterValue\ final}
+\DoxyCodeLine{00433\ \ \ \ \ :\ public\ \doxymbox{\hyperlink{classoperation_1_1_general_parameter_value}{GeneralParameterValue}}\ \{}
+\DoxyCodeLine{00434\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00436\ \ \ \ \ PROJ\_DLL\ \string~OperationParameterValue()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_a8657283dda99e4da7d02b6ae0e552e69}{OperationParameterNNPtr}}\ \&parameter()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00440\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}\ \&parameterValue()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00441\ }
+\DoxyCodeLine{00442\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a78a9d433ffccc7d787cf8cd73a676dd8}{OperationParameterValueNNPtr}}}
+\DoxyCodeLine{00443\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_a8657283dda99e4da7d02b6ae0e552e69}{OperationParameterNNPtr}}\ \&parameterIn,}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}\ \&valueIn);}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ convertFromAbridged(\textcolor{keyword}{const}\ std::string\ \&paramName,\ \textcolor{keywordtype}{double}\ \&val,}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_unit_of_measure}{common::UnitOfMeasure}}\ *\&unit,}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \&paramEPSGCode);}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00453\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{00455\ }
+\DoxyCodeLine{00456\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToJSON(\doxymbox{\hyperlink{classio_1_1_j_s_o_n_formatter}{io::JSONFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(FormattingException)}}
+\DoxyCodeLine{00458\ }
+\DoxyCodeLine{00459\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ \_isEquivalentTo(}
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ *other,}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ util::IComparable::Criterion\ criterion\ =}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \ \ \ \ util::IComparable::Criterion::STRICT,}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00465\ }
+\DoxyCodeLine{00466\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00467\ \ \ \ \ PROJ\_INTERNAL}
+\DoxyCodeLine{00468\ \ \ \ \ OperationParameterValue(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_a8657283dda99e4da7d02b6ae0e552e69}{OperationParameterNNPtr}}\ \&parameterIn,}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_a2419803bf0bbb8c0fdf1482bf94c690f}{ParameterValueNNPtr}}\ \&valueIn);}
+\DoxyCodeLine{00470\ \ \ \ \ PROJ\_INTERNAL\ OperationParameterValue(\textcolor{keyword}{const}\ OperationParameterValue\ \&other);}
+\DoxyCodeLine{00471\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}},}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MethodMapping\ *mapping)}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00478\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00479\ \ \ \ \ OperationParameterValue\ \&}
+\DoxyCodeLine{00480\ \ \ \ \ operator=(\textcolor{keyword}{const}\ OperationParameterValue\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00481\ \};}
+\DoxyCodeLine{00482\ }
+\DoxyCodeLine{00483\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_operation_method}{OperationMethod}};}
+\DoxyCodeLine{00487\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a71c7810188b5358c797ef9bd641b3a09}{OperationMethodPtr}}\ =\ std::shared\_ptr<OperationMethod>;}
+\DoxyCodeLine{00489\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_ae4a22717ed7c0ba4d5973d032aa513e8}{OperationMethodNNPtr}}\ =\ util::nn<OperationMethodPtr>;}
+\DoxyCodeLine{00490\ }
+\DoxyCodeLine{00499\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ OperationMethod\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classcommon_1_1_identified_object}{common::IdentifiedObject}},}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classio_1_1_i_j_s_o_n_exportable}{io::IJSONExportable}}\ \{}
+\DoxyCodeLine{00501\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00503\ \ \ \ \ PROJ\_DLL\ \string~OperationMethod()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00505\ }
+\DoxyCodeLine{00506\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1optional}{util::optional<std::string>}}\ \&formula()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00507\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1optional}{util::optional<metadata::Citation>}}\ \&}
+\DoxyCodeLine{00508\ \ \ \ \ formulaCitation()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00509\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ std::vector<GeneralOperationParameterNNPtr>\ \&}
+\DoxyCodeLine{00510\ \ \ \ \ parameters()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00511\ }
+\DoxyCodeLine{00512\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ae4a22717ed7c0ba4d5973d032aa513e8}{OperationMethodNNPtr}}}
+\DoxyCodeLine{00513\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<GeneralOperationParameterNNPtr>\ \&parameters);}
+\DoxyCodeLine{00515\ }
+\DoxyCodeLine{00516\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ae4a22717ed7c0ba4d5973d032aa513e8}{OperationMethodNNPtr}}}
+\DoxyCodeLine{00517\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<OperationParameterNNPtr>\ \&parameters);}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00520\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{int}\ getEPSGCode()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00521\ }
+\DoxyCodeLine{00523\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{00525\ }
+\DoxyCodeLine{00526\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToJSON(\doxymbox{\hyperlink{classio_1_1_j_s_o_n_formatter}{io::JSONFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(FormattingException)}}
+\DoxyCodeLine{00528\ }
+\DoxyCodeLine{00529\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ \_isEquivalentTo(}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ *other,}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ util::IComparable::Criterion\ criterion\ =}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \ \ \ \ util::IComparable::Criterion::STRICT,}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00536\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00537\ \ \ \ \ PROJ\_INTERNAL\ OperationMethod();}
+\DoxyCodeLine{00538\ \ \ \ \ PROJ\_INTERNAL\ OperationMethod(\textcolor{keyword}{const}\ OperationMethod\ \&other);}
+\DoxyCodeLine{00539\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{00540\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }Conversion;}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00543\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00544\ \ \ \ \ OperationMethod\ \&operator=(\textcolor{keyword}{const}\ OperationMethod\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00545\ \};}
+\DoxyCodeLine{00546\ }
+\DoxyCodeLine{00547\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00552\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ \doxymbox{\hyperlink{classoperation_1_1_invalid_operation}{InvalidOperation}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classutil_1_1_exception}{util::Exception}}\ \{}
+\DoxyCodeLine{00553\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00555\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classoperation_1_1_invalid_operation}{InvalidOperation}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *message);}
+\DoxyCodeLine{00556\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ \doxymbox{\hyperlink{classoperation_1_1_invalid_operation}{InvalidOperation}}(\textcolor{keyword}{const}\ std::string\ \&message);}
+\DoxyCodeLine{00557\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{classoperation_1_1_invalid_operation}{InvalidOperation}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classoperation_1_1_invalid_operation}{InvalidOperation}}\ \&other);}
+\DoxyCodeLine{00558\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{classoperation_1_1_invalid_operation}{\string~InvalidOperation}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00560\ \};}
+\DoxyCodeLine{00561\ }
+\DoxyCodeLine{00562\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00563\ }
+\DoxyCodeLine{00564\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_single_operation}{SingleOperation}};}
+\DoxyCodeLine{00566\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a02a5685929008527f70de261ed23964a}{SingleOperationPtr}}\ =\ std::shared\_ptr<SingleOperation>;}
+\DoxyCodeLine{00568\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a15ba72f60c798b0dab741c3ba050e7d5}{SingleOperationNNPtr}}\ =\ util::nn<SingleOperationPtr>;}
+\DoxyCodeLine{00569\ }
+\DoxyCodeLine{00575\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ SingleOperation\ :\ \textcolor{keyword}{virtual}\ \textcolor{keyword}{public}\ CoordinateOperation\ \{}
+\DoxyCodeLine{00576\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00578\ \ \ \ \ PROJ\_DLL\ \string~SingleOperation()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00581\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ std::vector<GeneralParameterValueNNPtr>\ \&}
+\DoxyCodeLine{00582\ \ \ \ \ parameterValues()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00583\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_ae4a22717ed7c0ba4d5973d032aa513e8}{OperationMethodNNPtr}}\ \&method()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{00584\ }
+\DoxyCodeLine{00585\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_ad4ad310f3d2db4aab1f485a9797dc739}{ParameterValuePtr}}\ \&}
+\DoxyCodeLine{00586\ \ \ \ \ parameterValue(\textcolor{keyword}{const}\ std::string\ \&paramName,}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ epsg\_code\ =\ 0)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept};}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00589\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_ad4ad310f3d2db4aab1f485a9797dc739}{ParameterValuePtr}}\ \&}
+\DoxyCodeLine{00590\ \ \ \ \ parameterValue(\textcolor{keywordtype}{int}\ epsg\_code)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept};}
+\DoxyCodeLine{00591\ }
+\DoxyCodeLine{00592\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_measure}{common::Measure}}\ \&}
+\DoxyCodeLine{00593\ \ \ \ \ parameterValueMeasure(\textcolor{keyword}{const}\ std::string\ \&paramName,}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ epsg\_code\ =\ 0)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept};}
+\DoxyCodeLine{00595\ }
+\DoxyCodeLine{00596\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_measure}{common::Measure}}\ \&}
+\DoxyCodeLine{00597\ \ \ \ \ parameterValueMeasure(\textcolor{keywordtype}{int}\ epsg\_code)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept};}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00599\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a15ba72f60c798b0dab741c3ba050e7d5}{SingleOperationNNPtr}}\ createPROJBased(}
+\DoxyCodeLine{00600\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ std::string\ \&PROJString,}
+\DoxyCodeLine{00601\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ \&sourceCRS,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ \&targetCRS,}
+\DoxyCodeLine{00602\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies\ =}
+\DoxyCodeLine{00603\ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<metadata::PositionalAccuracyNNPtr>());}
+\DoxyCodeLine{00604\ }
+\DoxyCodeLine{00605\ \ \ \ \ PROJ\_DLL\ std::set<GridDescription>}
+\DoxyCodeLine{00606\ \ \ \ \ \doxymbox{\hyperlink{classoperation_1_1_single_operation_aef97babd5cb224abbf3d8aba792305c1}{gridsNeeded}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&databaseContext,}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ considerKnownGridsAsAvailable)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00608\ }
+\DoxyCodeLine{00609\ \ \ \ \ PROJ\_DLL\ std::list<std::string>\ validateParameters()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00614\ \ \ \ \ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{double}}
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \ \ parameterValueNumeric(}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ epsg\_code,}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_unit_of_measure}{common::UnitOfMeasure}}\ \&targetUnit)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept};}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{double}\ parameterValueNumeric(}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *param\_name,}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_unit_of_measure}{common::UnitOfMeasure}}\ \&targetUnit)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept};}
+\DoxyCodeLine{00622\ }
+\DoxyCodeLine{00623\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{double}}
+\DoxyCodeLine{00624\ \ \ \ \ parameterValueNumericAsSI(\textcolor{keywordtype}{int}\ epsg\_code)\ \textcolor{keyword}{const}\ \textcolor{keyword}{noexcept};}
+\DoxyCodeLine{00625\ }
+\DoxyCodeLine{00626\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ \_isEquivalentTo(}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ *other,}
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \ \ util::IComparable::Criterion\ criterion\ =}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \ \ \ \ \ \ util::IComparable::Criterion::STRICT,}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00634\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ SingleOperation(}
+\DoxyCodeLine{00635\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_ae4a22717ed7c0ba4d5973d032aa513e8}{OperationMethodNNPtr}}\ \&methodIn);}
+\DoxyCodeLine{00636\ \ \ \ \ PROJ\_INTERNAL\ SingleOperation(\textcolor{keyword}{const}\ SingleOperation\ \&other);}
+\DoxyCodeLine{00637\ }
+\DoxyCodeLine{00638\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00639\ \ \ \ \ setParameterValues(\textcolor{keyword}{const}\ std::vector<GeneralParameterValueNNPtr>\ \&values);}
+\DoxyCodeLine{00640\ }
+\DoxyCodeLine{00641\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00642\ \ \ \ \ exportTransformationToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00643\ }
+\DoxyCodeLine{00644\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00645\ \ \ \ \ exportToPROJStringGeneric(\doxymbox{\hyperlink{classio_1_1_p_r_o_j_string_formatter}{io::PROJStringFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00646\ }
+\DoxyCodeLine{00647\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ \_isEquivalentTo(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ *other,}
+\DoxyCodeLine{00648\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ util::IComparable::Criterion\ criterion,}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext,}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ inOtherDirection)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00651\ }
+\DoxyCodeLine{00652\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00653\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{00654\ \ \ \ \ SingleOperation\ \&operator=(\textcolor{keyword}{const}\ SingleOperation\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00655\ \};}
+\DoxyCodeLine{00656\ }
+\DoxyCodeLine{00657\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00659\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_conversion}{Conversion}};}
+\DoxyCodeLine{00661\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a49d1691d73921e46398923a2d7727f5c}{ConversionPtr}}\ =\ std::shared\_ptr<Conversion>;}
+\DoxyCodeLine{00663\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ =\ util::nn<ConversionPtr>;}
+\DoxyCodeLine{00664\ }
+\DoxyCodeLine{00681\ }
+\DoxyCodeLine{00867\ }
+\DoxyCodeLine{00868\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ Conversion\ :\ \textcolor{keyword}{public}\ SingleOperation\ \{}
+\DoxyCodeLine{00869\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00871\ \ \ \ \ PROJ\_DLL\ \string~Conversion()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00873\ }
+\DoxyCodeLine{00874\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ \doxymbox{\hyperlink{classoperation_1_1_conversion_aff1d8130c4dd8bc563b2eb168a8db657}{inverse}}()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00875\ }
+\DoxyCodeLine{00877\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{00878\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{00880\ }
+\DoxyCodeLine{00881\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{bool}\ isUTM(\textcolor{keywordtype}{int}\ \&zone,\ \textcolor{keywordtype}{bool}\ \&north)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00882\ }
+\DoxyCodeLine{00883\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ identify()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00884\ }
+\DoxyCodeLine{00885\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{00886\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00887\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_ae4a22717ed7c0ba4d5973d032aa513e8}{OperationMethodNNPtr}}\ \&methodIn,}
+\DoxyCodeLine{00888\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<GeneralParameterValueNNPtr>}
+\DoxyCodeLine{00889\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&values);\ \textcolor{comment}{//\ throw\ InvalidOperation}}
+\DoxyCodeLine{00890\ }
+\DoxyCodeLine{00891\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{00892\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&propertiesConversion,}
+\DoxyCodeLine{00893\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&propertiesOperationMethod,}
+\DoxyCodeLine{00894\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<OperationParameterNNPtr>\ \&parameters,}
+\DoxyCodeLine{00895\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<ParameterValueNNPtr>}
+\DoxyCodeLine{00896\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&values);\ \textcolor{comment}{//\ throw\ InvalidOperation}}
+\DoxyCodeLine{00897\ }
+\DoxyCodeLine{00898\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{00899\ \ \ \ \ createUTM(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keywordtype}{int}\ zone,\ \textcolor{keywordtype}{bool}\ north);}
+\DoxyCodeLine{00900\ }
+\DoxyCodeLine{00901\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createTransverseMercator(}
+\DoxyCodeLine{00902\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{00903\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{00904\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{00905\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{00906\ }
+\DoxyCodeLine{00907\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createGaussSchreiberTransverseMercator(}
+\DoxyCodeLine{00908\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{00909\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{00910\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{00911\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{00912\ }
+\DoxyCodeLine{00913\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createTransverseMercatorSouthOriented(}
+\DoxyCodeLine{00914\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{00915\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{00916\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{00917\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{00918\ }
+\DoxyCodeLine{00919\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{00920\ \ \ \ \ createTwoPointEquidistant(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00921\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstPoint,}
+\DoxyCodeLine{00922\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeFirstPoint,}
+\DoxyCodeLine{00923\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeSecondPoint,}
+\DoxyCodeLine{00924\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeSeconPoint,}
+\DoxyCodeLine{00925\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{00926\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{00927\ }
+\DoxyCodeLine{00928\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createTunisiaMappingGrid(}
+\DoxyCodeLine{00929\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{00930\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{00931\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{00932\ }
+\DoxyCodeLine{00933\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{00934\ \ \ \ \ createAlbersEqualArea(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00935\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFalseOrigin,}
+\DoxyCodeLine{00936\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeFalseOrigin,}
+\DoxyCodeLine{00937\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{00938\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeSecondParallel,}
+\DoxyCodeLine{00939\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&eastingFalseOrigin,}
+\DoxyCodeLine{00940\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&northingFalseOrigin);}
+\DoxyCodeLine{00941\ }
+\DoxyCodeLine{00942\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createLambertConicConformal\_1SP(}
+\DoxyCodeLine{00943\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{00944\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{00945\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{00946\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{00947\ }
+\DoxyCodeLine{00948\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{00949\ \ \ \ \ createLambertConicConformal\_2SP(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00950\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFalseOrigin,}
+\DoxyCodeLine{00951\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeFalseOrigin,}
+\DoxyCodeLine{00952\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{00953\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeSecondParallel,}
+\DoxyCodeLine{00954\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&eastingFalseOrigin,}
+\DoxyCodeLine{00955\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&northingFalseOrigin);}
+\DoxyCodeLine{00956\ }
+\DoxyCodeLine{00957\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createLambertConicConformal\_2SP\_Michigan(}
+\DoxyCodeLine{00958\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00959\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFalseOrigin,}
+\DoxyCodeLine{00960\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeFalseOrigin,}
+\DoxyCodeLine{00961\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{00962\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeSecondParallel,}
+\DoxyCodeLine{00963\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&eastingFalseOrigin,}
+\DoxyCodeLine{00964\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&northingFalseOrigin,}
+\DoxyCodeLine{00965\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&ellipsoidScalingFactor);}
+\DoxyCodeLine{00966\ }
+\DoxyCodeLine{00967\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createLambertConicConformal\_2SP\_Belgium(}
+\DoxyCodeLine{00968\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00969\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFalseOrigin,}
+\DoxyCodeLine{00970\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeFalseOrigin,}
+\DoxyCodeLine{00971\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{00972\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeSecondParallel,}
+\DoxyCodeLine{00973\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&eastingFalseOrigin,}
+\DoxyCodeLine{00974\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&northingFalseOrigin);}
+\DoxyCodeLine{00975\ }
+\DoxyCodeLine{00976\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{00977\ \ \ \ \ createAzimuthalEquidistant(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00978\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeNatOrigin,}
+\DoxyCodeLine{00979\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeNatOrigin,}
+\DoxyCodeLine{00980\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{00981\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{00982\ }
+\DoxyCodeLine{00983\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{00984\ \ \ \ \ createGuamProjection(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00985\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeNatOrigin,}
+\DoxyCodeLine{00986\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeNatOrigin,}
+\DoxyCodeLine{00987\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{00988\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{00989\ }
+\DoxyCodeLine{00990\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{00991\ \ \ \ \ createBonne(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00992\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeNatOrigin,}
+\DoxyCodeLine{00993\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeNatOrigin,}
+\DoxyCodeLine{00994\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{00995\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{00996\ }
+\DoxyCodeLine{00997\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createLambertCylindricalEqualAreaSpherical(}
+\DoxyCodeLine{00998\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{00999\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{01000\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeNatOrigin,}
+\DoxyCodeLine{01001\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01002\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01003\ }
+\DoxyCodeLine{01004\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createLambertCylindricalEqualArea(}
+\DoxyCodeLine{01005\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01006\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{01007\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeNatOrigin,}
+\DoxyCodeLine{01008\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01009\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01010\ }
+\DoxyCodeLine{01011\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createCassiniSoldner(}
+\DoxyCodeLine{01012\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01013\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01014\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01015\ }
+\DoxyCodeLine{01016\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01017\ \ \ \ \ createEquidistantConic(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01018\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01019\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{01021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeSecondParallel,}
+\DoxyCodeLine{01022\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01023\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01024\ }
+\DoxyCodeLine{01025\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01026\ \ \ \ \ createEckertI(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01028\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01030\ }
+\DoxyCodeLine{01031\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01032\ \ \ \ \ createEckertII(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01036\ }
+\DoxyCodeLine{01037\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01038\ \ \ \ \ createEckertIII(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01039\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01040\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01042\ }
+\DoxyCodeLine{01043\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01044\ \ \ \ \ createEckertIV(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01048\ }
+\DoxyCodeLine{01049\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01050\ \ \ \ \ createEckertV(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01051\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01053\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01054\ }
+\DoxyCodeLine{01055\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01056\ \ \ \ \ createEckertVI(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01060\ }
+\DoxyCodeLine{01061\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01062\ \ \ \ \ createEquidistantCylindrical(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{01064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeNatOrigin,}
+\DoxyCodeLine{01065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01067\ }
+\DoxyCodeLine{01068\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createEquidistantCylindricalSpherical(}
+\DoxyCodeLine{01069\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01070\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{01071\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeNatOrigin,}
+\DoxyCodeLine{01072\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01073\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01074\ }
+\DoxyCodeLine{01075\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01076\ \ \ \ \ createGall(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01080\ }
+\DoxyCodeLine{01081\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01082\ \ \ \ \ createGoodeHomolosine(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01086\ }
+\DoxyCodeLine{01087\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01088\ \ \ \ \ createInterruptedGoodeHomolosine(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01091\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01092\ }
+\DoxyCodeLine{01093\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createGeostationarySatelliteSweepX(}
+\DoxyCodeLine{01094\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01095\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&height,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01096\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01097\ }
+\DoxyCodeLine{01098\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createGeostationarySatelliteSweepY(}
+\DoxyCodeLine{01099\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01100\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&height,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01101\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01102\ }
+\DoxyCodeLine{01103\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createGnomonic(}
+\DoxyCodeLine{01104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01105\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01106\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01107\ }
+\DoxyCodeLine{01108\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createHotineObliqueMercatorVariantA(}
+\DoxyCodeLine{01109\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01110\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeProjectionCentre,}
+\DoxyCodeLine{01111\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeProjectionCentre,}
+\DoxyCodeLine{01112\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&azimuthInitialLine,}
+\DoxyCodeLine{01113\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&angleFromRectifiedToSkrewGrid,}
+\DoxyCodeLine{01114\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01115\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01116\ }
+\DoxyCodeLine{01117\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createHotineObliqueMercatorVariantB(}
+\DoxyCodeLine{01118\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01119\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeProjectionCentre,}
+\DoxyCodeLine{01120\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeProjectionCentre,}
+\DoxyCodeLine{01121\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&azimuthInitialLine,}
+\DoxyCodeLine{01122\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&angleFromRectifiedToSkrewGrid,}
+\DoxyCodeLine{01123\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{01124\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&eastingProjectionCentre,}
+\DoxyCodeLine{01125\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&northingProjectionCentre);}
+\DoxyCodeLine{01126\ }
+\DoxyCodeLine{01127\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01128\ \ \ \ \ createHotineObliqueMercatorTwoPointNaturalOrigin(}
+\DoxyCodeLine{01129\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01130\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeProjectionCentre,}
+\DoxyCodeLine{01131\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudePoint1,}
+\DoxyCodeLine{01132\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudePoint1,}
+\DoxyCodeLine{01133\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudePoint2,}
+\DoxyCodeLine{01134\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudePoint2,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{01135\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&eastingProjectionCentre,}
+\DoxyCodeLine{01136\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&northingProjectionCentre);}
+\DoxyCodeLine{01137\ }
+\DoxyCodeLine{01138\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01139\ \ \ \ \ createLabordeObliqueMercator(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeProjectionCentre,}
+\DoxyCodeLine{01141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeProjectionCentre,}
+\DoxyCodeLine{01142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&azimuthInitialLine,}
+\DoxyCodeLine{01143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{01144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01146\ }
+\DoxyCodeLine{01147\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createInternationalMapWorldPolyconic(}
+\DoxyCodeLine{01148\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01149\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{01150\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeSecondParallel,}
+\DoxyCodeLine{01151\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01152\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01153\ }
+\DoxyCodeLine{01154\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createKrovakNorthOriented(}
+\DoxyCodeLine{01155\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01156\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeProjectionCentre,}
+\DoxyCodeLine{01157\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeOfOrigin,}
+\DoxyCodeLine{01158\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&colatitudeConeAxis,}
+\DoxyCodeLine{01159\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudePseudoStandardParallel,}
+\DoxyCodeLine{01160\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scaleFactorPseudoStandardParallel,}
+\DoxyCodeLine{01161\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01162\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01163\ }
+\DoxyCodeLine{01164\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01165\ \ \ \ \ createKrovak(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeProjectionCentre,}
+\DoxyCodeLine{01167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeOfOrigin,}
+\DoxyCodeLine{01168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&colatitudeConeAxis,}
+\DoxyCodeLine{01169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudePseudoStandardParallel,}
+\DoxyCodeLine{01170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scaleFactorPseudoStandardParallel,}
+\DoxyCodeLine{01171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01173\ }
+\DoxyCodeLine{01174\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01175\ \ \ \ \ createLambertAzimuthalEqualArea(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeNatOrigin,}
+\DoxyCodeLine{01177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeNatOrigin,}
+\DoxyCodeLine{01178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01180\ }
+\DoxyCodeLine{01181\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01182\ \ \ \ \ createMillerCylindrical(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01186\ }
+\DoxyCodeLine{01187\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createMercatorVariantA(}
+\DoxyCodeLine{01188\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01189\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{01190\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01191\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01192\ }
+\DoxyCodeLine{01193\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01194\ \ \ \ \ createMercatorVariantB(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeFirstParallel,}
+\DoxyCodeLine{01196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01199\ }
+\DoxyCodeLine{01200\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createPopularVisualisationPseudoMercator(}
+\DoxyCodeLine{01201\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01202\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01203\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01204\ }
+\DoxyCodeLine{01205\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01206\ \ \ \ \ createMollweide(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01210\ }
+\DoxyCodeLine{01211\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createNewZealandMappingGrid(}
+\DoxyCodeLine{01212\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01213\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01214\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01215\ }
+\DoxyCodeLine{01216\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createObliqueStereographic(}
+\DoxyCodeLine{01217\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01218\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{01219\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01220\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01221\ }
+\DoxyCodeLine{01222\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createOrthographic(}
+\DoxyCodeLine{01223\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01224\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01225\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01226\ }
+\DoxyCodeLine{01227\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createAmericanPolyconic(}
+\DoxyCodeLine{01228\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01229\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01230\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01231\ }
+\DoxyCodeLine{01232\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createPolarStereographicVariantA(}
+\DoxyCodeLine{01233\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01234\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{01235\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01236\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01237\ }
+\DoxyCodeLine{01238\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createPolarStereographicVariantB(}
+\DoxyCodeLine{01239\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01240\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeStandardParallel,}
+\DoxyCodeLine{01241\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&longitudeOfOrigin,}
+\DoxyCodeLine{01242\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01243\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01244\ }
+\DoxyCodeLine{01245\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01246\ \ \ \ \ createRobinson(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01250\ }
+\DoxyCodeLine{01251\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01252\ \ \ \ \ createSinusoidal(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01256\ }
+\DoxyCodeLine{01257\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createStereographic(}
+\DoxyCodeLine{01258\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01259\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&scale,}
+\DoxyCodeLine{01260\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01261\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01262\ }
+\DoxyCodeLine{01263\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01264\ \ \ \ \ createVanDerGrinten(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01268\ }
+\DoxyCodeLine{01269\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01270\ \ \ \ \ createWagnerI(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01274\ }
+\DoxyCodeLine{01275\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01276\ \ \ \ \ createWagnerII(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01280\ }
+\DoxyCodeLine{01281\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01282\ \ \ \ \ createWagnerIII(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&latitudeTrueScale,}
+\DoxyCodeLine{01284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01287\ }
+\DoxyCodeLine{01288\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01289\ \ \ \ \ createWagnerIV(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01293\ }
+\DoxyCodeLine{01294\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01295\ \ \ \ \ createWagnerV(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01299\ }
+\DoxyCodeLine{01300\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01301\ \ \ \ \ createWagnerVI(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01305\ }
+\DoxyCodeLine{01306\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01307\ \ \ \ \ createWagnerVII(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01311\ }
+\DoxyCodeLine{01312\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createQuadrilateralizedSphericalCube(}
+\DoxyCodeLine{01313\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLat,}
+\DoxyCodeLine{01314\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01315\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01316\ }
+\DoxyCodeLine{01317\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createSphericalCrossTrackHeight(}
+\DoxyCodeLine{01318\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&pegPointLat,}
+\DoxyCodeLine{01319\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&pegPointLong,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&pegPointHeading,}
+\DoxyCodeLine{01320\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&pegPointHeight);}
+\DoxyCodeLine{01321\ }
+\DoxyCodeLine{01322\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01323\ \ \ \ \ createEqualEarth(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&centerLong,}
+\DoxyCodeLine{01325\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01327\ }
+\DoxyCodeLine{01328\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01329\ \ \ \ \ createVerticalPerspective(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&topoOriginLat,}
+\DoxyCodeLine{01331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&topoOriginLong,}
+\DoxyCodeLine{01332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&topoOriginHeight,}
+\DoxyCodeLine{01333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&viewPointHeight,}
+\DoxyCodeLine{01334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseEasting,}
+\DoxyCodeLine{01335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&falseNorthing);}
+\DoxyCodeLine{01336\ }
+\DoxyCodeLine{01337\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createPoleRotationGRIBConvention(}
+\DoxyCodeLine{01338\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01339\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&southPoleLatInUnrotatedCRS,}
+\DoxyCodeLine{01340\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&southPoleLongInUnrotatedCRS,}
+\DoxyCodeLine{01341\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&axisRotation);}
+\DoxyCodeLine{01342\ }
+\DoxyCodeLine{01343\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01344\ \ \ \ \ createChangeVerticalUnit(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&factor);}
+\DoxyCodeLine{01346\ }
+\DoxyCodeLine{01347\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01348\ \ \ \ \ createChangeVerticalUnit(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties);}
+\DoxyCodeLine{01349\ }
+\DoxyCodeLine{01350\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01351\ \ \ \ \ createHeightDepthReversal(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties);}
+\DoxyCodeLine{01352\ }
+\DoxyCodeLine{01353\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ createAxisOrderReversal(\textcolor{keywordtype}{bool}\ is3D);}
+\DoxyCodeLine{01354\ }
+\DoxyCodeLine{01355\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01356\ \ \ \ \ createGeographicGeocentric(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties);}
+\DoxyCodeLine{01357\ }
+\DoxyCodeLine{01358\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{namespaceoperation_a49d1691d73921e46398923a2d7727f5c}{ConversionPtr}}\ convertToOtherMethod(\textcolor{keywordtype}{int}\ targetEPSGCode)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01359\ }
+\DoxyCodeLine{01360\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{01362\ \ \ \ \ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01363\ \ \ \ \ \ \ \ \ \_exportToPROJString(\doxymbox{\hyperlink{classio_1_1_p_r_o_j_string_formatter}{io::PROJStringFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{01364\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(FormattingException)}}
+\DoxyCodeLine{01365\ }
+\DoxyCodeLine{01366\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToJSON(\doxymbox{\hyperlink{classio_1_1_j_s_o_n_formatter}{io::JSONFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{01367\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(FormattingException)}}
+\DoxyCodeLine{01368\ }
+\DoxyCodeLine{01369\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *getESRIMethodName()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01370\ }
+\DoxyCodeLine{01371\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *getWKT1GDALMethodName()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01372\ }
+\DoxyCodeLine{01373\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ shallowClone()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01374\ }
+\DoxyCodeLine{01375\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}\ alterParametersLinearUnit(}
+\DoxyCodeLine{01376\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_unit_of_measure}{common::UnitOfMeasure}}\ \&unit,\ \textcolor{keywordtype}{bool}\ convertToNewUnit)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01377\ }
+\DoxyCodeLine{01378\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01379\ \ \ \ \ createGeographicGeocentric(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRS,}
+\DoxyCodeLine{01380\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRS);}
+\DoxyCodeLine{01381\ }
+\DoxyCodeLine{01383\ }
+\DoxyCodeLine{01384\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{01385\ \ \ \ \ PROJ\_INTERNAL}
+\DoxyCodeLine{01386\ \ \ \ \ Conversion(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_ae4a22717ed7c0ba4d5973d032aa513e8}{OperationMethodNNPtr}}\ \&methodIn,}
+\DoxyCodeLine{01387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<GeneralParameterValueNNPtr>\ \&values);}
+\DoxyCodeLine{01388\ \ \ \ \ PROJ\_INTERNAL\ Conversion(\textcolor{keyword}{const}\ Conversion\ \&other);}
+\DoxyCodeLine{01389\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{01390\ }
+\DoxyCodeLine{01391\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classcrs_1_1_projected_c_r_s}{crs::ProjectedCRS}});}
+\DoxyCodeLine{01392\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ addWKTExtensionNode(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01393\ }
+\DoxyCodeLine{01394\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ \_shallowClone()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{01395\ }
+\DoxyCodeLine{01396\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01397\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{01398\ \ \ \ \ Conversion\ \&operator=(\textcolor{keyword}{const}\ Conversion\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{01399\ }
+\DoxyCodeLine{01400\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01401\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keywordtype}{int}\ method\_epsg\_code,}
+\DoxyCodeLine{01402\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<ParameterValueNNPtr>\ \&values);}
+\DoxyCodeLine{01403\ }
+\DoxyCodeLine{01404\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a40f9e208878daf53539f0f1d83d95063}{ConversionNNPtr}}}
+\DoxyCodeLine{01405\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *method\_wkt2\_name,}
+\DoxyCodeLine{01406\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<ParameterValueNNPtr>\ \&values);}
+\DoxyCodeLine{01407\ \};}
+\DoxyCodeLine{01408\ }
+\DoxyCodeLine{01409\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01410\ }
+\DoxyCodeLine{01411\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_transformation}{Transformation}};}
+\DoxyCodeLine{01413\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a053fece7a809ce9456c8d3030a326e82}{TransformationPtr}}\ =\ std::shared\_ptr<Transformation>;}
+\DoxyCodeLine{01415\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ =\ util::nn<TransformationPtr>;}
+\DoxyCodeLine{01416\ }
+\DoxyCodeLine{01431\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ Transformation\ :\ \textcolor{keyword}{public}\ SingleOperation\ \{}
+\DoxyCodeLine{01432\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{01434\ \ \ \ \ PROJ\_DLL\ \string~Transformation()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{01436\ }
+\DoxyCodeLine{01437\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRS()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{01438\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRS()\ PROJ\_PURE\_DECL;}
+\DoxyCodeLine{01439\ }
+\DoxyCodeLine{01440\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ \doxymbox{\hyperlink{classoperation_1_1_transformation_a4dd6295b22ba659480107e8bdd9c9102}{inverse}}()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{01441\ }
+\DoxyCodeLine{01442\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}}
+\DoxyCodeLine{01443\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01444\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,}
+\DoxyCodeLine{01445\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ \&interpolationCRSIn,}
+\DoxyCodeLine{01446\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_ae4a22717ed7c0ba4d5973d032aa513e8}{OperationMethodNNPtr}}\ \&methodIn,}
+\DoxyCodeLine{01447\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<GeneralParameterValueNNPtr>\ \&values,}
+\DoxyCodeLine{01448\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>}
+\DoxyCodeLine{01449\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&accuracies);\ \textcolor{comment}{//\ throw\ InvalidOperation}}
+\DoxyCodeLine{01450\ }
+\DoxyCodeLine{01451\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}}
+\DoxyCodeLine{01452\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&propertiesTransformation,}
+\DoxyCodeLine{01453\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,}
+\DoxyCodeLine{01454\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ \&interpolationCRSIn,}
+\DoxyCodeLine{01455\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&propertiesOperationMethod,}
+\DoxyCodeLine{01456\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<OperationParameterNNPtr>\ \&parameters,}
+\DoxyCodeLine{01457\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<ParameterValueNNPtr>\ \&values,}
+\DoxyCodeLine{01458\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>}
+\DoxyCodeLine{01459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&accuracies);\ \textcolor{comment}{//\ throw\ InvalidOperation}}
+\DoxyCodeLine{01460\ }
+\DoxyCodeLine{01461\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createGeocentricTranslations(}
+\DoxyCodeLine{01462\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01463\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keywordtype}{double}\ translationXMetre,}
+\DoxyCodeLine{01464\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ translationYMetre,\ \textcolor{keywordtype}{double}\ translationZMetre,}
+\DoxyCodeLine{01465\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01466\ }
+\DoxyCodeLine{01467\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createPositionVector(}
+\DoxyCodeLine{01468\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01469\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keywordtype}{double}\ translationXMetre,}
+\DoxyCodeLine{01470\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ translationYMetre,\ \textcolor{keywordtype}{double}\ translationZMetre,}
+\DoxyCodeLine{01471\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rotationXArcSecond,\ \textcolor{keywordtype}{double}\ rotationYArcSecond,}
+\DoxyCodeLine{01472\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rotationZArcSecond,\ \textcolor{keywordtype}{double}\ scaleDifferencePPM,}
+\DoxyCodeLine{01473\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01474\ }
+\DoxyCodeLine{01475\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createCoordinateFrameRotation(}
+\DoxyCodeLine{01476\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01477\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keywordtype}{double}\ translationXMetre,}
+\DoxyCodeLine{01478\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ translationYMetre,\ \textcolor{keywordtype}{double}\ translationZMetre,}
+\DoxyCodeLine{01479\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rotationXArcSecond,\ \textcolor{keywordtype}{double}\ rotationYArcSecond,}
+\DoxyCodeLine{01480\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rotationZArcSecond,\ \textcolor{keywordtype}{double}\ scaleDifferencePPM,}
+\DoxyCodeLine{01481\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01482\ }
+\DoxyCodeLine{01483\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createTimeDependentPositionVector(}
+\DoxyCodeLine{01484\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01485\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keywordtype}{double}\ translationXMetre,}
+\DoxyCodeLine{01486\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ translationYMetre,\ \textcolor{keywordtype}{double}\ translationZMetre,}
+\DoxyCodeLine{01487\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rotationXArcSecond,\ \textcolor{keywordtype}{double}\ rotationYArcSecond,}
+\DoxyCodeLine{01488\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rotationZArcSecond,\ \textcolor{keywordtype}{double}\ scaleDifferencePPM,}
+\DoxyCodeLine{01489\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rateTranslationX,\ \textcolor{keywordtype}{double}\ rateTranslationY,}
+\DoxyCodeLine{01490\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rateTranslationZ,\ \textcolor{keywordtype}{double}\ rateRotationX,\ \textcolor{keywordtype}{double}\ rateRotationY,}
+\DoxyCodeLine{01491\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rateRotationZ,\ \textcolor{keywordtype}{double}\ rateScaleDifference,}
+\DoxyCodeLine{01492\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ referenceEpochYear,}
+\DoxyCodeLine{01493\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01494\ }
+\DoxyCodeLine{01495\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}}
+\DoxyCodeLine{01496\ \ \ \ \ createTimeDependentCoordinateFrameRotation(}
+\DoxyCodeLine{01497\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01498\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keywordtype}{double}\ translationXMetre,}
+\DoxyCodeLine{01499\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ translationYMetre,\ \textcolor{keywordtype}{double}\ translationZMetre,}
+\DoxyCodeLine{01500\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rotationXArcSecond,\ \textcolor{keywordtype}{double}\ rotationYArcSecond,}
+\DoxyCodeLine{01501\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rotationZArcSecond,\ \textcolor{keywordtype}{double}\ scaleDifferencePPM,}
+\DoxyCodeLine{01502\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rateTranslationX,\ \textcolor{keywordtype}{double}\ rateTranslationY,}
+\DoxyCodeLine{01503\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rateTranslationZ,\ \textcolor{keywordtype}{double}\ rateRotationX,\ \textcolor{keywordtype}{double}\ rateRotationY,}
+\DoxyCodeLine{01504\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ rateRotationZ,\ \textcolor{keywordtype}{double}\ rateScaleDifference,}
+\DoxyCodeLine{01505\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ referenceEpochYear,}
+\DoxyCodeLine{01506\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01507\ }
+\DoxyCodeLine{01508\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createTOWGS84(}
+\DoxyCodeLine{01509\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01510\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<double>\ \&TOWGS84Parameters);\ \textcolor{comment}{//\ throw\ InvalidOperation}}
+\DoxyCodeLine{01511\ }
+\DoxyCodeLine{01512\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createNTv2(}
+\DoxyCodeLine{01513\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01514\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keyword}{const}\ std::string\ \&filename,}
+\DoxyCodeLine{01515\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01516\ }
+\DoxyCodeLine{01517\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createMolodensky(}
+\DoxyCodeLine{01518\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01519\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keywordtype}{double}\ translationXMetre,}
+\DoxyCodeLine{01520\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ translationYMetre,\ \textcolor{keywordtype}{double}\ translationZMetre,}
+\DoxyCodeLine{01521\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ semiMajorAxisDifferenceMetre,\ \textcolor{keywordtype}{double}\ flattingDifference,}
+\DoxyCodeLine{01522\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01523\ }
+\DoxyCodeLine{01524\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createAbridgedMolodensky(}
+\DoxyCodeLine{01525\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01526\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keywordtype}{double}\ translationXMetre,}
+\DoxyCodeLine{01527\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ translationYMetre,\ \textcolor{keywordtype}{double}\ translationZMetre,}
+\DoxyCodeLine{01528\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ semiMajorAxisDifferenceMetre,\ \textcolor{keywordtype}{double}\ flattingDifference,}
+\DoxyCodeLine{01529\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01530\ }
+\DoxyCodeLine{01531\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}}
+\DoxyCodeLine{01532\ \ \ \ \ createGravityRelatedHeightToGeographic3D(}
+\DoxyCodeLine{01533\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01534\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ \&interpolationCRSIn,}
+\DoxyCodeLine{01535\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&filename,}
+\DoxyCodeLine{01536\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01537\ }
+\DoxyCodeLine{01538\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createVERTCON(}
+\DoxyCodeLine{01539\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01540\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keyword}{const}\ std::string\ \&filename,}
+\DoxyCodeLine{01541\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01542\ }
+\DoxyCodeLine{01543\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createLongitudeRotation(}
+\DoxyCodeLine{01544\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01545\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&offset);}
+\DoxyCodeLine{01546\ }
+\DoxyCodeLine{01547\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createGeographic2DOffsets(}
+\DoxyCodeLine{01548\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01549\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&offsetLat,}
+\DoxyCodeLine{01550\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&offsetLon,}
+\DoxyCodeLine{01551\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01552\ }
+\DoxyCodeLine{01553\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createGeographic3DOffsets(}
+\DoxyCodeLine{01554\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01555\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&offsetLat,}
+\DoxyCodeLine{01556\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&offsetLon,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&offsetHeight,}
+\DoxyCodeLine{01557\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01558\ }
+\DoxyCodeLine{01559\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createGeographic2DWithHeightOffsets(}
+\DoxyCodeLine{01560\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01561\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&offsetLat,}
+\DoxyCodeLine{01562\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_angle}{common::Angle}}\ \&offsetLon,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&offsetHeight,}
+\DoxyCodeLine{01563\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01564\ }
+\DoxyCodeLine{01565\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createVerticalOffset(}
+\DoxyCodeLine{01566\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01567\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_length}{common::Length}}\ \&offsetHeight,}
+\DoxyCodeLine{01568\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01569\ }
+\DoxyCodeLine{01570\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ substitutePROJAlternativeGridNames(}
+\DoxyCodeLine{01571\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespaceio_aab14ac62f5455d6e5650d46cfe125283}{io::DatabaseContextNNPtr}}\ databaseContext)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01572\ }
+\DoxyCodeLine{01573\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ createChangeVerticalUnit(}
+\DoxyCodeLine{01574\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,}
+\DoxyCodeLine{01575\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classcommon_1_1_scale}{common::Scale}}\ \&factor,}
+\DoxyCodeLine{01576\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01577\ }
+\DoxyCodeLine{01578\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{01580\ \ \ \ \ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{const}\ std::string\ \&}
+\DoxyCodeLine{01581\ \ \ \ \ \ \ \ \ getNTv2Filename()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01582\ }
+\DoxyCodeLine{01583\ \ \ \ \ PROJ\_FOR\_TEST\ std::vector<double>}
+\DoxyCodeLine{01584\ \ \ \ \ getTOWGS84Parameters()\ \textcolor{keyword}{const};\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{01585\ }
+\DoxyCodeLine{01586\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{const}\ std::string\ \&getHeightToGeographic3DFilename()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01587\ }
+\DoxyCodeLine{01588\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ isLongitudeRotation()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01589\ }
+\DoxyCodeLine{01590\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{01591\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{01592\ }
+\DoxyCodeLine{01593\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToJSON(\doxymbox{\hyperlink{classio_1_1_j_s_o_n_formatter}{io::JSONFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{01594\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(FormattingException)}}
+\DoxyCodeLine{01595\ }
+\DoxyCodeLine{01596\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ shallowClone()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01597\ }
+\DoxyCodeLine{01598\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}}
+\DoxyCodeLine{01599\ \ \ \ \ promoteTo3D(\textcolor{keyword}{const}\ std::string\ \&newName,}
+\DoxyCodeLine{01600\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01601\ }
+\DoxyCodeLine{01602\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}}
+\DoxyCodeLine{01603\ \ \ \ \ demoteTo2D(\textcolor{keyword}{const}\ std::string\ \&newName,}
+\DoxyCodeLine{01604\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01605\ }
+\DoxyCodeLine{01607\ }
+\DoxyCodeLine{01608\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{01609\ \ \ \ \ PROJ\_INTERNAL\ Transformation(}
+\DoxyCodeLine{01610\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRSIn,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRSIn,}
+\DoxyCodeLine{01611\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_ae7887e56c8a3db7f8850fb4f595c69b7}{crs::CRSPtr}}\ \&interpolationCRSIn,}
+\DoxyCodeLine{01612\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_ae4a22717ed7c0ba4d5973d032aa513e8}{OperationMethodNNPtr}}\ \&methodIn,}
+\DoxyCodeLine{01613\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<GeneralParameterValueNNPtr>\ \&values,}
+\DoxyCodeLine{01614\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>\ \&accuracies);}
+\DoxyCodeLine{01615\ \ \ \ \ PROJ\_INTERNAL\ Transformation(\textcolor{keyword}{const}\ Transformation\ \&other);}
+\DoxyCodeLine{01616\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{01617\ }
+\DoxyCodeLine{01618\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToPROJString(\doxymbox{\hyperlink{classio_1_1_p_r_o_j_string_formatter}{io::PROJStringFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{01619\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(FormattingException)}}
+\DoxyCodeLine{01620\ }
+\DoxyCodeLine{01621\ \ \ \ \ PROJ\_FRIEND(\doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_factory}{CoordinateOperationFactory}});}
+\DoxyCodeLine{01622\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{namespaceoperation_ab59a620670a1469eff2fa6fe4418624c}{TransformationNNPtr}}\ inverseAsTransformation()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01623\ }
+\DoxyCodeLine{01624\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ \_shallowClone()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{01625\ }
+\DoxyCodeLine{01626\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01627\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{01628\ \};}
+\DoxyCodeLine{01629\ }
+\DoxyCodeLine{01630\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01631\ }
+\DoxyCodeLine{01632\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_point_motion_operation}{PointMotionOperation}};}
+\DoxyCodeLine{01634\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_afd828538d9d7048793d0646bbd071180}{PointMotionOperationPtr}}\ =\ std::shared\_ptr<PointMotionOperation>;}
+\DoxyCodeLine{01636\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a5c6e40b1e61d73535214197ab941ce18}{PointMotionOperationNNPtr}}\ =\ util::nn<PointMotionOperationPtr>;}
+\DoxyCodeLine{01637\ }
+\DoxyCodeLine{01646\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ PointMotionOperation\ :\ \textcolor{keyword}{public}\ SingleOperation\ \{}
+\DoxyCodeLine{01647\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{01648\ \ \ \ \ \textcolor{comment}{//\ TODO}}
+\DoxyCodeLine{01650\ \ \ \ \ PROJ\_DLL\ \string~PointMotionOperation()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{01652\ }
+\DoxyCodeLine{01653\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01654\ \ \ \ \ PointMotionOperation(\textcolor{keyword}{const}\ PointMotionOperation\ \&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{01655\ \};}
+\DoxyCodeLine{01656\ }
+\DoxyCodeLine{01657\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01658\ }
+\DoxyCodeLine{01659\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_concatenated_operation}{ConcatenatedOperation}};}
+\DoxyCodeLine{01661\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_aaad8eaf8a41116dac152944e0f98d6c4}{ConcatenatedOperationPtr}}\ =\ std::shared\_ptr<ConcatenatedOperation>;}
+\DoxyCodeLine{01663\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_accf92e49b49c2f6a1283547644164b0e}{ConcatenatedOperationNNPtr}}\ =\ util::nn<ConcatenatedOperationPtr>;}
+\DoxyCodeLine{01664\ }
+\DoxyCodeLine{01675\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ ConcatenatedOperation\ final\ :\ \textcolor{keyword}{public}\ CoordinateOperation\ \{}
+\DoxyCodeLine{01676\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{01678\ \ \ \ \ PROJ\_DLL\ \string~ConcatenatedOperation()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{01680\ }
+\DoxyCodeLine{01681\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ std::vector<CoordinateOperationNNPtr>\ \&operations()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01682\ }
+\DoxyCodeLine{01683\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ \doxymbox{\hyperlink{classoperation_1_1_concatenated_operation_a22d8c83672e0b08e5f08618dc7d93c42}{inverse}}()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{01684\ }
+\DoxyCodeLine{01685\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_accf92e49b49c2f6a1283547644164b0e}{ConcatenatedOperationNNPtr}}}
+\DoxyCodeLine{01686\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_property_map}{util::PropertyMap}}\ \&properties,}
+\DoxyCodeLine{01687\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<CoordinateOperationNNPtr>\ \&operationsIn,}
+\DoxyCodeLine{01688\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<metadata::PositionalAccuracyNNPtr>}
+\DoxyCodeLine{01689\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&accuracies);\ \textcolor{comment}{//\ throw\ InvalidOperation}}
+\DoxyCodeLine{01690\ }
+\DoxyCodeLine{01691\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ createComputeMetadata(}
+\DoxyCodeLine{01692\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<CoordinateOperationNNPtr>\ \&operationsIn,}
+\DoxyCodeLine{01693\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ checkExtent);\ \textcolor{comment}{//\ throw\ InvalidOperation}}
+\DoxyCodeLine{01694\ }
+\DoxyCodeLine{01695\ \ \ \ \ PROJ\_DLL\ std::set<GridDescription>}
+\DoxyCodeLine{01696\ \ \ \ \ \doxymbox{\hyperlink{classoperation_1_1_concatenated_operation_ad9d0e97229cc01e59c1614a35b9b2492}{gridsNeeded}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&databaseContext,}
+\DoxyCodeLine{01697\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ considerKnownGridsAsAvailable)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{01698\ }
+\DoxyCodeLine{01699\ \ \ \ \ PROJ\_PRIVATE\ :}
+\DoxyCodeLine{01700\ }
+\DoxyCodeLine{01702\ \ \ \ \ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01703\ \ \ \ \ \ \ \ \ \_exportToWKT(\doxymbox{\hyperlink{classio_1_1_w_k_t_formatter}{io::WKTFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{01704\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(io::FormattingException)}}
+\DoxyCodeLine{01705\ }
+\DoxyCodeLine{01706\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{bool}\ \_isEquivalentTo(}
+\DoxyCodeLine{01707\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classutil_1_1_i_comparable}{util::IComparable}}\ *other,}
+\DoxyCodeLine{01708\ \ \ \ \ \ \ \ \ util::IComparable::Criterion\ criterion\ =}
+\DoxyCodeLine{01709\ \ \ \ \ \ \ \ \ \ \ \ \ util::IComparable::Criterion::STRICT,}
+\DoxyCodeLine{01710\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ac90b7eebb569e72ef12d50c2aa7cae5f}{io::DatabaseContextPtr}}\ \&dbContext\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{01711\ }
+\DoxyCodeLine{01712\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToJSON(\doxymbox{\hyperlink{classio_1_1_j_s_o_n_formatter}{io::JSONFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{01713\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(FormattingException)}}
+\DoxyCodeLine{01714\ }
+\DoxyCodeLine{01715\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01716\ \ \ \ \ fixStepsDirection(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&concatOpSourceCRS,}
+\DoxyCodeLine{01717\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&concatOpTargetCRS,}
+\DoxyCodeLine{01718\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<CoordinateOperationNNPtr>\ \&operationsInOut);}
+\DoxyCodeLine{01720\ }
+\DoxyCodeLine{01721\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{01722\ \ \ \ \ PROJ\_INTERNAL\ ConcatenatedOperation(\textcolor{keyword}{const}\ ConcatenatedOperation\ \&other);}
+\DoxyCodeLine{01723\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keyword}{explicit}\ ConcatenatedOperation(}
+\DoxyCodeLine{01724\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<CoordinateOperationNNPtr>\ \&operationsIn);}
+\DoxyCodeLine{01725\ }
+\DoxyCodeLine{01726\ \ \ \ \ PROJ\_INTERNAL\ \textcolor{keywordtype}{void}\ \_exportToPROJString(\doxymbox{\hyperlink{classio_1_1_p_r_o_j_string_formatter}{io::PROJStringFormatter}}\ *\doxymbox{\hyperlink{structformatter}{formatter}})}
+\DoxyCodeLine{01727\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};\ \textcolor{comment}{//\ throw(FormattingException)}}
+\DoxyCodeLine{01728\ }
+\DoxyCodeLine{01729\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{namespaceoperation_aa4b6850fbef0d15e6efe1c0c4cc47faf}{CoordinateOperationNNPtr}}\ \_shallowClone()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{01730\ }
+\DoxyCodeLine{01731\ \ \ \ \ INLINED\_MAKE\_SHARED}
+\DoxyCodeLine{01732\ }
+\DoxyCodeLine{01733\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01734\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{01735\ \ \ \ \ ConcatenatedOperation\ \&}
+\DoxyCodeLine{01736\ \ \ \ \ operator=(\textcolor{keyword}{const}\ ConcatenatedOperation\ \&other)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{01737\ \};}
+\DoxyCodeLine{01738\ }
+\DoxyCodeLine{01739\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01740\ }
+\DoxyCodeLine{01741\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_context}{CoordinateOperationContext}};}
+\DoxyCodeLine{01743\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a0446255b62fa8d0925216210da8ae5d4}{CoordinateOperationContextPtr}}\ =}
+\DoxyCodeLine{01744\ \ \ \ \ std::unique\_ptr<CoordinateOperationContext>;}
+\DoxyCodeLine{01746\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a300be23a4ee3b76342fb815464c47531}{CoordinateOperationContextNNPtr}}\ =\ util::nn<CoordinateOperationContextPtr>;}
+\DoxyCodeLine{01747\ }
+\DoxyCodeLine{01755\ }
+\DoxyCodeLine{01756\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ CoordinateOperationContext\ \{}
+\DoxyCodeLine{01757\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{01759\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{virtual}\ \string~CoordinateOperationContext();}
+\DoxyCodeLine{01761\ }
+\DoxyCodeLine{01762\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ab36297cf737fcba972eda6f25b4dbff2}{io::AuthorityFactoryPtr}}\ \&getAuthorityFactory()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01763\ }
+\DoxyCodeLine{01764\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacemetadata_ae1f848be16bc69875196c12e2be28e8b}{metadata::ExtentPtr}}\ \&getAreaOfInterest()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01765\ }
+\DoxyCodeLine{01766\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}\ setAreaOfInterest(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacemetadata_ae1f848be16bc69875196c12e2be28e8b}{metadata::ExtentPtr}}\ \&extent);}
+\DoxyCodeLine{01767\ }
+\DoxyCodeLine{01768\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{double}\ getDesiredAccuracy()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01769\ }
+\DoxyCodeLine{01770\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}\ setDesiredAccuracy(\textcolor{keywordtype}{double}\ accuracy);}
+\DoxyCodeLine{01771\ }
+\DoxyCodeLine{01772\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}\ setAllowBallparkTransformations(\textcolor{keywordtype}{bool}\ allow);}
+\DoxyCodeLine{01773\ }
+\DoxyCodeLine{01774\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{bool}\ getAllowBallparkTransformations()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01775\ }
+\DoxyCodeLine{01779\ \ \ \ \ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_context_a5664694d1b1a03a0b67dafa1af5099ed}{SourceTargetCRSExtentUse}}\ \{}
+\DoxyCodeLine{01781\ \ \ \ \ \ \ \ \ NONE,}
+\DoxyCodeLine{01783\ \ \ \ \ \ \ \ \ BOTH,}
+\DoxyCodeLine{01786\ \ \ \ \ \ \ \ \ INTERSECTION,}
+\DoxyCodeLine{01789\ \ \ \ \ \ \ \ \ SMALLEST,}
+\DoxyCodeLine{01790\ \ \ \ \ \};}
+\DoxyCodeLine{01791\ }
+\DoxyCodeLine{01792\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}\ setSourceAndTargetCRSExtentUse(SourceTargetCRSExtentUse\ use);}
+\DoxyCodeLine{01793\ }
+\DoxyCodeLine{01794\ \ \ \ \ PROJ\_DLL\ SourceTargetCRSExtentUse\ getSourceAndTargetCRSExtentUse()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01795\ }
+\DoxyCodeLine{01797\ \ \ \ \ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_context_a6213875f008681e8b5755dd439e6f220}{SpatialCriterion}}\ \{}
+\DoxyCodeLine{01800\ \ \ \ \ \ \ \ \ STRICT\_CONTAINMENT,}
+\DoxyCodeLine{01801\ }
+\DoxyCodeLine{01804\ \ \ \ \ \ \ \ \ PARTIAL\_INTERSECTION}
+\DoxyCodeLine{01805\ \ \ \ \ \};}
+\DoxyCodeLine{01806\ }
+\DoxyCodeLine{01807\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}\ setSpatialCriterion(SpatialCriterion\ criterion);}
+\DoxyCodeLine{01808\ }
+\DoxyCodeLine{01809\ \ \ \ \ PROJ\_DLL\ SpatialCriterion\ getSpatialCriterion()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01810\ }
+\DoxyCodeLine{01811\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}\ setUsePROJAlternativeGridNames(\textcolor{keywordtype}{bool}\ usePROJNames);}
+\DoxyCodeLine{01812\ }
+\DoxyCodeLine{01813\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{bool}\ getUsePROJAlternativeGridNames()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01814\ }
+\DoxyCodeLine{01815\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}\ setDiscardSuperseded(\textcolor{keywordtype}{bool}\ discard);}
+\DoxyCodeLine{01816\ }
+\DoxyCodeLine{01817\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{bool}\ getDiscardSuperseded()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01818\ }
+\DoxyCodeLine{01820\ \ \ \ \ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_context_a3d6a23fdf20a506cbadb48c84c5b3dbf}{GridAvailabilityUse}}\ \{}
+\DoxyCodeLine{01823\ \ \ \ \ \ \ \ \ USE\_FOR\_SORTING,}
+\DoxyCodeLine{01824\ }
+\DoxyCodeLine{01826\ \ \ \ \ \ \ \ \ DISCARD\_OPERATION\_IF\_MISSING\_GRID,}
+\DoxyCodeLine{01827\ }
+\DoxyCodeLine{01830\ \ \ \ \ \ \ \ \ IGNORE\_GRID\_AVAILABILITY,}
+\DoxyCodeLine{01831\ }
+\DoxyCodeLine{01836\ \ \ \ \ \ \ \ \ KNOWN\_AVAILABLE,}
+\DoxyCodeLine{01837\ \ \ \ \ \};}
+\DoxyCodeLine{01838\ }
+\DoxyCodeLine{01839\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}\ setGridAvailabilityUse(GridAvailabilityUse\ use);}
+\DoxyCodeLine{01840\ }
+\DoxyCodeLine{01841\ \ \ \ \ PROJ\_DLL\ GridAvailabilityUse\ getGridAvailabilityUse()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01842\ }
+\DoxyCodeLine{01844\ \ \ \ \ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_context_aaffb0b1e4cbd4c0a485fe1f54fd98ba5}{IntermediateCRSUse}}\ \{}
+\DoxyCodeLine{01846\ \ \ \ \ \ \ \ \ ALWAYS,}
+\DoxyCodeLine{01847\ }
+\DoxyCodeLine{01850\ \ \ \ \ \ \ \ \ IF\_NO\_DIRECT\_TRANSFORMATION,}
+\DoxyCodeLine{01851\ }
+\DoxyCodeLine{01852\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ Do\ not\ attempt\ looking\ for\ intermediate\ CRS.\ */}}
+\DoxyCodeLine{01853\ \ \ \ \ \ \ \ \ NEVER,}
+\DoxyCodeLine{01854\ \ \ \ \ \};}
+\DoxyCodeLine{01855\ }
+\DoxyCodeLine{01856\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}\ setAllowUseIntermediateCRS(IntermediateCRSUse\ use);}
+\DoxyCodeLine{01857\ }
+\DoxyCodeLine{01858\ \ \ \ \ PROJ\_DLL\ IntermediateCRSUse\ getAllowUseIntermediateCRS()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01859\ }
+\DoxyCodeLine{01860\ \ \ \ \ PROJ\_DLL\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01861\ \ \ \ \ setIntermediateCRS(\textcolor{keyword}{const}\ std::vector<std::pair<std::string,\ std::string>>}
+\DoxyCodeLine{01862\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&intermediateCRSAuthCodes);}
+\DoxyCodeLine{01863\ }
+\DoxyCodeLine{01864\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{const}\ std::vector<std::pair<std::string,\ std::string>>\ \&}
+\DoxyCodeLine{01865\ \ \ \ \ getIntermediateCRS()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01866\ }
+\DoxyCodeLine{01867\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_a300be23a4ee3b76342fb815464c47531}{CoordinateOperationContextNNPtr}}}
+\DoxyCodeLine{01868\ \ \ \ \ create(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceio_ab36297cf737fcba972eda6f25b4dbff2}{io::AuthorityFactoryPtr}}\ \&authorityFactory,}
+\DoxyCodeLine{01869\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacemetadata_ae1f848be16bc69875196c12e2be28e8b}{metadata::ExtentPtr}}\ \&extent,\ \textcolor{keywordtype}{double}\ accuracy);}
+\DoxyCodeLine{01870\ }
+\DoxyCodeLine{01871\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{01872\ \ \ \ \ PROJ\_INTERNAL\ \doxymbox{\hyperlink{classoperation_1_1_coordinate_operation_context}{CoordinateOperationContext}}();}
+\DoxyCodeLine{01873\ \ \ \ \ INLINED\_MAKE\_UNIQUE}
+\DoxyCodeLine{01874\ }
+\DoxyCodeLine{01875\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01876\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{01877\ \};}
+\DoxyCodeLine{01878\ }
+\DoxyCodeLine{01879\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{01880\ }
+\DoxyCodeLine{01881\ \textcolor{keyword}{class\ }CoordinateOperationFactory;}
+\DoxyCodeLine{01883\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_a334eaebfc23c7dc8d8dee657847c73e7}{CoordinateOperationFactoryPtr}}\ =}
+\DoxyCodeLine{01884\ \ \ \ \ std::unique\_ptr<CoordinateOperationFactory>;}
+\DoxyCodeLine{01886\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{namespaceoperation_aa79990b2b379c11420c42ac774afeb1e}{CoordinateOperationFactoryNNPtr}}\ =\ util::nn<CoordinateOperationFactoryPtr>;}
+\DoxyCodeLine{01887\ }
+\DoxyCodeLine{01896\ \textcolor{keyword}{class\ }PROJ\_GCC\_DLL\ CoordinateOperationFactory\ \{}
+\DoxyCodeLine{01897\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{01899\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{virtual}\ \string~CoordinateOperationFactory();}
+\DoxyCodeLine{01901\ }
+\DoxyCodeLine{01902\ \ \ \ \ PROJ\_DLL\ \doxymbox{\hyperlink{namespaceoperation_a39467a04c89c906ccf3bbe3680f2bd4e}{CoordinateOperationPtr}}\ createOperation(}
+\DoxyCodeLine{01903\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRS,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRS)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01904\ }
+\DoxyCodeLine{01905\ \ \ \ \ PROJ\_DLL\ std::vector<CoordinateOperationNNPtr>}
+\DoxyCodeLine{01906\ \ \ \ \ createOperations(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&sourceCRS,}
+\DoxyCodeLine{01907\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespacecrs_a427161119dd891fc9126cefee3d8b1c1}{crs::CRSNNPtr}}\ \&targetCRS,}
+\DoxyCodeLine{01908\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{namespaceoperation_a300be23a4ee3b76342fb815464c47531}{CoordinateOperationContextNNPtr}}\ \&\doxymbox{\hyperlink{classcontext}{context}})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{01909\ }
+\DoxyCodeLine{01910\ \ \ \ \ PROJ\_DLL\ \textcolor{keyword}{static}\ \doxymbox{\hyperlink{namespaceoperation_aa79990b2b379c11420c42ac774afeb1e}{CoordinateOperationFactoryNNPtr}}\ create();}
+\DoxyCodeLine{01911\ }
+\DoxyCodeLine{01912\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{01913\ \ \ \ \ PROJ\_INTERNAL\ CoordinateOperationFactory();}
+\DoxyCodeLine{01914\ \ \ \ \ INLINED\_MAKE\_UNIQUE}
+\DoxyCodeLine{01915\ }
+\DoxyCodeLine{01916\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01917\ \ \ \ \ PROJ\_OPAQUE\_PRIVATE\_DATA}
+\DoxyCodeLine{01918\ \};}
+\DoxyCodeLine{01919\ }
+\DoxyCodeLine{01920\ \}\ \textcolor{comment}{//\ namespace\ operation}}
+\DoxyCodeLine{01921\ }
+\DoxyCodeLine{01922\ NS\_PROJ\_END}
+\DoxyCodeLine{01923\ }
+\DoxyCodeLine{01924\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ \ COORDINATEOPERATION\_HH\_INCLUDED}}
+
+\end{DoxyCode}

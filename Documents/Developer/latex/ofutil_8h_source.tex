@@ -1,0 +1,388 @@
+\doxysection{ofutil.\+h}
+\hypertarget{ofutil_8h_source}{}\label{ofutil_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofutil.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/ofutil.h}}
+\doxymbox{\hyperlink{ofutil_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2014-\/2024,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ ofstd}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Jan\ Schlamelcher}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ Implement\ fallback\ support\ for\ modern\ techniques\ defined}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ in\ the\ STL's\ <utility>\ header\ (e.g.\ move\ semantics)}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ for\ older\ compilers.}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#ifndef\ OFUTIL\_H}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ OFUTIL\_H}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}\ \ \ \ \textcolor{comment}{/*\ make\ sure\ OS\ specific\ configuration\ is\ included\ first\ */}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/oftraits.h"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{oftypes_8h}{dcmtk/ofstd/oftypes.h}}"{}}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ misc\ C++11\ /\ non\ C++11\ utils\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ The\ internet\ says\ <utility>\ should\ always\ be\ available,\ so\ we\ include}}
+\DoxyCodeLine{00040\ \textcolor{comment}{//\ it\ here\ to\ fix\ an\ issue\ with\ compilers\ that\ support\ std::tuple\ but}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ not\ all\ of\ C++11\ and\ perhaps\ other\ stuff.}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#ifdef\ HAVE\_STL\_TUPLE}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#include\ <tuple>}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#ifdef\ HAVE\_CXX11}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#define\ OFmove\ std::move}}
+\DoxyCodeLine{00051\ \textcolor{preprocessor}{\#define\ OFswap\ std::swap}}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{comment}{//\ OFrvalue\ simply\ equals\ 'identity',\ as\ C++11\ natively\ handles}}
+\DoxyCodeLine{00054\ \textcolor{comment}{//\ rvalues\ /\ prvalues\ and\ so\ on.}}
+\DoxyCodeLine{00055\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00056\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{struct_o_frvalue}{OFrvalue}}\ =\ T;}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\#define\ OFrvalue\_ref(T)\ T\&\&}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\#define\ OFrvalue\_access(RV)\ RV}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\#define\ OFrvalue\_ref\_upcast(T,\ RV)\ static\_cast<T\&\&>(RV)}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ fallback\ implementations}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN}}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{//\ Meta-\/template\ to\ select\ the\ base\ class\ for\ OFrvalue}}
+\DoxyCodeLine{00067\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T,OFBool>}
+\DoxyCodeLine{00068\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_frvalue__storage}{OFrvalue\_storage}}}
+\DoxyCodeLine{00069\ \{}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{//\ Helper\ template\ to\ wrap\ types\ that\ we\ can't\ derive\ from,}}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{//\ e.g.\ primitive\ types.}}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keyword}{class\ }type}
+\DoxyCodeLine{00073\ \ \ \ \ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ constructor\ should\ be\ fine\ for\ primitive\ types.}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ type(\textcolor{keyword}{const}\ T\&\ pt)}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ :\ t(\ pt\ )\ \{\}}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ type(\textcolor{keyword}{const}\ type\&\ rhs)}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ :\ t(\ rhs.t\ )\ \{\}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ automatic\ conversion\ to\ the\ underlying\ type}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{operator}\ T\&()\ \textcolor{keyword}{const}\ \{\ \textcolor{keywordflow}{return}\ OFconst\_cast(\ T\&,\ t\ );\ \}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ the\ actual\ object}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ T\ t;}
+\DoxyCodeLine{00087\ \ \ \ \ \};}
+\DoxyCodeLine{00088\ \};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \textcolor{comment}{//\ specialization\ for\ compound\ types}}
+\DoxyCodeLine{00091\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00092\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_frvalue__storage}{OFrvalue\_storage}}<T,OFTrue>}
+\DoxyCodeLine{00093\ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{//\ simply\ use\ T\ itself\ as\ base}}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keyword}{typedef}\ T\ type;}
+\DoxyCodeLine{00096\ \};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \textcolor{comment}{//\ SFINAE\ to\ detect\ if\ a\ type\ is\ derivable\ from}}
+\DoxyCodeLine{00099\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00100\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_o_frvalue__base}{OFrvalue\_base}}}
+\DoxyCodeLine{00101\ \{}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{comment}{//\ magic\ SFINAE\ stuff\ stolen\ from\ en.cppreference.com}}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keyword}{struct\ }no\_type\ \{\};}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keyword}{struct\ }yes\_type\ \{\textcolor{keywordtype}{double}\ d;\};}
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keyword}{static}\ yes\_type\ sfinae(\textcolor{keywordtype}{int}\ X::*);}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keyword}{static}\ no\_type\ sfinae(...);}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{comment}{//\ employ\ SFINAE\ +\ template\ specialization\ to\ select}}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{comment}{//\ the\ base\ type}}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keyword}{typedef}\ OFTypename\ \doxymbox{\hyperlink{struct_o_frvalue__storage}{OFrvalue\_storage}}}
+\DoxyCodeLine{00114\ \ \ \ \ <}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ T,}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{keyword}{sizeof}(sfinae<T>(OFnullptr))\ ==\ \textcolor{keyword}{sizeof}(yes\_type)}
+\DoxyCodeLine{00117\ \ \ \ \ >::type\ type;}
+\DoxyCodeLine{00118\ \};}
+\DoxyCodeLine{00119\ }
+\DoxyCodeLine{00120\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ NOT\ DOXYGEN}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00155\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00156\ \textcolor{keyword}{struct\ }OFrvalue\ :\ \doxymbox{\hyperlink{class_o_frvalue__base}{OFrvalue\_base}}<T>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}}
+\DoxyCodeLine{00157\ \{}
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN}}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{comment}{//\ allow\ to\ move\ construct\ from\ lvalue\ references}}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keyword}{inline}\ OFrvalue(\textcolor{keyword}{const}\ T\&\ t)\ :\ OFrvalue\_base<T>::type(\ *OFreinterpret\_cast(\ \textcolor{keyword}{const}\ OFrvalue*,\ \ \&t\ )\ )\ \{\}}
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{comment}{//\ copy-\/construct\ from\ an\ rvalue\ reference}}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keyword}{inline}\ OFrvalue(\textcolor{keyword}{const}\ OFrvalue\&\ rv)\ :\ OFrvalue\_base<T>::type(\ rv\ )\ \{\}}
+\DoxyCodeLine{00163\ \ \ \ \ \textcolor{comment}{//\ poor\ man's\ in-\/place\ construction}}
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X>}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{explicit}\ OFrvalue(\ X\ x\ )\ :\ OFrvalue\_base<T>::type(\ x\ )\ \{\}}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X0,\textcolor{keyword}{typename}\ X1>}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{explicit}\ OFrvalue(\ X0\ x0,\ X1\ x1\ )\ :\ OFrvalue\_base<T>::type(\ x0,\ x1\ )\ \{\}}
+\DoxyCodeLine{00168\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X0,\textcolor{keyword}{typename}\ X1,\textcolor{keyword}{typename}\ X2>}
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{explicit}\ OFrvalue(\ X0\ x0,\ X1\ x1,\ X2\ x2\ )\ :\ OFrvalue\_base<T>::type(\ x0,\ x1,\ x2\ )\ \{\}}
+\DoxyCodeLine{00170\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ NOT\ DOXYGEN}}
+\DoxyCodeLine{00171\ \};}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{preprocessor}{\#ifdef\ DOXYGEN}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#define\ OFrvalue\_ref(T)\ unspecified}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00224\ \textcolor{preprocessor}{\#define\ OFrvalue\_ref\_upcast(T,\ RV)\ unspecified}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ NOT\ DOXYGEN}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#define\ OFrvalue\_ref(T)\ const\ OFrvalue<T\ >\&}}
+\DoxyCodeLine{00227\ \textcolor{preprocessor}{\#define\ OFrvalue\_ref\_upcast(T,\ RV)\ OFmove<T\ >(RV)}}
+\DoxyCodeLine{00228\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00240\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00241\ T\&\ \doxymbox{\hyperlink{ofutil_8h_a21f26b07ac3dfdeb8ea48c49847dcc7f}{OFrvalue\_access}}(\ OFrvalue\_ref(T)\ rv\ )}
+\DoxyCodeLine{00242\ \{}
+\DoxyCodeLine{00243\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN}}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keywordflow}{return}\ OFconst\_cast(\ \doxymbox{\hyperlink{struct_o_frvalue}{OFrvalue<T>}}\&,\ rv\ );}
+\DoxyCodeLine{00245\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00246\ \}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00261\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00262\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN}}
+\DoxyCodeLine{00263\ \doxymbox{\hyperlink{struct_o_frvalue}{OFrvalue<T>}}\&\ \doxymbox{\hyperlink{ofutil_8h_a9312788a76ee6d853d92e09e09c7185d}{OFmove}}(\ T\&\ t\ )}
+\DoxyCodeLine{00264\ \{}
+\DoxyCodeLine{00265\ \ \ \ \ \textcolor{keywordflow}{return}\ *OFreinterpret\_cast(\ \doxymbox{\hyperlink{struct_o_frvalue}{OFrvalue<T>}}*,\ \&t\ );}
+\DoxyCodeLine{00266\ \}}
+\DoxyCodeLine{00267\ }
+\DoxyCodeLine{00268\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00269\ \doxymbox{\hyperlink{struct_o_frvalue}{OFrvalue<T>}}\&\ \doxymbox{\hyperlink{ofutil_8h_a9312788a76ee6d853d92e09e09c7185d}{OFmove}}(\ \doxymbox{\hyperlink{struct_o_frvalue}{OFrvalue<T>}}\&\ rv\ )}
+\DoxyCodeLine{00270\ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \textcolor{keywordflow}{return}\ rv;}
+\DoxyCodeLine{00272\ \}}
+\DoxyCodeLine{00273\ }
+\DoxyCodeLine{00274\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00275\ \doxymbox{\hyperlink{struct_o_frvalue}{OFrvalue<T>}}\&\ \doxymbox{\hyperlink{ofutil_8h_a9312788a76ee6d853d92e09e09c7185d}{OFmove}}(\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_o_frvalue}{OFrvalue<T>}}\&\ rv\ )}
+\DoxyCodeLine{00276\ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keywordflow}{return}\ OFconst\_cast(\ \doxymbox{\hyperlink{struct_o_frvalue}{OFrvalue<T>}}\&,\ rv\ );}
+\DoxyCodeLine{00278\ \}}
+\DoxyCodeLine{00279\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ NOT\ DOXYGEN}}
+\DoxyCodeLine{00280\ OFconstexpr\ xvalue\ \doxymbox{\hyperlink{ofutil_8h_a9312788a76ee6d853d92e09e09c7185d}{OFmove}}(\ T<\ unspecified\ >\ t\ );}
+\DoxyCodeLine{00281\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DOXYGEN}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00296\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00297\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{ofutil_8h_a1082724483800c3e7ab5a3c51cd8e83a}{OFswap}}(\ T\&\ t0,\ T\&\ t1\ )}
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN}}
+\DoxyCodeLine{00299\ \{}
+\DoxyCodeLine{00300\ \ \ \ \ T\ temp(\ \doxymbox{\hyperlink{ofutil_8h_a9312788a76ee6d853d92e09e09c7185d}{OFmove}}(\ t0\ )\ );}
+\DoxyCodeLine{00301\ \ \ \ \ t0\ =\ \doxymbox{\hyperlink{ofutil_8h_a9312788a76ee6d853d92e09e09c7185d}{OFmove}}(\ t1\ );}
+\DoxyCodeLine{00302\ \ \ \ \ t1\ =\ \doxymbox{\hyperlink{ofutil_8h_a9312788a76ee6d853d92e09e09c7185d}{OFmove}}(\ temp\ );}
+\DoxyCodeLine{00303\ \}}
+\DoxyCodeLine{00304\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ NOT\ DOXYGEN}}
+\DoxyCodeLine{00305\ ;}
+\DoxyCodeLine{00306\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DOXYGEN}}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ NOT\ C++11}}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ STL\ pair\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \textcolor{preprocessor}{\#ifdef\ HAVE\_STL\_MAP}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \textcolor{comment}{//\ Use\ native\ pair\ class,\ to\ be\ compatible\ to\ std::map}}
+\DoxyCodeLine{00315\ \textcolor{preprocessor}{\#define\ OFPair\ std::pair}}
+\DoxyCodeLine{00316\ \textcolor{preprocessor}{\#define\ OFMake\_pair\ std::make\_pair}}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ fallback\ implementation\ of\ std::pair}}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00322\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V>\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_o_f_pair_a3d43b266ada77fe3273affdd38ba2139}{OFPair}}}
+\DoxyCodeLine{00323\ \{}
+\DoxyCodeLine{00324\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00327\ \ \ \ \ K\ \doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}};}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00330\ \ \ \ \ V\ \doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}};}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00333\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_pair_a3d43b266ada77fe3273affdd38ba2139}{OFPair}}()\ :\ \doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}}(),\ \doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}}()\ \{\ \}}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00339\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_pair_a2160c3effc947d00eb5cff4977ed5e3c}{OFPair}}(\textcolor{keyword}{const}\ K\&\ f,\ \textcolor{keyword}{const}\ V\&\ s)\ :\ \doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}}(f),\ \doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}}(s)\ \{\ \}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00344\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ OK,\ \textcolor{keyword}{class}\ OV>}
+\DoxyCodeLine{00345\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_pair_a530a87f90a7d998bd9241d3d620e3218}{OFPair}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_pair_a3d43b266ada77fe3273affdd38ba2139}{OFPair<OK,\ OV>}}\&\ p)\ :\ \doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}}(p.\doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}}),\ \doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}}(p.\doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}})\ \{\ \}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00350\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_pair_aa25b4cad75a3fc480d6abe2eab35c10d}{OFPair}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_pair_a3d43b266ada77fe3273affdd38ba2139}{OFPair}}\&\ p)\ :\ \doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}}(p.\doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}}),\ \doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}}(p.\doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}})\ \{\ \}}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00353\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_pair_a3d43b266ada77fe3273affdd38ba2139}{OFPair<K,\ V>}}\&\ \doxymbox{\hyperlink{class_o_f_pair_a2e4a47e91bac577feaf9a1dbea73ca83}{operator=}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_pair_a3d43b266ada77fe3273affdd38ba2139}{OFPair<K,\ V>}}\&\ other)}
+\DoxyCodeLine{00354\ \ \ \ \ \{}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}}\ =\ other.\doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}};}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}}\ =\ other.\doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}};}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00358\ \ \ \ \ \}}
+\DoxyCodeLine{00359\ \};}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00367\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\ \textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00368\ \doxymbox{\hyperlink{class_o_f_pair_a3d43b266ada77fe3273affdd38ba2139}{OFPair<K,\ V>}}\ \doxymbox{\hyperlink{class_o_f_pair_a2bfdef0639b3e6e887f5052be341c05f}{OFMake\_pair}}(\textcolor{keyword}{const}\ K\&\ \doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}},\ \textcolor{keyword}{const}\ V\&\ \doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}})}
+\DoxyCodeLine{00369\ \{}
+\DoxyCodeLine{00370\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_o_f_pair_a3d43b266ada77fe3273affdd38ba2139}{OFPair<K,\ V>}}(\doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}},\ \doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}});}
+\DoxyCodeLine{00371\ \}}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ HAVE\_STL\_MAP\ -\/\ fallback\ implementation\ of\ OFPair}}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ STL\ tuple\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\#ifdef\ HAVE\_STL\_TUPLE}}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00379\ \textcolor{preprocessor}{\#ifdef\ HAVE\_CXX11}}
+\DoxyCodeLine{00380\ }
+\DoxyCodeLine{00381\ \textcolor{keyword}{template}<std::\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00382\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ OFget(\ T\&\&\ t\ )\ -\/>\ \textcolor{keyword}{decltype}(\ std::get<Index>(\ std::forward<T>(\ t\ )\ )\ )}
+\DoxyCodeLine{00383\ \{}
+\DoxyCodeLine{00384\ \ \ \ \ \textcolor{keywordflow}{return}\ std::get<Index>(\ std::forward<T>(\ t\ )\ );}
+\DoxyCodeLine{00385\ \}}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ X,\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00388\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{auto}\ OFget(\ T\&\&\ t\ )\ -\/>\ \textcolor{keyword}{decltype}(\ std::get<X>(\ std::forward<T>(\ t\ )\ )\ )}
+\DoxyCodeLine{00389\ \{}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keywordflow}{return}\ std::get<X>(\ std::forward<T>(\ t\ )\ );}
+\DoxyCodeLine{00391\ \}}
+\DoxyCodeLine{00392\ }
+\DoxyCodeLine{00393\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00394\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{struct_o_ftuple__size}{OFtuple\_size}}\ =\ std::tuple\_size<Tuple>;}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \textcolor{keyword}{template}<std::\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00397\ \textcolor{keyword}{using\ }\doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element}}\ =\ std::tuple\_element<Index,Tuple>;}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ HAVE\_CXX11}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00402\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__size}{OFtuple\_size}}\ :\ STD\_NAMESPACE\ tuple\_size<Tuple>\ \{\};}
+\DoxyCodeLine{00403\ }
+\DoxyCodeLine{00404\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00405\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element}}\ :\ STD\_NAMESPACE\ tuple\_element<Index,Tuple>\ \{\};}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00407\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00408\ OFTypename\ \doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element<Index,T>::type}}\ OFget(\ T\&\ t\ )\ \{\ \textcolor{keywordflow}{return}\ STD\_NAMESPACE\ get<Index>(\ t\ );\ \}}
+\DoxyCodeLine{00409\ }
+\DoxyCodeLine{00410\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00411\ OFTypename\ \doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element<Index,T>::type}}\ OFget(\ \textcolor{keyword}{const}\ T\&\ t\ )\ \{\ \textcolor{keywordflow}{return}\ STD\_NAMESPACE\ get<Index>(\ t\ );\ \}}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ NOT\ HAVE\_CXX11}}
+\DoxyCodeLine{00414\ }
+\DoxyCodeLine{00415\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ HAVE\_STL\_TUPLE}}
+\DoxyCodeLine{00416\ }
+\DoxyCodeLine{00417\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00418\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__size}{OFtuple\_size}};}
+\DoxyCodeLine{00419\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00420\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element}};}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \textcolor{comment}{//\ specialization\ of\ OFtuple\_size\ for\ OFPair\ -\/>\ 2}}
+\DoxyCodeLine{00423\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00424\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__size}{OFtuple\_size}}<\doxymbox{\hyperlink{class_o_f_pair}{OFPair}}<K,V>\ >}
+\DoxyCodeLine{00425\ :\ \doxymbox{\hyperlink{struct_o_fintegral__constant}{OFintegral\_constant}}<size\_t,2>\ \{\};}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \textcolor{comment}{//\ specialization\ of\ OFtuple\_element\ for\ OFPair}}
+\DoxyCodeLine{00428\ \textcolor{comment}{//\ 0\ -\/>\ K}}
+\DoxyCodeLine{00429\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00430\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element}}<0,\doxymbox{\hyperlink{class_o_f_pair}{OFPair}}<K,V>\ >}
+\DoxyCodeLine{00431\ \{}
+\DoxyCodeLine{00432\ \ \ \ \ \textcolor{keyword}{typedef}\ K\ type;}
+\DoxyCodeLine{00433\ \};}
+\DoxyCodeLine{00434\ }
+\DoxyCodeLine{00435\ \textcolor{comment}{//\ specialization\ of\ OFtuple\_element\ for\ OFPair}}
+\DoxyCodeLine{00436\ \textcolor{comment}{//\ 1\ -\/>\ V}}
+\DoxyCodeLine{00437\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00438\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element}}<1,\doxymbox{\hyperlink{class_o_f_pair}{OFPair}}<K,V>\ >}
+\DoxyCodeLine{00439\ \{}
+\DoxyCodeLine{00440\ \ \ \ \ \textcolor{keyword}{typedef}\ V\ type;}
+\DoxyCodeLine{00441\ \};}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \textcolor{comment}{//\ metafunction\ to\ apply\ OFget\ to\ OFPair}}
+\DoxyCodeLine{00444\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Element>}
+\DoxyCodeLine{00445\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_fpair__element}{OFpair\_element}};}
+\DoxyCodeLine{00446\ }
+\DoxyCodeLine{00447\ \textcolor{comment}{//\ specialization\ for\ 0\ -\/>\ first}}
+\DoxyCodeLine{00448\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00449\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_fpair__element}{OFpair\_element}}<0>}
+\DoxyCodeLine{00450\ \{}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00452\ \ \ \ \ \textcolor{keyword}{static}\ K\&\ from(\ \doxymbox{\hyperlink{class_o_f_pair}{OFPair<K,V>}}\&\ p\ )\ \{\ \textcolor{keywordflow}{return}\ p.\doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}};\ \}}
+\DoxyCodeLine{00453\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00454\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ K\&\ from(\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_pair}{OFPair<K,V>}}\&\ p\ )\ \{\ \textcolor{keywordflow}{return}\ p.\doxymbox{\hyperlink{class_o_f_pair_a048d30234c223be636958c6a243b917b}{first}};\ \}}
+\DoxyCodeLine{00455\ \};}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00457\ \textcolor{comment}{//\ specialization\ for\ 1\ -\/>\ second}}
+\DoxyCodeLine{00458\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00459\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_o_fpair__element}{OFpair\_element}}<1>}
+\DoxyCodeLine{00460\ \{}
+\DoxyCodeLine{00461\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keyword}{static}\ V\&\ from(\ \doxymbox{\hyperlink{class_o_f_pair}{OFPair<K,V>}}\&\ p\ )\ \{\ \textcolor{keywordflow}{return}\ p.\doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}};\ \}}
+\DoxyCodeLine{00463\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00464\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ V\&\ from(\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_pair}{OFPair<K,V>}}\&\ p\ )\ \{\ \textcolor{keywordflow}{return}\ p.\doxymbox{\hyperlink{class_o_f_pair_a35d8bb97e6f15908fe7e12bd3c358121}{second}};\ \}}
+\DoxyCodeLine{00465\ \};}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \textcolor{comment}{//\ overload\ of\ OFget\ for\ OFPair,\ see\ above\ metafunction\ 'OFpair\_element'}}
+\DoxyCodeLine{00468\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Element,\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00469\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element<Element,OFPair<K,V>}}\ >\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\&\ OFget(\ \doxymbox{\hyperlink{class_o_f_pair}{OFPair<K,V>}}\&\ p\ )}
+\DoxyCodeLine{00470\ \{}
+\DoxyCodeLine{00471\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{struct_o_fpair__element}{OFpair\_element<Element>::from}}(\ p\ );}
+\DoxyCodeLine{00472\ \}}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \textcolor{comment}{//\ overload\ of\ OFget\ for\ const\ OFPair,\ see\ above\ metafunction\ 'OFpair\_element'}}
+\DoxyCodeLine{00475\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Element,\textcolor{keyword}{typename}\ K,\textcolor{keyword}{typename}\ V>}
+\DoxyCodeLine{00476\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element<Element,OFPair<K,V>}}\ >\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\&\ OFget(\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_pair}{OFPair<K,V>}}\&\ p\ )}
+\DoxyCodeLine{00477\ \{}
+\DoxyCodeLine{00478\ \ \ \ \ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{struct_o_fpair__element}{OFpair\_element<Element>::from}}(\ p\ );}
+\DoxyCodeLine{00479\ \}}
+\DoxyCodeLine{00480\ }
+\DoxyCodeLine{00481\ \textcolor{comment}{//\ tag\ to\ identify\ invalid\ OFtuple\ elements,\ needed\ for\ emulating}}
+\DoxyCodeLine{00482\ \textcolor{comment}{//\ variadic\ templates.}}
+\DoxyCodeLine{00483\ \textcolor{keyword}{struct\ }OFtuple\_nil;}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \textcolor{comment}{//\ include\ generated\ forward\ declaration\ for\ OFtuple.}}
+\DoxyCodeLine{00486\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/variadic/tuplefwd.h"{}}}
+\DoxyCodeLine{00487\ }
+\DoxyCodeLine{00488\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ HAVE\_STL\_TUPLE}}
+\DoxyCodeLine{00489\ }
+\DoxyCodeLine{00490\ \textcolor{preprocessor}{\#ifdef\ DOXYGEN\ }\textcolor{comment}{//\ doxygen\ documentation\ of\ OFtuple\ utils}}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00517\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00518\ <metafunction>\ \doxymbox{\hyperlink{struct_o_ftuple__size}{OFtuple\_size}};}
+\DoxyCodeLine{00519\ }
+\DoxyCodeLine{00539\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00540\ <metafunction>\ \doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element}};}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00561\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00562\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element<Index,Tuple>::type}}\&\ OFget(\ Tuple\&\ tuple\ );}
+\DoxyCodeLine{00563\ }
+\DoxyCodeLine{00592\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ Index,\textcolor{keyword}{typename}\ Tuple>}
+\DoxyCodeLine{00593\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ \doxymbox{\hyperlink{struct_o_ftuple__element}{OFtuple\_element<Index,Tuple>::type}}\&\ OFget(\ \textcolor{keyword}{const}\ Tuple\&\ tuple\ );}
+\DoxyCodeLine{00594\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DOXYGEN}}
+\DoxyCodeLine{00595\ }
+\DoxyCodeLine{00596\ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ misc\ utils\ (OFinplace\ etc.)\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00597\ }
+\DoxyCodeLine{00598\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN}}
+\DoxyCodeLine{00599\ }
+\DoxyCodeLine{00600\ \textcolor{comment}{//\ OFin\_place\ hacks,\ look\ at\ the\ doxygen\ documentation\ instead\ if}}
+\DoxyCodeLine{00601\ \textcolor{comment}{//\ you\ know\ what's\ good\ for\ you!}}
+\DoxyCodeLine{00602\ \textcolor{keyword}{class\ }DCMTK\_OFSTD\_EXPORT\ OFin\_place\_tag\ \{\ OFin\_place\_tag();\ \};}
+\DoxyCodeLine{00603\ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{class_o_fin__place__tag}{OFin\_place\_tag}}(\&OFin\_place\_t)();}
+\DoxyCodeLine{00604\ \textcolor{preprocessor}{\#define\ OFin\_place\_type\_t(T)\ OFin\_place\_tag(\&)(T\&)}}
+\DoxyCodeLine{00605\ \textcolor{preprocessor}{\#define\ OFin\_place\_index\_t(I)\ OFin\_place\_tag(\&)(OFintegral\_constant<size\_t,I>\&)}}
+\DoxyCodeLine{00606\ DCMTK\_OFSTD\_EXPORT\ \doxymbox{\hyperlink{class_o_fin__place__tag}{OFin\_place\_tag}}\ OFin\_place();}
+\DoxyCodeLine{00607\ \textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00608\ \doxymbox{\hyperlink{class_o_fin__place__tag}{OFin\_place\_tag}}\ OFin\_place(T\&)\ \{\ \textcolor{keywordflow}{return}\ OFin\_place();\ \}}
+\DoxyCodeLine{00609\ \textcolor{keyword}{template}<\textcolor{keywordtype}{size\_t}\ I>}
+\DoxyCodeLine{00610\ \doxymbox{\hyperlink{class_o_fin__place__tag}{OFin\_place\_tag}}\ OFin\_place(\doxymbox{\hyperlink{struct_o_fintegral__constant}{OFintegral\_constant<size\_t,I>}}\&)\ \{\ \textcolor{keywordflow}{return}\ OFin\_place();\ \}}
+\DoxyCodeLine{00611\ }
+\DoxyCodeLine{00612\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ NOT\ DOXYGEN}}
+\DoxyCodeLine{00613\ }
+\DoxyCodeLine{00934\ }
+\DoxyCodeLine{00935\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DOXYGEN}}
+\DoxyCodeLine{00936\ }
+\DoxyCodeLine{00937\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ OFUTIL\_H}}
+
+\end{DoxyCode}

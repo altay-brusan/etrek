@@ -1,0 +1,385 @@
+\doxysection{logger.\+h}
+\hypertarget{spdlog_2include_2spdlog_2logger_8h_source}{}\label{spdlog_2include_2spdlog_2logger_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/spdlog/include/spdlog/logger.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/spdlog/include/spdlog/logger.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright(c)\ 2015-\/present,\ Gabi\ Melman\ \&\ spdlog\ contributors.}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ Distributed\ under\ the\ MIT\ License\ (http://opensource.org/licenses/MIT)}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ Thread\ safe\ logger\ (except\ for\ set\_error\_handler())}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ Has\ name,\ log\ level,\ vector\ of\ std::shared\ sink\ pointers\ and\ formatter}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ Upon\ each\ log\ write\ the\ logger:}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ 1.\ Checks\ if\ its\ log\ level\ is\ enough\ to\ log\ the\ message\ and\ if\ yes:}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ 2.\ Call\ the\ underlying\ sinks\ to\ do\ the\ job.}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ 3.\ Each\ sink\ use\ its\ own\ private\ copy\ of\ a\ formatter\ to\ format\ the\ message}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ and\ send\ to\ its\ destination.}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ The\ use\ of\ private\ formatter\ per\ sink\ provides\ the\ opportunity\ to\ cache\ some}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ formatted\ data,\ and\ support\ for\ different\ format\ per\ sink.}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <spdlog/common.h>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <spdlog/details/backtracer.h>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <spdlog/details/log\_msg.h>}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#ifdef\ SPDLOG\_WCHAR\_TO\_UTF8\_SUPPORT}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\ \ \ \ \#ifndef\ \_WIN32}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \#error\ SPDLOG\_WCHAR\_TO\_UTF8\_SUPPORT\ only\ supported\ on\ windows}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\ \ \ \ \#endif}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\ \ \ \ \#include\ <spdlog/details/os.h>}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#ifndef\ SPDLOG\_NO\_EXCEPTIONS}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\ \ \ \ \#define\ SPDLOG\_LOGGER\_CATCH(location)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ catch\ (const\ std::exception\ \&ex)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ if\ (location.filename)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ err\_handler\_(fmt\_lib::format(SPDLOG\_FMT\_STRING("{}\{\}\ [\{\}(\{\})]"{}),\ ex.what(),\ \(\backslash\)}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ location.filename,\ location.line));\ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \}\ else\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ err\_handler\_(ex.what());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00040\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ catch\ (...)\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ err\_handler\_("{}Rethrowing\ unknown\ exception\ in\ logger"{});\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ throw;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00044\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\ \ \ \ \#define\ SPDLOG\_LOGGER\_CATCH(location)}}
+\DoxyCodeLine{00046\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{namespace\ }spdlog\ \{}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{keyword}{class\ }SPDLOG\_API\ logger\ \{}
+\DoxyCodeLine{00051\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ Empty\ logger}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{explicit}\ logger(std::string\ name)}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ :\ name\_(std::move(name)),}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ sinks\_()\ \{\}}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{//\ Logger\ with\ range\ on\ sinks}}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ It>}
+\DoxyCodeLine{00059\ \ \ \ \ logger(std::string\ name,\ It\ begin,\ It\ end)}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ :\ name\_(std::move(name)),}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \ \ sinks\_(begin,\ end)\ \{\}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{comment}{//\ Logger\ with\ single\ sink}}
+\DoxyCodeLine{00064\ \ \ \ \ logger(std::string\ name,\ sink\_ptr\ single\_sink)}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ :\ logger(std::move(name),\ \{std::move(single\_sink)\})\ \{\}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{//\ Logger\ with\ sinks\ init\ list}}
+\DoxyCodeLine{00068\ \ \ \ \ logger(std::string\ name,\ sinks\_init\_list\ sinks)}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ :\ logger(std::move(name),\ sinks.begin(),\ sinks.end())\ \{\}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keyword}{virtual}\ \string~logger()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ logger(\textcolor{keyword}{const}\ logger\ \&other);}
+\DoxyCodeLine{00074\ \ \ \ \ logger(logger\ \&\&other)\ SPDLOG\_NOEXCEPT;}
+\DoxyCodeLine{00075\ \ \ \ \ logger\ \&operator=(logger\ other)\ SPDLOG\_NOEXCEPT;}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordtype}{void}\ swap(\doxymbox{\hyperlink{classspdlog_1_1logger}{spdlog::logger}}\ \&other)\ SPDLOG\_NOEXCEPT;}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{void}\ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\ loc,\ level::level\_enum\ lvl,\ format\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ log\_(loc,\ lvl,\ details::to\_string\_view(fmt),\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00081\ \ \ \ \ \}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{void}\ log(level::level\_enum\ lvl,\ format\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\{\},\ lvl,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00086\ \ \ \ \ \}}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordtype}{void}\ log(level::level\_enum\ lvl,\ \textcolor{keyword}{const}\ T\ \&msg)\ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\{\},\ lvl,\ msg);}
+\DoxyCodeLine{00091\ \ \ \ \ \}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{//\ T\ cannot\ be\ statically\ converted\ to\ format\ string\ (including\ string\_view/wstring\_view)}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class\ }T,}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ std::enable\_if<!is\_convertible\_to\_any\_format\_string<const\ T\ \&>::value,}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}>\doxymbox{\hyperlink{struct_o_fremove__volatile}{::type}}\ =\ 0>}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordtype}{void}\ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\ loc,\ level::level\_enum\ lvl,\ \textcolor{keyword}{const}\ T\ \&msg)\ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ log(loc,\ lvl,\ \textcolor{stringliteral}{"{}\{\}"{}},\ msg);}
+\DoxyCodeLine{00099\ \ \ \ \ \}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keywordtype}{void}\ log(log\_clock::time\_point\ log\_time,}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\ loc,}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ level::level\_enum\ lvl,}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ string\_view\_t\ msg)\ \{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ log\_enabled\ =\ should\_log(lvl);}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ traceback\_enabled\ =\ tracer\_.enabled();}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!log\_enabled\ \&\&\ !traceback\_enabled)\ \{}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structspdlog_1_1details_1_1log__msg}{details::log\_msg}}\ log\_msg(log\_time,\ loc,\ name\_,\ lvl,\ msg);}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ log\_it\_(log\_msg,\ log\_enabled,\ traceback\_enabled);}
+\DoxyCodeLine{00113\ \ \ \ \ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordtype}{void}\ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\ loc,\ level::level\_enum\ lvl,\ string\_view\_t\ msg)\ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ log\_enabled\ =\ should\_log(lvl);}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ traceback\_enabled\ =\ tracer\_.enabled();}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!log\_enabled\ \&\&\ !traceback\_enabled)\ \{}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00121\ }
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structspdlog_1_1details_1_1log__msg}{details::log\_msg}}\ log\_msg(loc,\ name\_,\ lvl,\ msg);}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ log\_it\_(log\_msg,\ log\_enabled,\ traceback\_enabled);}
+\DoxyCodeLine{00124\ \ \ \ \ \}}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordtype}{void}\ log(level::level\_enum\ lvl,\ string\_view\_t\ msg)\ \{\ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\{\},\ lvl,\ msg);\ \}}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordtype}{void}\ trace(format\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ log(level::trace,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00131\ \ \ \ \ \}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{keywordtype}{void}\ debug(format\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ log(level::debug,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00136\ \ \ \ \ \}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keywordtype}{void}\ info(format\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ log(level::info,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00141\ \ \ \ \ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordtype}{void}\ warn(format\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ log(level::warn,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00146\ \ \ \ \ \}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordtype}{void}\ error(format\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ log(level::err,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00151\ \ \ \ \ \}}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordtype}{void}\ critical(format\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ log(level::critical,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00156\ \ \ \ \ \}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \textcolor{preprocessor}{\#ifdef\ SPDLOG\_WCHAR\_TO\_UTF8\_SUPPORT}}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keywordtype}{void}\ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\ loc,\ level::level\_enum\ lvl,\ wformat\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ log\_(loc,\ lvl,\ details::to\_string\_view(fmt),\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00162\ \ \ \ \ \}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keywordtype}{void}\ log(level::level\_enum\ lvl,\ wformat\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\{\},\ lvl,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00167\ \ \ \ \ \}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{keywordtype}{void}\ log(log\_clock::time\_point\ log\_time,}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\ loc,}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ level::level\_enum\ lvl,}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ wstring\_view\_t\ msg)\ \{}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ log\_enabled\ =\ should\_log(lvl);}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ traceback\_enabled\ =\ tracer\_.enabled();}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!log\_enabled\ \&\&\ !traceback\_enabled)\ \{}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ memory\_buf\_t\ buf;}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ details::os::wstr\_to\_utf8buf(wstring\_view\_t(msg.data(),\ msg.size()),\ buf);}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structspdlog_1_1details_1_1log__msg}{details::log\_msg}}\ log\_msg(log\_time,\ loc,\ name\_,\ lvl,\ string\_view\_t(buf.data(),\ buf.size()));}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ log\_it\_(log\_msg,\ log\_enabled,\ traceback\_enabled);}
+\DoxyCodeLine{00183\ \ \ \ \ \}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keywordtype}{void}\ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\ loc,\ level::level\_enum\ lvl,\ wstring\_view\_t\ msg)\ \{}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ log\_enabled\ =\ should\_log(lvl);}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ traceback\_enabled\ =\ tracer\_.enabled();}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!log\_enabled\ \&\&\ !traceback\_enabled)\ \{}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ memory\_buf\_t\ buf;}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ details::os::wstr\_to\_utf8buf(wstring\_view\_t(msg.data(),\ msg.size()),\ buf);}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structspdlog_1_1details_1_1log__msg}{details::log\_msg}}\ log\_msg(loc,\ name\_,\ lvl,\ string\_view\_t(buf.data(),\ buf.size()));}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ log\_it\_(log\_msg,\ log\_enabled,\ traceback\_enabled);}
+\DoxyCodeLine{00196\ \ \ \ \ \}}
+\DoxyCodeLine{00197\ }
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keywordtype}{void}\ log(level::level\_enum\ lvl,\ wstring\_view\_t\ msg)\ \{\ log(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\{\},\ lvl,\ msg);\ \}}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00201\ \ \ \ \ \textcolor{keywordtype}{void}\ trace(wformat\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ log(level::trace,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00203\ \ \ \ \ \}}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00206\ \ \ \ \ \textcolor{keywordtype}{void}\ debug(wformat\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ log(level::debug,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00208\ \ \ \ \ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keywordtype}{void}\ info(wformat\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ log(level::info,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00213\ \ \ \ \ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{keywordtype}{void}\ warn(wformat\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ log(level::warn,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00218\ \ \ \ \ \}}
+\DoxyCodeLine{00219\ }
+\DoxyCodeLine{00220\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00221\ \ \ \ \ \textcolor{keywordtype}{void}\ error(wformat\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ log(level::err,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00223\ \ \ \ \ \}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00226\ \ \ \ \ \textcolor{keywordtype}{void}\ critical(wformat\_string\_t<Args...>\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ log(level::critical,\ fmt,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00228\ \ \ \ \ \}}
+\DoxyCodeLine{00229\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keywordtype}{void}\ trace(\textcolor{keyword}{const}\ T\ \&msg)\ \{}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ log(level::trace,\ msg);}
+\DoxyCodeLine{00234\ \ \ \ \ \}}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{keywordtype}{void}\ debug(\textcolor{keyword}{const}\ T\ \&msg)\ \{}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ log(level::debug,\ msg);}
+\DoxyCodeLine{00239\ \ \ \ \ \}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00242\ \ \ \ \ \textcolor{keywordtype}{void}\ info(\textcolor{keyword}{const}\ T\ \&msg)\ \{}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ log(level::info,\ msg);}
+\DoxyCodeLine{00244\ \ \ \ \ \}}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00247\ \ \ \ \ \textcolor{keywordtype}{void}\ warn(\textcolor{keyword}{const}\ T\ \&msg)\ \{}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ log(level::warn,\ msg);}
+\DoxyCodeLine{00249\ \ \ \ \ \}}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{keywordtype}{void}\ error(\textcolor{keyword}{const}\ T\ \&msg)\ \{}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ log(level::err,\ msg);}
+\DoxyCodeLine{00254\ \ \ \ \ \}}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keywordtype}{void}\ critical(\textcolor{keyword}{const}\ T\ \&msg)\ \{}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ log(level::critical,\ msg);}
+\DoxyCodeLine{00259\ \ \ \ \ \}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{comment}{//\ return\ true\ logging\ is\ enabled\ for\ the\ given\ level.}}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordtype}{bool}\ should\_log(level::level\_enum\ msg\_level)\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ msg\_level\ >=\ level\_.load(std::memory\_order\_relaxed);}
+\DoxyCodeLine{00264\ \ \ \ \ \}}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{comment}{//\ return\ true\ if\ backtrace\ logging\ is\ enabled.}}
+\DoxyCodeLine{00267\ \ \ \ \ \textcolor{keywordtype}{bool}\ should\_backtrace()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ tracer\_.enabled();\ \}}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_level(level::level\_enum\ log\_level);}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00271\ \ \ \ \ level::level\_enum\ level()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00272\ }
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keyword}{const}\ std::string\ \&name()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{comment}{//\ set\ formatting\ for\ the\ sinks\ in\ this\ logger.}}
+\DoxyCodeLine{00276\ \ \ \ \ \textcolor{comment}{//\ each\ sink\ will\ get\ a\ separate\ instance\ of\ the\ formatter\ object.}}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_formatter(std::unique\_ptr<formatter>\ f);}
+\DoxyCodeLine{00278\ }
+\DoxyCodeLine{00279\ \ \ \ \ \textcolor{comment}{//\ set\ formatting\ for\ the\ sinks\ in\ this\ logger.}}
+\DoxyCodeLine{00280\ \ \ \ \ \textcolor{comment}{//\ equivalent\ to}}
+\DoxyCodeLine{00281\ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ set\_formatter(make\_unique<pattern\_formatter>(pattern,\ time\_type))}}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{comment}{//\ Note:\ each\ sink\ will\ get\ a\ new\ instance\ of\ a\ formatter\ object,\ replacing\ the\ old\ one.}}
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_pattern(std::string\ pattern,\ pattern\_time\_type\ time\_type\ =\ pattern\_time\_type::local);}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{comment}{//\ backtrace\ support.}}
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{comment}{//\ efficiently\ store\ all\ debug/trace\ messages\ in\ a\ circular\ buffer\ until\ needed\ for\ debugging.}}
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{keywordtype}{void}\ enable\_backtrace(\textcolor{keywordtype}{size\_t}\ n\_messages);}
+\DoxyCodeLine{00288\ \ \ \ \ \textcolor{keywordtype}{void}\ disable\_backtrace();}
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{keywordtype}{void}\ dump\_backtrace();}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00291\ \ \ \ \ \textcolor{comment}{//\ flush\ functions}}
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{keywordtype}{void}\ flush();}
+\DoxyCodeLine{00293\ \ \ \ \ \textcolor{keywordtype}{void}\ flush\_on(level::level\_enum\ log\_level);}
+\DoxyCodeLine{00294\ \ \ \ \ level::level\_enum\ flush\_level()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{comment}{//\ sinks}}
+\DoxyCodeLine{00297\ \ \ \ \ \textcolor{keyword}{const}\ std::vector<sink\_ptr>\ \&sinks()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \ \ std::vector<sink\_ptr>\ \&sinks();}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \ \ \textcolor{comment}{//\ error\ handler}}
+\DoxyCodeLine{00302\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_error\_handler(err\_handler);}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00304\ \ \ \ \ \textcolor{comment}{//\ create\ new\ logger\ with\ same\ sinks\ and\ configuration.}}
+\DoxyCodeLine{00305\ \ \ \ \ \textcolor{keyword}{virtual}\ std::shared\_ptr<logger>\ clone(std::string\ logger\_name);}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00308\ \ \ \ \ std::string\ name\_;}
+\DoxyCodeLine{00309\ \ \ \ \ std::vector<sink\_ptr>\ sinks\_;}
+\DoxyCodeLine{00310\ \ \ \ \ spdlog::level\_t\ level\_\{level::info\};}
+\DoxyCodeLine{00311\ \ \ \ \ spdlog::level\_t\ flush\_level\_\{level::off\};}
+\DoxyCodeLine{00312\ \ \ \ \ err\_handler\ custom\_err\_handler\_\{\textcolor{keyword}{nullptr}\};}
+\DoxyCodeLine{00313\ \ \ \ \ \doxymbox{\hyperlink{classspdlog_1_1details_1_1backtracer}{details::backtracer}}\ tracer\_;}
+\DoxyCodeLine{00314\ }
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{comment}{//\ common\ implementation\ for\ after\ templated\ public\ api\ has\ been\ resolved}}
+\DoxyCodeLine{00316\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00317\ \ \ \ \ \textcolor{keywordtype}{void}\ log\_(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\ loc,\ level::level\_enum\ lvl,\ string\_view\_t\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ log\_enabled\ =\ should\_log(lvl);}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ traceback\_enabled\ =\ tracer\_.enabled();}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!log\_enabled\ \&\&\ !traceback\_enabled)\ \{}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ SPDLOG\_TRY\ \{}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ memory\_buf\_t\ buf;}
+\DoxyCodeLine{00325\ \textcolor{preprocessor}{\#ifdef\ SPDLOG\_USE\_STD\_FORMAT}}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ fmt\_lib::vformat\_to(std::back\_inserter(buf),\ fmt,\ fmt\_lib::make\_format\_args(args...));}
+\DoxyCodeLine{00327\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ fmt::vformat\_to(fmt::appender(buf),\ fmt,\ fmt::make\_format\_args(args...));}
+\DoxyCodeLine{00329\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00330\ }
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structspdlog_1_1details_1_1log__msg}{details::log\_msg}}\ log\_msg(loc,\ name\_,\ lvl,\ string\_view\_t(buf.data(),\ buf.size()));}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ log\_it\_(log\_msg,\ log\_enabled,\ traceback\_enabled);}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ SPDLOG\_LOGGER\_CATCH(loc)}
+\DoxyCodeLine{00335\ \ \ \ \ \}}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \textcolor{preprocessor}{\#ifdef\ SPDLOG\_WCHAR\_TO\_UTF8\_SUPPORT}}
+\DoxyCodeLine{00338\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00339\ \ \ \ \ \textcolor{keywordtype}{void}\ log\_(\doxymbox{\hyperlink{structspdlog_1_1source__loc}{source\_loc}}\ loc,\ level::level\_enum\ lvl,\ wstring\_view\_t\ fmt,\ Args\ \&\&...args)\ \{}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ log\_enabled\ =\ should\_log(lvl);}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ traceback\_enabled\ =\ tracer\_.enabled();}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!log\_enabled\ \&\&\ !traceback\_enabled)\ \{}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ SPDLOG\_TRY\ \{}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ format\ to\ wmemory\_buffer\ and\ convert\ to\ utf8}}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ wmemory\_buf\_t\ wbuf;}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ fmt\_lib::vformat\_to(std::back\_inserter(wbuf),\ fmt,}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fmt\_lib::make\_format\_args<fmt\_lib::wformat\_context>(args...));}
+\DoxyCodeLine{00350\ }
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ memory\_buf\_t\ buf;}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ details::os::wstr\_to\_utf8buf(wstring\_view\_t(wbuf.data(),\ wbuf.size()),\ buf);}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structspdlog_1_1details_1_1log__msg}{details::log\_msg}}\ log\_msg(loc,\ name\_,\ lvl,\ string\_view\_t(buf.data(),\ buf.size()));}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \ \ log\_it\_(log\_msg,\ log\_enabled,\ traceback\_enabled);}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ SPDLOG\_LOGGER\_CATCH(loc)}
+\DoxyCodeLine{00357\ \ \ \ \ \}}
+\DoxyCodeLine{00358\ \textcolor{preprocessor}{\#endif\ \ }\textcolor{comment}{//\ SPDLOG\_WCHAR\_TO\_UTF8\_SUPPORT}}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \ \ \textcolor{comment}{//\ log\ the\ given\ message\ (if\ the\ given\ log\ level\ is\ high\ enough),}}
+\DoxyCodeLine{00361\ \ \ \ \ \textcolor{comment}{//\ and\ save\ backtrace\ (if\ backtrace\ is\ enabled).}}
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{keywordtype}{void}\ log\_it\_(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structspdlog_1_1details_1_1log__msg}{details::log\_msg}}\ \&log\_msg,\ \textcolor{keywordtype}{bool}\ log\_enabled,\ \textcolor{keywordtype}{bool}\ traceback\_enabled);}
+\DoxyCodeLine{00363\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ sink\_it\_(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structspdlog_1_1details_1_1log__msg}{details::log\_msg}}\ \&msg);}
+\DoxyCodeLine{00364\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ flush\_();}
+\DoxyCodeLine{00365\ \ \ \ \ \textcolor{keywordtype}{void}\ dump\_backtrace\_();}
+\DoxyCodeLine{00366\ \ \ \ \ \textcolor{keywordtype}{bool}\ should\_flush\_(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structspdlog_1_1details_1_1log__msg}{details::log\_msg}}\ \&msg);}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ \ \ \textcolor{comment}{//\ handle\ errors\ during\ logging.}}
+\DoxyCodeLine{00369\ \ \ \ \ \textcolor{comment}{//\ default\ handler\ prints\ the\ error\ to\ stderr\ at\ max\ rate\ of\ 1\ message/sec.}}
+\DoxyCodeLine{00370\ \ \ \ \ \textcolor{keywordtype}{void}\ err\_handler\_(\textcolor{keyword}{const}\ std::string\ \&msg);}
+\DoxyCodeLine{00371\ \};}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00373\ \textcolor{keywordtype}{void}\ swap(\doxymbox{\hyperlink{classspdlog_1_1logger}{logger}}\ \&a,\ \doxymbox{\hyperlink{classspdlog_1_1logger}{logger}}\ \&b);}
+\DoxyCodeLine{00374\ }
+\DoxyCodeLine{00375\ \}\ \ \textcolor{comment}{//\ namespace\ spdlog}}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \textcolor{preprocessor}{\#ifdef\ SPDLOG\_HEADER\_ONLY}}
+\DoxyCodeLine{00378\ \textcolor{preprocessor}{\ \ \ \ \#include\ "{}logger-\/inl.h"{}}}
+\DoxyCodeLine{00379\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

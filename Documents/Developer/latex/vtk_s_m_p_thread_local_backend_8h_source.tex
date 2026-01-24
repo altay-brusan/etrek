@@ -1,0 +1,183 @@
+\doxysection{vtk\+SMPThread\+Local\+Backend.\+h}
+\hypertarget{vtk_s_m_p_thread_local_backend_8h_source}{}\label{vtk_s_m_p_thread_local_backend_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/STDThread/vtkSMPThreadLocalBackend.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/STDThread/vtkSMPThreadLocalBackend.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ Thread\ Specific\ Storage\ is\ implemented\ as\ a\ Hash\ Table,\ with\ the\ Thread\ Id}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ as\ the\ key\ and\ a\ Pointer\ to\ the\ data\ as\ the\ value.\ The\ Hash\ Table\ implements}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ Open\ Addressing\ with\ Linear\ Probing.\ A\ fixed-\/size\ array\ (HashTableArray)\ is}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ used\ as\ the\ hash\ table.\ The\ size\ of\ this\ array\ is\ allocated\ to\ be\ large}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ enough\ to\ store\ thread\ specific\ data\ for\ all\ the\ threads\ with\ a\ Load\ Factor}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ of\ 0.5.\ In\ case\ the\ number\ of\ threads\ changes\ dynamically\ and\ the\ current}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ array\ is\ not\ able\ to\ accommodate\ more\ entries,\ a\ new\ array\ is\ allocated\ that}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ is\ twice\ the\ size\ of\ the\ current\ array.\ To\ avoid\ rehashing\ and\ blocking\ the}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ threads,\ a\ rehash\ is\ not\ performed\ immediately.\ Instead,\ a\ linked\ list\ of}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ hash\ table\ arrays\ is\ maintained\ with\ the\ current\ array\ at\ the\ root\ and\ older}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ arrays\ along\ the\ list.\ All\ lookups\ are\ sequentially\ performed\ along\ the}}
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ linked\ list.\ If\ the\ root\ array\ does\ not\ have\ an\ entry,\ it\ is\ created\ for}}
+\DoxyCodeLine{00016\ \textcolor{comment}{//\ faster\ lookup\ next\ time.\ The\ ThreadSpecific::GetStorage()\ function\ is\ thread}}
+\DoxyCodeLine{00017\ \textcolor{comment}{//\ safe\ and\ only\ blocks\ when\ a\ new\ array\ needs\ to\ be\ allocated,\ which\ should\ be}}
+\DoxyCodeLine{00018\ \textcolor{comment}{//\ rare.}}
+\DoxyCodeLine{00019\ \textcolor{comment}{//}}
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ This\ implementation\ is\ the\ same\ as\ the\ OpenMP\ equivalent\ but\ with\ std::mutex}}
+\DoxyCodeLine{00021\ \textcolor{comment}{//\ and\ std::lock\_guard\ instead\ of\ omp\_lock\_t\ and\ custom\ lock\ guard.}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#ifndef\ STDThreadvtkSMPThreadLocalBackend\_h}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ STDThreadvtkSMPThreadLocalBackend\_h}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}vtkCommonCoreModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}vtkSystemIncludes.h"{}}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ <atomic>}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ <cstdint>}\ \textcolor{comment}{//\ For\ uint\_fast32\_t}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ <mutex>}\ \ \ \textcolor{comment}{//\ std::mutex,\ std::lock\_guard}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00035\ \{}
+\DoxyCodeLine{00036\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00037\ \{}
+\DoxyCodeLine{00038\ \textcolor{keyword}{namespace\ }smp}
+\DoxyCodeLine{00039\ \{}
+\DoxyCodeLine{00040\ \textcolor{keyword}{namespace\ }STDThread}
+\DoxyCodeLine{00041\ \{}
+\DoxyCodeLine{00042\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{size\_t}\ ThreadIdType;}
+\DoxyCodeLine{00045\ \textcolor{keyword}{typedef}\ uint\_fast32\_t\ HashType;}
+\DoxyCodeLine{00046\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{void}*\ StoragePointerType;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{struct\ }Slot}
+\DoxyCodeLine{00049\ \{}
+\DoxyCodeLine{00050\ \ \ std::atomic<ThreadIdType>\ ThreadId;}
+\DoxyCodeLine{00051\ \ \ std::mutex\ Mutex;}
+\DoxyCodeLine{00052\ \ \ StoragePointerType\ Storage;}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ Slot();}
+\DoxyCodeLine{00055\ \ \ \string~Slot()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{//\ not\ copyable}}
+\DoxyCodeLine{00059\ \ \ Slot(\textcolor{keyword}{const}\ Slot\&);}
+\DoxyCodeLine{00060\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ Slot\&);}
+\DoxyCodeLine{00061\ \};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{keyword}{struct\ }HashTableArray}
+\DoxyCodeLine{00064\ \{}
+\DoxyCodeLine{00065\ \ \ \textcolor{keywordtype}{size\_t}\ Size,\ SizeLg;}
+\DoxyCodeLine{00066\ \ \ std::atomic<size\_t>\ NumberOfEntries;}
+\DoxyCodeLine{00067\ \ \ \doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1_s_t_d_thread_1_1_slot}{Slot}}*\ Slots;}
+\DoxyCodeLine{00068\ \ \ HashTableArray*\ Prev;}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{keyword}{explicit}\ HashTableArray(\textcolor{keywordtype}{size\_t}\ sizeLg);}
+\DoxyCodeLine{00071\ \ \ \string~HashTableArray();}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00074\ \ \ \textcolor{comment}{//\ disallow\ copying}}
+\DoxyCodeLine{00075\ \ \ HashTableArray(\textcolor{keyword}{const}\ HashTableArray\&);}
+\DoxyCodeLine{00076\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ HashTableArray\&);}
+\DoxyCodeLine{00077\ \};}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keyword}{class\ }VTKCOMMONCORE\_EXPORT\ ThreadSpecific\ final}
+\DoxyCodeLine{00080\ \{}
+\DoxyCodeLine{00081\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{explicit}\ ThreadSpecific(\textcolor{keywordtype}{unsigned}\ numThreads);}
+\DoxyCodeLine{00083\ \ \ \string~ThreadSpecific();}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ StoragePointerType\&\ GetStorage();}
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordtype}{size\_t}\ GetSize()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00089\ \ \ std::atomic<HashTableArray*>\ Root;}
+\DoxyCodeLine{00090\ \ \ std::atomic<size\_t>\ Size;}
+\DoxyCodeLine{00091\ \ \ std::mutex\ Mutex;}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }ThreadSpecificStorageIterator;}
+\DoxyCodeLine{00094\ \};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \textcolor{keyword}{class\ }ThreadSpecificStorageIterator}
+\DoxyCodeLine{00097\ \{}
+\DoxyCodeLine{00098\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00099\ \ \ ThreadSpecificStorageIterator()}
+\DoxyCodeLine{00100\ \ \ \ \ :\ ThreadSpecificStorage(\textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00101\ \ \ \ \ ,\ CurrentArray(\textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00102\ \ \ \ \ ,\ CurrentSlot(0)}
+\DoxyCodeLine{00103\ \ \ \{}
+\DoxyCodeLine{00104\ \ \ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordtype}{void}\ SetThreadSpecificStorage(\doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1_s_t_d_thread_1_1_thread_specific}{ThreadSpecific}}\&\ threadSpecifc)}
+\DoxyCodeLine{00107\ \ \ \{}
+\DoxyCodeLine{00108\ \ \ \ \ this-\/>ThreadSpecificStorage\ =\ \&threadSpecifc;}
+\DoxyCodeLine{00109\ \ \ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \textcolor{keywordtype}{void}\ SetToBegin()}
+\DoxyCodeLine{00112\ \ \ \{}
+\DoxyCodeLine{00113\ \ \ \ \ this-\/>CurrentArray\ =\ this-\/>ThreadSpecificStorage-\/>Root;}
+\DoxyCodeLine{00114\ \ \ \ \ this-\/>CurrentSlot\ =\ 0;}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordflow}{if}\ (!this-\/>CurrentArray-\/>Slots-\/>Storage)}
+\DoxyCodeLine{00116\ \ \ \ \ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ this-\/>Forward();}
+\DoxyCodeLine{00118\ \ \ \ \ \}}
+\DoxyCodeLine{00119\ \ \ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \textcolor{keywordtype}{void}\ SetToEnd()}
+\DoxyCodeLine{00122\ \ \ \{}
+\DoxyCodeLine{00123\ \ \ \ \ this-\/>CurrentArray\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00124\ \ \ \ \ this-\/>CurrentSlot\ =\ 0;}
+\DoxyCodeLine{00125\ \ \ \}}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ \textcolor{keywordtype}{bool}\ GetInitialized()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>ThreadSpecificStorage\ !=\ \textcolor{keyword}{nullptr};\ \}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \textcolor{keywordtype}{bool}\ GetAtEnd()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ this-\/>CurrentArray\ ==\ \textcolor{keyword}{nullptr};\ \}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \textcolor{keywordtype}{void}\ Forward()}
+\DoxyCodeLine{00132\ \ \ \{}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordflow}{while}\ (\textcolor{keyword}{true})}
+\DoxyCodeLine{00134\ \ \ \ \ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (++this-\/>CurrentSlot\ >=\ this-\/>CurrentArray-\/>Size)}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ this-\/>CurrentArray\ =\ this-\/>CurrentArray-\/>Prev;}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ this-\/>CurrentSlot\ =\ 0;}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!this-\/>CurrentArray)}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1_s_t_d_thread_1_1_slot}{Slot}}*\ slot\ =\ this-\/>CurrentArray-\/>Slots\ +\ this-\/>CurrentSlot;}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (slot-\/>Storage)}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00149\ \ \ \ \ \}}
+\DoxyCodeLine{00150\ \ \ \}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \ \ StoragePointerType\&\ GetStorage()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00153\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00154\ \ \ \ \ \doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1_s_t_d_thread_1_1_slot}{Slot}}*\ slot\ =\ this-\/>CurrentArray-\/>Slots\ +\ this-\/>CurrentSlot;}
+\DoxyCodeLine{00155\ \ \ \ \ \textcolor{keywordflow}{return}\ slot-\/>Storage;}
+\DoxyCodeLine{00156\ \ \ \}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \textcolor{keywordtype}{bool}\ operator==(\textcolor{keyword}{const}\ ThreadSpecificStorageIterator\&\ it)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00159\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keywordflow}{return}\ (this-\/>ThreadSpecificStorage\ ==\ it.ThreadSpecificStorage)\ \&\&}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ (this-\/>CurrentArray\ ==\ it.CurrentArray)\ \&\&\ (this-\/>CurrentSlot\ ==\ it.CurrentSlot);}
+\DoxyCodeLine{00162\ \ \ \}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00165\ \ \ \doxymbox{\hyperlink{classvtk_1_1detail_1_1smp_1_1_s_t_d_thread_1_1_thread_specific}{ThreadSpecific}}*\ ThreadSpecificStorage;}
+\DoxyCodeLine{00166\ \ \ \doxymbox{\hyperlink{structvtk_1_1detail_1_1smp_1_1_s_t_d_thread_1_1_hash_table_array}{HashTableArray}}*\ CurrentArray;}
+\DoxyCodeLine{00167\ \ \ \textcolor{keywordtype}{size\_t}\ CurrentSlot;}
+\DoxyCodeLine{00168\ \};}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00171\ \}\ \textcolor{comment}{//\ STDThread;}}
+\DoxyCodeLine{00172\ \}\ \textcolor{comment}{//\ namespace\ smp}}
+\DoxyCodeLine{00173\ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00174\ \}\ \textcolor{comment}{//\ namespace\ vtk}}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00177\ \textcolor{comment}{/*\ VTK-\/HeaderTest-\/Exclude:\ INCLUDES:CLASSES\ */}}
+
+\end{DoxyCode}

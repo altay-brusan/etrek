@@ -1,0 +1,100 @@
+\doxysection{thread.\+hpp}
+\hypertarget{thread_8hpp_source}{}\label{thread_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/thread.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/thread.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_THREAD\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_THREAD\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#ifdef\ DIY\_NO\_THREADS}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}no-\/thread.hpp"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#if\ !defined(\_MSC\_VER)}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{fast__mutex_8h}{thirdparty/thread/fast\_mutex.h}}"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <thread>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00018\ \{}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keyword}{using\ }std::thread;}
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{keyword}{using\ }std::mutex;}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keyword}{using\ }std::recursive\_mutex;}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keyword}{namespace\ }this\_thread\ =\ std::this\_thread;}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{comment}{//\ fast\_mutex\ implementation\ has\ issues\ on\ MSVC.\ Just\ use\ std::mutex}}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keyword}{using\ }fast\_mutex\ =\ std::mutex;}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{comment}{//\ TODO:\ replace\ with\ our\ own\ implementation\ using\ std::atomic\_flag}}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keyword}{using\ }fast\_mutex\ =\ tthread::fast\_mutex;}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Mutex>}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keyword}{using\ }lock\_guard\ =\ std::unique\_lock<Mutex>;}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T,\ \textcolor{keyword}{class}\ U>}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{struct\ }concurrent\_map;}
+\DoxyCodeLine{00037\ \}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DIY\_NO\_THREADS}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#include\ "{}critical-\/resource.hpp"{}}}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#if\ !defined(DIY\_NO\_THREADS)}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{preprocessor}{\#include\ <memory>}\ \ \ \ \ \ \ \textcolor{comment}{//\ for\ shared\_ptr}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ T,\ \textcolor{keyword}{class}\ U>}
+\DoxyCodeLine{00048\ \textcolor{keyword}{struct\ }diy::concurrent\_map}
+\DoxyCodeLine{00049\ \{}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keyword}{using\ }Map\ \ \ \ \ \ \ =\ std::map<T,U>;}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keyword}{using\ }SharedPtr\ =\ std::shared\_ptr<lock\_guard<fast\_mutex>>;}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ MapIterator>}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keyword}{struct\ }iterator\_}
+\DoxyCodeLine{00055\ \ \ \ \ \{}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ MapIterator\ \ \ \ \ it;}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ SharedPtr\ \ \ \ \ \ \ lock\_ptr;}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iterator\_(\textcolor{keyword}{const}\ MapIterator\&\ it\_,\ \textcolor{keyword}{const}\ SharedPtr\&\ lock\_ptr\_\ =\ SharedPtr()):}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ it(it\_),\ lock\_ptr(lock\_ptr\_)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ iterator\_\&\ \ \ \ \ \ operator++()\ \ \ \ \ \ \ \ \{\ ++it;\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ iterator\_\ \ \ \ \ \ \ operator++(\textcolor{keywordtype}{int})\ \ \ \ \ \{\ iterator\_\ retval\ =\ *\textcolor{keyword}{this};\ ++(*this);\ \textcolor{keywordflow}{return}\ retval;\ \}}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ iterator\_\&\ other)\textcolor{keyword}{\ const\ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ it\ ==\ other.it;\}}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{dsrcitem_8h_ab1c443221b96a6760851925131468a98}{operator!=}}(\textcolor{keyword}{const}\ iterator\_\&\ other)\textcolor{keyword}{\ const\ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ !(*\textcolor{keyword}{this}\ ==\ other);\ \}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \textcolor{keyword}{decltype}(*it)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ operator*()\textcolor{keyword}{\ const\ \ \ }\{\ \textcolor{keywordflow}{return}\ *it;\ \}}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \textcolor{keyword}{decltype}(it.operator-\/>())\ \ \ operator-\/>()\textcolor{keyword}{\ const\ \ }\{\ \textcolor{keywordflow}{return}\ it.operator-\/>();\ \}}
+\DoxyCodeLine{00070\ \ \ \ \ \};}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keyword}{using\ }iterator\ \ \ \ \ \ \ =\ \doxymbox{\hyperlink{structdiy_1_1concurrent__map_1_1iterator__}{iterator\_<typename\ Map::iterator>}};}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keyword}{using\ }const\_iterator\ =\ \doxymbox{\hyperlink{structdiy_1_1concurrent__map_1_1iterator__}{iterator\_<typename\ Map::const\_iterator>}};}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ U\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ operator[](\textcolor{keyword}{const}\ T\&\ x)\ \ \{\ \doxymbox{\hyperlink{structdiy_1_1lock__guard}{lock\_guard<fast\_mutex>}}\ l(mutex\_);\ \textcolor{keywordflow}{return}\ map\_[x];\ \}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_map}{iterator}}\ \ \ \ \ \ \ \ begin()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keyword}{auto}\ p\ =\ std::make\_shared<lock\_guard<fast\_mutex>>(mutex\_);\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_o_f_map}{iterator}}(map\_.begin(),\ p);\ \}}
+\DoxyCodeLine{00078\ \ \ \ \ \doxymbox{\hyperlink{class_o_f_map}{iterator}}\ \ \ \ \ \ \ \ end()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_o_f_map}{iterator}}(map\_.end());\ \}}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ const\_iterator\ \ begin()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keyword}{auto}\ p\ =\ std::make\_shared<lock\_guard<fast\_mutex>>(mutex\_);\ \textcolor{keywordflow}{return}\ const\_iterator(map\_.begin(),\ p);\ \}}
+\DoxyCodeLine{00081\ \ \ \ \ const\_iterator\ \ end()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ const\_iterator(map\_.end());\ \}}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ iterator\ \ \ \ \ \ \ \ find(\textcolor{keyword}{const}\ T\&\ x)\ \ \ \ \ \ \ \ \{\ \textcolor{keyword}{auto}\ p\ =\ std::make\_shared<lock\_guard<fast\_mutex>>(mutex\_);\ \textcolor{keywordflow}{return}\ iterator(map\_.find(x),\ p);\ \}}
+\DoxyCodeLine{00084\ \ \ \ \ const\_iterator\ \ find(\textcolor{keyword}{const}\ T\&\ x)\textcolor{keyword}{\ const\ \ }\{\ \textcolor{keyword}{auto}\ p\ =\ std::make\_shared<lock\_guard<fast\_mutex>>(mutex\_);\ \textcolor{keywordflow}{return}\ const\_iterator(map\_.find(x),\ p);\ \}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ clear()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ lock\_guard<fast\_mutex>\ l(mutex\_);\ map\_.clear();\ \}}
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ empty()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ lock\_guard<fast\_mutex>\ l(mutex\_);\ \textcolor{keywordflow}{return}\ map\_.empty();\ \}}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ Map\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ map\_;}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keyword}{mutable}\ fast\_mutex\ \ mutex\_;}
+\DoxyCodeLine{00091\ \};}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ !defined(DIY\_NO\_THREADS)}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

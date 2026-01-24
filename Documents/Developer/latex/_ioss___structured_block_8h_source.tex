@@ -1,0 +1,330 @@
+\doxysection{Ioss\+\_\+\+Structured\+Block.\+h}
+\hypertarget{_ioss___structured_block_8h_source}{}\label{_ioss___structured_block_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_StructuredBlock.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkioss/Ioss\_StructuredBlock.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright(C)\ 1999-\/2024\ National\ Technology\ \&\ Engineering\ Solutions}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ of\ Sandia,\ LLC\ (NTESS).\ \ Under\ the\ terms\ of\ Contract\ DE-\/NA0003525\ with}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ NTESS,\ the\ U.S.\ Government\ retains\ certain\ rights\ in\ this\ software.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ See\ packages/seacas/LICENSE\ for\ details}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}Ioss\_BoundingBox.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}Ioss\_CodeTypes.h"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}Ioss\_EntityBlock.h"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}Ioss\_NodeBlock.h"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}Ioss\_Property.h"{}}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}Ioss\_ZoneConnectivity.h"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <array>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ <cassert>}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <iosfwd>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <stddef.h>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ <stdint.h>}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#include\ "{}Ioss\_EntityType.h"{}}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}ioss\_export.h"{}}}
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}vtk\_ioss\_mangle.h"{}}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespace_ioss}{Ioss}}\ \{}
+\DoxyCodeLine{00028\ \ \ \textcolor{keyword}{class\ }Region;}
+\DoxyCodeLine{00029\ \ \ \textcolor{keyword}{class\ }Field;}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{struct\ }IOSS\_EXPORT\ BoundaryCondition}
+\DoxyCodeLine{00032\ \ \ \{}
+\DoxyCodeLine{00033\ \ \ \ \ BoundaryCondition(std::string\ name,\ std::string\ fam\_name,\ Ioss::IJK\_t\ range\_beg,}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss::IJK\_t\ range\_end)}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ :\ m\_bcName(std::move(name)),\ m\_famName(std::move(fam\_name)),\ m\_rangeBeg(range\_beg),}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \ \ m\_rangeEnd(range\_end)}
+\DoxyCodeLine{00037\ \ \ \ \ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ Deprecated...\ Use\ the\ constructor\ above\ with\ both\ name\ and\ fam\_name}}
+\DoxyCodeLine{00041\ \ \ \ \ BoundaryCondition(std::string\ name,\ Ioss::IJK\_t\ range\_beg,\ Ioss::IJK\_t\ range\_end)}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ :\ m\_bcName(name),\ m\_famName(std::move(name)),\ m\_rangeBeg(range\_beg),\ m\_rangeEnd(range\_end)}
+\DoxyCodeLine{00043\ \ \ \ \ \{}
+\DoxyCodeLine{00044\ \ \ \ \ \}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{//\ cereal\ requires\ a\ default\ constructor\ when\ de-\/serializing\ vectors\ of\ objects.\ \ Because}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{comment}{//\ StructuredBlock\ contains\ a\ vector\ of\ BoundaryCondition\ objects,\ this\ default\ constructor\ is}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{comment}{//\ necessary.}}
+\DoxyCodeLine{00049\ \ \ \ \ BoundaryCondition()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \ \ BoundaryCondition(\textcolor{keyword}{const}\ BoundaryCondition\ \&copy\_from)\ \ \ \ \ \ \ \ \ \ \ \ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00052\ \ \ \ \ BoundaryCondition\ \&operator=(\textcolor{keyword}{const}\ BoundaryCondition\ \&copy\_from)\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ Determine\ which\ "{}face"{}\ of\ the\ parent\ block\ this\ BC\ is\ applied\ to.}}
+\DoxyCodeLine{00055\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{int}\ which\_face()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{//\ Does\ range\ specify\ a\ valid\ face}}
+\DoxyCodeLine{00058\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ is\_valid()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{//\ Return\ number\ of\ cell\ faces\ in\ the\ BC}}
+\DoxyCodeLine{00061\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_face\_count()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ Ioss::BoundaryCondition\ \&rhs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00064\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_ab1c443221b96a6760851925131468a98}{operator!=}}(\textcolor{keyword}{const}\ Ioss::BoundaryCondition\ \&rhs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00065\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ equal(\textcolor{keyword}{const}\ Ioss::BoundaryCondition\ \&rhs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ std::string\ m\_bcName\{\};}
+\DoxyCodeLine{00068\ \ \ \ \ std::string\ m\_famName\{\};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{comment}{//\ These\ are\ potentially\ subsetted\ due\ to\ parallel\ decompositions...}}
+\DoxyCodeLine{00071\ \ \ \ \ Ioss::IJK\_t\ m\_rangeBeg\{\};}
+\DoxyCodeLine{00072\ \ \ \ \ Ioss::IJK\_t\ m\_rangeEnd\{\};}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keyword}{mutable}\ \textcolor{keywordtype}{int}\ m\_face\{-\/1\};}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Archive>\ \textcolor{keywordtype}{void}\ serialize(Archive\ \&archive)}
+\DoxyCodeLine{00077\ \ \ \ \ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ archive(m\_bcName,\ m\_famName,\ m\_rangeBeg,\ m\_rangeEnd,\ m\_face);}
+\DoxyCodeLine{00079\ \ \ \ \ \}}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{bool}\ equal\_(\textcolor{keyword}{const}\ Ioss::BoundaryCondition\ \&rhs,\ \textcolor{keywordtype}{bool}\ quiet)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00083\ \ \ \};}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ IOSS\_EXPORT\ std::ostream\ \&operator<<(std::ostream\ \&os,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_ioss_1_1_boundary_condition}{BoundaryCondition}}\ \&bc);}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_ioss_1_1_database_i_o}{DatabaseIO}};}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{keyword}{class\ }IOSS\_EXPORT\ StructuredBlock\ :\ \textcolor{keyword}{public}\ EntityBlock}
+\DoxyCodeLine{00092\ \ \ \{}
+\DoxyCodeLine{00093\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00094\ \ \ \ \ StructuredBlock(\doxymbox{\hyperlink{class_ioss_1_1_database_i_o}{DatabaseIO}}\ *io\_database,\ \textcolor{keyword}{const}\ std::string\ \&my\_name,\ \textcolor{keywordtype}{int}\ index\_dim,\ \textcolor{keywordtype}{int}\ ni,}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nj,\ \textcolor{keywordtype}{int}\ nk,\ \textcolor{keywordtype}{int}\ off\_i,\ \textcolor{keywordtype}{int}\ off\_j,\ \textcolor{keywordtype}{int}\ off\_k,\ \textcolor{keywordtype}{int}\ glo\_ni,\ \textcolor{keywordtype}{int}\ glo\_nj,}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ glo\_nk);}
+\DoxyCodeLine{00097\ \ \ \ \ StructuredBlock(\doxymbox{\hyperlink{class_ioss_1_1_database_i_o}{DatabaseIO}}\ *io\_database,\ \textcolor{keyword}{const}\ std::string\ \&my\_name,\ \textcolor{keywordtype}{int}\ index\_dim,}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::IJK\_t\ \&ordinal,\ \textcolor{keyword}{const}\ Ioss::IJK\_t\ \&offset,}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Ioss::IJK\_t\ \&global\_ordinal);}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{//\ Useful\ for\ serial}}
+\DoxyCodeLine{00102\ \ \ \ \ StructuredBlock(\doxymbox{\hyperlink{class_ioss_1_1_database_i_o}{DatabaseIO}}\ *io\_database,\ \textcolor{keyword}{const}\ std::string\ \&my\_name,\ \textcolor{keywordtype}{int}\ index\_dim,\ \textcolor{keywordtype}{int}\ ni,}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ nj,\ \textcolor{keywordtype}{int}\ nk);}
+\DoxyCodeLine{00104\ \ \ \ \ StructuredBlock(\doxymbox{\hyperlink{class_ioss_1_1_database_i_o}{DatabaseIO}}\ *io\_database,\ \textcolor{keyword}{const}\ std::string\ \&my\_name,\ \textcolor{keywordtype}{int}\ index\_dim,}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Ioss::IJK\_t\ \&ordinal);}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ StructuredBlock\ *clone(\doxymbox{\hyperlink{class_ioss_1_1_database_i_o}{DatabaseIO}}\ *database)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \ \ IOSS\_NODISCARD\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_structured_block_a176509bcc7c441ba149379722c787dca}{type\_string}}()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}StructuredBlock"{}};\ \}}
+\DoxyCodeLine{00110\ \ \ \ \ IOSS\_NODISCARD\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_structured_block_a32789ac6766013ebb7c1acd1d4d0f38b}{short\_type\_string}}()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}structuredblock"{}};\ \}}
+\DoxyCodeLine{00111\ \ \ \ \ IOSS\_NODISCARD\ std::string\ \doxymbox{\hyperlink{class_ioss_1_1_structured_block_a406396b0407d49e057c28de596c45e1d}{contains\_string}}()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}Cell"{}};\ \}}
+\DoxyCodeLine{00112\ \ \ \ \ IOSS\_NODISCARD\ \doxymbox{\hyperlink{namespace_ioss_afc1c64ae70b8e805a24de65bafc9c89f}{EntityType}}\ \ \doxymbox{\hyperlink{class_ioss_1_1_structured_block_a7e09ac69a59b58786dff3a2b4533cf52}{type}}()\textcolor{keyword}{\ const\ override\ }\{\ \textcolor{keywordflow}{return}\ STRUCTUREDBLOCK;\ \}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keyword}{const}\ Ioss::NodeBlock\ \&get\_node\_block()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_nodeBlock;\ \}}
+\DoxyCodeLine{00115\ \ \ \ \ IOSS\_NODISCARD\ Ioss::NodeBlock\ \&get\_node\_block()\ \{\ \textcolor{keywordflow}{return}\ m\_nodeBlock;\ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00119\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{class_ioss_1_1_structured_block_a00c3b50db3e35bfa083058e4b0aaf8c3}{is\_active}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_ijk[0]\ *\ m\_ijk[1]\ *\ m\_ijk[2]\ >\ 0;\ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{comment}{//\ Handle\ implicit\ properties\ -\/-\/\ These\ are\ calculated\ from\ data\ stored}}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{comment}{//\ in\ the\ grouping\ entity\ instead\ of\ having\ an\ explicit\ value\ assigned.}}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{comment}{//\ An\ example\ would\ be\ 'element\_block\_count'\ for\ a\ region.}}
+\DoxyCodeLine{00124\ \ \ \ \ IOSS\_NODISCARD\ \doxymbox{\hyperlink{class_ioss_1_1_property}{Property}}\ get\_implicit\_property(\textcolor{keyword}{const}\ std::string\ \&my\_name)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ IOSS\_NODISCARD\ \doxymbox{\hyperlink{struct_ioss_1_1_axis_aligned_bounding_box}{AxisAlignedBoundingBox}}\ get\_bounding\_box()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_ioss_1_1_structured_block_ae2b9afeb5dcfe04650489456ea106c0f}{set\_node\_offset}}(\textcolor{keywordtype}{size\_t}\ offset)\ \{\ m\_nodeOffset\ =\ offset;\ \}}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_cell\_offset(\textcolor{keywordtype}{size\_t}\ offset)\ \{\ m\_cellOffset\ =\ offset;\ \}}
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_node\_global\_offset(\textcolor{keywordtype}{size\_t}\ offset)\ \{\ m\_nodeGlobalOffset\ =\ offset;\ \}}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_cell\_global\_offset(\textcolor{keywordtype}{size\_t}\ offset)\ \{\ m\_cellGlobalOffset\ =\ offset;\ \}}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_node\_offset()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_nodeOffset;\ \}}
+\DoxyCodeLine{00157\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_cell\_offset()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_cellOffset;\ \}}
+\DoxyCodeLine{00158\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_node\_global\_offset()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_nodeGlobalOffset;\ \}}
+\DoxyCodeLine{00159\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_cell\_global\_offset()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_cellGlobalOffset;\ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_ijk\_offset(\textcolor{keywordtype}{int}\ axis,\ \textcolor{keywordtype}{size\_t}\ offset);}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_ijk\_global(\textcolor{keywordtype}{int}\ axis,\ \textcolor{keywordtype}{size\_t}\ global);}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_ijk\_offset(\textcolor{keyword}{const}\ IJK\_t\ \&offset);}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keywordtype}{void}\ set\_ijk\_global(\textcolor{keyword}{const}\ IJK\_t\ \&global);}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \ \ IOSS\_NODISCARD\ IJK\_t\ get\_ijk\_offset()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_offset;\ \}}
+\DoxyCodeLine{00168\ \ \ \ \ IOSS\_NODISCARD\ IJK\_t\ get\_ijk\_local()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_ijk;\ \}}
+\DoxyCodeLine{00169\ \ \ \ \ IOSS\_NODISCARD\ IJK\_t\ get\_ijk\_global()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_ijkGlobal;\ \}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{comment}{//\ Get\ the\ global\ (over\ all\ processors)\ cell}}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{comment}{//\ id\ at\ the\ specified\ i,j,k\ location\ (1\ <=\ i,j,k\ <=\ ni,nj,nk).\ \ 1-\/based.}}
+\DoxyCodeLine{00173\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_global\_cell\_id(\textcolor{keywordtype}{int}\ i,\ \textcolor{keywordtype}{int}\ j,\ \textcolor{keywordtype}{int}\ k)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00174\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_cellGlobalOffset\ +\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(k\ -\/\ 1)\ *\ m\_ijkGlobal[0]\ *\ m\_ijkGlobal[1]\ +}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(j\ -\/\ 1)\ *\ m\_ijkGlobal[0]\ +\ i;}
+\DoxyCodeLine{00177\ \ \ \ \ \}}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00179\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_global\_cell\_id(IJK\_t\ index)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00180\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ get\_global\_cell\_id(index[0],\ index[1],\ index[2]);}
+\DoxyCodeLine{00182\ \ \ \ \ \}}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{comment}{//\ Get\ the\ global\ (over\ all\ processors)\ node}}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{comment}{//\ offset\ at\ the\ specified\ i,j,k\ location\ (1\ <=\ i,j,k\ <=\ ni,nj,nk).\ \ 0-\/based,\ does\ not\ account}}
+\DoxyCodeLine{00186\ \ \ \ \ \textcolor{comment}{//\ for\ shared\ nodes.}}
+\DoxyCodeLine{00187\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_global\_node\_offset(\textcolor{keywordtype}{int}\ i,\ \textcolor{keywordtype}{int}\ j,\ \textcolor{keywordtype}{int}\ k)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00188\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_nodeGlobalOffset\ +}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(k\ -\/\ 1)\ *\ (m\_ijkGlobal[0]\ +\ 1)\ *\ (m\_ijkGlobal[1]\ +\ 1)\ +}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(j\ -\/\ 1)\ *\ (m\_ijkGlobal[0]\ +\ 1)\ +\ i\ -\/\ 1;}
+\DoxyCodeLine{00192\ \ \ \ \ \}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_global\_node\_offset(IJK\_t\ index)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00195\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ get\_global\_node\_offset(index[0],\ index[1],\ index[2]);}
+\DoxyCodeLine{00197\ \ \ \ \ \}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{comment}{//\ Get\ the\ local\ (relative\ to\ this\ block\ on\ this\ processor)\ node\ id\ at\ the\ specified}}
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{comment}{//\ i,j,k\ location\ (1\ <=\ i,j,k\ <=\ ni+1,nj+1,nk+1).\ \ 0-\/based.}}
+\DoxyCodeLine{00201\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_block\_local\_node\_offset(\textcolor{keywordtype}{int}\ ii,\ \textcolor{keywordtype}{int}\ jj,\ \textcolor{keywordtype}{int}\ kk)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00202\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ i\ =\ ii\ -\/\ m\_offset[0];}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ j\ =\ jj\ -\/\ m\_offset[1];}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ k\ =\ kk\ -\/\ m\_offset[2];}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ assert(i\ >\ 0\ \&\&\ i\ <=\ m\_ijk[0]\ +\ 1\ \&\&\ j\ >\ 0\ \&\&\ j\ <=\ m\_ijk[1]\ +\ 1\ \&\&\ k\ >\ 0\ \&\&}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ k\ <=\ m\_ijk[2]\ +\ 1);}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(k\ -\/\ 1)\ *\ (m\_ijk[0]\ +\ 1)\ *\ (m\_ijk[1]\ +\ 1)\ +}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{size\_t}\textcolor{keyword}{>}(j\ -\/\ 1)\ *\ (m\_ijk[0]\ +\ 1)\ +\ i\ -\/\ 1;}
+\DoxyCodeLine{00210\ \ \ \ \ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_block\_local\_node\_offset(IJK\_t\ index)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00213\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ get\_block\_local\_node\_offset(index[0],\ index[1],\ index[2]);}
+\DoxyCodeLine{00215\ \ \ \ \ \}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{comment}{//\ Get\ the\ local\ (on\ this\ processor)\ cell-\/node\ offset\ at\ the\ specified}}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{comment}{//\ i,j,k\ location\ (1\ <=\ i,j,k\ <=\ ni+1,nj+1,nk+1).\ \ 0-\/based.}}
+\DoxyCodeLine{00219\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_local\_node\_offset(\textcolor{keywordtype}{int}\ i,\ \textcolor{keywordtype}{int}\ j,\ \textcolor{keywordtype}{int}\ k)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00220\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ get\_block\_local\_node\_offset(i,\ j,\ k)\ +\ m\_nodeOffset;}
+\DoxyCodeLine{00222\ \ \ \ \ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{size\_t}\ get\_local\_node\_offset(IJK\_t\ index)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00225\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ get\_local\_node\_offset(index[0],\ index[1],\ index[2]);}
+\DoxyCodeLine{00227\ \ \ \ \ \}}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ INT\_t>\ \textcolor{keywordtype}{size\_t}\ get\_cell\_node\_ids(INT\_t\ *idata,\ \textcolor{keywordtype}{bool}\ add\_offset)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00230\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \textcolor{comment}{//\ Fill\ 'idata'\ with\ the\ cell\ node\ ids\ which\ are\ the}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \textcolor{comment}{//\ 1-\/based\ location\ of\ each\ node\ in\ this\ zone}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \textcolor{comment}{//\ The\ location\ is\ based\ on\ the\ "{}model"{}\ (all\ processors)\ zone.}}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \textcolor{comment}{//\ If\ this\ is\ a\ parallel\ decomposed\ model,\ then}}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \textcolor{comment}{//\ this\ block\ may\ be\ a\ subset\ of\ the\ "{}model"{}\ zone}}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ 'add\_offset'\ is\ true,\ then\ add\ the\ m\_cellGlobalOffset}}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \textcolor{comment}{//\ which\ changes\ the\ location\ to\ be\ the\ location\ in\ the}}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \textcolor{comment}{//\ entire\ "{}mesh"{}\ instead\ of\ within\ a\ "{}zone"{}\ (all\ processors)}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ index\ \ =\ 0;}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ offset\ =\ add\_offset\ ?\ m\_nodeGlobalOffset\ :\ 0;}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_ijk[2]\ ==\ 0\ \&\&\ m\_ijk[1]\ ==\ 0\ \&\&\ m\_ijk[0]\ ==\ 0)\ \{}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ index;}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00247\ }
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ kk\ =\ 0;\ kk\ <\ m\_ijk[2]\ +\ 1;\ kk++)\ \{}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ k\ =\ m\_offset[2]\ +\ kk;}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ jj\ =\ 0;\ jj\ <\ m\_ijk[1]\ +\ 1;\ jj++)\ \{}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ j\ =\ m\_offset[1]\ +\ jj;}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ ii\ =\ 0;\ ii\ <\ m\_ijk[0]\ +\ 1;\ ii++)\ \{}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ i\ =\ m\_offset[0]\ +\ ii;}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ ind\ =}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ k\ *\ (m\_ijkGlobal[0]\ +\ 1)\ *\ (m\_ijkGlobal[1]\ +\ 1)\ +\ j\ *\ (m\_ijkGlobal[0]\ +\ 1)\ +\ i;}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ \ \ idata[index++]\ =\ ind\ +\ offset\ +\ 1;}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ \textcolor{keyword}{auto}\ \&idx\_id\ :\ m\_globalIdMap)\ \{}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ idata[idx\_id.first]\ =\ idx\_id.second;}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00266\ }
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ index;}
+\DoxyCodeLine{00268\ \ \ \ \ \}}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ INT\_t>\ \textcolor{keywordtype}{size\_t}\ get\_cell\_ids(INT\_t\ *idata,\ \textcolor{keywordtype}{bool}\ add\_offset)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00271\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \textcolor{comment}{//\ Fill\ 'idata'\ with\ the\ cell\ ids\ which\ are\ the}}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \textcolor{comment}{//\ 1-\/based\ location\ of\ each\ cell\ in\ this\ zone}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \textcolor{comment}{//\ The\ location\ is\ based\ on\ the\ "{}model"{}\ zone.}}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \textcolor{comment}{//\ If\ this\ is\ a\ parallel\ decomposed\ model,\ then}}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \textcolor{comment}{//\ this\ block\ may\ be\ a\ subset\ of\ the\ "{}model"{}\ zone}}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ 'add\_offset'\ is\ true,\ then\ add\ the\ m\_cellGlobalOffset}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \textcolor{comment}{//\ which\ changes\ the\ location\ to\ be\ the\ location\ in\ the}}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \textcolor{comment}{//\ entire\ "{}mesh"{}\ instead\ of\ within\ a\ "{}zone"{}}}
+\DoxyCodeLine{00281\ }
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ index\ \ =\ 0;}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ offset\ =\ add\_offset\ ?\ m\_cellGlobalOffset\ :\ 0;}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_ijk[2]\ ==\ 0\ \&\&\ m\_ijk[1]\ ==\ 0\ \&\&\ m\_ijk[0]\ ==\ 0)\ \{}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ index;}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ kk\ =\ 0;\ kk\ <\ m\_ijk[2];\ kk++)\ \{}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ k\ =\ m\_offset[2]\ +\ kk;}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ jj\ =\ 0;\ jj\ <\ m\_ijk[1];\ jj++)\ \{}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ j\ =\ m\_offset[1]\ +\ jj;}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ ii\ =\ 0;\ ii\ <\ m\_ijk[0];\ ii++)\ \{}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ i\ =\ m\_offset[0]\ +\ ii;}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ ind\ =\ k\ *\ m\_ijkGlobal[0]\ *\ m\_ijkGlobal[1]\ +\ j\ *\ m\_ijkGlobal[0]\ +\ i;}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ \ \ idata[index++]\ =\ ind\ +\ offset\ +\ 1;}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ index;}
+\DoxyCodeLine{00303\ \ \ \ \ \}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00305\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ contains\_node(\textcolor{keywordtype}{size\_t}\ global\_offset)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00306\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (global\_offset\ >=\ m\_nodeOffset\ \&\&}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ global\_offset\ <\ m\_nodeOffset\ +\ get\_property(\textcolor{stringliteral}{"{}node\_count"{}}).get\_int());}
+\DoxyCodeLine{00309\ \ \ \ \ \}}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ \textcolor{comment}{/*\ COMPARE\ two\ StructuredBlocks\ */}}
+\DoxyCodeLine{00312\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_a651b9c78efae9575ab425b1bf108fb35}{operator==}}(\textcolor{keyword}{const}\ Ioss::StructuredBlock\ \&rhs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00313\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{dsrcitem_8h_ab1c443221b96a6760851925131468a98}{operator!=}}(\textcolor{keyword}{const}\ Ioss::StructuredBlock\ \&rhs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00314\ \ \ \ \ IOSS\_NODISCARD\ \textcolor{keywordtype}{bool}\ equal(\textcolor{keyword}{const}\ Ioss::StructuredBlock\ \&rhs)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00317\ \ \ \ \ int64\_t\ internal\_get\_field\_data(\textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00320\ \ \ \ \ int64\_t\ internal\_put\_field\_data(\textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ *data,}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ data\_size)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \ \ \ \ int64\_t\ internal\_get\_zc\_field\_data(\textcolor{keyword}{const}\ Field\ \&field,\ \textcolor{keywordtype}{void}\ **data,}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ *data\_size)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00327\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ equal\_(\textcolor{keyword}{const}\ Ioss::StructuredBlock\ \&rhs,\ \textcolor{keywordtype}{bool}\ quiet)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00328\ \ \ \ \ IJK\_t\ m\_ijk;}
+\DoxyCodeLine{00329\ \ \ \ \ IJK\_t\ m\_offset;\ \ \ \ \textcolor{comment}{//\ Valid\ 'i'\ ordinal\ runs\ from\ m\_offset[i]+1\ to\ m\_offset[i]+m\_ijk[i]}}
+\DoxyCodeLine{00330\ \ \ \ \ IJK\_t\ m\_ijkGlobal;\ \textcolor{comment}{//\ The\ ni,nj,nk\ of\ the\ master\ block\ this\ is\ a\ subset\ of.}}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_nodeOffset\{\};}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_cellOffset\{\};}
+\DoxyCodeLine{00334\ }
+\DoxyCodeLine{00335\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_nodeGlobalOffset\{\};}
+\DoxyCodeLine{00336\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_cellGlobalOffset\{\};}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \ \ \ \ Ioss::NodeBlock\ m\_nodeBlock;}
+\DoxyCodeLine{00339\ }
+\DoxyCodeLine{00340\ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00341\ \ \ \ \ std::vector<ZoneConnectivity>\ \ \ \ \ \ \ \ \ \ m\_zoneConnectivity;}
+\DoxyCodeLine{00342\ \ \ \ \ std::vector<BoundaryCondition>\ \ \ \ \ \ \ \ \ m\_boundaryConditions;}
+\DoxyCodeLine{00343\ \ \ \ \ std::vector<size\_t>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_blockLocalNodeIndex;}
+\DoxyCodeLine{00344\ \ \ \ \ std::vector<std::pair<size\_t,\ size\_t>>\ m\_globalIdMap;}
+\DoxyCodeLine{00345\ }
+\DoxyCodeLine{00346\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{class}\ Archive>\ \textcolor{keywordtype}{void}\ serialize(Archive\ \&archive)}
+\DoxyCodeLine{00347\ \ \ \ \ \{}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ archive(m\_zoneConnectivity,\ m\_boundaryConditions,\ m\_blockLocalNodeIndex,\ m\_globalIdMap);}
+\DoxyCodeLine{00349\ \ \ \ \ \}}
+\DoxyCodeLine{00350\ \ \ \};}
+\DoxyCodeLine{00351\ \}\ \textcolor{comment}{//\ namespace\ Ioss}}
+
+\end{DoxyCode}

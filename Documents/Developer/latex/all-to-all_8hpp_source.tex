@@ -1,0 +1,181 @@
+\doxysection{all-\/to-\/all.hpp}
+\hypertarget{all-to-all_8hpp_source}{}\label{all-to-all_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/reduce/all-\/to-\/all.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/detail/reduce/all-\/to-\/all.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_DETAIL\_ALL\_TO\_ALL\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_DETAIL\_ALL\_TO\_ALL\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}../block\_traits.hpp"{}}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00007\ \{}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00010\ \{}
+\DoxyCodeLine{00011\ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Op>}
+\DoxyCodeLine{00012\ \ \ \textcolor{keyword}{struct\ }AllToAllReduce}
+\DoxyCodeLine{00013\ \ \ \{}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keyword}{using\ }Block\ =\ \textcolor{keyword}{typename}\ block\_traits<Op>::type;}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \ AllToAllReduce(\textcolor{keyword}{const}\ Op\&\ op\_,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_assigner}{Assigner}}\&\ assigner):}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \ op(op\_)}
+\DoxyCodeLine{00018\ \ \ \ \ \{}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ gid\ =\ 0;\ gid\ <\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}();\ ++gid)}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\ nbr\ =\ \{\ gid,\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a272d33bcc94394f39880603084b55f38}{rank}}(gid)\ \};}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ all\_neighbors\_link.add\_neighbor(nbr);}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00024\ \ \ \ \ \}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{void}\ operator()(Block*\ b,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_reduce_proxy}{ReduceProxy}}\&\ srp,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_regular_swap_partners}{RegularSwapPartners}}\&)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00027\ \textcolor{keyword}{\ \ \ \ }\{}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ k\_in\ \ =\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}().size();}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ k\_out\ =\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().size();}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (k\_in\ ==\ 0\ \&\&\ k\_out\ ==\ 0)\ \ \textcolor{comment}{//\ special\ case\ of\ a\ single\ block}}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_reduce_proxy}{ReduceProxy}}\ all\_srp(std::move(\textcolor{keyword}{const\_cast<}\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy}{ReduceProxy}}\&\textcolor{keyword}{>}(srp)),\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad5858791bf9552b4458f8bc65a11e05f}{block}}(),\ 0,\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_aa2c94841259ffe8942b610b1600b27a9}{assigner}}(),\ empty\_link,\ all\_neighbors\_link);}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ op(b,\ all\_srp);}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ in\_queue\ =\ all\_srp.incoming(all\_srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(0).gid);}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ in\_queue.swap(all\_srp.outgoing(all\_srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(0)));}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ in\_queue.reset();}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \ \ all\_srp.outgoing()-\/>clear();}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ change\ to\ incoming\ proxy}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \ \ all\_srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a670b1f74a12b1dc0f43645cd4fa9f2ed}{set\_round}}(1);}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ in\_link\ \ =\ \textcolor{keyword}{const\_cast<}\doxymbox{\hyperlink{classdiy_1_1_link}{Link}}\&\textcolor{keyword}{>}(all\_srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}());}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ out\_link\ =\ \textcolor{keyword}{const\_cast<}\doxymbox{\hyperlink{classdiy_1_1_link}{Link}}\&\textcolor{keyword}{>}(all\_srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}());}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ in\_link.swap(out\_link);}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \ \ op(b,\ all\_srp);}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (k\_in\ ==\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ initial\ round}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_reduce_proxy}{ReduceProxy}}\ all\_srp(std::move(\textcolor{keyword}{const\_cast<}\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy}{ReduceProxy}}\&\textcolor{keyword}{>}(srp)),\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad5858791bf9552b4458f8bc65a11e05f}{block}}(),\ 0,\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_aa2c94841259ffe8942b610b1600b27a9}{assigner}}(),\ empty\_link,\ all\_neighbors\_link);}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ op(b,\ all\_srp);}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ Master::Proxy::OutgoingQueues\ all\_queues;}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ all\_queues.swap(*all\_srp.outgoing());\ \ \ \ \ \ \ \textcolor{comment}{//\ clears\ out\ the\ queues\ and\ stores\ them\ locally}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ enqueue\ outgoing}}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ group\ =\ all\_srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().size()\ /\ k\_out;}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ k\_out;\ ++i)}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ std::pair<int,int>\ range(i*group,\ (i+1)*group);}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(i),\ range);}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ i*group;\ j\ <\ (i+1)*group;\ ++j)}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ from\ =\ srp.gid();}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ to\ \ \ =\ all\_srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(j).gid;}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(i),\ std::make\_pair(from,\ to));}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ srp.\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_a385c3c5cd0286a1f8bf4d4fb5813cf76}{enqueue}}(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(i),\ all\_queues[all\_srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(j)]);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (k\_out\ ==\ 0)\ \ \ \ \ \ \ \ \textcolor{comment}{//\ final\ round}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ dequeue\ incoming\ +\ reorder\ into\ the\ correct\ order}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_reduce_proxy}{ReduceProxy}}\ all\_srp(std::move(\textcolor{keyword}{const\_cast<}\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy}{ReduceProxy}}\&\textcolor{keyword}{>}(srp)),\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad5858791bf9552b4458f8bc65a11e05f}{block}}(),\ 1,\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_aa2c94841259ffe8942b610b1600b27a9}{assigner}}(),\ all\_neighbors\_link,\ empty\_link);}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ Master::Proxy::IncomingQueues\ all\_incoming;}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ all\_incoming.swap(*all\_srp.incoming());}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ std::pair<int,\ int>\ range;\ \ \ \ \ \ \textcolor{comment}{//\ all\ the\ ranges\ should\ be\ the\ same}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ k\_in;\ ++i)}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ gid\_in\ =\ srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}().target(i).gid;}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ \doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}}\ =\ all\_incoming[gid\_in];}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{load}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ range);}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}})}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ std::pair<int,\ int>\ from\_to;}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{load}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ from\_to);}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{load}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ all\_srp.incoming(from\_to.first));}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ all\_srp.incoming(from\_to.first).reset();}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ op(b,\ all\_srp);}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ intermediate\ round:\ reshuffle\ queues}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ up\ buffer\ sizes}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ std::vector<size\_t>\ sizes\_out(k\_out,\ \textcolor{keyword}{sizeof}(std::pair<int,int>));}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ std::pair<int,\ int>\ range;\ \ \ \ \ \ \textcolor{comment}{//\ all\ the\ ranges\ should\ be\ the\ same}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ k\_in;\ ++i)}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ \doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}}\ =\ srp.incoming(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}().target(i).gid);}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{load}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ range);}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ group\ =\ (range.second\ -\/\ range.first)/k\_out;}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ std::pair<int,\ int>\ from\_to;}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ s;}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}})}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{diy::load}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ from\_to);}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{diy::load}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ s);}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ j\ =\ (from\_to.second\ -\/\ range.first)\ /\ group;}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ sizes\_out[j]\ +=\ s\ +\ \textcolor{keyword}{sizeof}(size\_t)\ +\ \textcolor{keyword}{sizeof}(std::pair<int,int>);}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}}.skip(s);}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}}.reset();}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ reserve\ outgoing\ buffers\ of\ correct\ size}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ group\ =\ (range.second\ -\/\ range.first)/k\_out;}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ k\_out;\ ++i)}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ out\ =\ srp.outgoing(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(i));}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ out.reserve(sizes\_out[i]);}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ std::pair<int,\ int>\ out\_range;}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ out\_range.first\ \ =\ range.first\ +\ group*i;}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ out\_range.second\ =\ range.first\ +\ group*(i+1);}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}(out,\ out\_range);}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ re-\/direct\ the\ queues}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ k\_in;\ ++i)}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ \doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}}\ =\ srp.incoming(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_a07570dbea6a3c6a677a15cfaef2c170c}{in\_link}}().target(i).gid);}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{load}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ range);}
+\DoxyCodeLine{00143\ }
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ std::pair<int,\ int>\ from\_to;}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}})}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{load}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ from\_to);}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ j\ =\ (from\_to.second\ -\/\ range.first)\ /\ group;}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ out\ =\ srp.outgoing(srp.\doxymbox{\hyperlink{structdiy_1_1_reduce_proxy_ad4300b1a2dd3faa3f12bd4b3e1352074}{out\_link}}().target(j));}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}(out,\ from\_to);}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer_acf7080d0f3b5f15e3bb8b7e1a8ebdf61}{MemoryBuffer::copy}}(\doxymbox{\hyperlink{namespacediy_a80c48a0054904994a271642ebec51608}{in}},\ out);}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00156\ \ \ \ \ \}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{keyword}{const}\ Op\&\ \ \ \ \ \ \ \ \ \ \ op;}
+\DoxyCodeLine{00159\ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_link}{Link}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ all\_neighbors\_link,\ empty\_link;}
+\DoxyCodeLine{00160\ \ \ \};}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \textcolor{keyword}{struct\ }SkipIntermediate}
+\DoxyCodeLine{00163\ \ \ \{}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ SkipIntermediate(\textcolor{keywordtype}{size\_t}\ rounds\_):}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ rounds(rounds\_)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keywordtype}{bool}\ operator()(\textcolor{keywordtype}{int}\ round,\ \textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{if}\ (round\ ==\ 0\ ||\ round\ ==\ (\textcolor{keywordtype}{int})\ rounds)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};\ \}}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ rounds;}
+\DoxyCodeLine{00170\ \ \ \};}
+\DoxyCodeLine{00171\ \}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \}}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

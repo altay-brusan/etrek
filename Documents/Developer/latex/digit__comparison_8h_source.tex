@@ -1,0 +1,463 @@
+\doxysection{digit\+\_\+comparison.\+h}
+\hypertarget{digit__comparison_8h_source}{}\label{digit__comparison_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/digit\_comparison.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkfast\_float/vtkfast\_float/digit\_comparison.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ FASTFLOAT\_DIGIT\_COMPARISON\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ FASTFLOAT\_DIGIT\_COMPARISON\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstdint>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <iterator>}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}float\_common.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}bigint.h"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}ascii\_number.h"{}}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{keyword}{namespace\ }fast\_float\ \{}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ 1e0\ to\ 1e19}}
+\DoxyCodeLine{00016\ \textcolor{keyword}{constexpr}\ \textcolor{keyword}{static}\ uint64\_t\ powers\_of\_ten\_uint64[]\ =\ \{1UL,}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10UL,}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 100UL,}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1000UL,}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10000UL,}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 100000UL,}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1000000UL,}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10000000UL,}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 100000000UL,}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1000000000UL,}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10000000000UL,}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 100000000000UL,}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1000000000000UL,}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10000000000000UL,}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 100000000000000UL,}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1000000000000000UL,}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10000000000000000UL,}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 100000000000000000UL,}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 1000000000000000000UL,}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 10000000000000000000UL\};}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ calculate\ the\ exponent,\ in\ scientific\ notation,\ of\ the\ number.}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ this\ algorithm\ is\ not\ even\ close\ to\ optimized,\ but\ it\ has\ no\ practical}}
+\DoxyCodeLine{00039\ \textcolor{comment}{//\ effect\ on\ performance:\ in\ order\ to\ have\ a\ faster\ algorithm,\ we'd\ need}}
+\DoxyCodeLine{00040\ \textcolor{comment}{//\ to\ slow\ down\ performance\ for\ faster\ algorithms,\ and\ this\ is\ still\ fast.}}
+\DoxyCodeLine{00041\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00042\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR14\ int32\_t}
+\DoxyCodeLine{00043\ scientific\_exponent(parsed\_number\_string\_t<UC>\ \&num)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00044\ \ \ uint64\_t\ mantissa\ =\ num.mantissa;}
+\DoxyCodeLine{00045\ \ \ int32\_t\ exponent\ =\ int32\_t(num.exponent);}
+\DoxyCodeLine{00046\ \ \ \textcolor{keywordflow}{while}\ (mantissa\ >=\ 10000)\ \{}
+\DoxyCodeLine{00047\ \ \ \ \ mantissa\ /=\ 10000;}
+\DoxyCodeLine{00048\ \ \ \ \ exponent\ +=\ 4;}
+\DoxyCodeLine{00049\ \ \ \}}
+\DoxyCodeLine{00050\ \ \ \textcolor{keywordflow}{while}\ (mantissa\ >=\ 100)\ \{}
+\DoxyCodeLine{00051\ \ \ \ \ mantissa\ /=\ 100;}
+\DoxyCodeLine{00052\ \ \ \ \ exponent\ +=\ 2;}
+\DoxyCodeLine{00053\ \ \ \}}
+\DoxyCodeLine{00054\ \ \ \textcolor{keywordflow}{while}\ (mantissa\ >=\ 10)\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ mantissa\ /=\ 10;}
+\DoxyCodeLine{00056\ \ \ \ \ exponent\ +=\ 1;}
+\DoxyCodeLine{00057\ \ \ \}}
+\DoxyCodeLine{00058\ \ \ \textcolor{keywordflow}{return}\ exponent;}
+\DoxyCodeLine{00059\ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{comment}{//\ this\ converts\ a\ native\ floating-\/point\ number\ to\ an\ extended-\/precision\ float.}}
+\DoxyCodeLine{00062\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00063\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ adjusted\_mantissa}
+\DoxyCodeLine{00064\ to\_extended(T\ value)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00065\ \ \ \textcolor{keyword}{using\ }equiv\_uint\ =\ equiv\_uint\_t<T>;}
+\DoxyCodeLine{00066\ \ \ \textcolor{keyword}{constexpr}\ equiv\_uint\ exponent\_mask\ =\ binary\_format<T>::exponent\_mask();}
+\DoxyCodeLine{00067\ \ \ \textcolor{keyword}{constexpr}\ equiv\_uint\ mantissa\_mask\ =\ binary\_format<T>::mantissa\_mask();}
+\DoxyCodeLine{00068\ \ \ \textcolor{keyword}{constexpr}\ equiv\_uint\ hidden\_bit\_mask\ =\ binary\_format<T>::hidden\_bit\_mask();}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ adjusted\_mantissa\ am;}
+\DoxyCodeLine{00071\ \ \ int32\_t\ bias\ =\ binary\_format<T>::mantissa\_explicit\_bits()\ -\/}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ binary\_format<T>::minimum\_exponent();}
+\DoxyCodeLine{00073\ \ \ equiv\_uint\ bits;}
+\DoxyCodeLine{00074\ \textcolor{preprocessor}{\#if\ FASTFLOAT\_HAS\_BIT\_CAST}}
+\DoxyCodeLine{00075\ \ \ bits\ =\ std::bit\_cast<equiv\_uint>(value);}
+\DoxyCodeLine{00076\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00077\ \ \ ::memcpy(\&bits,\ \&value,\ \textcolor{keyword}{sizeof}(T));}
+\DoxyCodeLine{00078\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00079\ \ \ \textcolor{keywordflow}{if}\ ((bits\ \&\ exponent\_mask)\ ==\ 0)\ \{}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ denormal}}
+\DoxyCodeLine{00081\ \ \ \ \ am.power2\ =\ 1\ -\/\ bias;}
+\DoxyCodeLine{00082\ \ \ \ \ am.mantissa\ =\ bits\ \&\ mantissa\_mask;}
+\DoxyCodeLine{00083\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{//\ normal}}
+\DoxyCodeLine{00085\ \ \ \ \ am.power2\ =\ int32\_t((bits\ \&\ exponent\_mask)\ >>}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ binary\_format<T>::mantissa\_explicit\_bits());}
+\DoxyCodeLine{00087\ \ \ \ \ am.power2\ -\/=\ bias;}
+\DoxyCodeLine{00088\ \ \ \ \ am.mantissa\ =\ (bits\ \&\ mantissa\_mask)\ |\ hidden\_bit\_mask;}
+\DoxyCodeLine{00089\ \ \ \}}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \textcolor{keywordflow}{return}\ am;}
+\DoxyCodeLine{00092\ \}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \textcolor{comment}{//\ get\ the\ extended\ precision\ value\ of\ the\ halfway\ point\ between\ b\ and\ b+u.}}
+\DoxyCodeLine{00095\ \textcolor{comment}{//\ we\ are\ given\ a\ native\ float\ that\ represents\ b,\ so\ we\ need\ to\ adjust\ it}}
+\DoxyCodeLine{00096\ \textcolor{comment}{//\ halfway\ between\ b\ and\ b+u.}}
+\DoxyCodeLine{00097\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00098\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ adjusted\_mantissa}
+\DoxyCodeLine{00099\ to\_extended\_halfway(T\ value)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00100\ \ \ adjusted\_mantissa\ am\ =\ to\_extended(value);}
+\DoxyCodeLine{00101\ \ \ am.mantissa\ <<=\ 1;}
+\DoxyCodeLine{00102\ \ \ am.mantissa\ +=\ 1;}
+\DoxyCodeLine{00103\ \ \ am.power2\ -\/=\ 1;}
+\DoxyCodeLine{00104\ \ \ \textcolor{keywordflow}{return}\ am;}
+\DoxyCodeLine{00105\ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{comment}{//\ round\ an\ extended-\/precision\ float\ to\ the\ nearest\ machine\ float.}}
+\DoxyCodeLine{00108\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ callback>}
+\DoxyCodeLine{00109\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR14\ \textcolor{keywordtype}{void}\ round(adjusted\_mantissa\ \&am,}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ callback\ cb)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00111\ \ \ int32\_t\ mantissa\_shift\ =\ 64\ -\/\ binary\_format<T>::mantissa\_explicit\_bits()\ -\/\ 1;}
+\DoxyCodeLine{00112\ \ \ \textcolor{keywordflow}{if}\ (-\/am.power2\ >=\ mantissa\_shift)\ \{}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{comment}{//\ have\ a\ denormal\ float}}
+\DoxyCodeLine{00114\ \ \ \ \ int32\_t\ shift\ =\ -\/am.power2\ +\ 1;}
+\DoxyCodeLine{00115\ \ \ \ \ cb(am,\ std::min<int32\_t>(shift,\ 64));}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{comment}{//\ check\ for\ round-\/up:\ if\ rounding-\/nearest\ carried\ us\ to\ the\ hidden\ bit.}}
+\DoxyCodeLine{00117\ \ \ \ \ am.power2\ =\ (am.mantissa\ <}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (uint64\_t(1)\ <<\ binary\_format<T>::mantissa\_explicit\_bits()))}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ 0}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ 1;}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00122\ \ \ \}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \textcolor{comment}{//\ have\ a\ normal\ float,\ use\ the\ default\ shift.}}
+\DoxyCodeLine{00125\ \ \ cb(am,\ mantissa\_shift);}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ \textcolor{comment}{//\ check\ for\ carry}}
+\DoxyCodeLine{00128\ \ \ \textcolor{keywordflow}{if}\ (am.mantissa\ >=}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ (uint64\_t(2)\ <<\ binary\_format<T>::mantissa\_explicit\_bits()))\ \{}
+\DoxyCodeLine{00130\ \ \ \ \ am.mantissa\ =\ (uint64\_t(1)\ <<\ binary\_format<T>::mantissa\_explicit\_bits());}
+\DoxyCodeLine{00131\ \ \ \ \ am.power2++;}
+\DoxyCodeLine{00132\ \ \ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \textcolor{comment}{//\ check\ for\ infinite:\ we\ could\ have\ carried\ to\ an\ infinite\ power}}
+\DoxyCodeLine{00135\ \ \ am.mantissa\ \&=\ \string~(uint64\_t(1)\ <<\ binary\_format<T>::mantissa\_explicit\_bits());}
+\DoxyCodeLine{00136\ \ \ \textcolor{keywordflow}{if}\ (am.power2\ >=\ binary\_format<T>::infinite\_power())\ \{}
+\DoxyCodeLine{00137\ \ \ \ \ am.power2\ =\ binary\_format<T>::infinite\_power();}
+\DoxyCodeLine{00138\ \ \ \ \ am.mantissa\ =\ 0;}
+\DoxyCodeLine{00139\ \ \ \}}
+\DoxyCodeLine{00140\ \}}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ callback>}
+\DoxyCodeLine{00143\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR14\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00144\ round\_nearest\_tie\_even(adjusted\_mantissa\ \&am,\ int32\_t\ shift,}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ callback\ cb)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00146\ \ \ uint64\_t\ \textcolor{keyword}{const}\ mask\ =\ (shift\ ==\ 64)\ ?\ UINT64\_MAX\ :\ (uint64\_t(1)\ <<\ shift)\ -\/\ 1;}
+\DoxyCodeLine{00147\ \ \ uint64\_t\ \textcolor{keyword}{const}\ halfway\ =\ (shift\ ==\ 0)\ ?\ 0\ :\ uint64\_t(1)\ <<\ (shift\ -\/\ 1);}
+\DoxyCodeLine{00148\ \ \ uint64\_t\ truncated\_bits\ =\ am.mantissa\ \&\ mask;}
+\DoxyCodeLine{00149\ \ \ \textcolor{keywordtype}{bool}\ is\_above\ =\ truncated\_bits\ >\ halfway;}
+\DoxyCodeLine{00150\ \ \ \textcolor{keywordtype}{bool}\ is\_halfway\ =\ truncated\_bits\ ==\ halfway;}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \ \ \textcolor{comment}{//\ shift\ digits\ into\ position}}
+\DoxyCodeLine{00153\ \ \ \textcolor{keywordflow}{if}\ (shift\ ==\ 64)\ \{}
+\DoxyCodeLine{00154\ \ \ \ \ am.mantissa\ =\ 0;}
+\DoxyCodeLine{00155\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00156\ \ \ \ \ am.mantissa\ >>=\ shift;}
+\DoxyCodeLine{00157\ \ \ \}}
+\DoxyCodeLine{00158\ \ \ am.power2\ +=\ shift;}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{keywordtype}{bool}\ is\_odd\ =\ (am.mantissa\ \&\ 1)\ ==\ 1;}
+\DoxyCodeLine{00161\ \ \ am.mantissa\ +=\ uint64\_t(cb(is\_odd,\ is\_halfway,\ is\_above));}
+\DoxyCodeLine{00162\ \}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR14\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00165\ round\_down(adjusted\_mantissa\ \&am,\ int32\_t\ shift)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00166\ \ \ \textcolor{keywordflow}{if}\ (shift\ ==\ 64)\ \{}
+\DoxyCodeLine{00167\ \ \ \ \ am.mantissa\ =\ 0;}
+\DoxyCodeLine{00168\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00169\ \ \ \ \ am.mantissa\ >>=\ shift;}
+\DoxyCodeLine{00170\ \ \ \}}
+\DoxyCodeLine{00171\ \ \ am.power2\ +=\ shift;}
+\DoxyCodeLine{00172\ \}}
+\DoxyCodeLine{00173\ }
+\DoxyCodeLine{00174\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00175\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00176\ skip\_zeros(UC\ \textcolor{keyword}{const}\ *\&first,\ UC\ \textcolor{keyword}{const}\ *last)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00177\ \ \ uint64\_t\ val;}
+\DoxyCodeLine{00178\ \ \ \textcolor{keywordflow}{while}\ (!cpp20\_and\_in\_constexpr()\ \&\&}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ std::distance(first,\ last)\ >=\ int\_cmp\_len<UC>())\ \{}
+\DoxyCodeLine{00180\ \ \ \ \ ::memcpy(\&val,\ first,\ \textcolor{keyword}{sizeof}(uint64\_t));}
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordflow}{if}\ (val\ !=\ int\_cmp\_zeros<UC>())\ \{}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00183\ \ \ \ \ \}}
+\DoxyCodeLine{00184\ \ \ \ \ first\ +=\ int\_cmp\_len<UC>();}
+\DoxyCodeLine{00185\ \ \ \}}
+\DoxyCodeLine{00186\ \ \ \textcolor{keywordflow}{while}\ (first\ !=\ last)\ \{}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{if}\ (*first\ !=\ UC(\textcolor{charliteral}{'0'}))\ \{}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00189\ \ \ \ \ \}}
+\DoxyCodeLine{00190\ \ \ \ \ first++;}
+\DoxyCodeLine{00191\ \ \ \}}
+\DoxyCodeLine{00192\ \}}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00194\ \textcolor{comment}{//\ determine\ if\ any\ non-\/zero\ digits\ were\ truncated.}}
+\DoxyCodeLine{00195\ \textcolor{comment}{//\ all\ characters\ must\ be\ valid\ digits.}}
+\DoxyCodeLine{00196\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00197\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00198\ is\_truncated(UC\ \textcolor{keyword}{const}\ *first,\ UC\ \textcolor{keyword}{const}\ *last)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00199\ \ \ \textcolor{comment}{//\ do\ 8-\/bit\ optimizations,\ can\ just\ compare\ to\ 8\ literal\ 0s.}}
+\DoxyCodeLine{00200\ \ \ uint64\_t\ val;}
+\DoxyCodeLine{00201\ \ \ \textcolor{keywordflow}{while}\ (!cpp20\_and\_in\_constexpr()\ \&\&}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ std::distance(first,\ last)\ >=\ int\_cmp\_len<UC>())\ \{}
+\DoxyCodeLine{00203\ \ \ \ \ ::memcpy(\&val,\ first,\ \textcolor{keyword}{sizeof}(uint64\_t));}
+\DoxyCodeLine{00204\ \ \ \ \ \textcolor{keywordflow}{if}\ (val\ !=\ int\_cmp\_zeros<UC>())\ \{}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00206\ \ \ \ \ \}}
+\DoxyCodeLine{00207\ \ \ \ \ first\ +=\ int\_cmp\_len<UC>();}
+\DoxyCodeLine{00208\ \ \ \}}
+\DoxyCodeLine{00209\ \ \ \textcolor{keywordflow}{while}\ (first\ !=\ last)\ \{}
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keywordflow}{if}\ (*first\ !=\ UC(\textcolor{charliteral}{'0'}))\ \{}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00212\ \ \ \ \ \}}
+\DoxyCodeLine{00213\ \ \ \ \ ++first;}
+\DoxyCodeLine{00214\ \ \ \}}
+\DoxyCodeLine{00215\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00216\ \}}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00219\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00220\ is\_truncated(span<UC\ const>\ s)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00221\ \ \ \textcolor{keywordflow}{return}\ is\_truncated(s.ptr,\ s.ptr\ +\ s.len());}
+\DoxyCodeLine{00222\ \}}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00225\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00226\ parse\_eight\_digits(UC\ \textcolor{keyword}{const}\ *\&p,\ limb\ \&value,\ \textcolor{keywordtype}{size\_t}\ \&counter,}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \&count)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00228\ \ \ value\ =\ value\ *\ 100000000\ +\ parse\_eight\_digits\_unrolled(p);}
+\DoxyCodeLine{00229\ \ \ p\ +=\ 8;}
+\DoxyCodeLine{00230\ \ \ counter\ +=\ 8;}
+\DoxyCodeLine{00231\ \ \ count\ +=\ 8;}
+\DoxyCodeLine{00232\ \}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00235\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR14\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00236\ parse\_one\_digit(UC\ \textcolor{keyword}{const}\ *\&p,\ limb\ \&value,\ \textcolor{keywordtype}{size\_t}\ \&counter,}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \&count)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00238\ \ \ value\ =\ value\ *\ 10\ +\ limb(*p\ -\/\ UC(\textcolor{charliteral}{'0'}));}
+\DoxyCodeLine{00239\ \ \ p++;}
+\DoxyCodeLine{00240\ \ \ counter++;}
+\DoxyCodeLine{00241\ \ \ count++;}
+\DoxyCodeLine{00242\ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00245\ add\_native(bigint\ \&big,\ limb\ power,\ limb\ value)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00246\ \ \ big.mul(power);}
+\DoxyCodeLine{00247\ \ \ big.add(value);}
+\DoxyCodeLine{00248\ \}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ fastfloat\_really\_inline\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00251\ round\_up\_bigint(bigint\ \&big,\ \textcolor{keywordtype}{size\_t}\ \&count)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00252\ \ \ \textcolor{comment}{//\ need\ to\ round-\/up\ the\ digits,\ but\ need\ to\ avoid\ rounding}}
+\DoxyCodeLine{00253\ \ \ \textcolor{comment}{//\ ....9999\ to\ ...10000,\ which\ could\ cause\ a\ false\ halfway\ point.}}
+\DoxyCodeLine{00254\ \ \ add\_native(big,\ 10,\ 1);}
+\DoxyCodeLine{00255\ \ \ count++;}
+\DoxyCodeLine{00256\ \}}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \textcolor{comment}{//\ parse\ the\ significant\ digits\ into\ a\ big\ integer}}
+\DoxyCodeLine{00259\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00260\ \textcolor{keyword}{inline}\ FASTFLOAT\_CONSTEXPR20\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00261\ parse\_mantissa(bigint\ \&result,\ parsed\_number\_string\_t<UC>\ \&num,}
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ max\_digits,\ \textcolor{keywordtype}{size\_t}\ \&digits)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00263\ \ \ \textcolor{comment}{//\ try\ to\ minimize\ the\ number\ of\ big\ integer\ and\ scalar\ multiplication.}}
+\DoxyCodeLine{00264\ \ \ \textcolor{comment}{//\ therefore,\ try\ to\ parse\ 8\ digits\ at\ a\ time,\ and\ multiply\ by\ the\ largest}}
+\DoxyCodeLine{00265\ \ \ \textcolor{comment}{//\ scalar\ value\ (9\ or\ 19\ digits)\ for\ each\ step.}}
+\DoxyCodeLine{00266\ \ \ \textcolor{keywordtype}{size\_t}\ counter\ =\ 0;}
+\DoxyCodeLine{00267\ \ \ digits\ =\ 0;}
+\DoxyCodeLine{00268\ \ \ limb\ value\ =\ 0;}
+\DoxyCodeLine{00269\ \textcolor{preprocessor}{\#ifdef\ FASTFLOAT\_64BIT\_LIMB}}
+\DoxyCodeLine{00270\ \ \ \textcolor{keywordtype}{size\_t}\ step\ =\ 19;}
+\DoxyCodeLine{00271\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00272\ \ \ \textcolor{keywordtype}{size\_t}\ step\ =\ 9;}
+\DoxyCodeLine{00273\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \textcolor{comment}{//\ process\ all\ integer\ digits.}}
+\DoxyCodeLine{00276\ \ \ UC\ \textcolor{keyword}{const}\ *p\ =\ num.integer.ptr;}
+\DoxyCodeLine{00277\ \ \ UC\ \textcolor{keyword}{const}\ *pend\ =\ p\ +\ num.integer.len();}
+\DoxyCodeLine{00278\ \ \ skip\_zeros(p,\ pend);}
+\DoxyCodeLine{00279\ \ \ \textcolor{comment}{//\ process\ all\ digits,\ in\ increments\ of\ step\ per\ loop}}
+\DoxyCodeLine{00280\ \ \ \textcolor{keywordflow}{while}\ (p\ !=\ pend)\ \{}
+\DoxyCodeLine{00281\ \ \ \ \ \textcolor{keywordflow}{while}\ ((std::distance(p,\ pend)\ >=\ 8)\ \&\&\ (step\ -\/\ counter\ >=\ 8)\ \&\&}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ (max\_digits\ -\/\ digits\ >=\ 8))\ \{}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ parse\_eight\_digits(p,\ value,\ counter,\ digits);}
+\DoxyCodeLine{00284\ \ \ \ \ \}}
+\DoxyCodeLine{00285\ \ \ \ \ \textcolor{keywordflow}{while}\ (counter\ <\ step\ \&\&\ p\ !=\ pend\ \&\&\ digits\ <\ max\_digits)\ \{}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ parse\_one\_digit(p,\ value,\ counter,\ digits);}
+\DoxyCodeLine{00287\ \ \ \ \ \}}
+\DoxyCodeLine{00288\ \ \ \ \ \textcolor{keywordflow}{if}\ (digits\ ==\ max\_digits)\ \{}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \textcolor{comment}{//\ add\ the\ temporary\ value,\ then\ check\ if\ we've\ truncated\ any\ digits}}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ add\_native(result,\ limb(powers\_of\_ten\_uint64[counter]),\ value);}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ truncated\ =\ is\_truncated(p,\ pend);}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (num.fraction.ptr\ !=\ \textcolor{keyword}{nullptr})\ \{}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ truncated\ |=\ is\_truncated(num.fraction);}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (truncated)\ \{}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ round\_up\_bigint(result,\ digits);}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00299\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ add\_native(result,\ limb(powers\_of\_ten\_uint64[counter]),\ value);}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ counter\ =\ 0;}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ value\ =\ 0;}
+\DoxyCodeLine{00303\ \ \ \ \ \}}
+\DoxyCodeLine{00304\ \ \ \}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \ \ \textcolor{comment}{//\ add\ our\ fraction\ digits,\ if\ they're\ available.}}
+\DoxyCodeLine{00307\ \ \ \textcolor{keywordflow}{if}\ (num.fraction.ptr\ !=\ \textcolor{keyword}{nullptr})\ \{}
+\DoxyCodeLine{00308\ \ \ \ \ p\ =\ num.fraction.ptr;}
+\DoxyCodeLine{00309\ \ \ \ \ pend\ =\ p\ +\ num.fraction.len();}
+\DoxyCodeLine{00310\ \ \ \ \ \textcolor{keywordflow}{if}\ (digits\ ==\ 0)\ \{}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ skip\_zeros(p,\ pend);}
+\DoxyCodeLine{00312\ \ \ \ \ \}}
+\DoxyCodeLine{00313\ \ \ \ \ \textcolor{comment}{//\ process\ all\ digits,\ in\ increments\ of\ step\ per\ loop}}
+\DoxyCodeLine{00314\ \ \ \ \ \textcolor{keywordflow}{while}\ (p\ !=\ pend)\ \{}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ ((std::distance(p,\ pend)\ >=\ 8)\ \&\&\ (step\ -\/\ counter\ >=\ 8)\ \&\&}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ (max\_digits\ -\/\ digits\ >=\ 8))\ \{}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ parse\_eight\_digits(p,\ value,\ counter,\ digits);}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (counter\ <\ step\ \&\&\ p\ !=\ pend\ \&\&\ digits\ <\ max\_digits)\ \{}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ parse\_one\_digit(p,\ value,\ counter,\ digits);}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (digits\ ==\ max\_digits)\ \{}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ the\ temporary\ value,\ then\ check\ if\ we've\ truncated\ any\ digits}}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ add\_native(result,\ limb(powers\_of\_ten\_uint64[counter]),\ value);}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ truncated\ =\ is\_truncated(p,\ pend);}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (truncated)\ \{}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ round\_up\_bigint(result,\ digits);}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ add\_native(result,\ limb(powers\_of\_ten\_uint64[counter]),\ value);}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ counter\ =\ 0;}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ value\ =\ 0;}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00335\ \ \ \ \ \}}
+\DoxyCodeLine{00336\ \ \ \}}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \ \ \textcolor{keywordflow}{if}\ (counter\ !=\ 0)\ \{}
+\DoxyCodeLine{00339\ \ \ \ \ add\_native(result,\ limb(powers\_of\_ten\_uint64[counter]),\ value);}
+\DoxyCodeLine{00340\ \ \ \}}
+\DoxyCodeLine{00341\ \}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00344\ \textcolor{keyword}{inline}\ FASTFLOAT\_CONSTEXPR20\ adjusted\_mantissa}
+\DoxyCodeLine{00345\ positive\_digit\_comp(bigint\ \&bigmant,\ int32\_t\ exponent)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00346\ \ \ FASTFLOAT\_ASSERT(bigmant.pow10(uint32\_t(exponent)));}
+\DoxyCodeLine{00347\ \ \ adjusted\_mantissa\ answer;}
+\DoxyCodeLine{00348\ \ \ \textcolor{keywordtype}{bool}\ truncated;}
+\DoxyCodeLine{00349\ \ \ answer.mantissa\ =\ bigmant.hi64(truncated);}
+\DoxyCodeLine{00350\ \ \ \textcolor{keywordtype}{int}\ bias\ =\ binary\_format<T>::mantissa\_explicit\_bits()\ -\/}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ binary\_format<T>::minimum\_exponent();}
+\DoxyCodeLine{00352\ \ \ answer.power2\ =\ bigmant.bit\_length()\ -\/\ 64\ +\ bias;}
+\DoxyCodeLine{00353\ }
+\DoxyCodeLine{00354\ \ \ round<T>(answer,\ [truncated](adjusted\_mantissa\ \&a,\ int32\_t\ shift)\ \{}
+\DoxyCodeLine{00355\ \ \ \ \ round\_nearest\_tie\_even(}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ a,\ shift,}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ [truncated](\textcolor{keywordtype}{bool}\ is\_odd,\ \textcolor{keywordtype}{bool}\ is\_halfway,\ \textcolor{keywordtype}{bool}\ is\_above)\ -\/>\ \textcolor{keywordtype}{bool}\ \{}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ is\_above\ ||\ (is\_halfway\ \&\&\ truncated)\ ||}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (is\_odd\ \&\&\ is\_halfway);}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00361\ \ \ \});}
+\DoxyCodeLine{00362\ }
+\DoxyCodeLine{00363\ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00364\ \}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{comment}{//\ the\ scaling\ here\ is\ quite\ simple:\ we\ have,\ for\ the\ real\ digits\ \`{}m\ *\ 10\string^e`,}}
+\DoxyCodeLine{00367\ \textcolor{comment}{//\ and\ for\ the\ theoretical\ digits\ \`{}n\ *\ 2\string^f`.\ Since\ \`{}e`\ is\ always\ negative,}}
+\DoxyCodeLine{00368\ \textcolor{comment}{//\ to\ scale\ them\ identically,\ we\ do\ \`{}n\ *\ 2\string^f\ *\ 5\string^-\/f`,\ so\ we\ now\ have\ \`{}m\ *\ 2\string^e`.}}
+\DoxyCodeLine{00369\ \textcolor{comment}{//\ we\ then\ need\ to\ scale\ by\ \`{}2\string^(f-\/\ e)`,\ and\ then\ the\ two\ significant\ digits}}
+\DoxyCodeLine{00370\ \textcolor{comment}{//\ are\ of\ the\ same\ magnitude.}}
+\DoxyCodeLine{00371\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00372\ \textcolor{keyword}{inline}\ FASTFLOAT\_CONSTEXPR20\ adjusted\_mantissa\ negative\_digit\_comp(}
+\DoxyCodeLine{00373\ \ \ \ \ bigint\ \&bigmant,\ adjusted\_mantissa\ am,\ int32\_t\ exponent)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00374\ \ \ bigint\ \&real\_digits\ =\ bigmant;}
+\DoxyCodeLine{00375\ \ \ int32\_t\ real\_exp\ =\ exponent;}
+\DoxyCodeLine{00376\ }
+\DoxyCodeLine{00377\ \ \ \textcolor{comment}{//\ get\ the\ value\ of\ \`{}b`,\ rounded\ down,\ and\ get\ a\ bigint\ representation\ of\ b+h}}
+\DoxyCodeLine{00378\ \ \ adjusted\_mantissa\ am\_b\ =\ am;}
+\DoxyCodeLine{00379\ \ \ \textcolor{comment}{//\ gcc7\ buf:\ use\ a\ lambda\ to\ remove\ the\ noexcept\ qualifier\ bug\ with}}
+\DoxyCodeLine{00380\ \ \ \textcolor{comment}{//\ -\/Wnoexcept-\/type.}}
+\DoxyCodeLine{00381\ \ \ round<T>(am\_b,}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ [](adjusted\_mantissa\ \&a,\ int32\_t\ shift)\ \{\ round\_down(a,\ shift);\ \});}
+\DoxyCodeLine{00383\ \ \ T\ b;}
+\DoxyCodeLine{00384\ \ \ to\_float(\textcolor{keyword}{false},\ am\_b,\ b);}
+\DoxyCodeLine{00385\ \ \ adjusted\_mantissa\ theor\ =\ to\_extended\_halfway(b);}
+\DoxyCodeLine{00386\ \ \ bigint\ theor\_digits(theor.mantissa);}
+\DoxyCodeLine{00387\ \ \ int32\_t\ theor\_exp\ =\ theor.power2;}
+\DoxyCodeLine{00388\ }
+\DoxyCodeLine{00389\ \ \ \textcolor{comment}{//\ scale\ real\ digits\ and\ theor\ digits\ to\ be\ same\ power.}}
+\DoxyCodeLine{00390\ \ \ int32\_t\ pow2\_exp\ =\ theor\_exp\ -\/\ real\_exp;}
+\DoxyCodeLine{00391\ \ \ uint32\_t\ pow5\_exp\ =\ uint32\_t(-\/real\_exp);}
+\DoxyCodeLine{00392\ \ \ \textcolor{keywordflow}{if}\ (pow5\_exp\ !=\ 0)\ \{}
+\DoxyCodeLine{00393\ \ \ \ \ FASTFLOAT\_ASSERT(theor\_digits.pow5(pow5\_exp));}
+\DoxyCodeLine{00394\ \ \ \}}
+\DoxyCodeLine{00395\ \ \ \textcolor{keywordflow}{if}\ (pow2\_exp\ >\ 0)\ \{}
+\DoxyCodeLine{00396\ \ \ \ \ FASTFLOAT\_ASSERT(theor\_digits.pow2(uint32\_t(pow2\_exp)));}
+\DoxyCodeLine{00397\ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (pow2\_exp\ <\ 0)\ \{}
+\DoxyCodeLine{00398\ \ \ \ \ FASTFLOAT\_ASSERT(real\_digits.pow2(uint32\_t(-\/pow2\_exp)));}
+\DoxyCodeLine{00399\ \ \ \}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \ \ \textcolor{comment}{//\ compare\ digits,\ and\ use\ it\ to\ director\ rounding}}
+\DoxyCodeLine{00402\ \ \ \textcolor{keywordtype}{int}\ ord\ =\ real\_digits.compare(theor\_digits);}
+\DoxyCodeLine{00403\ \ \ adjusted\_mantissa\ answer\ =\ am;}
+\DoxyCodeLine{00404\ \ \ round<T>(answer,\ [ord](adjusted\_mantissa\ \&a,\ int32\_t\ shift)\ \{}
+\DoxyCodeLine{00405\ \ \ \ \ round\_nearest\_tie\_even(}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ a,\ shift,\ [ord](\textcolor{keywordtype}{bool}\ is\_odd,\ \textcolor{keywordtype}{bool}\ \_,\ \textcolor{keywordtype}{bool}\ \_\_)\ -\/>\ \textcolor{keywordtype}{bool}\ \{}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ (void)\_;\ \ \textcolor{comment}{//\ not\ needed,\ since\ we've\ done\ our\ comparison}}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ (void)\_\_;\ \textcolor{comment}{//\ not\ needed,\ since\ we've\ done\ our\ comparison}}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ord\ >\ 0)\ \{}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (ord\ <\ 0)\ \{}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ is\_odd;}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00417\ \ \ \});}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00419\ \ \ \textcolor{keywordflow}{return}\ answer;}
+\DoxyCodeLine{00420\ \}}
+\DoxyCodeLine{00421\ }
+\DoxyCodeLine{00422\ \textcolor{comment}{//\ parse\ the\ significant\ digits\ as\ a\ big\ integer\ to\ unambiguously\ round\ the}}
+\DoxyCodeLine{00423\ \textcolor{comment}{//\ the\ significant\ digits.\ here,\ we\ are\ trying\ to\ determine\ how\ to\ round}}
+\DoxyCodeLine{00424\ \textcolor{comment}{//\ an\ extended\ float\ representation\ close\ to\ \`{}b+h`,\ halfway\ between\ \`{}b`}}
+\DoxyCodeLine{00425\ \textcolor{comment}{//\ (the\ float\ rounded-\/down)\ and\ \`{}b+u`,\ the\ next\ positive\ float.\ this}}
+\DoxyCodeLine{00426\ \textcolor{comment}{//\ algorithm\ is\ always\ correct,\ and\ uses\ one\ of\ two\ approaches.\ when}}
+\DoxyCodeLine{00427\ \textcolor{comment}{//\ the\ exponent\ is\ positive\ relative\ to\ the\ significant\ digits\ (such\ as}}
+\DoxyCodeLine{00428\ \textcolor{comment}{//\ 1234),\ we\ create\ a\ big-\/integer\ representation,\ get\ the\ high\ 64-\/bits,}}
+\DoxyCodeLine{00429\ \textcolor{comment}{//\ determine\ if\ any\ lower\ bits\ are\ truncated,\ and\ use\ that\ to\ direct}}
+\DoxyCodeLine{00430\ \textcolor{comment}{//\ rounding.\ in\ case\ of\ a\ negative\ exponent\ relative\ to\ the\ significant}}
+\DoxyCodeLine{00431\ \textcolor{comment}{//\ digits\ (such\ as\ 1.2345),\ we\ create\ a\ theoretical\ representation\ of}}
+\DoxyCodeLine{00432\ \textcolor{comment}{//\ \`{}b`\ as\ a\ big-\/integer\ type,\ scaled\ to\ the\ same\ binary\ exponent\ as}}
+\DoxyCodeLine{00433\ \textcolor{comment}{//\ the\ actual\ digits.\ we\ then\ compare\ the\ big\ integer\ representations}}
+\DoxyCodeLine{00434\ \textcolor{comment}{//\ of\ both,\ and\ use\ that\ to\ direct\ rounding.}}
+\DoxyCodeLine{00435\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T,\ \textcolor{keyword}{typename}\ UC>}
+\DoxyCodeLine{00436\ \textcolor{keyword}{inline}\ FASTFLOAT\_CONSTEXPR20\ adjusted\_mantissa}
+\DoxyCodeLine{00437\ digit\_comp(parsed\_number\_string\_t<UC>\ \&num,\ adjusted\_mantissa\ am)\ \textcolor{keyword}{noexcept}\ \{}
+\DoxyCodeLine{00438\ \ \ \textcolor{comment}{//\ remove\ the\ invalid\ exponent\ bias}}
+\DoxyCodeLine{00439\ \ \ am.power2\ -\/=\ invalid\_am\_bias;}
+\DoxyCodeLine{00440\ }
+\DoxyCodeLine{00441\ \ \ int32\_t\ sci\_exp\ =\ scientific\_exponent(num);}
+\DoxyCodeLine{00442\ \ \ \textcolor{keywordtype}{size\_t}\ max\_digits\ =\ binary\_format<T>::max\_digits();}
+\DoxyCodeLine{00443\ \ \ \textcolor{keywordtype}{size\_t}\ digits\ =\ 0;}
+\DoxyCodeLine{00444\ \ \ bigint\ bigmant;}
+\DoxyCodeLine{00445\ \ \ parse\_mantissa(bigmant,\ num,\ max\_digits,\ digits);}
+\DoxyCodeLine{00446\ \ \ \textcolor{comment}{//\ can't\ underflow,\ since\ digits\ is\ at\ most\ max\_digits.}}
+\DoxyCodeLine{00447\ \ \ int32\_t\ exponent\ =\ sci\_exp\ +\ 1\ -\/\ int32\_t(digits);}
+\DoxyCodeLine{00448\ \ \ \textcolor{keywordflow}{if}\ (exponent\ >=\ 0)\ \{}
+\DoxyCodeLine{00449\ \ \ \ \ \textcolor{keywordflow}{return}\ positive\_digit\_comp<T>(bigmant,\ exponent);}
+\DoxyCodeLine{00450\ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keywordflow}{return}\ negative\_digit\_comp<T>(bigmant,\ am,\ exponent);}
+\DoxyCodeLine{00452\ \ \ \}}
+\DoxyCodeLine{00453\ \}}
+\DoxyCodeLine{00454\ }
+\DoxyCodeLine{00455\ \}\ \textcolor{comment}{//\ namespace\ fast\_float}}
+\DoxyCodeLine{00456\ }
+\DoxyCodeLine{00457\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

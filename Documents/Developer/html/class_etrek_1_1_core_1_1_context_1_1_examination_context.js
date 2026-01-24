@@ -1,0 +1,27 @@
+var class_etrek_1_1_core_1_1_context_1_1_examination_context =
+[
+    [ "ExaminationContext", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a998a473314847e47c676b29fbbc5b627", null ],
+    [ "accessionNumber", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a98afc9bf86e756e1b46d1e4265de5a48", null ],
+    [ "allAttributes", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a6baa356578d67a3283f2431ff9726e61", null ],
+    [ "attributeValue", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a540d21d0e2928a18bb372a8559df7270", null ],
+    [ "bodyPartExamined", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#abf63d50c1a15ed9c8baddea9af97d62a", null ],
+    [ "examinationMode", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a6751f6302c5b74dde20976d5d4f57535", null ],
+    [ "isComplete", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a8e9f9fb73980fb7aa59c440b19d52fc9", null ],
+    [ "isValid", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a9c5f28c6f5f8e835b91d837be2a3fd8e", null ],
+    [ "markComplete", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a4d3c2a270bd09d666e84aad249d31d7b", null ],
+    [ "patientBirthDate", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a22b92bf6932257434aaf7bc2cc00b5ec", null ],
+    [ "patientGender", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a998b7ccbbaad442ed0921398b31ecb0d", null ],
+    [ "patientId", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#ac9952696a157eb9e7c626c99862dac5b", null ],
+    [ "patientName", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a05e2169854d71161087191cd38391752", null ],
+    [ "procedureId", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#ad7c123e86e339a80eebf007af7f29723", null ],
+    [ "referringPhysician", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#aa6f9a0f2b7f1f5faa5a4861b0aaf8e84", null ],
+    [ "requestedProcedureDescription", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a624d722269499525fd8598336452409c", null ],
+    [ "setExaminationMode", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a6b4c1c303db39ef409167c468cba1f62", null ],
+    [ "setProcedureId", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a651fc80813d429a39e5eb7b6566086b6", null ],
+    [ "setViewIds", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#ad89c1826601b649e51c8721ad1dfa28c", null ],
+    [ "studyDescription", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a1d97a01ff73f3c7399ddf864c986f342", null ],
+    [ "timestamp", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a9756ddb499da54f2da6d954ac2fe2a27", null ],
+    [ "viewIds", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#ad947c2c2372b81e0e250c6027ed8cf69", null ],
+    [ "worklistEntry", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#ac50d29c03cc5897d78de375520683622", null ],
+    [ "worklistEntryId", "class_etrek_1_1_core_1_1_context_1_1_examination_context.html#a17571679a60f50116a74254f71a20412", null ]
+];

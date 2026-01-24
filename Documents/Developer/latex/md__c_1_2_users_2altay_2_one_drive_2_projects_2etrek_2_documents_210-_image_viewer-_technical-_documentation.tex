@@ -1,0 +1,1401 @@
+\chapter{Image\+Viewer Technical Documentation }
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation}{}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation}\index{ImageViewer Technical Documentation@{ImageViewer Technical Documentation}}
+\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md610}%
+\Hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md610}%
+
+
+This document provides comprehensive technical details about the Image\+Viewer component in the Etrek medical imaging application. It is intended for future development reference and code review.
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md612}{}\doxysection{\texorpdfstring{Table of Contents}{Table of Contents}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md612}
+
+\begin{DoxyEnumerate}
+\item Architecture Overview
+\item Module Structure
+\item Integration with Application
+\item View Layer Components
+\item Tool System
+\item Rendering Layer (VTK)
+\item Service Layer
+\item Layout System
+\item User Interactions
+\item Signal/\+\+Slot Data Flow
+\item Design Patterns
+\item File Reference
+\item Build Configuration
+\item Extension Points
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md614}{}\doxysection{\texorpdfstring{1. Architecture Overview}{1. Architecture Overview}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md614}
+\doxylink{requirements_The}{The} Image\+Viewer is a {\bfseries{modular medical image viewing system}} built on:\+
+\begin{DoxyItemize}
+\item {\bfseries{Qt 6.\+5.\+3}} -\/ UI framework
+\item {\bfseries{VTK 9.\+5}} -\/ 3D/\+2D visualization and rendering
+\item {\bfseries{DCMTK 3.\+6.\+9}} -\/ DICOM protocol and parsing
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md615}{}\doxysubsection{\texorpdfstring{Design Philosophy}{Design Philosophy}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md615}
+\doxylink{requirements_The}{The} component follows the {\bfseries{MVD (Model-\/\+View-\/\+Delegate)}} pattern with clear separation of concerns:\+
+\begin{DoxyItemize}
+\item {\bfseries{View}} ({\ttfamily \doxylink{class_image_viewer_page}{Image\+Viewer\+Page}}) -\/ Pure UI presentation
+\item {\bfseries{Delegate}} ({\ttfamily Image\+Viewer\+Page\+Delegate}) -\/ Business logic orchestration
+\item {\bfseries{Model}} -\/ Data entities and state management
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md616}{}\doxysubsection{\texorpdfstring{High-\/\+Level Architecture}{High-\/\+Level Architecture}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md616}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Application\ Layer\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ ┌─────────────────────────┐\ \ \ \ ┌─────────────────────────────────┐\ │}
+\DoxyCodeLine{│\ \ │\ ImageViewerPageBuilder\ \ │───▶│\ \ \ ImageViewerPageDelegate\ \ \ \ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ └─────────────────────────┘\ \ \ \ │\ \ \ (Business\ Logic)\ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └────────────┬────────────────────┘\ │}
+\DoxyCodeLine{└──────────────────────────────────────────────┼──────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{┌──────────────────────────────────────────────┼──────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ View\ Layer\ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ ┌───────────────────────────────────────────┼────────────────────┐\ │}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ImageViewerPage\ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ ┌──────────────┐\ \ ┌──────────────────────┼──┐\ \ ┌────────────┐\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ │ImageToolPanel│\ \ │\ \ \ \ ViewportGrid\ \ \ \ \ \ │\ \ │\ \ │SeriesThumb-\/│\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ │\ \ (Toolbar)\ \ \ │\ \ │\ \ ┌────────┬────────┐\ │\ \ │\ \ │nailPanel\ \ \ │\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ └──────────────┘\ \ │\ \ │Viewport│Viewport│\ │\ \ │\ \ └────────────┘\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │\ \ \ 0\ \ \ \ │\ \ \ 1\ \ \ \ │\ │\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ ├────────┼────────┤\ │\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │Viewport│Viewport│\ │\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ │\ \ \ 2\ \ \ \ │\ \ \ 3\ \ \ \ │\ │\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ └────────┴────────┘\ │\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └─────────────────────────┘\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ └────────────────────────────────────────────────────────────────┘\ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────┘}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{┌──────────────────────────────────────────────┼──────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ImageViewer\ Module\ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ ┌────────────────┐\ \ ┌───────────────────────┼─┐\ \ ┌───────────────┐\ │}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ Tools\ \ \ \ \ \ │\ \ │\ \ \ \ Rendering\ \ \ \ \ \ \ \ \ \ │\ │\ \ │\ \ \ Services\ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ ┌──────────┐\ \ │\ \ │\ \ ┌──────────────────┐\ │\ │\ \ │\ ┌───────────┐\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ │\ ZoomTool\ │\ \ │\ \ │\ \ │VtkViewportRender\ │\ │\ │\ \ │\ │ImageLoader│\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ │\ PanTool\ \ │\ \ │\ \ │\ \ │\ \ \ \ \ \ [0..3]\ \ \ \ \ \ │\ │\ │\ \ │\ │\ Service\ \ \ │\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ │\ W/L\ Tool\ │\ \ │\ \ │\ \ └──────────────────┘\ │\ │\ \ │\ └───────────┘\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ │RulerTool\ │\ \ │\ \ │\ \ ┌──────────────────┐\ │\ │\ \ │\ ┌───────────┐\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ │AngleTool\ │\ \ │\ \ │\ \ │MultiViewportMgr\ \ │\ │\ │\ \ │\ │DicomParser│\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ │ResetTool\ │\ \ │\ \ │\ \ └──────────────────┘\ │\ │\ \ │\ │\ Service\ \ \ │\ │\ │}
+\DoxyCodeLine{│\ \ │\ \ └──────────┘\ \ │\ \ └─────────────────────────┘\ \ │\ └───────────┘\ │\ │}
+\DoxyCodeLine{│\ \ └────────────────┘\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ └───────────────┘\ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md618}{}\doxysection{\texorpdfstring{2. Module Structure}{2. Module Structure}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md618}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md619}{}\doxysubsection{\texorpdfstring{Directory Layout}{Directory Layout}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md619}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ImageViewer/}
+\DoxyCodeLine{├──\ CMakeLists.txt\ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Module\ build\ configuration}
+\DoxyCodeLine{├──\ Tool/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Image\ manipulation\ tools}
+\DoxyCodeLine{│\ \ \ ├──\ IImageTool.h/cpp\ \ \ \ \ \ \ \ \#\ Base\ tool\ interface}
+\DoxyCodeLine{│\ \ \ ├──\ ZoomTool.h/cpp\ \ \ \ \ \ \ \ \ \ \#\ Zoom\ functionality}
+\DoxyCodeLine{│\ \ \ ├──\ PanTool.h/cpp\ \ \ \ \ \ \ \ \ \ \ \#\ Pan\ functionality}
+\DoxyCodeLine{│\ \ \ ├──\ WindowLevelTool.h/cpp\ \ \ \#\ Contrast/brightness}
+\DoxyCodeLine{│\ \ \ ├──\ RulerTool.h/cpp\ \ \ \ \ \ \ \ \ \#\ Distance\ measurement}
+\DoxyCodeLine{│\ \ \ ├──\ AngleTool.h/cpp\ \ \ \ \ \ \ \ \ \#\ Angle\ measurement}
+\DoxyCodeLine{│\ \ \ └──\ ResetTool.h/cpp\ \ \ \ \ \ \ \ \ \#\ View\ reset}
+\DoxyCodeLine{├──\ Rendering/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ VTK\ rendering\ pipeline}
+\DoxyCodeLine{│\ \ \ ├──\ VtkViewportRenderer.h/cpp\ \ \ \ \ \#\ Single\ viewport\ renderer}
+\DoxyCodeLine{│\ \ \ └──\ MultiViewportManager.h/cpp\ \ \ \ \#\ Multi-\/viewport\ coordinator}
+\DoxyCodeLine{├──\ Service/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Image\ loading\ services}
+\DoxyCodeLine{│\ \ \ ├──\ ImageLoaderService.h/cpp\ \ \ \ \ \ \#\ Unified\ image\ loader}
+\DoxyCodeLine{│\ \ \ └──\ DicomParserService.h/cpp\ \ \ \ \ \ \#\ DCMTK-\/based\ DICOM\ parser}
+\DoxyCodeLine{└──\ Data/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Data\ entities}
+\DoxyCodeLine{\ \ \ \ └──\ Entity/}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ └──\ ImageDisplayParams.h\ \ \ \ \ \ \#\ Display\ parameters}
+\DoxyCodeLine{}
+\DoxyCodeLine{View/}
+\DoxyCodeLine{├──\ Page/}
+\DoxyCodeLine{│\ \ \ └──\ ImageViewerPage.h/cpp/ui\ \ \ \ \ \ \#\ Main\ page\ widget}
+\DoxyCodeLine{├──\ Widget/}
+\DoxyCodeLine{│\ \ \ ├──\ ViewportGrid.h/cpp/ui\ \ \ \ \ \ \ \ \ \#\ Viewport\ grid\ container}
+\DoxyCodeLine{│\ \ \ ├──\ ImageViewport.h/cpp/ui\ \ \ \ \ \ \ \ \#\ Single\ viewport\ wrapper}
+\DoxyCodeLine{│\ \ \ ├──\ ImageToolPanel.h/cpp/ui\ \ \ \ \ \ \ \#\ Left\ toolbar\ panel}
+\DoxyCodeLine{│\ \ \ └──\ SeriesThumbnailPanel.h/cpp/ui\ \#\ Right\ thumbnail\ panel}
+\DoxyCodeLine{└──\ Asset/Icon/\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \#\ Tool\ and\ layout\ icons}
+\DoxyCodeLine{}
+\DoxyCodeLine{Application/}
+\DoxyCodeLine{├──\ Builder/}
+\DoxyCodeLine{│\ \ \ └──\ ImageViewerPageBuilder.h/cpp\ \ \#\ Widget+Delegate\ builder}
+\DoxyCodeLine{└──\ Delegate/}
+\DoxyCodeLine{\ \ \ \ └──\ ImageViewerPageDelegate.h/cpp\ \#\ Business\ logic}
+\DoxyCodeLine{}
+\DoxyCodeLine{Common/Include/ImageViewer/}
+\DoxyCodeLine{├──\ IImageViewerContext.h\ \ \ \ \ \ \ \#\ Inter-\/page\ communication\ interface}
+\DoxyCodeLine{├──\ ImageViewerTypes.h\ \ \ \ \ \ \ \ \ \ \#\ Enums\ and\ data\ structures}
+\DoxyCodeLine{└──\ ViewportLayout.h\ \ \ \ \ \ \ \ \ \ \ \ \#\ Layout\ configuration}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md621}{}\doxysection{\texorpdfstring{3. Integration with Application}{3. Integration with Application}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md621}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md622}{}\doxysubsection{\texorpdfstring{Context Interface}{Context Interface}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md622}
+\doxylink{requirements_The}{The} {\ttfamily IImage\+Viewer\+Context} interface enables inter-\/page communication for passing image data to Image\+Viewer:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{enum\ class}\ ImageSourceType\ \{}
+\DoxyCodeLine{\ \ \ \ FILE,\ \ \ \ \ \ \ \textcolor{comment}{//\ Load\ from\ file\ path}}
+\DoxyCodeLine{\ \ \ \ STUDY,\ \ \ \ \ \ \textcolor{comment}{//\ Load\ from\ database\ study\ ID}}
+\DoxyCodeLine{\ \ \ \ SERIES,\ \ \ \ \ \textcolor{comment}{//\ Load\ from\ database\ series\ ID}}
+\DoxyCodeLine{\ \ \ \ RAW\_DATA\ \ \ \ \textcolor{comment}{//\ Direct\ image\ data\ from\ ExamPage}}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{class\ }IImageViewerContext\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ ImageSourceType\ sourceType()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ QString\ filePath()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ studyId()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{int}\ seriesId()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ QByteArray\ rawData()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ DicomMetadata\ metadata()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md623}{}\doxysubsection{\texorpdfstring{Builder Pattern Integration}{Builder Pattern Integration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md623}
+\doxylink{requirements_The}{The} {\ttfamily Image\+Viewer\+Page\+Builder} creates the widget and delegate together with dependency injection:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ImageViewerPageBuilder\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_widget_delegate_builder}{IWidgetDelegateBuilder}}<ImageViewerPage,\ ImageViewerPageDelegate>\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ std::pair<ImageViewerPage*,\ ImageViewerPageDelegate*>}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{class_i_widget_delegate_builder_a024312e1df508463df4d0a2efc1da6c2}{build}}(\textcolor{keyword}{const}\ DelegateParameter\&\ params,}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ QWidget*\ parentWidget\ =\ \textcolor{keyword}{nullptr},}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ QObject*\ parentDelegate\ =\ \textcolor{keyword}{nullptr})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Construction Steps:\+}}
+\begin{DoxyEnumerate}
+\item Create {\ttfamily \doxylink{class_image_viewer_page}{Image\+Viewer\+Page}} widget
+\item Create {\ttfamily Dicom\+Repository} from database connection
+\item Create {\ttfamily Image\+Viewer\+Page\+Delegate} with injected dependencies:\+
+\begin{DoxyItemize}
+\item UI page reference
+\item Dicom\+Repository
+\item Database\+Connection\+Setting
+\item IContext\+Manager (weak\+\_\+ptr)
+\end{DoxyItemize}
+\item Return widget-\/delegate pair
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md624}{}\doxysubsection{\texorpdfstring{Delegate Dependencies}{Delegate Dependencies}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md624}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }ImageViewerPageDelegate\ :\ \textcolor{keyword}{public}\ QObject,\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_delegate}{IDelegate}},\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{class_i_page_action}{IPageAction}}\ \{}
+\DoxyCodeLine{\textcolor{keyword}{private}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ UI}}
+\DoxyCodeLine{\ \ \ \ ImageViewerPage*\ m\_ui;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Repositories}}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DicomRepository>\ m\_dicomRepo;}
+\DoxyCodeLine{\ \ \ \ std::shared\_ptr<DatabaseConnectionSetting>\ m\_dbConnection;}
+\DoxyCodeLine{\ \ \ \ std::weak\_ptr<IContextManager>\ m\_contextManager;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Services}}
+\DoxyCodeLine{\ \ \ \ std::unique\_ptr<ImageLoaderService>\ m\_imageLoader;}
+\DoxyCodeLine{\ \ \ \ std::unique\_ptr<MultiViewportManager>\ m\_viewportManager;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Tools}}
+\DoxyCodeLine{\ \ \ \ std::unique\_ptr<WindowLevelTool>\ m\_windowLevelTool;}
+\DoxyCodeLine{\ \ \ \ std::unique\_ptr<ZoomTool>\ m\_zoomTool;}
+\DoxyCodeLine{\ \ \ \ std::unique\_ptr<PanTool>\ m\_panTool;}
+\DoxyCodeLine{\ \ \ \ std::unique\_ptr<RulerTool>\ m\_rulerTool;}
+\DoxyCodeLine{\ \ \ \ std::unique\_ptr<AngleTool>\ m\_angleTool;}
+\DoxyCodeLine{\ \ \ \ std::unique\_ptr<ResetTool>\ m\_resetTool;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ State}}
+\DoxyCodeLine{\ \ \ \ ToolType\ m\_currentTool;}
+\DoxyCodeLine{\ \ \ \ ViewportLayout\ m\_currentLayout;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ m\_activeViewportIndex;}
+\DoxyCodeLine{\ \ \ \ std::array<DicomMetadata,\ 4>\ m\_viewportMetadata;}
+\DoxyCodeLine{\ \ \ \ std::array<ViewportState,\ 4>\ m\_viewportStates;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md625}{}\doxysubsection{\texorpdfstring{IPage\+Action Interface}{IPage\+Action Interface}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md625}
+\doxylink{requirements_The}{The} delegate implements {\ttfamily \doxylink{class_i_page_action}{IPage\+Action}} for page lifecycle management:\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ IPageAction\ methods}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ apply();\ \ \ \textcolor{comment}{//\ Save\ intermediate\ state}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ accept();\ \ \textcolor{comment}{//\ Complete\ viewing\ session,\ emit\ closeRequested()}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ reject();\ \ \textcolor{comment}{//\ Cancel\ session,\ emit\ closeRequested()}}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md627}{}\doxysection{\texorpdfstring{4. View Layer Components}{4. View Layer Components}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md627}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md628}{}\doxysubsection{\texorpdfstring{4.\+1 Image\+Viewer\+Page}{4.\+1 Image\+Viewer\+Page}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md628}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_image_viewer_page_8h_source}{View/\+\+Page/\+\+Image\+Viewer\+Page.\+h}/\+cpp/\+ui}
+
+\doxylink{requirements_The}{The} main page widget containing the entire image viewer interface.
+
+{\bfseries{Layout Structure:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ImageViewerPage\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ ┌─────────┬───────────────────────────┬─────────────┐\ │}
+\DoxyCodeLine{│\ \ │\ \ Tool\ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ Thumbnail\ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ Panel\ \ │\ \ \ \ \ \ ViewportGrid\ \ \ \ \ \ \ \ \ │\ \ \ \ Panel\ \ \ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ (\string~60px)│\ \ \ \ \ \ \ (expandable)\ \ \ \ \ \ \ \ │\ \ (\string~150px)\ \ \ │\ │}
+\DoxyCodeLine{│\ \ │\ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ (collapsible)│\ │}
+\DoxyCodeLine{│\ \ └─────────┴───────────────────────────┴─────────────┘\ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ └───────\ QSplitter\ (resizable)\ ──────┘\ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+
+
+{\bfseries{Styling:\+}}
+\begin{DoxyItemize}
+\item Dark theme:\+ {\ttfamily background-\/color:\+ \doxylink{structrgb}{rgb(30, 30, 30)};}
+\item Splitter initial sizes:\+ {\ttfamily \{60, 700, 150\}}
+\end{DoxyItemize}
+
+{\bfseries{Signals:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Tool\ selection}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ toolSelected(ToolType\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ layoutSelected(ViewportLayout\ layout);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Action\ buttons}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ openFileRequested();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ invertRequested();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ resetViewRequested();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ fitToWindowRequested();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Viewport\ interactions}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ activeViewportChanged(\textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ viewportMousePressed(\textcolor{keywordtype}{int}\ index,\ QPointF\ pos,\ Qt::MouseButton,\ Qt::KeyboardModifiers);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ viewportMouseMoved(\textcolor{keywordtype}{int}\ index,\ QPointF\ pos,\ Qt::MouseButton,\ Qt::KeyboardModifiers);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ viewportMouseReleased(\textcolor{keywordtype}{int}\ index,\ QPointF\ pos,\ Qt::MouseButton,\ Qt::KeyboardModifiers);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ viewportMouseWheelScrolled(\textcolor{keywordtype}{int}\ index,\ \textcolor{keywordtype}{int}\ delta,\ QPointF\ pos,\ Qt::KeyboardModifiers);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ viewportMouseDoubleClicked(\textcolor{keywordtype}{int}\ index,\ QPointF\ pos,\ Qt::MouseButton);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Thumbnails}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ thumbnailClicked(\textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id},\ \textcolor{keywordtype}{bool}\ isSeries);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ thumbnailDoubleClicked(\textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id},\ \textcolor{keywordtype}{bool}\ isSeries);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Drag\ \&\ drop}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ filesDropped(QStringList\ paths);}
+
+\end{DoxyCode}
+
+
+{\bfseries{Keyboard Shortcuts:\+}} 
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Key  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Action  \\
+{\ttfamily Z}  &Zoom tool  \\
+{\ttfamily P}  &Pan tool  \\
+{\ttfamily W}  &Window/\+\+Level tool  \\
+{\ttfamily R}  &Ruler tool  \\
+{\ttfamily A}  &Angle tool  \\
+{\ttfamily I}  &Invert image  \\
+{\ttfamily F}  &Fit to window  \\
+{\ttfamily 1}  &Single (1x1) layout  \\
+{\ttfamily 2}  &1x2 layout  \\
+{\ttfamily 4}  &2x2 layout  \\
+{\ttfamily Ctrl+O}  &Open file  \\
+{\ttfamily Delete} /\+ {\ttfamily Backspace}  &Delete selected ruler/\+angle  \\
+{\ttfamily Ctrl+\+Delete}  &Clear all rulers/\+angles  \\
+{\ttfamily Escape}  &Close Image\+Viewer  \\
+\end{DoxyTable}
+
+
+{\bfseries{Drag \& Drop:\+}} Accepts local file URLs, emits {\ttfamily files\+Dropped()} signal.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md629}{}\doxysubsection{\texorpdfstring{4.\+2 Viewport\+Grid}{4.\+2 Viewport\+Grid}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md629}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_viewport_grid_8h_source}{View/\+\+Widget/\+\+Viewport\+Grid.\+h}/\+cpp/\+ui}
+
+Container managing 4 {\ttfamily \doxylink{class_image_viewport}{Image\+Viewport}} widgets in configurable layouts.
+
+{\bfseries{Key Methods:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_image_viewport}{ImageViewport}}*\ getViewport(\textcolor{keywordtype}{int}\ index);\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Access\ viewport\ (0-\/3)}}
+\DoxyCodeLine{\doxymbox{\hyperlink{class_q_v_t_k_open_g_l_native_widget}{QVTKOpenGLNativeWidget}}*\ getVtkWidget(\textcolor{keywordtype}{int}\ index);\ \textcolor{comment}{//\ Get\ VTK\ render\ widget}}
+\DoxyCodeLine{std::array<QVTKOpenGLNativeWidget*,\ 4>\ getAllVtkWidgets();}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setViewportLayout(ViewportLayout\ layout);\ \ \ \textcolor{comment}{//\ Switch\ layout}}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ activeViewportIndex()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setActiveViewport(\textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ visibleViewportCount()\ \textcolor{keyword}{const};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Returns\ 1,\ 2,\ or\ 4}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Grid Configuration:\+}}
+\begin{DoxyItemize}
+\item Container margins:\+ 0
+\item Spacing:\+ 2px between viewports
+\item Stretch factors:\+ Viewports expand to fill space
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md630}{}\doxysubsection{\texorpdfstring{4.\+3 Image\+Viewport}{4.\+3 Image\+Viewport}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md630}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_image_viewport_8h_source}{View/\+\+Widget/\+\+Image\+Viewport.\+h}/\+cpp/\+ui}
+
+Single viewport wrapper containing a {\ttfamily \doxylink{class_q_v_t_k_open_g_l_native_widget}{QVTKOpen\+GLNative\+Widget}}.
+
+{\bfseries{Styling:\+}}
+\begin{DoxyItemize}
+\item Active:\+ Green border {\ttfamily 2px solid \#00FF00}
+\item Inactive:\+ Gray border {\ttfamily 1px solid \#404040}
+\end{DoxyItemize}
+
+{\bfseries{Signals:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ activated(\textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ mousePressed(\textcolor{keywordtype}{int}\ index,\ QPointF\ pos,\ Qt::MouseButton,\ Qt::KeyboardModifiers);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ mouseMoved(\textcolor{keywordtype}{int}\ index,\ QPointF\ pos,\ Qt::MouseButton,\ Qt::KeyboardModifiers);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ mouseReleased(\textcolor{keywordtype}{int}\ index,\ QPointF\ pos,\ Qt::MouseButton,\ Qt::KeyboardModifiers);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ mouseWheelScrolled(\textcolor{keywordtype}{int}\ index,\ \textcolor{keywordtype}{int}\ delta,\ QPointF\ pos,\ Qt::KeyboardModifiers);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ mouseDoubleClicked(\textcolor{keywordtype}{int}\ index,\ QPointF\ pos,\ Qt::MouseButton);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md631}{}\doxysubsection{\texorpdfstring{4.\+4 Image\+Tool\+Panel}{4.\+4 Image\+Tool\+Panel}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md631}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_image_tool_panel_8h_source}{View/\+\+Widget/\+\+Image\+Tool\+Panel.\+h}/\+cpp/\+ui}
+
+Left toolbar panel with tool and layout buttons.
+
+{\bfseries{Tool Buttons (6 total):\+}} 
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Tool  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Icon  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+Zoom  &{\ttfamily zoom.\+png}  &Zoom in/\+out  \\
+Pan  &{\ttfamily pan.\+png}  &Move image  \\
+Window/\+\+Level  &{\ttfamily windowlevel.\+png}  &Adjust contrast/\+brightness  \\
+Ruler  &{\ttfamily ruler.\+png}  &Measure distance  \\
+Angle  &{\ttfamily angle.\+png}  &Measure angle  \\
+Reset  &{\ttfamily reset.\+png}  &Reset view  \\
+\end{DoxyTable}
+
+
+{\bfseries{Layout Buttons (3 total):\+}} 
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Layout  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Icon  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+1x1  &{\ttfamily layout1x1.\+png}  &Single viewport  \\
+1x2  &{\ttfamily layout1x2.\+png}  &Two viewports horizontal  \\
+2x2  &{\ttfamily layout2x2.\+png}  &Four viewports grid  \\
+\end{DoxyTable}
+
+
+{\bfseries{Action Buttons:\+}}
+\begin{DoxyItemize}
+\item Open File
+\item Invert
+\item Fit to Window
+\end{DoxyItemize}
+
+{\bfseries{Button Groups:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily m\+\_\+tool\+Button\+Group} (exclusive) -\/ Only one tool active at a time
+\item {\ttfamily m\+\_\+layout\+Button\+Group} (exclusive) -\/ Only one layout active at a time
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md632}{}\doxysubsection{\texorpdfstring{4.\+5 Series\+Thumbnail\+Panel}{4.\+5 Series\+Thumbnail\+Panel}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md632}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_series_thumbnail_panel_8h_source}{View/\+\+Widget/\+\+Series\+Thumbnail\+Panel.\+h}/\+cpp/\+ui}
+
+Right collapsible panel showing series/\+image thumbnails.
+
+{\bfseries{\doxylink{struct_thumbnail_info}{Thumbnail\+Info} Structure:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_thumbnail_info}{ThumbnailInfo}}\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ id;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Series\ or\ Instance\ ID}}
+\DoxyCodeLine{\ \ \ \ QString\ label;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Display\ text}}
+\DoxyCodeLine{\ \ \ \ QString\ description;\ \ \ \ \textcolor{comment}{//\ Optional\ description}}
+\DoxyCodeLine{\ \ \ \ QPixmap\ thumbnail;\ \ \ \ \ \ \textcolor{comment}{//\ Thumbnail\ image}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ imageCount;\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Images\ in\ series}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isSeries;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Boolean\ flag}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Key Methods:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clear();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ addThumbnail(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{struct_thumbnail_info}{ThumbnailInfo}}\&\ info);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setThumbnails(\textcolor{keyword}{const}\ QVector<ThumbnailInfo>\&\ thumbnails);}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ selectedId()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setSelectedId(\textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id});}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setExpanded(\textcolor{keywordtype}{bool}\ expanded);}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ isExpanded()\ \textcolor{keyword}{const};}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md634}{}\doxysection{\texorpdfstring{5. Tool System}{5. Tool System}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md634}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md635}{}\doxysubsection{\texorpdfstring{5.\+1 IImage\+Tool Base Interface}{5.\+1 IImage\+Tool Base Interface}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md635}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_i_image_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+IImage\+Tool.\+h}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class\ }IImageTool\ :\ \textcolor{keyword}{public}\ QObject\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Properties}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ ToolType\ type()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ QString\ name()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ QString\ tooltip()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ QIcon\ icon()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ isActive()\ \textcolor{keyword}{const}\ =\ 0;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Lifecycle}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ activate()\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ deactivate()\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ reset()\ =\ 0;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Event\ handlers}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ onMousePress(QPointF\ pos,\ Qt::MouseButton\ button)\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ onMouseMove(QPointF\ pos)\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ onMouseRelease(QPointF\ pos,\ Qt::MouseButton\ button)\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ onMouseWheel(\textcolor{keywordtype}{int}\ delta,\ QPointF\ pos)\ =\ 0;}
+\DoxyCodeLine{}
+\DoxyCodeLine{signals:}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ zoomRequested(\textcolor{keywordtype}{double}\ factor,\ QPointF\ centerPos);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ panRequested(\textcolor{keywordtype}{double}\ deltaX,\ \textcolor{keywordtype}{double}\ deltaY);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ windowLevelChanged(\textcolor{keywordtype}{double}\ window,\ \textcolor{keywordtype}{double}\ level);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ measurementLineUpdated(\textcolor{keyword}{const}\ MeasurementLine\&\ line);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ measurementLineCompleted(\textcolor{keyword}{const}\ MeasurementLine\&\ line);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ measurementAngleUpdated(\textcolor{keyword}{const}\ MeasurementAngle\&\ angle);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ measurementAngleCompleted(\textcolor{keyword}{const}\ MeasurementAngle\&\ angle);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ resetRequested();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ cursorChanged(Qt::CursorShape\ cursor);}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md636}{}\doxysubsection{\texorpdfstring{5.\+2 Zoom\+Tool}{5.\+2 Zoom\+Tool}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md636}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_zoom_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Zoom\+Tool.\+h}/\+cpp}
+
+{\bfseries{Interaction:\+}}
+\begin{DoxyItemize}
+\item Left drag up → Zoom in
+\item Left drag down → Zoom out
+\item Mouse wheel → Zoom in/\+out
+\item Double-\/click → Fit to window
+\end{DoxyItemize}
+
+{\bfseries{Configuration:\+}}
+\begin{DoxyItemize}
+\item Zoom limits:\+ 0.\+1x to 20x (default)
+\item Sensitivity:\+ 0.\+01 (default)
+\end{DoxyItemize}
+
+{\bfseries{Signal:\+}} {\ttfamily zoom\+Requested(double factor, QPoint\+F center\+Pos)}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md637}{}\doxysubsection{\texorpdfstring{5.\+3 Pan\+Tool}{5.\+3 Pan\+Tool}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md637}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_pan_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Pan\+Tool.\+h}/\+cpp}
+
+{\bfseries{Interaction:\+}}
+\begin{DoxyItemize}
+\item Left drag → Pan image
+\item Middle drag → Always pans (independent of tool selection)
+\end{DoxyItemize}
+
+{\bfseries{Configuration:\+}}
+\begin{DoxyItemize}
+\item Sensitivity:\+ 1.\+0 (default)
+\end{DoxyItemize}
+
+{\bfseries{Signal:\+}} {\ttfamily pan\+Requested(double delta\+X, double delta\+Y)}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md638}{}\doxysubsection{\texorpdfstring{5.\+4 Window\+Level\+Tool}{5.\+4 Window\+Level\+Tool}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md638}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_window_level_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Window\+Level\+Tool.\+h}/\+cpp}
+
+{\bfseries{Interaction:\+}}
+\begin{DoxyItemize}
+\item Horizontal drag → Adjust window width (contrast)
+\item Vertical drag → Adjust window center/\+level (brightness)
+\item Mouse wheel → Quick adjustment
+\end{DoxyItemize}
+
+{\bfseries{Default Values:\+}}
+\begin{DoxyItemize}
+\item Window:\+ 256
+\item Level:\+ 128
+\end{DoxyItemize}
+
+{\bfseries{Signal:\+}} {\ttfamily window\+Level\+Changed(double window, double level)}
+
+{\bfseries{Purpose:\+}} Critical for medical imaging -\/ adjusts contrast/\+brightness for different tissue visualization.\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md639}{}\doxysubsection{\texorpdfstring{5.\+5 Ruler\+Tool}{5.\+5 Ruler\+Tool}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md639}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_ruler_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Ruler\+Tool.\+h}/\+cpp}
+
+{\bfseries{Interaction:\+}}
+\begin{DoxyItemize}
+\item Click and drag → Draw measurement line
+\item Release → Complete measurement
+\item Click on handle → Start dragging handle
+\item Drag handle → Resize ruler
+\item Click on line → Select ruler
+\item Delete key → Delete selected ruler
+\item Ctrl+\+Delete → Clear all rulers
+\end{DoxyItemize}
+
+{\bfseries{Features:\+}}
+\begin{DoxyItemize}
+\item Calculates distance in mm AND pixels
+\item Uses pixel spacing from DICOM metadata
+\item Maintains vector of completed measurements
+\item Interactive editing with draggable handles
+\item Visual feedback (hover highlighting, selection)
+\end{DoxyItemize}
+
+{\bfseries{Key Methods:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setPixelSpacing(\textcolor{keywordtype}{double}\ spacingX,\ \textcolor{keywordtype}{double}\ spacingY);}
+\DoxyCodeLine{QVector<MeasurementLine>\ getMeasurements()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clearMeasurements();}
+\DoxyCodeLine{MeasurementLine\ currentMeasurement()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ isDrawing()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Interactive\ editing}}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ hitTestHandle(\textcolor{keyword}{const}\ QPointF\&\ pos,\ \textcolor{keywordtype}{int}\&\ rulerId,\ \textcolor{keywordtype}{bool}\&\ isStartHandle)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ hitTestRuler(\textcolor{keyword}{const}\ QPointF\&\ pos)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ selectRuler(\textcolor{keywordtype}{int}\ rulerId);}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ selectedRuler()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ deleteRuler(\textcolor{keywordtype}{int}\ rulerId);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ deleteSelectedRuler();}
+
+\end{DoxyCode}
+
+
+{\bfseries{Signals:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily measurement\+Line\+Updated(\+Measurement\+Line)} -\/ Live updates while drawing
+\item {\ttfamily measurement\+Line\+Completed(\+Measurement\+Line)} -\/ When released
+\item {\ttfamily ruler\+Selected(int ruler\+Id)} -\/ When ruler is selected
+\item {\ttfamily ruler\+Modified(int ruler\+Id, Measurement\+Line)} -\/ When ruler is resized
+\item {\ttfamily ruler\+Deleted(int ruler\+Id)} -\/ When ruler is deleted
+\item {\ttfamily measurements\+Changed()} -\/ General refresh signal
+\item {\ttfamily handle\+Hovered(int ruler\+Id, bool is\+Start\+Handle)} -\/ Handle hover state
+\item {\ttfamily handle\+Hover\+Cleared()} -\/ No handle hovered
+\end{DoxyItemize}
+
+{\bfseries{Edit States:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{enum\ class}\ RulerEditState\ \{}
+\DoxyCodeLine{\ \ \ \ NONE,\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Not\ editing}}
+\DoxyCodeLine{\ \ \ \ DRAWING\_NEW,\ \ \ \ \textcolor{comment}{//\ Drawing\ new\ ruler}}
+\DoxyCodeLine{\ \ \ \ DRAGGING\_START,\ \textcolor{comment}{//\ Dragging\ start\ handle}}
+\DoxyCodeLine{\ \ \ \ DRAGGING\_END\ \ \ \ \textcolor{comment}{//\ Dragging\ end\ handle}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md640}{}\doxysubsection{\texorpdfstring{5.\+6 Angle\+Tool}{5.\+6 Angle\+Tool}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md640}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_angle_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Angle\+Tool.\+h}/\+cpp}
+
+{\bfseries{Interaction:\+}}
+\begin{DoxyEnumerate}
+\item Click → Place first point (arm 1 endpoint)
+\item Click → Place vertex (middle point where angle is measured)
+\item Click → Place third point (arm 2 endpoint) and complete angle
+\item Click on handle → Start dragging handle
+\item Drag handle → Resize angle
+\item Click on arm → Select angle
+\item Delete key → Delete selected angle
+\item Ctrl+\+Delete → Clear all angles
+\item Right-\/click → Cancel current placement
+\end{DoxyEnumerate}
+
+{\bfseries{Features:\+}}
+\begin{DoxyItemize}
+\item Three-\/point angle measurement
+\item Visible arc at vertex showing measured angle in degrees
+\item Interactive editing with draggable handles at all three points
+\item Visual feedback (hover highlighting, selection)
+\item Dynamic angle recalculation during drag
+\end{DoxyItemize}
+
+{\bfseries{Key Methods:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{QVector<MeasurementAngle>\ getMeasurements()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clearMeasurements();}
+\DoxyCodeLine{MeasurementAngle\ currentMeasurement()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{AngleEditState\ editState()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ isPlacing()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Interactive\ editing}}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ hitTestHandle(\textcolor{keyword}{const}\ QPointF\&\ pos,\ \textcolor{keywordtype}{int}\&\ angleId,\ AngleHandleType\&\ handleType)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ hitTestAngle(\textcolor{keyword}{const}\ QPointF\&\ pos)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ selectAngle(\textcolor{keywordtype}{int}\ angleId);}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ selectedAngle()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ deleteAngle(\textcolor{keywordtype}{int}\ angleId);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ deleteSelectedAngle();}
+
+\end{DoxyCode}
+
+
+{\bfseries{Signals:\+}}
+\begin{DoxyItemize}
+\item {\ttfamily measurement\+Angle\+Updated(\+Measurement\+Angle)} -\/ Live updates during placement
+\item {\ttfamily measurement\+Angle\+Completed(\+Measurement\+Angle)} -\/ When third point placed
+\item {\ttfamily angle\+Selected(int angle\+Id)} -\/ When angle is selected
+\item {\ttfamily angle\+Modified(int angle\+Id, Measurement\+Angle)} -\/ When angle is resized
+\item {\ttfamily angle\+Deleted(int angle\+Id)} -\/ When angle is deleted
+\item {\ttfamily measurements\+Changed()} -\/ General refresh signal
+\item {\ttfamily handle\+Hovered(int angle\+Id, Angle\+Handle\+Type)} -\/ Handle hover state
+\item {\ttfamily handle\+Hover\+Cleared()} -\/ No handle hovered
+\end{DoxyItemize}
+
+{\bfseries{Edit States:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{enum\ class}\ AngleEditState\ \{}
+\DoxyCodeLine{\ \ \ \ NONE,\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Not\ editing}}
+\DoxyCodeLine{\ \ \ \ PLACING\_POINT1,\ \ \ \textcolor{comment}{//\ Placing\ first\ point}}
+\DoxyCodeLine{\ \ \ \ PLACING\_VERTEX,\ \ \ \textcolor{comment}{//\ Placing\ vertex}}
+\DoxyCodeLine{\ \ \ \ PLACING\_POINT2,\ \ \ \textcolor{comment}{//\ Placing\ third\ point}}
+\DoxyCodeLine{\ \ \ \ DRAGGING\_POINT1,\ \ \textcolor{comment}{//\ Dragging\ first\ point\ handle}}
+\DoxyCodeLine{\ \ \ \ DRAGGING\_VERTEX,\ \ \textcolor{comment}{//\ Dragging\ vertex\ handle}}
+\DoxyCodeLine{\ \ \ \ DRAGGING\_POINT2\ \ \ \textcolor{comment}{//\ Dragging\ third\ point\ handle}}
+\DoxyCodeLine{\};}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{keyword}{enum\ class}\ AngleHandleType\ \{}
+\DoxyCodeLine{\ \ \ \ NONE,}
+\DoxyCodeLine{\ \ \ \ POINT1,}
+\DoxyCodeLine{\ \ \ \ VERTEX,}
+\DoxyCodeLine{\ \ \ \ POINT2}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md641}{}\doxysubsection{\texorpdfstring{5.\+7 Reset\+Tool}{5.\+7 Reset\+Tool}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md641}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_reset_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Reset\+Tool.\+h}/\+cpp}
+
+{\bfseries{Purpose:\+}} "{}\+Instant action"{} tool -\/ clicking triggers reset.
+
+{\bfseries{Signal:\+}} {\ttfamily reset\+Requested()}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md643}{}\doxysection{\texorpdfstring{6. Rendering Layer (VTK)}{6. Rendering Layer (VTK)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md643}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md644}{}\doxysubsection{\texorpdfstring{6.\+1 Vtk\+Viewport\+Renderer}{6.\+1 Vtk\+Viewport\+Renderer}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md644}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_vtk_viewport_renderer_8h_source}{Image\+Viewer/\+\+Rendering/\+\+Vtk\+Viewport\+Renderer.\+h}/\+cpp}
+
+Manages VTK rendering pipeline for a single viewport.
+
+{\bfseries{VTK Pipeline Components:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ VTK\ Rendering\ Pipeline\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ vtkImageData\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ vtkImageMapToWindowLevelColors\ (window/level\ filter)\ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ vtkImageActor\ (image\ display)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ vtkRenderer\ (scene)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ vtkGenericOpenGLRenderWindow\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ \ \ \ \ ▼\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ QVTKOpenGLNativeWidget\ (Qt\ widget)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└─────────────────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+
+
+{\bfseries{Core Functionality:\+}}
+
+{\bfseries{Image Display:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setImageData(\doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ data,\ \textcolor{keywordtype}{bool}\ autoWindowLevel\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clearImage();}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ hasImage()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ getImageData()\ \textcolor{keyword}{const};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Window/\+\+Level Operations:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setWindowLevel(\textcolor{keywordtype}{double}\ window,\ \textcolor{keywordtype}{double}\ level);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ getWindowLevel(\textcolor{keywordtype}{double}\&\ window,\ \textcolor{keywordtype}{double}\&\ level)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ resetWindowLevel();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ autoWindowLevel();\ \ \textcolor{comment}{//\ Calculate\ from\ image\ histogram}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Camera/\+\+View Operations:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setZoom(\textcolor{keywordtype}{double}\ factor);\ \ \textcolor{comment}{//\ 1.0\ =\ 100\%}}
+\DoxyCodeLine{\textcolor{keywordtype}{double}\ getZoom()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setPan(\textcolor{keywordtype}{double}\ deltaX,\ \textcolor{keywordtype}{double}\ deltaY);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ getPan(\textcolor{keywordtype}{double}\&\ panX,\ \textcolor{keywordtype}{double}\&\ panY)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ resetCamera();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ fitToWindow();}
+
+\end{DoxyCode}
+
+
+{\bfseries{Image Manipulation:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setInverted(\textcolor{keywordtype}{bool}\ inverted);}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ isInverted()\ \textcolor{keyword}{const};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Overlay Text (4 corners):\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setOverlayText(OverlayCorner\ corner,\ \textcolor{keyword}{const}\ QString\&\ text);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clearOverlayText(OverlayCorner\ corner);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clearAllOverlayText();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setOverlayVisible(\textcolor{keywordtype}{bool}\ visible);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setOverlayColor(\textcolor{keyword}{const}\ QColor\&\ color);\ \ \textcolor{comment}{//\ Default:\ green\ \#00FF00}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setOverlayFontSize(\textcolor{keywordtype}{int}\ size);}
+
+\end{DoxyCode}
+
+
+{\bfseries{Crosshairs:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setCrosshairsVisible(\textcolor{keywordtype}{bool}\ visible);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setCrosshairPosition(\textcolor{keywordtype}{double}\ x,\ \textcolor{keywordtype}{double}\ y);}
+
+\end{DoxyCode}
+
+
+{\bfseries{State Management:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ applyState(\textcolor{keyword}{const}\ ViewportState\&\ state);}
+\DoxyCodeLine{ViewportState\ getState()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ getImageDimensions(\textcolor{keywordtype}{int}\&\ width,\ \textcolor{keywordtype}{int}\&\ height)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ getImageSpacing(\textcolor{keywordtype}{double}\&\ spacingX,\ \textcolor{keywordtype}{double}\&\ spacingY)\ \textcolor{keyword}{const};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Signals:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ windowLevelChanged(\textcolor{keywordtype}{double}\ window,\ \textcolor{keywordtype}{double}\ level);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ zoomChanged(\textcolor{keywordtype}{double}\ factor);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ imageChanged();}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md645}{}\doxysubsection{\texorpdfstring{6.\+2 Multi\+Viewport\+Manager}{6.\+2 Multi\+Viewport\+Manager}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md645}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_multi_viewport_manager_8h_source}{Image\+Viewer/\+\+Rendering/\+\+Multi\+Viewport\+Manager.\+h}/\+cpp}
+
+Manages up to 4 {\ttfamily Vtk\+Viewport\+Renderer} instances with synchronized operations.
+
+{\bfseries{Initialization:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ initialize(std::array<QVTKOpenGLNativeWidget*,\ 4>\ widgets);}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ isInitialized()\ \textcolor{keyword}{const};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Layout Management:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setLayout(ViewportLayout\ layout);}
+\DoxyCodeLine{ViewportLayout\ currentLayout()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ visibleViewportCount()\ \textcolor{keyword}{const};\ \ \textcolor{comment}{//\ Returns\ 1,\ 2,\ or\ 4}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Viewport Access:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{VtkViewportRenderer*\ getRenderer(\textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ activeViewportIndex()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setActiveViewport(\textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{VtkViewportRenderer*\ activeRenderer();}
+
+\end{DoxyCode}
+
+
+{\bfseries{Image Operations:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setImageData(\textcolor{keywordtype}{int}\ viewportIndex,\ \doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}}*\ data,\ \textcolor{keywordtype}{bool}\ autoWindowLevel\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clearViewport(\textcolor{keywordtype}{int}\ viewportIndex);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clearAllViewports();}
+
+\end{DoxyCode}
+
+
+{\bfseries{Linked Mode (synchronized viewports):\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setLinkedMode(\textcolor{keywordtype}{bool}\ linked);}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ isLinkedMode()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ synchronizeWindowLevel();\ \ \textcolor{comment}{//\ Apply\ active\ viewport's\ W/L\ to\ all}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ synchronizeZoom();\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Apply\ active\ viewport's\ zoom\ to\ all}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ synchronizePan();\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Apply\ active\ viewport's\ pan\ to\ all}}
+
+\end{DoxyCode}
+
+
+{\bfseries{Batch Operations:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ forEachVisibleViewport(std::function<\textcolor{keywordtype}{void}(VtkViewportRenderer*,\ \textcolor{keywordtype}{int})>\ func);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ forEachViewport(std::function<\textcolor{keywordtype}{void}(VtkViewportRenderer*,\ \textcolor{keywordtype}{int})>\ func);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ renderAll();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ renderViewport(\textcolor{keywordtype}{int}\ index);}
+
+\end{DoxyCode}
+
+
+{\bfseries{Signals:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ layoutChanged(ViewportLayout\ layout);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ activeViewportChanged(\textcolor{keywordtype}{int}\ index);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ viewportWindowLevelChanged(\textcolor{keywordtype}{int}\ viewportIndex,\ \textcolor{keywordtype}{double}\ window,\ \textcolor{keywordtype}{double}\ level);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ viewportZoomChanged(\textcolor{keywordtype}{int}\ viewportIndex,\ \textcolor{keywordtype}{double}\ factor);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ viewportImageChanged(\textcolor{keywordtype}{int}\ viewportIndex);}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md647}{}\doxysection{\texorpdfstring{7. Service Layer}{7. Service Layer}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md647}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md648}{}\doxysubsection{\texorpdfstring{7.\+1 Image\+Loader\+Service}{7.\+1 Image\+Loader\+Service}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md648}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_image_loader_service_8h_source}{Image\+Viewer/\+\+Service/\+\+Image\+Loader\+Service.\+h}/\+cpp}
+
+Unified image loading service supporting multiple formats.
+
+{\bfseries{Supported Formats:\+}}
+\begin{DoxyItemize}
+\item DICOM ({\ttfamily .dcm}, {\ttfamily .dicom}, files without extension)
+\item PNG
+\item JPEG
+\item JPEG2000 (via DCMTK if available)
+\item BMP
+\item TIFF
+\end{DoxyItemize}
+
+{\bfseries{Full\+Image\+Load\+Result Structure:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }FullImageLoadResult\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ success;}
+\DoxyCodeLine{\ \ \ \ QString\ errorMessage;}
+\DoxyCodeLine{\ \ \ \ DicomMetadata\ metadata;}
+\DoxyCodeLine{\ \ \ \ vtkSmartPointer<vtkImageData>\ imageData;}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+
+
+{\bfseries{Public Methods:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ File-\/based\ loading}}
+\DoxyCodeLine{FullImageLoadResult\ loadFromFile(\textcolor{keyword}{const}\ QString\&\ filePath);}
+\DoxyCodeLine{FullImageLoadResult\ loadFromBytes(\textcolor{keyword}{const}\ QByteArray\&\ data,\ ImageFormat\ format\ =\ UNKNOWN);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Format-\/specific\ methods}}
+\DoxyCodeLine{FullImageLoadResult\ loadDicom(\textcolor{keyword}{const}\ QString\&\ filePath);}
+\DoxyCodeLine{FullImageLoadResult\ loadDicomFromBytes(\textcolor{keyword}{const}\ QByteArray\&\ data);}
+\DoxyCodeLine{FullImageLoadResult\ loadPng(\textcolor{keyword}{const}\ QString\&\ filePath);}
+\DoxyCodeLine{FullImageLoadResult\ loadJpeg(\textcolor{keyword}{const}\ QString\&\ filePath);}
+\DoxyCodeLine{FullImageLoadResult\ loadBmp(\textcolor{keyword}{const}\ QString\&\ filePath);}
+\DoxyCodeLine{FullImageLoadResult\ loadTiff(\textcolor{keyword}{const}\ QString\&\ filePath);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Utility\ methods}}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ isSupportedFormat(\textcolor{keyword}{const}\ QString\&\ filePath)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{ImageFormat\ detectFormatFromContent(\textcolor{keyword}{const}\ QByteArray\&\ data)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkImageData>}}\ convertToVtkImageData(...);}
+\DoxyCodeLine{DicomMetadata\ createDefaultMetadata(\textcolor{keywordtype}{int}\ width,\ \textcolor{keywordtype}{int}\ height,\ \textcolor{keywordtype}{int}\ bitsAllocated);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md649}{}\doxysubsection{\texorpdfstring{7.\+2 Dicom\+Parser\+Service}{7.\+2 Dicom\+Parser\+Service}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md649}
+{\bfseries{Location:\+}} {\ttfamily \doxylink{_dicom_parser_service_8h_source}{Image\+Viewer/\+\+Service/\+\+Dicom\+Parser\+Service.\+h}/\+cpp}
+
+DCMTK-\/based DICOM file parser.
+
+{\bfseries{Features:\+}}
+\begin{DoxyItemize}
+\item Parse DICOM from file or memory
+\item Extract comprehensive metadata
+\item Extract raw pixel data
+\item Auto-\/detect bit depth and signed/\+unsigned
+\item Handle various transfer syntaxes
+\end{DoxyItemize}
+
+{\bfseries{Public Methods:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{DicomMetadata\ parseMetadata(\textcolor{keyword}{const}\ QString\&\ filePath);}
+\DoxyCodeLine{DicomMetadata\ parseMetadata(\textcolor{keyword}{const}\ QByteArray\&\ data);}
+\DoxyCodeLine{QByteArray\ extractPixelData(\textcolor{keyword}{const}\ QString\&\ filePath);}
+\DoxyCodeLine{QByteArray\ extractPixelData(\textcolor{keyword}{const}\ QByteArray\&\ data);}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ loadDicomFile(\textcolor{keyword}{const}\ QString\&\ filePath,\ DicomMetadata\&\ \doxymbox{\hyperlink{namespacemetadata}{metadata}},\ QByteArray\&\ pixelData);}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ loadDicomData(\textcolor{keyword}{const}\ QByteArray\&\ data,\ DicomMetadata\&\ \doxymbox{\hyperlink{namespacemetadata}{metadata}},\ QByteArray\&\ pixelData);}
+\DoxyCodeLine{\textcolor{keywordtype}{bool}\ isDicomFile(\textcolor{keyword}{const}\ QString\&\ filePath)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{QString\ lastError()\ \textcolor{keyword}{const};}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md651}{}\doxysection{\texorpdfstring{8. Layout System}{8. Layout System}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md651}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md652}{}\doxysubsection{\texorpdfstring{Viewport\+Layout Enum}{Viewport\+Layout Enum}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md652}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{enum\ class}\ ViewportLayout\ \{}
+\DoxyCodeLine{\ \ \ \ SINGLE,\ \ \ \ \ \ \textcolor{comment}{//\ 1x1\ -\/\ Single\ viewport}}
+\DoxyCodeLine{\ \ \ \ ONE\_BY\_TWO,\ \ \textcolor{comment}{//\ 1x2\ -\/\ Two\ viewports\ side\ by\ side}}
+\DoxyCodeLine{\ \ \ \ TWO\_BY\_ONE,\ \ \textcolor{comment}{//\ 2x1\ -\/\ Two\ viewports\ stacked}}
+\DoxyCodeLine{\ \ \ \ TWO\_BY\_TWO\ \ \ \textcolor{comment}{//\ 2x2\ -\/\ Four\ viewports\ in\ grid}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md653}{}\doxysubsection{\texorpdfstring{Helper Functions}{Helper Functions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md653}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{int}\ viewportCount(ViewportLayout\ layout);\ \ \textcolor{comment}{//\ Returns\ 1,\ 2,\ or\ 4}}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ layoutDimensions(ViewportLayout\ layout,\ \textcolor{keywordtype}{int}\&\ rows,\ \textcolor{keywordtype}{int}\&\ cols);}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md654}{}\doxysubsection{\texorpdfstring{Layout Configurations}{Layout Configurations}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md654}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{SINGLE\ (1x1):\ \ \ \ \ \ \ \ \ \ ONE\_BY\_TWO\ (1x2):\ \ \ \ \ \ TWO\_BY\_TWO\ (2x2):}
+\DoxyCodeLine{┌───────────┐\ \ \ \ \ \ \ \ \ \ ┌─────┬─────┐\ \ \ \ \ \ \ \ \ \ ┌─────┬─────┐}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ │\ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ │\ \ 0\ \ │\ \ 1\ \ │}
+\DoxyCodeLine{│\ \ \ \ \ 0\ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ │\ \ 0\ \ │\ \ 1\ \ │\ \ \ \ \ \ \ \ \ \ ├─────┼─────┤}
+\DoxyCodeLine{│\ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ │\ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ │\ \ 2\ \ │\ \ 3\ \ │}
+\DoxyCodeLine{└───────────┘\ \ \ \ \ \ \ \ \ \ └─────┴─────┘\ \ \ \ \ \ \ \ \ \ └─────┴─────┘}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md655}{}\doxysubsection{\texorpdfstring{Implementation in Viewport\+Grid}{Implementation in Viewport\+Grid}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md655}
+
+\begin{DoxyItemize}
+\item Maintains array of 4 {\ttfamily \doxylink{class_image_viewport}{Image\+Viewport}} objects
+\item Uses {\ttfamily QGrid\+Layout} with dynamic repositioning
+\item {\ttfamily update\+Grid\+Layout()} reconfigures grid based on layout
+\item Shows/\+hides viewports based on current layout
+\item Maintains active viewport validity (resets if hidden)
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md657}{}\doxysection{\texorpdfstring{9. User Interactions}{9. User Interactions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md657}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md658}{}\doxysubsection{\texorpdfstring{9.\+1 Tool Interactions}{9.\+1 Tool Interactions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md658}
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Tool  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Mouse Action  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Result  \\
+{\bfseries{Zoom}}  &Left drag up  &Zoom in  \\
+&Left drag down  &Zoom out  \\
+&Mouse wheel  &Zoom in/\+out  \\
+&Double-\/click  &Fit to window  \\
+{\bfseries{Pan}}  &Left drag  &Move image  \\
+&Middle drag  &Always pans  \\
+{\bfseries{Window/\+\+Level}}  &Horizontal drag  &Adjust contrast (window)  \\
+&Vertical drag  &Adjust brightness (level)  \\
+&Mouse wheel  &Quick adjustment  \\
+{\bfseries{Ruler}}  &Click + drag  &Draw measurement line  \\
+&Release  &Complete measurement  \\
+&Click on handle  &Start dragging handle  \\
+&Drag handle  &Resize ruler  \\
+&Click on line  &Select ruler  \\
+&Delete key  &Delete selected ruler  \\
+{\bfseries{Angle}}  &Click (1st)  &Place first point  \\
+&Click (2nd)  &Place vertex  \\
+&Click (3rd)  &Complete angle  \\
+&Click on handle  &Start dragging handle  \\
+&Drag handle  &Resize angle  \\
+&Click on arm  &Select angle  \\
+&Right-\/click  &Cancel placement  \\
+&Delete key  &Delete selected angle  \\
+{\bfseries{Reset}}  &Click  &Reset to original state  \\
+\end{DoxyTable}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md659}{}\doxysubsection{\texorpdfstring{9.\+2 Viewport Interactions}{9.\+2 Viewport Interactions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md659}
+
+\begin{DoxyItemize}
+\item {\bfseries{Single-\/click}} on viewport → Activates that viewport
+\item {\bfseries{Active viewport}} → Green border ({\ttfamily \#00FF00})
+\item {\bfseries{Inactive viewport}} → Gray border ({\ttfamily \#404040})
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md660}{}\doxysubsection{\texorpdfstring{9.\+3 Thumbnail Panel Interactions}{9.\+3 Thumbnail Panel Interactions}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md660}
+
+\begin{DoxyItemize}
+\item {\bfseries{Single-\/click}} → Select thumbnail
+\item {\bfseries{Double-\/click}} → Load into active viewport
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md661}{}\doxysubsection{\texorpdfstring{9.\+4 Drag \& Drop}{9.\+4 Drag \& Drop}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md661}
+
+\begin{DoxyItemize}
+\item Drop image files onto {\ttfamily \doxylink{class_image_viewer_page}{Image\+Viewer\+Page}}
+\item Supported:\+ DICOM, PNG, JPEG, BMP, TIFF
+\item Emits {\ttfamily files\+Dropped(\+QString\+List)} signal
+\item Files distributed to visible viewports
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md662}{}\doxysubsection{\texorpdfstring{9.\+5 Keyboard Navigation}{9.\+5 Keyboard Navigation}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md662}
+See keyboard shortcuts in Section 4.1.
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md664}{}\doxysection{\texorpdfstring{10. Signal/\+\+Slot Data Flow}{10. Signal/\+\+Slot Data Flow}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md664}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md665}{}\doxysubsection{\texorpdfstring{Connection Hierarchy}{Connection Hierarchy}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md665}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ImageViewerPage\ (UI)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ signals}
+\DoxyCodeLine{\ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{ImageViewerPageDelegate\ (Business\ Logic)}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ commands}
+\DoxyCodeLine{\ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{MultiViewportManager}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ commands}
+\DoxyCodeLine{\ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{VtkViewportRenderer[0..3]}
+\DoxyCodeLine{\ \ \ \ \ \ \ │\ renders\ to}
+\DoxyCodeLine{\ \ \ \ \ \ \ ▼}
+\DoxyCodeLine{QVTKOpenGLNativeWidget[0..3]}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md666}{}\doxysubsection{\texorpdfstring{Interaction Flow Example (Zoom)}{Interaction Flow Example (Zoom)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md666}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1.\ User\ drags\ in\ viewport}
+\DoxyCodeLine{\ \ \ →\ ImageViewport.mouseMoveEvent()}
+\DoxyCodeLine{}
+\DoxyCodeLine{2.\ →\ emit\ mouseMoved(int\ index,\ QPointF\ pos,\ ...)}
+\DoxyCodeLine{}
+\DoxyCodeLine{3.\ →\ ViewportGrid\ forwards\ signal}
+\DoxyCodeLine{\ \ \ →\ ImageViewerPage.viewportMouseMoved()}
+\DoxyCodeLine{}
+\DoxyCodeLine{4.\ →\ ImageViewerPage\ emits}
+\DoxyCodeLine{\ \ \ →\ viewportMouseMoved(index,\ pos,\ ...)}
+\DoxyCodeLine{}
+\DoxyCodeLine{5.\ →\ ImageViewerPageDelegate.onViewportMouseMoved()\ [slot]}
+\DoxyCodeLine{}
+\DoxyCodeLine{6.\ →\ Delegate\ calls\ active\ tool}
+\DoxyCodeLine{\ \ \ →\ m\_zoomTool-\/>onMouseMove(pos)}
+\DoxyCodeLine{}
+\DoxyCodeLine{7.\ →\ Tool\ calculates\ zoom\ factor}
+\DoxyCodeLine{\ \ \ →\ emit\ zoomRequested(factor,\ centerPos)}
+\DoxyCodeLine{}
+\DoxyCodeLine{8.\ →\ Delegate\ slot}
+\DoxyCodeLine{\ \ \ →\ onZoomRequested(factor,\ centerPos)}
+\DoxyCodeLine{}
+\DoxyCodeLine{9.\ →\ Delegate\ gets\ active\ renderer}
+\DoxyCodeLine{\ \ \ →\ m\_viewportManager-\/>activeRenderer()}
+\DoxyCodeLine{}
+\DoxyCodeLine{10.\ →\ renderer-\/>setZoom(factor)}
+\DoxyCodeLine{}
+\DoxyCodeLine{11.\ →\ Renderer\ updates\ camera/view}
+\DoxyCodeLine{}
+\DoxyCodeLine{12.\ →\ renderer-\/>render()}
+\DoxyCodeLine{}
+\DoxyCodeLine{13.\ →\ VTK\ widget\ updates\ display}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md667}{}\doxysubsection{\texorpdfstring{Signal Forwarding Chain}{Signal Forwarding Chain}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md667}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{ImageViewport\ →\ ViewportGrid\ →\ ImageViewerPage\ →\ ImageViewerPageDelegate}
+\DoxyCodeLine{ImageToolPanel\ →\ ImageViewerPage\ →\ ImageViewerPageDelegate}
+\DoxyCodeLine{SeriesThumbnailPanel\ →\ ImageViewerPage\ →\ ImageViewerPageDelegate}
+\DoxyCodeLine{Tool\ signals\ →\ ImageViewerPageDelegate}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md669}{}\doxysection{\texorpdfstring{11. Design Patterns}{11. Design Patterns}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md669}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md670}{}\doxysubsection{\texorpdfstring{Builder Pattern}{Builder Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md670}
+
+\begin{DoxyItemize}
+\item {\ttfamily Image\+Viewer\+Page\+Builder} creates widget and delegate together
+\item Handles dependency injection
+\item Returns pair {\ttfamily (Image\+Viewer\+Page\texorpdfstring{$\ast$}{*}, Image\+Viewer\+Page\+Delegate\texorpdfstring{$\ast$}{*})}
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md671}{}\doxysubsection{\texorpdfstring{Delegate Pattern (MVD)}{Delegate Pattern (MVD)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md671}
+
+\begin{DoxyItemize}
+\item {\ttfamily Image\+Viewer\+Page\+Delegate} encapsulates all business logic
+\item {\ttfamily \doxylink{class_image_viewer_page}{Image\+Viewer\+Page}} is pure UI (data display only)
+\item Clear separation:\+ UI presentation vs. application logic
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md672}{}\doxysubsection{\texorpdfstring{Repository Pattern}{Repository Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md672}
+
+\begin{DoxyItemize}
+\item {\ttfamily Dicom\+Repository} abstracts database access
+\item Delegate uses repository for database operations
+\item SOLID principle:\+ Depend on abstractions
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md673}{}\doxysubsection{\texorpdfstring{Strategy Pattern (Implicit)}{Strategy Pattern (Implicit)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md673}
+
+\begin{DoxyItemize}
+\item Different tools implement {\ttfamily IImage\+Tool} interface
+\item Delegate switches strategies via {\ttfamily activate\+Tool()}
+\item Each tool encapsulates specific interaction behavior
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md674}{}\doxysubsection{\texorpdfstring{Observer Pattern}{Observer Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md674}
+
+\begin{DoxyItemize}
+\item Extensive Qt signal/\+slot connections
+\item Loose coupling between components
+\item Event-\/driven architecture
+\end{DoxyItemize}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md675}{}\doxysubsection{\texorpdfstring{Adapter Pattern}{Adapter Pattern}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md675}
+
+\begin{DoxyItemize}
+\item {\ttfamily Vtk\+Viewport\+Renderer} adapts VTK pipeline to application needs
+\item Hides VTK complexity from higher layers
+\item Provides simple API ({\ttfamily set\+Window\+Level}, {\ttfamily set\+Zoom}, etc.)
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md677}{}\doxysection{\texorpdfstring{12. File Reference}{12. File Reference}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md677}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Component  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Location  \\
+{\bfseries{Page}}  &{\ttfamily \doxylink{_image_viewer_page_8h_source}{View/\+\+Page/\+\+Image\+Viewer\+Page.\+h}/\+cpp/\+ui}  \\
+{\bfseries{\doxylink{class_viewport_grid}{Viewport\+Grid}}}  &{\ttfamily \doxylink{_viewport_grid_8h_source}{View/\+\+Widget/\+\+Viewport\+Grid.\+h}/\+cpp/\+ui}  \\
+{\bfseries{\doxylink{class_image_viewport}{Image\+Viewport}}}  &{\ttfamily \doxylink{_image_viewport_8h_source}{View/\+\+Widget/\+\+Image\+Viewport.\+h}/\+cpp/\+ui}  \\
+{\bfseries{\doxylink{class_image_tool_panel}{Image\+Tool\+Panel}}}  &{\ttfamily \doxylink{_image_tool_panel_8h_source}{View/\+\+Widget/\+\+Image\+Tool\+Panel.\+h}/\+cpp/\+ui}  \\
+{\bfseries{\doxylink{class_series_thumbnail_panel}{Series\+Thumbnail\+Panel}}}  &{\ttfamily \doxylink{_series_thumbnail_panel_8h_source}{View/\+\+Widget/\+\+Series\+Thumbnail\+Panel.\+h}/\+cpp/\+ui}  \\
+{\bfseries{IImage\+Tool}}  &{\ttfamily \doxylink{_i_image_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+IImage\+Tool.\+h}/\+cpp}  \\
+{\bfseries{Zoom\+Tool}}  &{\ttfamily \doxylink{_zoom_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Zoom\+Tool.\+h}/\+cpp}  \\
+{\bfseries{Pan\+Tool}}  &{\ttfamily \doxylink{_pan_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Pan\+Tool.\+h}/\+cpp}  \\
+{\bfseries{Window\+Level\+Tool}}  &{\ttfamily \doxylink{_window_level_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Window\+Level\+Tool.\+h}/\+cpp}  \\
+{\bfseries{Ruler\+Tool}}  &{\ttfamily \doxylink{_ruler_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Ruler\+Tool.\+h}/\+cpp}  \\
+{\bfseries{Angle\+Tool}}  &{\ttfamily \doxylink{_angle_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Angle\+Tool.\+h}/\+cpp}  \\
+{\bfseries{Reset\+Tool}}  &{\ttfamily \doxylink{_reset_tool_8h_source}{Image\+Viewer/\+\+Tool/\+\+Reset\+Tool.\+h}/\+cpp}  \\
+{\bfseries{Vtk\+Viewport\+Renderer}}  &{\ttfamily \doxylink{_vtk_viewport_renderer_8h_source}{Image\+Viewer/\+\+Rendering/\+\+Vtk\+Viewport\+Renderer.\+h}/\+cpp}  \\
+{\bfseries{Multi\+Viewport\+Manager}}  &{\ttfamily \doxylink{_multi_viewport_manager_8h_source}{Image\+Viewer/\+\+Rendering/\+\+Multi\+Viewport\+Manager.\+h}/\+cpp}  \\
+{\bfseries{Image\+Loader\+Service}}  &{\ttfamily \doxylink{_image_loader_service_8h_source}{Image\+Viewer/\+\+Service/\+\+Image\+Loader\+Service.\+h}/\+cpp}  \\
+{\bfseries{Dicom\+Parser\+Service}}  &{\ttfamily \doxylink{_dicom_parser_service_8h_source}{Image\+Viewer/\+\+Service/\+\+Dicom\+Parser\+Service.\+h}/\+cpp}  \\
+{\bfseries{Ruler\+Overlay\+Widget}}  &{\ttfamily \doxylink{_ruler_overlay_widget_8h_source}{Image\+Viewer/\+\+Widget/\+\+Ruler\+Overlay\+Widget.\+h}/\+cpp}  \\
+{\bfseries{Angle\+Overlay\+Widget}}  &{\ttfamily \doxylink{_angle_overlay_widget_8h_source}{Image\+Viewer/\+\+Widget/\+\+Angle\+Overlay\+Widget.\+h}/\+cpp}  \\
+{\bfseries{Magnifier\+Widget}}  &{\ttfamily \doxylink{_magnifier_widget_8h_source}{Image\+Viewer/\+\+Widget/\+\+Magnifier\+Widget.\+h}/\+cpp}  \\
+{\bfseries{Image\+Display\+Params}}  &{\ttfamily \doxylink{_image_display_params_8h_source}{Image\+Viewer/\+\+Data/\+\+Entity/\+\+Image\+Display\+Params.\+h}}  \\
+{\bfseries{Image\+Viewer\+Page\+Delegate}}  &{\ttfamily \doxylink{_image_viewer_page_delegate_8h_source}{Application/\+\+Delegate/\+\+Image\+Viewer\+Page\+Delegate.\+h}/\+cpp}  \\
+{\bfseries{Image\+Viewer\+Page\+Builder}}  &{\ttfamily \doxylink{_image_viewer_page_builder_8h_source}{Application/\+\+Builder/\+\+Image\+Viewer\+Page\+Builder.\+h}/\+cpp}  \\
+{\bfseries{IImage\+Viewer\+Context}}  &{\ttfamily \doxylink{_i_image_viewer_context_8h_source}{Common/\+\+Include/\+\+Image\+Viewer/\+\+IImage\+Viewer\+Context.\+h}}  \\
+{\bfseries{Image\+Viewer\+Types}}  &{\ttfamily \doxylink{_image_viewer_types_8h_source}{Common/\+\+Include/\+\+Image\+Viewer/\+\+Image\+Viewer\+Types.\+h}}  \\
+{\bfseries{Viewport\+Layout}}  &{\ttfamily \doxylink{_viewport_layout_8h_source}{Common/\+\+Include/\+\+Image\+Viewer/\+\+Viewport\+Layout.\+h}}  \\
+{\bfseries{Icons}}  &{\ttfamily View/\+\+Asset/\+\+Icon/\+\texorpdfstring{$\ast$}{*}.png}  \\
+\end{DoxyTable}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md679}{}\doxysection{\texorpdfstring{13. Build Configuration}{13. Build Configuration}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md679}
+{\bfseries{Image\+Viewer Module}} ({\ttfamily Image\+Viewer/\+\+CMake\+Lists.\+txt}):\+
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#\ Library\ type}
+\DoxyCodeLine{SHARED\ library\ (ImageViewer.dll)}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ Export\ configuration}
+\DoxyCodeLine{WINDOWS\_EXPORT\_ALL\_SYMBOLS\ =\ TRUE}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ Qt\ automation}
+\DoxyCodeLine{CMAKE\_AUTOMOC\ =\ ON}
+\DoxyCodeLine{CMAKE\_AUTOUIC\ =\ ON}
+\DoxyCodeLine{CMAKE\_AUTORCC\ =\ ON}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ Dependencies}
+\DoxyCodeLine{Qt6::Core,\ Qt6::Widgets,\ Qt6::Gui}
+\DoxyCodeLine{VTK::CommonCore,\ VTK::RenderingCore,\ VTK::InteractionStyle,}
+\DoxyCodeLine{VTK::RenderingOpenGL2,\ VTK::GUISupportQt}
+\DoxyCodeLine{DCMTK::dcmdata,\ DCMTK::dcmimage,\ DCMTK::ofstd}
+\DoxyCodeLine{Core,\ Common,\ View,\ Dicom}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ Output}
+\DoxyCodeLine{out/build/[debug|release]/ImageViewer.dll}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md681}{}\doxysection{\texorpdfstring{14. Extension Points}{14. Extension Points}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md681}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md682}{}\doxysubsection{\texorpdfstring{Adding New Tools}{Adding New Tools}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md682}
+
+\begin{DoxyEnumerate}
+\item Create new class inheriting from {\ttfamily IImage\+Tool}
+\item Implement all virtual methods
+\item Add new {\ttfamily Tool\+Type} enum value to {\ttfamily \doxylink{_image_viewer_types_8h_source}{Image\+Viewer\+Types.\+h}}
+\item Add tool icon to {\ttfamily View/\+\+Asset/\+\+Icon/\+}
+\item Register tool in {\ttfamily Image\+Viewer\+Page\+Delegate::\+initialize\+Tools()}
+\item Add button to {\ttfamily \doxylink{class_image_tool_panel}{Image\+Tool\+Panel}}
+\item Connect signals in delegate
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md683}{}\doxysubsection{\texorpdfstring{Adding New Image Formats}{Adding New Image Formats}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md683}
+
+\begin{DoxyEnumerate}
+\item Add format to {\ttfamily Image\+Format} enum in {\ttfamily \doxylink{_image_viewer_types_8h_source}{Image\+Viewer\+Types.\+h}}
+\item Implement format-\/specific loader in {\ttfamily Image\+Loader\+Service}
+\item Update {\ttfamily is\+Supported\+Format()} method
+\item Update {\ttfamily detect\+Format\+From\+Content()} for magic byte detection
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md684}{}\doxysubsection{\texorpdfstring{Adding New Layouts}{Adding New Layouts}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md684}
+
+\begin{DoxyEnumerate}
+\item Add layout to {\ttfamily Viewport\+Layout} enum
+\item Update {\ttfamily viewport\+Count()} helper function
+\item Update {\ttfamily layout\+Dimensions()} helper function
+\item Implement grid configuration in {\ttfamily Viewport\+Grid::\+update\+Grid\+Layout()}
+\item Add layout icon and button to {\ttfamily \doxylink{class_image_tool_panel}{Image\+Tool\+Panel}}
+\end{DoxyEnumerate}\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md685}{}\doxysubsection{\texorpdfstring{TODO Items (In Code)}{TODO Items (In Code)}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md685}
+
+\begin{DoxyEnumerate}
+\item {\ttfamily load\+From\+Study()} -\/ Database study loading (not yet implemented)
+\item {\ttfamily load\+From\+Series()} -\/ Database series loading (not yet implemented)
+\item Context-\/based image loading in {\ttfamily on\+Page\+Loaded()}
+\item Linked mode synchronization enhancements
+\item Measurement overlay rendering
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md687}{}\doxysection{\texorpdfstring{Appendix:\+ Data Structures}{Appendix:\+ Data Structures}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md687}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md688}{}\doxysubsection{\texorpdfstring{Dicom\+Metadata}{Dicom\+Metadata}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md688}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }DicomMetadata\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Patient\ Module}}
+\DoxyCodeLine{\ \ \ \ QString\ patientName;}
+\DoxyCodeLine{\ \ \ \ QString\ patientId;}
+\DoxyCodeLine{\ \ \ \ QString\ patientBirthDate;}
+\DoxyCodeLine{\ \ \ \ QString\ patientSex;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Study\ Module}}
+\DoxyCodeLine{\ \ \ \ QString\ studyInstanceUid;}
+\DoxyCodeLine{\ \ \ \ QString\ studyDate;}
+\DoxyCodeLine{\ \ \ \ QString\ studyTime;}
+\DoxyCodeLine{\ \ \ \ QString\ studyDescription;}
+\DoxyCodeLine{\ \ \ \ QString\ accessionNumber;}
+\DoxyCodeLine{\ \ \ \ QString\ referringPhysicianName;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Series\ Module}}
+\DoxyCodeLine{\ \ \ \ QString\ seriesInstanceUid;}
+\DoxyCodeLine{\ \ \ \ QString\ modality;}
+\DoxyCodeLine{\ \ \ \ QString\ seriesDescription;}
+\DoxyCodeLine{\ \ \ \ QString\ bodyPartExamined;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ seriesNumber;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Image\ Module}}
+\DoxyCodeLine{\ \ \ \ QString\ sopInstanceUid;}
+\DoxyCodeLine{\ \ \ \ QString\ sopClassUid;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ instanceNumber;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ imageNumber;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ totalImages;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ totalSlices;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Image\ Pixel\ Module}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ rows;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ columns;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ bitsAllocated;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ bitsStored;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ highBit;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ pixelRepresentationSigned;}
+\DoxyCodeLine{\ \ \ \ QString\ photometricInterpretation;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ VOI\ LUT\ Module}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ windowCenter;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ windowWidth;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Modality\ LUT\ Module}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ rescaleIntercept;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ rescaleSlope;}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Pixel\ Spacing}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ pixelSpacingX;\ \ \textcolor{comment}{//\ mm}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ pixelSpacingY;\ \ \textcolor{comment}{//\ mm}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md689}{}\doxysubsection{\texorpdfstring{Viewport\+State}{Viewport\+State}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md689}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }ViewportState\ \{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ zoomFactor\ =\ 1.0;\ \ \ \ \textcolor{comment}{//\ 1.0\ =\ 100\%}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ panX\ =\ 0.0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ panY\ =\ 0.0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ windowWidth\ =\ 256.0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ windowCenter\ =\ 128.0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ inverted\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ flipHorizontal\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ flipVertical\ =\ 0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ rotation\ =\ 0;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ degrees}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ reset();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ initializeFromMetadata(\textcolor{keyword}{const}\ DicomMetadata\&\ metadata);}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md690}{}\doxysubsection{\texorpdfstring{Measurement\+Line}{Measurement\+Line}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md690}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }MeasurementLine\ \{}
+\DoxyCodeLine{\ \ \ \ QPointF\ startPoint;}
+\DoxyCodeLine{\ \ \ \ QPointF\ endPoint;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ distanceMm\ =\ 0.0;\ \ \ \ \ \ \textcolor{comment}{//\ Distance\ in\ millimeters}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ distancePixels\ =\ 0.0;\ \ \textcolor{comment}{//\ Distance\ in\ pixels}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isComplete\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id}\ =\ -\/1;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Unique\ identifier}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isSelected\ =\ \textcolor{keyword}{false};\ \ \ \ \ \ \textcolor{comment}{//\ Currently\ selected\ for\ editing}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ calculateDistance(\textcolor{keywordtype}{double}\ spacingX,\ \textcolor{keywordtype}{double}\ spacingY);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isNearStartHandle(\textcolor{keyword}{const}\ QPointF\&\ pos,\ \textcolor{keywordtype}{double}\ threshold\ =\ 10.0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isNearEndHandle(\textcolor{keyword}{const}\ QPointF\&\ pos,\ \textcolor{keywordtype}{double}\ threshold\ =\ 10.0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isNearLine(\textcolor{keyword}{const}\ QPointF\&\ pos,\ \textcolor{keywordtype}{double}\ threshold\ =\ 5.0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md691}{}\doxysubsection{\texorpdfstring{Measurement\+Angle}{Measurement\+Angle}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md691}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{struct\ }MeasurementAngle\ \{}
+\DoxyCodeLine{\ \ \ \ QPointF\ point1;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ First\ endpoint\ (arm\ 1)}}
+\DoxyCodeLine{\ \ \ \ QPointF\ vertex;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Vertex\ (middle\ point\ where\ angle\ is\ measured)}}
+\DoxyCodeLine{\ \ \ \ QPointF\ point2;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Second\ endpoint\ (arm\ 2)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ angleDegrees\ =\ 0.0;}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isComplete\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{int}\ \textcolor{keywordtype}{id}\ =\ -\/1;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Unique\ identifier}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isSelected\ =\ \textcolor{keyword}{false};\ \ \textcolor{comment}{//\ Currently\ selected\ for\ editing}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ calculateAngle();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ getArm1Angle()\ \textcolor{keyword}{const};\ \ \textcolor{comment}{//\ Angle\ of\ arm\ 1\ relative\ to\ X-\/axis\ (radians)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{double}\ getArm2Angle()\ \textcolor{keyword}{const};\ \ \textcolor{comment}{//\ Angle\ of\ arm\ 2\ relative\ to\ X-\/axis\ (radians)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isNearPoint1Handle(\textcolor{keyword}{const}\ QPointF\&\ pos,\ \textcolor{keywordtype}{double}\ threshold\ =\ 10.0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isNearVertexHandle(\textcolor{keyword}{const}\ QPointF\&\ pos,\ \textcolor{keywordtype}{double}\ threshold\ =\ 10.0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isNearPoint2Handle(\textcolor{keyword}{const}\ QPointF\&\ pos,\ \textcolor{keywordtype}{double}\ threshold\ =\ 10.0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{bool}\ isNearArm(\textcolor{keyword}{const}\ QPointF\&\ pos,\ \textcolor{keywordtype}{double}\ threshold\ =\ 5.0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md692}{}\doxysubsection{\texorpdfstring{Ruler\+Overlay\+Widget}{Ruler\+Overlay\+Widget}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md692}
+Transparent overlay widget that renders measurement rulers using QPainter.
+
+{\bfseries{Visual Elements:\+}}
+\begin{DoxyItemize}
+\item Ruler lines:\+ 2px width, cyan (\#00BFFF)
+\item Handles:\+ Square (10x10px), white fill with cyan border
+\item Hovered handle:\+ Yellow fill
+\item Selected ruler:\+ Gold color
+\item Distance label:\+ White text with black outline, format:\+ {\ttfamily 25.\+4 (mm)}
+\end{DoxyItemize}
+
+{\bfseries{Key Methods:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setImageToWidgetTransform(CoordinateTransform\ transform);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setMeasurements(\textcolor{keyword}{const}\ QVector<MeasurementLine>\&\ measurements);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setCurrentMeasurement(\textcolor{keyword}{const}\ MeasurementLine\&\ line);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setSelectedRuler(\textcolor{keywordtype}{int}\ rulerId);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setHoveredHandle(\textcolor{keywordtype}{int}\ rulerId,\ \textcolor{keywordtype}{bool}\ isStartHandle);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clearHoveredHandle();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ refresh();}
+
+\end{DoxyCode}
+\hypertarget{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md693}{}\doxysubsection{\texorpdfstring{Angle\+Overlay\+Widget}{Angle\+Overlay\+Widget}}\label{md__c_1_2_users_2altay_2_one_drive_2_projects_2etrek_2_documents_210-_image_viewer-_technical-_documentation_autotoc_md693}
+Transparent overlay widget that renders angle measurements using QPainter.
+
+{\bfseries{Visual Elements:\+}}
+\begin{DoxyItemize}
+\item Arm lines:\+ 2px width, cyan (\#00BFFF)
+\item Arc:\+ 30px radius at vertex, cyan
+\item Handles:\+ Square (10x10px) at all three points
+\item Hovered handle:\+ Yellow fill
+\item Selected angle:\+ Gold color
+\item Angle label:\+ White text with black outline, format:\+ {\ttfamily 45.\+2°}
+\end{DoxyItemize}
+
+{\bfseries{Key Methods:\+}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setImageToWidgetTransform(CoordinateTransform\ transform);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setMeasurements(\textcolor{keyword}{const}\ QVector<MeasurementAngle>\&\ measurements);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setCurrentMeasurement(\textcolor{keyword}{const}\ MeasurementAngle\&\ angle);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setSelectedAngle(\textcolor{keywordtype}{int}\ angleId);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ setHoveredHandle(\textcolor{keywordtype}{int}\ angleId,\ AngleHandleType\ handleType);}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ clearHoveredHandle();}
+\DoxyCodeLine{\textcolor{keywordtype}{void}\ refresh();}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+
+
+{\itshape Document Version:\+ 1.\+1} {\itshape Last Updated:\+ January 2026} {\itshape Author:\+ Generated for Etrek Medical Imaging Application} {\itshape Changes:\+ Added interactive editing documentation for Ruler and Angle tools} 

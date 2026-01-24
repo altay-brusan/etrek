@@ -1,0 +1,381 @@
+\doxysection{block.\+hpp}
+\hypertarget{block_8hpp_source}{}\label{block_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/io/block.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/io/block.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_IO\_BLOCK\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_IO\_BLOCK\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <stdexcept>}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}../mpi.hpp"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}../assigner.hpp"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}../master.hpp"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}../storage.hpp"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}../log.hpp"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}utils.hpp"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{comment}{//\ Read\ and\ write\ collections\ of\ blocks\ using\ MPI-\/IO}}
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00017\ \{}
+\DoxyCodeLine{00018\ \textcolor{keyword}{namespace\ }io}
+\DoxyCodeLine{00019\ \{}
+\DoxyCodeLine{00020\ \ \ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00021\ \ \ \{}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keyword}{typedef}\ mpi::io::offset\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ offset\_t;}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keyword}{struct\ }GidOffsetCount}
+\DoxyCodeLine{00025\ \ \ \ \ \{}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ GidOffsetCount():\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ need\ to\ initialize\ a\ vector\ of\ given\ size}}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gid(-\/1),\ offset(0),\ count(0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ GidOffsetCount(\textcolor{keywordtype}{int}\ gid\_,\ offset\_t\ offset\_,\ offset\_t\ count\_):}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gid(gid\_),\ offset(offset\_),\ count(count\_)\ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ operator<(\textcolor{keyword}{const}\ GidOffsetCount\&\ other)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ gid\ <\ other.gid;\ \}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ gid;}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ offset\_t\ \ \ \ offset;}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ offset\_t\ \ \ \ count;}
+\DoxyCodeLine{00037\ \ \ \ \ \};}
+\DoxyCodeLine{00038\ \ \ \}}
+\DoxyCodeLine{00039\ \}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ Serialize\ GidOffsetCount\ explicitly,\ to\ avoid\ alignment\ and\ uninitialized\ data\ issues}}
+\DoxyCodeLine{00042\ \textcolor{comment}{//\ (to\ get\ identical\ output\ files\ given\ the\ same\ block\ input)}}
+\DoxyCodeLine{00043\ \textcolor{keyword}{template}<>}
+\DoxyCodeLine{00044\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_serialization}{Serialization}}<\doxymbox{\hyperlink{namespaceio}{io}}::detail::GidOffsetCount>}
+\DoxyCodeLine{00045\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1io_1_1detail_1_1_gid_offset_count}{io::detail::GidOffsetCount}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ GidOffsetCount;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ save(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&\ bb,\ \textcolor{keyword}{const}\ GidOffsetCount\&\ x)}
+\DoxyCodeLine{00049\ \ \ \ \ \{}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(bb,\ x.gid);}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(bb,\ x.offset);}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(bb,\ x.count);}
+\DoxyCodeLine{00053\ \ \ \ \ \}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ load(\doxymbox{\hyperlink{structdiy_1_1_binary_buffer}{BinaryBuffer}}\&\ bb,\ GidOffsetCount\&\ x)}
+\DoxyCodeLine{00056\ \ \ \ \ \{}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{diy::load}}(bb,\ x.gid);}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{diy::load}}(bb,\ x.offset);}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{diy::load}}(bb,\ x.count);}
+\DoxyCodeLine{00060\ \ \ \ \ \}}
+\DoxyCodeLine{00061\ \};}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespaceio}{io}}}
+\DoxyCodeLine{00064\ \{}
+\DoxyCodeLine{00069\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00070\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00071\ \ \ write\_blocks(\textcolor{keyword}{const}\ std::string\&\ \ \ \ \ \ \ \ \ \ \ outfilename,\ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator}{mpi::communicator}}\&\ \ \ \ \ comm,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ \ \ \ \ \ \ \ \ \ extra\ =\ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}(),}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master::SaveBlock\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}\ =\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00076\ \ \ \{}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}})\ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}\ =\ master.saver();\ \ \ \ \ \ \ \textcolor{comment}{//\ save\ is\ likely\ to\ be\ different\ from\ master.save()}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keyword}{typedef}\ detail::offset\_t\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ offset\_t;}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keyword}{typedef}\ detail::GidOffsetCount\ \ \ \ \ \ \ \ \ \ GidOffsetCount;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ size\ =\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}(),}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ max\_size,\ min\_size;}
+\DoxyCodeLine{00084\ \ \ \ \ \doxymbox{\hyperlink{group___m_p_i_ga44987b4d3a2fbc6b22f458617a445dc5}{mpi::all\_reduce}}(comm,\ size,\ max\_size,\ \doxymbox{\hyperlink{structdiy_1_1mpi_1_1maximum}{mpi::maximum<unsigned>}}());}
+\DoxyCodeLine{00085\ \ \ \ \ \doxymbox{\hyperlink{group___m_p_i_ga44987b4d3a2fbc6b22f458617a445dc5}{mpi::all\_reduce}}(comm,\ size,\ min\_size,\ \doxymbox{\hyperlink{structdiy_1_1mpi_1_1minimum}{mpi::minimum<unsigned>}}());}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{comment}{//\ truncate\ the\ file}}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{if}\ (comm.rank()\ ==\ 0)}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ diy::io::utils::truncate(outfilename.c\_str(),\ 0);}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1mpi_1_1io_1_1file}{mpi::io::file}}\ f(comm,\ outfilename,\ mpi::io::file::wronly\ |\ mpi::io::file::create);}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ offset\_t\ \ start\ =\ 0,\ shift;}
+\DoxyCodeLine{00094\ \ \ \ \ std::vector<GidOffsetCount>\ \ \ \ \ offset\_counts;}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ max\_size;\ ++i)}
+\DoxyCodeLine{00096\ \ \ \ \ \{}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ offset\_t\ count\ =\ 0,}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ offset;}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ <\ size)}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ get\ the\ block\ from\ master\ and\ serialize\ it}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ block\ =\ master.\doxymbox{\hyperlink{classdiy_1_1_master_ad899d8137bde51dcb5fc9333bec01dff}{get}}(i);}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\ bb;}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ LinkFactory::save(bb,\ master.link(i));}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}(block,\ bb);}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ count\ =\ bb.buffer.size();}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___m_p_i_ga76daf228be0f1f03f4bab95e9bd34f45}{mpi::scan}}(comm,\ count,\ offset,\ std::plus<offset\_t>());}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ offset\ +=\ start\ -\/\ count;}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___m_p_i_ga44987b4d3a2fbc6b22f458617a445dc5}{mpi::all\_reduce}}(comm,\ count,\ shift,\ std::plus<offset\_t>());}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ start\ +=\ shift;}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (i\ <\ min\_size)\ \ \ \ \ \ \ \textcolor{comment}{//\ up\ to\ min\_size,\ we\ can\ do\ collective\ IO}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ f.write\_at\_all(offset,\ bb.buffer);}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ f.write\_at(offset,\ bb.buffer);}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ offset\_counts.push\_back(GidOffsetCount(master.\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i),\ offset,\ count));}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ matching\ global\ operations}}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ mpi::scan(comm,\ count,\ offset,\ std::plus<offset\_t>());}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ mpi::all\_reduce(comm,\ count,\ shift,\ std::plus<offset\_t>());}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/1\ indicates\ that\ there\ is\ no\ block\ written\ here\ from\ this\ rank}}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ offset\_counts.push\_back(GidOffsetCount(-\/1,\ offset,\ count));}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00127\ \ \ \ \ \}}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{if}\ (comm.rank()\ ==\ 0)}
+\DoxyCodeLine{00130\ \ \ \ \ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \textcolor{comment}{//\ round-\/about\ way\ of\ gather\ vector\ of\ vectors\ of\ GidOffsetCount\ to\ avoid\ registering\ a\ new\ mpi\ datatype}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ std::vector<\ std::vector<char>\ >\ gathered\_offset\_count\_buffers;}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ MemoryBuffer\ oc\_buffer;\ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(oc\_buffer,\ offset\_counts);}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ mpi::gather(comm,\ oc\_buffer.buffer,\ gathered\_offset\_count\_buffers,\ 0);}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \ \ \ \ std::vector<GidOffsetCount>\ \ all\_offset\_counts;}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ gathered\_offset\_count\_buffers.size();\ ++i)}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ MemoryBuffer\ per\_rank\_oc\_buffer;\ per\_rank\_oc\_buffer.buffer.swap(gathered\_offset\_count\_buffers[i]);}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ std::vector<GidOffsetCount>\ per\_rank\_offset\_counts;}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{diy::load}}(per\_rank\_oc\_buffer,\ per\_rank\_offset\_counts);}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ j\ =\ 0;\ j\ <\ per\_rank\_offset\_counts.size();\ ++j)}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (per\_rank\_offset\_counts[j].gid\ !=\ -\/1)}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ all\_offset\_counts.push\_back(per\_rank\_offset\_counts[j]);}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ std::sort(all\_offset\_counts.begin(),\ all\_offset\_counts.end());\ \ \ \ \ \ \ \ \textcolor{comment}{//\ sorts\ by\ gid}}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ \ \ MemoryBuffer\ bb;}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(bb,\ all\_offset\_counts);}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(bb,\ extra);}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ footer\_size\ =\ bb.size();}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(bb,\ footer\_size);}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \textcolor{comment}{//\ find\ footer\_offset\ as\ the\ max\ of\ (offset\ +\ count)}}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ offset\_t\ footer\_offset\ =\ 0;}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ all\_offset\_counts.size();\ ++i)}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ offset\_t\ end\ =\ all\_offset\_counts[i].offset\ +\ all\_offset\_counts[i].count;}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (end\ >\ footer\_offset)}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ footer\_offset\ =\ end;}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ f.write\_at(footer\_offset,\ bb.buffer);}
+\DoxyCodeLine{00163\ \ \ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00164\ \ \ \ \ \{}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ MemoryBuffer\ oc\_buffer;\ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(oc\_buffer,\ offset\_counts);}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ mpi::gather(comm,\ oc\_buffer.buffer,\ 0);}
+\DoxyCodeLine{00167\ \ \ \ \ \}}
+\DoxyCodeLine{00168\ \ \ \}}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00176\ \ \ \ \ read\_blocks(\textcolor{keyword}{const}\ std::string\&\ \ \ \ \ \ \ \ \ \ \ infilename,\ \ \ \ \ }
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ mpi::communicator\&\ \ \ \ \ comm,\ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ StaticAssigner\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ assigner,\ \ \ \ \ \ \ }
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ MemoryBuffer\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ extra,\ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master::LoadBlock\ \ \ \ \ \ \ \ \ \ \ \ load\ =\ 0)\ \ \ \ \ \ \ }
+\DoxyCodeLine{00182\ \ \ \ \ \{}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!load)\ load\ =\ master.loader();\ \ \ \ \ \ \textcolor{comment}{//\ load\ is\ likely\ to\ be\ different\ from\ master.load()}}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ detail::offset\_t\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ offset\_t;}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ detail::GidOffsetCount\ \ \ \ \ \ \ \ \ \ GidOffsetCount;}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ mpi::io::file\ f(comm,\ infilename,\ mpi::io::file::rdonly);}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ offset\_t\ \ \ \ footer\_offset\ =\ f.size()\ -\/\ \textcolor{keyword}{sizeof}(size\_t);}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ footer\_size;}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Read\ the\ size}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ f.read\_at\_all(footer\_offset,\ (\textcolor{keywordtype}{char}*)\ \&footer\_size,\ \textcolor{keyword}{sizeof}(footer\_size));}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Read\ all\_offset\_counts}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ footer\_offset\ -\/=\ footer\_size;}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ MemoryBuffer\ footer;}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ footer.buffer.resize(footer\_size);}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ f.read\_at\_all(footer\_offset,\ footer.buffer);}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ std::vector<GidOffsetCount>\ \ all\_offset\_counts;}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{diy::load}}(footer,\ all\_offset\_counts);}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gae54f4c5c6740fcf7627009bdcfe02aa1}{diy::load}}(footer,\ extra);}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ extra.reset();}
+\DoxyCodeLine{00206\ }
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ local\ gids\ from\ assigner}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ assigner.set\_nblocks(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(all\_offset\_counts.size()));}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ std::vector<int>\ gids;}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ assigner.local\_gids(comm.rank(),\ gids);}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ gids.size();\ ++i)}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (gids[i]\ !=\ all\_offset\_counts[gids[i]].gid)}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ get\_logger()-\/>warn(\textcolor{stringliteral}{"{}gids\ don't\ match\ in\ diy::io::read\_blocks(),\ \{\}\ vs\ \{\}"{}},}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gids[i],\ all\_offset\_counts[gids[i]].gid);}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ offset\_t\ offset\ =\ all\_offset\_counts[gids[i]].offset,}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ count\ \ =\ all\_offset\_counts[gids[i]].count;}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ MemoryBuffer\ bb;}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ bb.buffer.resize(count);}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ f.read\_at(offset,\ bb.buffer);}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ Link*\ l\ =\ LinkFactory::load(bb);}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ l-\/>fix(assigner);}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ b\ =\ master.create();}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ load(b,\ bb);}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ master.add(gids[i],\ b,\ l);}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00229\ \ \ \ \ \}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \ \ \textcolor{comment}{//\ Functions\ without\ the\ extra\ buffer,\ for\ compatibility\ with\ the\ old\ code}}
+\DoxyCodeLine{00233\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00234\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00235\ \ \ write\_blocks(\textcolor{keyword}{const}\ std::string\&\ \ \ \ \ \ \ \ \ \ \ outfilename,}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ mpi::communicator\&\ \ \ \ \ comm,}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master::SaveBlock\ \ \ \ \ \ \ \ \ \ \ \ save)}
+\DoxyCodeLine{00239\ \ \ \{}
+\DoxyCodeLine{00240\ \ \ \ \ MemoryBuffer\ extra;}
+\DoxyCodeLine{00241\ \ \ \ \ write\_blocks(outfilename,\ comm,\ master,\ extra,\ save);}
+\DoxyCodeLine{00242\ \ \ \}}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00244\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00245\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00246\ \ \ read\_blocks(\textcolor{keyword}{const}\ std::string\&\ \ \ \ \ \ \ \ \ \ \ infilename,}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ mpi::communicator\&\ \ \ \ \ comm,}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ StaticAssigner\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ assigner,}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master::LoadBlock\ \ \ \ \ \ \ \ \ \ \ \ load\ =\ 0)}
+\DoxyCodeLine{00251\ \ \ \{}
+\DoxyCodeLine{00252\ \ \ \ \ MemoryBuffer\ extra;\ \ \ \ \ \textcolor{comment}{//\ dummy}}
+\DoxyCodeLine{00253\ \ \ \ \ read\_blocks(infilename,\ comm,\ assigner,\ master,\ extra,\ load);}
+\DoxyCodeLine{00254\ \ \ \}}
+\DoxyCodeLine{00255\ }
+\DoxyCodeLine{00256\ \textcolor{keyword}{namespace\ }split}
+\DoxyCodeLine{00257\ \{}
+\DoxyCodeLine{00262\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00263\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00264\ \ \ write\_blocks(\textcolor{keyword}{const}\ std::string\&\ \ \ \ \ \ \ \ \ \ \ outfilename,\ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ mpi::communicator\&\ \ \ \ \ comm,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ MemoryBuffer\&\ \ \ \ \ \ \ \ \ \ extra\ =\ MemoryBuffer(),}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master::SaveBlock\ \ \ \ \ \ \ \ \ \ \ \ save\ =\ 0)\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00269\ \ \ \{}
+\DoxyCodeLine{00270\ \ \ \ \ \textcolor{keywordflow}{if}\ (!save)\ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}\ =\ master.saver();\ \ \ \ \ \ \ \textcolor{comment}{//\ save\ is\ likely\ to\ be\ different\ from\ master.save()}}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keywordtype}{bool}\ proceed\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ size\ =\ 0;}
+\DoxyCodeLine{00274\ \ \ \ \ \textcolor{keywordflow}{if}\ (comm.rank()\ ==\ 0)}
+\DoxyCodeLine{00275\ \ \ \ \ \{}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (diy::io::utils::is\_directory(outfilename))}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ proceed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (diy::io::utils::make\_directory(outfilename))}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ proceed\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ mpi::broadcast(comm,\ proceed,\ 0);}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ mpi::reduce(comm,\ (\textcolor{keywordtype}{size\_t})\ master.size(),\ size,\ 0,\ std::plus<size\_t>());}
+\DoxyCodeLine{00283\ \ \ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00284\ \ \ \ \ \{}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ mpi::broadcast(comm,\ proceed,\ 0);}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ mpi::reduce(comm,\ (\textcolor{keywordtype}{size\_t})\ master.size(),\ 0,\ std::plus<size\_t>());}
+\DoxyCodeLine{00287\ \ \ \ \ \}}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \ \ \textcolor{keywordflow}{if}\ (!proceed)}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(\textcolor{stringliteral}{"{}Cannot\ access\ or\ create\ directory:\ "{}}\ +\ outfilename);}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ (int)master.size();\ ++i)}
+\DoxyCodeLine{00293\ \ \ \ \ \{}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{void}*\ block\ =\ master.get(i);}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ std::string\ filename\ =\ fmt::format(\textcolor{stringliteral}{"{}\{\}/\{\}"{}},\ outfilename,\ master.gid(i));}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ ::diy::detail::FileBuffer\ bb(fopen(filename.c\_str(),\ \textcolor{stringliteral}{"{}w"{}}));}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ LinkFactory::save(bb,\ master.link(i));}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}(block,\ bb);}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ fclose(bb.file);}
+\DoxyCodeLine{00304\ \ \ \ \ \}}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \ \ \ \ \textcolor{keywordflow}{if}\ (comm.rank()\ ==\ 0)}
+\DoxyCodeLine{00307\ \ \ \ \ \{}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ save\ the\ extra\ buffer}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ std::string\ filename\ =\ outfilename\ +\ \textcolor{stringliteral}{"{}/extra"{}};}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ ::diy::detail::FileBuffer\ bb(fopen(filename.c\_str(),\ \textcolor{stringliteral}{"{}w"{}}));}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ ::diy::save(bb,\ size);}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ ::diy::save(bb,\ extra);}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ fclose(bb.file);}
+\DoxyCodeLine{00314\ \ \ \ \ \}}
+\DoxyCodeLine{00315\ \ \ \}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00321\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00322\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00323\ \ \ read\_blocks(\textcolor{keyword}{const}\ std::string\&\ \ \ \ \ \ \ \ \ \ \ infilename,\ \ }
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ mpi::communicator\&\ \ \ \ \ comm,\ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ StaticAssigner\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ assigner,\ \ \ \ }
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ }
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ MemoryBuffer\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ extra,\ \ \ \ \ \ \ }
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master::LoadBlock\ \ \ \ \ \ \ \ \ \ \ \ load\ =\ 0)\ \ \ \ }
+\DoxyCodeLine{00329\ \ \ \{}
+\DoxyCodeLine{00330\ \ \ \ \ \textcolor{keywordflow}{if}\ (!load)\ load\ =\ master.loader();\ \ \ \ \ \ \textcolor{comment}{//\ load\ is\ likely\ to\ be\ different\ from\ master.load()}}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{comment}{//\ load\ the\ extra\ buffer\ and\ size}}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ size;}
+\DoxyCodeLine{00334\ \ \ \ \ \{}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ std::string\ filename\ =\ infilename\ +\ \textcolor{stringliteral}{"{}/extra"{}};}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ ::diy::detail::FileBuffer\ bb(fopen(filename.c\_str(),\ \textcolor{stringliteral}{"{}r"{}}));}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ ::diy::load(bb,\ size);}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ ::diy::load(bb,\ extra);}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ extra.reset();}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ fclose(bb.file);}
+\DoxyCodeLine{00341\ \ \ \ \ \}}
+\DoxyCodeLine{00342\ }
+\DoxyCodeLine{00343\ \ \ \ \ \textcolor{comment}{//\ Get\ local\ gids\ from\ assigner}}
+\DoxyCodeLine{00344\ \ \ \ \ assigner.set\_nblocks(\textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(size));}
+\DoxyCodeLine{00345\ \ \ \ \ std::vector<int>\ gids;}
+\DoxyCodeLine{00346\ \ \ \ \ assigner.local\_gids(comm.rank(),\ gids);}
+\DoxyCodeLine{00347\ }
+\DoxyCodeLine{00348\ \ \ \ \ \textcolor{comment}{//\ Read\ our\ blocks;}}
+\DoxyCodeLine{00349\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ gids.size();\ ++i)}
+\DoxyCodeLine{00350\ \ \ \ \ \{}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ std::string\ filename\ =\ fmt::format(\textcolor{stringliteral}{"{}\{\}/\{\}"{}},\ infilename,\ gids[i]);}
+\DoxyCodeLine{00352\ }
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ ::diy::detail::FileBuffer\ bb(fopen(filename.c\_str(),\ \textcolor{stringliteral}{"{}r"{}}));}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ Link*\ l\ =\ LinkFactory::load(bb);}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ l-\/>fix(assigner);}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ b\ =\ master.create();}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ load(b,\ bb);}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ master.add(gids[i],\ b,\ l);}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ fclose(bb.file);}
+\DoxyCodeLine{00361\ \ \ \ \ \}}
+\DoxyCodeLine{00362\ \ \ \}}
+\DoxyCodeLine{00363\ }
+\DoxyCodeLine{00364\ \ \ \textcolor{comment}{//\ Functions\ without\ the\ extra\ buffer,\ for\ compatibility\ with\ the\ old\ code}}
+\DoxyCodeLine{00365\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00366\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00367\ \ \ write\_blocks(\textcolor{keyword}{const}\ std::string\&\ \ \ \ \ \ \ \ \ \ \ outfilename,}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ mpi::communicator\&\ \ \ \ \ comm,}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master::SaveBlock\ \ \ \ \ \ \ \ \ \ \ \ save)}
+\DoxyCodeLine{00371\ \ \ \{}
+\DoxyCodeLine{00372\ \ \ \ \ MemoryBuffer\ extra;}
+\DoxyCodeLine{00373\ \ \ \ \ write\_blocks(outfilename,\ comm,\ master,\ extra,\ save);}
+\DoxyCodeLine{00374\ \ \ \}}
+\DoxyCodeLine{00375\ }
+\DoxyCodeLine{00376\ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00377\ \ \ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00378\ \ \ read\_blocks(\textcolor{keyword}{const}\ std::string\&\ \ \ \ \ \ \ \ \ \ \ infilename,}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ mpi::communicator\&\ \ \ \ \ comm,}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ StaticAssigner\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ assigner,}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Master::LoadBlock\ \ \ \ \ \ \ \ \ \ \ \ load\ =\ 0)}
+\DoxyCodeLine{00383\ \ \ \{}
+\DoxyCodeLine{00384\ \ \ \ \ MemoryBuffer\ extra;\ \ \ \ \ \textcolor{comment}{//\ dummy}}
+\DoxyCodeLine{00385\ \ \ \ \ read\_blocks(infilename,\ comm,\ assigner,\ master,\ extra,\ load);}
+\DoxyCodeLine{00386\ \ \ \}}
+\DoxyCodeLine{00387\ \}\ \textcolor{comment}{//\ split}}
+\DoxyCodeLine{00388\ \}\ \textcolor{comment}{//\ io}}
+\DoxyCodeLine{00389\ \}\ \textcolor{comment}{//\ diy}}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

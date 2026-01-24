@@ -1,0 +1,1300 @@
+\doxysection{master.\+hpp}
+\hypertarget{master_8hpp_source}{}\label{master_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/master.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/master.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_MASTER\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_MASTER\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <list>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <deque>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <numeric>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <chrono>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <climits>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <random>}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}link.hpp"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}collection.hpp"{}}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{comment}{//\ Communicator\ functionality}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ "{}mpi.hpp"{}}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ "{}serialization.hpp"{}}}
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#include\ "{}time.hpp"{}}}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#include\ "{}thread.hpp"{}}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}coroutine.hpp"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}utils.hpp"{}}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}detail/block\_traits.hpp"{}}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}log.hpp"{}}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ "{}stats.hpp"{}}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00035\ \{}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \textcolor{keyword}{struct\ }MemoryManagement}
+\DoxyCodeLine{00038\ \ \ \{}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \textcolor{keyword}{using\ }Allocate\ =\ std::function<\textcolor{keywordtype}{char}*\ (int,\ size\_t)>;}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \textcolor{keyword}{using\ }Deallocate\ =\ BinaryBlob::Deleter;}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \textcolor{keyword}{using\ }MemCopy\ =\ std::function<void(\textcolor{keywordtype}{char}*,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*,\ \textcolor{keywordtype}{size\_t})>;}
+\DoxyCodeLine{00042\ }
+\DoxyCodeLine{00043\ \ \ \ \ \ \ MemoryManagement()\ \ \ \ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ MemoryManagement(Allocate\ allocate\_,\ Deallocate\ deallocate\_,\ MemCopy\ copy\_):}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ allocate(allocate\_),\ deallocate(deallocate\_),\ copy(copy\_)\ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ \ \ Allocate\ \ \ \ \ \ allocate\ \ \ \ =\ [](\textcolor{keywordtype}{int}\ \textcolor{comment}{/*\ gid\ */},\ \textcolor{keywordtype}{size\_t}\ n)\ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ \textcolor{keywordtype}{char}[n];\ \};}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ Deallocate\ \ \ \ deallocate\ \ =\ [](\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ p)\ \{\ \textcolor{keyword}{delete}[]\ p;\ \};}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ MemCopy\ \ \ \ \ \ \ copy\ \ \ \ \ \ \ \ =\ [](\textcolor{keywordtype}{char}*\ dest,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ src,\ \textcolor{keywordtype}{size\_t}\ count)\ \{\ std::memcpy(dest,\ src,\ count);\ \};}
+\DoxyCodeLine{00050\ \ \ \};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \textcolor{comment}{//\ Stores\ and\ manages\ blocks;\ initiates\ serialization\ and\ communication\ when\ necessary.}}
+\DoxyCodeLine{00054\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00055\ \ \ \textcolor{comment}{//\ Provides\ a\ foreach\ function,\ which\ is\ meant\ as\ the\ main\ entry\ point.}}
+\DoxyCodeLine{00056\ \ \ \textcolor{comment}{//}}
+\DoxyCodeLine{00057\ \ \ \textcolor{comment}{//\ Provides\ a\ conversion\ between\ global\ and\ local\ block\ ids,}}
+\DoxyCodeLine{00058\ \ \ \textcolor{comment}{//\ which\ is\ hidden\ from\ blocks\ via\ a\ communicator\ proxy.}}
+\DoxyCodeLine{00059\ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}}
+\DoxyCodeLine{00060\ \ \ \{}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_process_block}{ProcessBlock}};}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \textcolor{comment}{//\ Commands;\ forward\ declarations,\ defined\ in\ detail/master/commands.hpp}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_base_command}{BaseCommand}};}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_command}{Command}};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \textcolor{keyword}{using\ }Commands\ =\ std::vector<std::unique\_ptr<BaseCommand>>;}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \textcolor{comment}{//\ Skip}}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \textcolor{keyword}{using\ }Skip\ =\ std::function<bool(\textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}\&)>;}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_skip_no_incoming}{SkipNoIncoming}};}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_never_skip}{NeverSkip}}\ \{\ \textcolor{keywordtype}{bool}\ \ \ \ operator()(\textcolor{keywordtype}{int},\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}\&)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};\ \}\ \};}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \textcolor{comment}{//\ Collection}}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ Collection::Create\ \ \ \ \ \ \ \ \ \ \ \ CreateBlock;}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ Collection::Destroy\ \ \ \ \ \ \ \ \ \ \ DestroyBlock;}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ Collection::Save\ \ \ \ \ \ \ \ \ \ \ \ \ \ SaveBlock;}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ Collection::Load\ \ \ \ \ \ \ \ \ \ \ \ \ \ LoadBlock;}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \textcolor{comment}{//\ Communicator\ types,\ defined\ in\ proxy.hpp}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy}{Proxy}};}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_with_link}{ProxyWithLink}};}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \textcolor{comment}{//\ foreach\ callback}}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \textcolor{keyword}{using\ }Callback\ =\ std::function<void(Block*,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_with_link}{ProxyWithLink}}\&)>;}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \textcolor{comment}{//\ foreach\_exchange\ callback}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \textcolor{keyword}{using\ }CoroutineCallback\ =\ std::function<void(Block*\ \textcolor{keyword}{const}\&,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_with_link}{ProxyWithLink}}\&)>;}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \textcolor{comment}{//\ iexchange\ callback}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \textcolor{keyword}{using\ }ICallback\ =\ std::function<bool(Block*,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_with_link}{ProxyWithLink}}\&)>;}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_queue_policy}{QueuePolicy}}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \ \ \ unload\_incoming(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}\&\ master,\ \textcolor{keywordtype}{int}\ from,\ \textcolor{keywordtype}{int}\ to,\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}})\ \textcolor{keyword}{const}\ \ =0;}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \ \ \ unload\_outgoing(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}\&\ master,\ \textcolor{keywordtype}{int}\ from,\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}})\ \textcolor{keyword}{const}\ \ \ \ \ \ \ \ \ \ =0;}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_queue_policy}{\string~QueuePolicy}}()\ \{\}}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }QueueSizePolicy:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_queue_policy}{QueuePolicy}}}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QueueSizePolicy(\textcolor{keywordtype}{size\_t}\ sz):\ size(sz)\ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ unload\_incoming(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}\&,\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{size\_t}\ sz)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ sz\ >\ size;\ \}}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ unload\_outgoing(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}\&,\ \textcolor{keywordtype}{int},\ \textcolor{keywordtype}{size\_t}\ sz)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ sz\ >\ size;\ \}}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ size;}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \textcolor{comment}{//\ forward\ declarations,\ defined\ in\ detail/master/communication.hpp}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_message_info}{MessageInfo}};}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_in_flight_send}{InFlightSend}};}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_in_flight_recv}{InFlightRecv}};}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_gid_send_order}{GidSendOrder}};}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_i_exchange_info}{IExchangeInfo}};}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }IExchangeInfoDUD;}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_i_exchange_info_collective}{IExchangeInfoCollective}};}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \textcolor{comment}{//\ forward\ declarations,\ defined\ in\ detail/master/collectives.hpp}}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_collective}{Collective}};}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_in_flight_sends_list}{InFlightSendsList}};\ \ \ \ \ \textcolor{comment}{//\ std::list<InFlightSend>}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_in_flight_recvs_map}{InFlightRecvsMap}};\ \ \ \ \ \ \textcolor{comment}{//\ std::map<int,\ InFlightRecv>\ \ \ \ \ \ \ \ \ \ //}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_collectives_list}{CollectivesList}};\ \ \ \ \ \ \ \textcolor{comment}{//\ std::list<Collective>}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_collectives_map}{CollectivesMap}};\ \ \ \ \ \ \ \ \textcolor{comment}{//\ std::map<int,\ CollectivesList>\ \ \ \ \ \ \ //\ gid\ -\/>\ [collectives]}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }QueueRecord}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QueueRecord(\doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\&\ b):}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ buffer\_(std::move(b))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ size\_\ =\ buffer\_.size();\ external\_\ =\ -\/1;\ \}}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QueueRecord(\textcolor{keywordtype}{size\_t}\ s\ =\ 0,\ \textcolor{keywordtype}{int}\ e\ =\ -\/1):\ size\_(s),\ external\_(e)\ \ \ \{\}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QueueRecord(\textcolor{keyword}{const}\ QueueRecord\&)\ =\textcolor{keyword}{delete};}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ QueueRecord(QueueRecord\&\&)\ \ \ \ \ \ =\textcolor{keywordflow}{default};}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ QueueRecord\&\ \ \ \ operator=(\textcolor{keyword}{const}\ QueueRecord\&)\ \ \ =\textcolor{keyword}{delete};}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ QueueRecord\&\ \ \ \ operator=(QueueRecord\&\&)\ \ \ \ \ \ \ \ =\textcolor{keywordflow}{default};}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ external()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ external\_\ !=\ -\/1;\ \}}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\&\ \ move()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ std::move(buffer\_);\ \}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ size()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{if}\ (external())\ \textcolor{keywordflow}{return}\ size\_;\ \textcolor{keywordflow}{return}\ buffer\_.size();\ \}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ reset()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ buffer\_.reset();\ \}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ unload(\doxymbox{\hyperlink{classdiy_1_1_external_storage}{ExternalStorage}}*\ storage)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ size\_\ =\ buffer\_.size();\ external\_\ =\ storage-\/>put(buffer\_);\ \}}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ load(\doxymbox{\hyperlink{classdiy_1_1_external_storage}{ExternalStorage}}*\ storage)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ storage-\/>get(external\_,\ buffer\_);\ external\_\ =\ -\/1;\ \}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\&\ \ \ buffer()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ buffer\_;\ \}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ size\_;}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ external\_;}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_memory_buffer}{MemoryBuffer}}\ \ \ \ buffer\_;}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \textcolor{keyword}{using\ }RecordQueue\ =\ \doxymbox{\hyperlink{classdiy_1_1critical__resource}{critical\_resource<std::deque<QueueRecord>}}>;}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \textcolor{keyword}{using\ }IncomingQueues\ =\ \doxymbox{\hyperlink{structdiy_1_1concurrent__map}{concurrent\_map<int,\ \ \ \ \ \ RecordQueue>}};\ \ \ \ \ \ \ \textcolor{comment}{//\ gid\ \ -\/>\ [(size,\ external,\ buffer),\ ...]}}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \textcolor{keyword}{using\ }OutgoingQueues\ =\ \doxymbox{\hyperlink{structdiy_1_1concurrent__map}{concurrent\_map<BlockID,\ \ RecordQueue>}};\ \ \ \ \ \ \ \textcolor{comment}{//\ bid\ \ -\/>\ [(size,\ external,\ buffer),\ ...]}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \textcolor{keyword}{using\ }IncomingQueuesMap\ =\ std::map<int,\ IncomingQueues>;\ \ \ \ \ \ \textcolor{comment}{//\ gid\ \ -\/>\ \{\ \ gid\ -\/>\ [(size,\ external,\ buffer),\ ...]\}}}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \textcolor{keyword}{using\ }OutgoingQueuesMap\ =\ std::map<int,\ OutgoingQueues>;\ \ \ \ \ \ \textcolor{comment}{//\ gid\ \ -\/>\ \{\ \ bid\ -\/>\ [(size,\ external,\ buffer),\ ...]\}}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_incoming_round}{IncomingRound}}}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ IncomingQueuesMap\ map;}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ received\{0\};}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ std::map<int,\ IncomingRound>\ IncomingRoundMap;}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}(\doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator}{mpi::communicator}}\ \ \ \ comm,\ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ threads\_\_\ =\ 1,\ \ }
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ limit\_\_\ \ \ =\ -\/1,\ }
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CreateBlock\ \ \ \ \ \ \ \ \ \ create\_\ \ \ =\ 0,\ \ }
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DestroyBlock\ \ \ \ \ \ \ \ \ destroy\_\ \ =\ 0,\ \ }
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_external_storage}{ExternalStorage}}*\ \ \ \ \ storage\ \ \ =\ 0,\ \ }
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SaveBlock\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}}\ \ \ \ \ \ =\ 0,\ \ }
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ LoadBlock\ \ \ \ \ \ \ \ \ \ \ \ load\_\ \ \ \ \ =\ 0,\ \ }
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_queue_policy}{QueuePolicy}}*\ \ \ \ \ \ \ \ \ q\_policy\ \ =\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_queue_size_policy}{QueueSizePolicy}}(4096));\ }
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{\string~Master}}();}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ clear();}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ destroy(\textcolor{keywordtype}{int}\ i)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{if}\ (blocks\_.own())\ blocks\_.destroy(i);\ \}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \ \ \ add(\textcolor{keywordtype}{int}\ gid,\ \textcolor{keywordtype}{void}*\ b,\ \doxymbox{\hyperlink{classdiy_1_1_link}{Link}}*\ l);\ \ \ \ \ }
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \ \ \ add(\textcolor{keywordtype}{int}\ gid,\ \textcolor{keywordtype}{void}*\ b,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_link}{Link}}\&\ l)\{\ \textcolor{keywordflow}{return}\ add(gid,\ b,\ l.clone());\ \}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}*\ \ release(\textcolor{keywordtype}{int}\ i);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}*\ \ block(\textcolor{keywordtype}{int}\ i)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ blocks\_.find(i);\ \}}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ Block*\ \ \ \ \ \ \ \ block(\textcolor{keywordtype}{int}\ i)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}Block*\textcolor{keyword}{>}(block(i));\ \}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \textcolor{keyword}{const}\ Collection\&}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ blocks()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ blocks\_;\ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_ad899d8137bde51dcb5fc9333bec01dff}{get}}(\textcolor{keywordtype}{int}\ i)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ blocks\_.get(i);\ \}}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ Block*\ \ \ \ \ \ \ \ get(\textcolor{keywordtype}{int}\ i)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}Block*\textcolor{keyword}{>}(get(i));\ \}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ Link*\ \ link(\textcolor{keywordtype}{int}\ i)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ links\_[i];\ \}}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{int}\ \ \ \ loaded\_block()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ blocks\_.available();\ \}}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ unload(\textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ load(\textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ unload(std::vector<int>\&\ loaded)\ \ \ \ \{\ \textcolor{keywordflow}{for}(\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ loaded.size();\ ++i)\ unload(loaded[i]);\ loaded.clear();\ \}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ unload\_all()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{for}(\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ \doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}();\ ++i)\ \textcolor{keywordflow}{if}\ (block(i)\ !=\ 0)\ unload(i);\ \}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \ \ has\_incoming(\textcolor{keywordtype}{int}\ i)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ unload\_queues(\textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ unload\_incoming(\textcolor{keywordtype}{int}\ gid);}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ unload\_outgoing(\textcolor{keywordtype}{int}\ gid);}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ load\_queues(\textcolor{keywordtype}{int}\ i);}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ load\_incoming(\textcolor{keywordtype}{int}\ gid);}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ load\_outgoing(\textcolor{keywordtype}{int}\ gid);}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator}{mpi::communicator}}\&\ \ \doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}()\textcolor{keyword}{\ const\ \ \ \ }\{\ \textcolor{keywordflow}{return}\ comm\_;\ \}}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator}{mpi::communicator}}\&\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a8420c101e52ac1372295e8048701e1a7}{communicator}}()\ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ comm\_;\ \}}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(\textcolor{keywordtype}{int}\ i)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ gids\_[i];\ \}}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a36abb03d99bab9c2c37b5165fd0d92d8}{lid}}(\textcolor{keywordtype}{int}\ gid\_\_)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{classdiy_1_1_master_a0af7860c2d3b5975e276410a5bff4672}{local}}(gid\_\_)\ ?\ \ lids\_.find(gid\_\_)-\/>second\ :\ -\/1;\ \}}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a0af7860c2d3b5975e276410a5bff4672}{local}}(\textcolor{keywordtype}{int}\ gid\_\_)\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ lids\_.find(gid\_\_)\ !=\ lids\_.end();\ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ exchange(\textcolor{keywordtype}{bool}\ remote\ =\ \textcolor{keyword}{false},\ \doxymbox{\hyperlink{structdiy_1_1_memory_management}{MemoryManagement}}\ mem\ =\ \doxymbox{\hyperlink{structdiy_1_1_memory_management}{MemoryManagement}}());}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ iexchange\_(\textcolor{keyword}{const}\ ICallback<Block>\&\ \ f,\ \doxymbox{\hyperlink{structdiy_1_1_memory_management}{MemoryManagement}}\ mem);}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ F>}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ iexchange(\textcolor{keyword}{const}\ F\&\ f,\ \doxymbox{\hyperlink{structdiy_1_1_memory_management}{MemoryManagement}}\ mem\ =\ \doxymbox{\hyperlink{structdiy_1_1_memory_management}{MemoryManagement}}())}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Block\ =\ \textcolor{keyword}{typename}\ detail::block\_traits<F>::type;}
+\DoxyCodeLine{00258\ \ \ \ \ \ \ \ \ \ \ iexchange\_<Block>(f,\ mem);}
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ process\_collectives();}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \textcolor{keyword}{inline}}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ ProxyWithLink\ proxy(\textcolor{keywordtype}{int}\ i,\ IExchangeInfo*\ iex\ =\ 0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \ \doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\textcolor{keyword}{>}(blocks\_.size());\ \}}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \textcolor{keywordtype}{void}*\ \ \ \ \ \ \ \ \ create()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ blocks\_.create();\ \}}
+\DoxyCodeLine{00269\ }
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \textcolor{comment}{//\ accessors}}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ limit()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ limit\_;\ \}}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ threads()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ threads\_;\ \}}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ in\_memory()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ *blocks\_.in\_memory().const\_access();\ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ set\_threads(\textcolor{keywordtype}{int}\ threads\_\_)}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ threads\_\ =\ threads\_\_;}
+\DoxyCodeLine{00278\ \textcolor{preprocessor}{\#if\ defined(DIY\_NO\_THREADS)}}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ threads\_\ =\ 1;}
+\DoxyCodeLine{00280\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \ \ \ \ CreateBlock\ \ \ creator()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ blocks\_.creator();\ \}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ DestroyBlock\ \ destroyer()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ blocks\_.destroyer();\ \}}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ LoadBlock\ \ \ \ \ loader()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ blocks\_.loader();\ \}}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ SaveBlock\ \ \ \ \ saver()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ blocks\_.saver();\ \}}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_master_a5f80b0b60be6e6028907131985437dee}{foreach\_}}(\textcolor{keyword}{const}\ Callback<Block>\&\ f,\ \textcolor{keyword}{const}\ Skip\&\ s\ =\ NeverSkip());}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ F>}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{foreach}(\textcolor{keyword}{const}\ F\&\ f,\ \textcolor{keyword}{const}\ Skip\&\ s\ =\ NeverSkip())}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Block\ =\ \textcolor{keyword}{typename}\ detail::block\_traits<F>::type;}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \ \ foreach\_<Block>(f,\ s);}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00298\ }
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ execute();}
+\DoxyCodeLine{00300\ }
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ immediate()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ immediate\_;\ \}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ set\_immediate(\textcolor{keywordtype}{bool}\ i)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{if}\ (i\ \&\&\ !immediate\_)\ execute();\ immediate\_\ =\ i;\ \}}
+\DoxyCodeLine{00303\ }
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }CoroutineArg;}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{static}}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ launch\_process\_block\_coroutine();}
+\DoxyCodeLine{00309\ }
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ foreach\_exchange\_(\textcolor{keyword}{const}\ CoroutineCallback<Block>\&\ f,\ \textcolor{keywordtype}{bool}\ remote,\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ stack\_size);}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ F>}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ foreach\_exchange(\textcolor{keyword}{const}\ F\&\ f,\ \textcolor{keywordtype}{bool}\ remote\ =\ \textcolor{keyword}{false},\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ stack\_size\ =\ 16*1024*1024);}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \textcolor{comment}{//\ Communicator\ functionality}}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ IncomingQueues\&\ \ \ incoming(\textcolor{keywordtype}{int}\ gid\_\_)\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ incoming\_[exchange\_round\_].map[gid\_\_];\ \}}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ OutgoingQueues\&\ \ \ outgoing(\textcolor{keywordtype}{int}\ gid\_\_)\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ outgoing\_[gid\_\_];\ \}}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ CollectivesList\&\ \ collectives(\textcolor{keywordtype}{int}\ gid\_\_);}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ CollectivesMap\&\ \ \ collectives();}
+\DoxyCodeLine{00322\ }
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ set\_expected(\textcolor{keywordtype}{int}\ expected)\ \ \ \ \ \ \{\ expected\_\ =\ expected;\ \}}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ add\_expected(\textcolor{keywordtype}{int}\ i)\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ expected\_\ +=\ i;\ \}}
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ expected()\textcolor{keyword}{\ const\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\{\ \textcolor{keywordflow}{return}\ expected\_;\ \}}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ \ \ replace\_link(\textcolor{keywordtype}{int}\ i,\ Link*\ link\_\_)\ \{\ expected\_\ -\/=\ links\_[i]-\/>size\_unique();\ \textcolor{keyword}{delete}\ links\_[i];\ links\_[i]\ =\ link\_\_;\ expected\_\ +=\ links\_[i]-\/>size\_unique();\ \}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \textcolor{comment}{//\ Communicator\ functionality}}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ flush(\textcolor{keywordtype}{bool}\ remote,\ MemoryManagement\ mem\ =\ MemoryManagement());\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ makes\ sure\ all\ the\ serialized\ queues\ migrate\ to\ their\ target\ processors}}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \textcolor{comment}{//\ Communicator\ functionality}}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ comm\_exchange(GidSendOrder\&\ gid\_order,\ MemoryManagement\ mem,\ IExchangeInfo*\ \ \ \ iex\ =\ 0);}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ rcomm\_exchange(MemoryManagement\ mem);\ \ \ \ \textcolor{comment}{//\ possibly\ called\ in\ between\ block\ computations}}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ nudge(IExchangeInfo*\ iex\ =\ 0);}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ send\_queue(\textcolor{keywordtype}{int}\ from\_gid,\ \textcolor{keywordtype}{int}\ to\_gid,\ \textcolor{keywordtype}{int}\ to\_proc,\ QueueRecord\&\ qr,\ \textcolor{keywordtype}{bool}\ remote,\ MemoryManagement\ mem,\ IExchangeInfo*\ iex);}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ send\_outgoing\_queues(GidSendOrder\&\ \ \ gid\_order,}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ remote,}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ MemoryManagement\ mem,}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IExchangeInfo*\ \ iex\ =\ 0);}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ check\_incoming\_queues(MemoryManagement\ mem,\ IExchangeInfo*\ iex\ =\ 0);}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ GidSendOrder}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ order\_gids();}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ touch\_queues();}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ send\_same\_rank(\textcolor{keywordtype}{int}\ from,\ \textcolor{keywordtype}{int}\ to,\ QueueRecord\&\ qr,\ MemoryManagement\ mem,\ IExchangeInfo*\ iex);}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ send\_different\_rank(\textcolor{keywordtype}{int}\ from,\ \textcolor{keywordtype}{int}\ to,\ \textcolor{keywordtype}{int}\ proc,\ QueueRecord\&\ qr,\ \textcolor{keywordtype}{bool}\ remote,\ IExchangeInfo*\ iex);}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ InFlightRecv\&\ \ \ \ \ \ \ \ \ inflight\_recv(\textcolor{keywordtype}{int}\ proc);}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ InFlightSendsList\&\ \ \ \ inflight\_sends();}
+\DoxyCodeLine{00351\ }
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \textcolor{comment}{//\ iexchange\ commmunication}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ icommunicate(IExchangeInfo*\ iex,\ MemoryManagement\ mem);\ \ \ \ \ \textcolor{comment}{//\ async\ communication}}
+\DoxyCodeLine{00354\ }
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }tags\ \ \ \ \ \ \ \{\ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ queue,}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iexchange}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \};\ \};}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00360\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ std::vector<Link*>\ \ \ \ links\_;}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ Collection\ \ \ \ \ \ \ \ \ \ \ \ blocks\_;}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ std::vector<int>\ \ \ \ \ \ gids\_;}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ std::map<int,\ int>\ \ \ \ lids\_;}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \ \ \ \ \ \ QueuePolicy*\ \ \ \ \ \ \ \ \ \ queue\_policy\_;}
+\DoxyCodeLine{00367\ }
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ limit\_;}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ threads\_;}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ ExternalStorage*\ \ \ \ \ \ storage\_;}
+\DoxyCodeLine{00371\ }
+\DoxyCodeLine{00372\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \textcolor{comment}{//\ Communicator}}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ mpi::communicator\ \ \ \ \ comm\_;}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ IncomingRoundMap\ \ \ \ \ \ incoming\_;}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ OutgoingQueuesMap\ \ \ \ \ outgoing\_;}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \ \ \ \ std::unique\_ptr<InFlightSendsList>\ inflight\_sends\_;}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ std::unique\_ptr<InFlightRecvsMap>\ \ inflight\_recvs\_;}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ std::unique\_ptr<CollectivesMap>\ \ \ \ collectives\_;}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ expected\_\ \ \ \ \ \ \ \ \ \ \ =\ 0;}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ exchange\_round\_\ \ \ \ \ =\ -\/1;}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ immediate\_\ \ \ \ \ \ \ \ \ \ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ Commands\ \ \ \ \ \ \ \ \ \ \ \ \ \ commands\_;}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ fast\_mutex\ \ \ \ \ \ \ \ \ \ \ \ add\_mutex\_;}
+\DoxyCodeLine{00389\ }
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ std::shared\_ptr<spd::logger>\ \ log\ =\ get\_logger();}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ stats::Profiler\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ prof;}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ stats::Annotation\ \ \ \ \ \ \ \ \ \ \ \ \ exchange\_round\_annotation\ \{\ \textcolor{stringliteral}{"{}diy.exchange-\/round"{}}\ \};}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ std::mt19937\ mt\_gen;\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ mersenne\_twister\ random\ number\ generator}}
+\DoxyCodeLine{00395\ \ \ \};}
+\DoxyCodeLine{00396\ }
+\DoxyCodeLine{00397\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structdiy_1_1_master_1_1_skip_no_incoming}{Master::SkipNoIncoming}}}
+\DoxyCodeLine{00398\ \ \ \{\ \textcolor{keywordtype}{bool}\ operator()(\textcolor{keywordtype}{int}\ i,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_master_a57dc152e96dba39554399cf63e7b4fc9}{Master}}\&\ master)\textcolor{keyword}{\ const\ \ \ }\{\ \textcolor{keywordflow}{return}\ !master.has\_incoming(i);\ \}\ \};}
+\DoxyCodeLine{00399\ \}}
+\DoxyCodeLine{00400\ }
+\DoxyCodeLine{00401\ \textcolor{preprocessor}{\#include\ "{}detail/master/iexchange.hpp"{}}}
+\DoxyCodeLine{00402\ \textcolor{preprocessor}{\#include\ "{}detail/master/communication.hpp"{}}}
+\DoxyCodeLine{00403\ \textcolor{preprocessor}{\#include\ "{}detail/master/collectives.hpp"{}}}
+\DoxyCodeLine{00404\ \textcolor{preprocessor}{\#include\ "{}detail/master/commands.hpp"{}}}
+\DoxyCodeLine{00405\ \textcolor{preprocessor}{\#include\ "{}proxy.hpp"{}}}
+\DoxyCodeLine{00406\ \textcolor{preprocessor}{\#include\ "{}detail/master/execution.hpp"{}}}
+\DoxyCodeLine{00407\ \textcolor{preprocessor}{\#include\ "{}detail/master/foreach\_exchange.hpp"{}}}
+\DoxyCodeLine{00408\ }
+\DoxyCodeLine{00409\ diy::Master::}
+\DoxyCodeLine{00410\ Master(\doxymbox{\hyperlink{classdiy_1_1mpi_1_1communicator}{mpi::communicator}}\ \ \ \ comm,}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ threads\_\_,}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ limit\_\_,}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ CreateBlock\ \ \ \ \ \ \ \ \ \ create\_,}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ DestroyBlock\ \ \ \ \ \ \ \ \ destroy\_,}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classdiy_1_1_external_storage}{ExternalStorage}}*\ \ \ \ \ storage,}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ SaveBlock\ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}},}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ LoadBlock\ \ \ \ \ \ \ \ \ \ \ \ load\_,}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_queue_policy}{QueuePolicy}}*\ \ \ \ \ \ \ \ \ q\_policy):}
+\DoxyCodeLine{00419\ \ \ blocks\_(create\_,\ destroy\_,\ storage,\ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{save}},\ load\_),}
+\DoxyCodeLine{00420\ \ \ queue\_policy\_(q\_policy),}
+\DoxyCodeLine{00421\ \ \ limit\_(limit\_\_),}
+\DoxyCodeLine{00422\ \#if\ !defined(DIY\_NO\_THREADS)}
+\DoxyCodeLine{00423\ \ \ threads\_(threads\_\_\ ==\ -\/1\ ?\ static\_cast<int>(\doxymbox{\hyperlink{structdiy_1_1thread}{thread}}::hardware\_concurrency())\ :\ threads\_\_),}
+\DoxyCodeLine{00424\ \#else}
+\DoxyCodeLine{00425\ \ \ threads\_(1),}
+\DoxyCodeLine{00426\ \#endif}
+\DoxyCodeLine{00427\ \ \ storage\_(storage),}
+\DoxyCodeLine{00428\ \ \ \textcolor{comment}{//\ Communicator\ functionality}}
+\DoxyCodeLine{00429\ \ \ inflight\_sends\_(new\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_in_flight_sends_list}{InFlightSendsList}}),}
+\DoxyCodeLine{00430\ \ \ inflight\_recvs\_(new\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_in_flight_recvs_map}{InFlightRecvsMap}}),}
+\DoxyCodeLine{00431\ \ \ collectives\_(new\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_collectives_map}{CollectivesMap}})}
+\DoxyCodeLine{00432\ \{}
+\DoxyCodeLine{00433\ \textcolor{preprocessor}{\#ifdef\ DIY\_NO\_THREADS}}
+\DoxyCodeLine{00434\ \ \ (void)\ threads\_\_;}
+\DoxyCodeLine{00435\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00436\ \ \ \ \ comm\_.duplicate(comm);}
+\DoxyCodeLine{00437\ }
+\DoxyCodeLine{00438\ \ \ \ \ \textcolor{comment}{//\ seed\ random\ number\ generator,\ broadcast\ seed,\ offset\ by\ rank}}
+\DoxyCodeLine{00439\ \ \ \ \ std::random\_device\ rd;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ seed\ source\ for\ the\ random\ number\ engine}}
+\DoxyCodeLine{00440\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ s\ =\ rd();}
+\DoxyCodeLine{00441\ \ \ \ \ diy::mpi::broadcast(\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}(),\ s,\ 0);}
+\DoxyCodeLine{00442\ \ \ \ \ std::mt19937\ gen(s\ +\ \doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().rank());\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ mersenne\_twister\ random\ number\ generator}}
+\DoxyCodeLine{00443\ \ \ \ \ mt\_gen\ =\ gen;}
+\DoxyCodeLine{00444\ \}}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ diy::Master::}
+\DoxyCodeLine{00447\ \string~Master()}
+\DoxyCodeLine{00448\ \{}
+\DoxyCodeLine{00449\ \ \ \ \ set\_immediate(\textcolor{keyword}{true});}
+\DoxyCodeLine{00450\ \ \ \ \ clear();}
+\DoxyCodeLine{00451\ \ \ \ \ \textcolor{keyword}{delete}\ queue\_policy\_;}
+\DoxyCodeLine{00452\ \}}
+\DoxyCodeLine{00453\ }
+\DoxyCodeLine{00454\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00455\ diy::Master::}
+\DoxyCodeLine{00456\ clear()}
+\DoxyCodeLine{00457\ \{}
+\DoxyCodeLine{00458\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ size();\ ++i)}
+\DoxyCodeLine{00459\ \ \ \ \ \textcolor{keyword}{delete}\ links\_[i];}
+\DoxyCodeLine{00460\ \ \ blocks\_.clear();}
+\DoxyCodeLine{00461\ \ \ links\_.clear();}
+\DoxyCodeLine{00462\ \ \ gids\_.clear();}
+\DoxyCodeLine{00463\ \ \ lids\_.clear();}
+\DoxyCodeLine{00464\ \ \ expected\_\ =\ 0;}
+\DoxyCodeLine{00465\ \}}
+\DoxyCodeLine{00466\ }
+\DoxyCodeLine{00467\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00468\ diy::Master::}
+\DoxyCodeLine{00469\ unload(\textcolor{keywordtype}{int}\ i)}
+\DoxyCodeLine{00470\ \{}
+\DoxyCodeLine{00471\ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Unloading\ block:\ \{\}"{}},\ gid(i));}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \ \ blocks\_.unload(i);}
+\DoxyCodeLine{00474\ \ \ unload\_queues(i);}
+\DoxyCodeLine{00475\ \}}
+\DoxyCodeLine{00476\ }
+\DoxyCodeLine{00477\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00478\ diy::Master::}
+\DoxyCodeLine{00479\ unload\_queues(\textcolor{keywordtype}{int}\ i)}
+\DoxyCodeLine{00480\ \{}
+\DoxyCodeLine{00481\ \ \ unload\_incoming(gid(i));}
+\DoxyCodeLine{00482\ \ \ unload\_outgoing(gid(i));}
+\DoxyCodeLine{00483\ \}}
+\DoxyCodeLine{00484\ }
+\DoxyCodeLine{00485\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00486\ diy::Master::}
+\DoxyCodeLine{00487\ unload\_incoming(\textcolor{keywordtype}{int}\ gid\_\_)}
+\DoxyCodeLine{00488\ \{}
+\DoxyCodeLine{00489\ \ \ \textcolor{keywordflow}{for}\ (IncomingRoundMap::iterator\ round\_itr\ =\ incoming\_.begin();\ round\_itr\ !=\ incoming\_.end();\ ++round\_itr)}
+\DoxyCodeLine{00490\ \ \ \{}
+\DoxyCodeLine{00491\ \ \ \ \ IncomingQueuesMap::iterator\ qmap\_itr\ =\ round\_itr-\/>second.map.find(gid\_\_);}
+\DoxyCodeLine{00492\ \ \ \ \ \textcolor{keywordflow}{if}\ (qmap\_itr\ ==\ round\_itr-\/>second.map.end())}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00494\ }
+\DoxyCodeLine{00495\ \ \ \ \ IncomingQueues\&\ in\_qs\ =\ qmap\_itr-\/>second;}
+\DoxyCodeLine{00496\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ in\_qs)}
+\DoxyCodeLine{00497\ \ \ \ \ \{}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ from\ =\ x.first;}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (QueueRecord\&\ qr\ :\ *x.second.access())}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (queue\_policy\_-\/>unload\_incoming(*\textcolor{keyword}{this},\ from,\ gid\_\_,\ qr.size()))}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Unloading\ queue:\ \{\}\ <-\/\ \{\}"{}},\ gid\_\_,\ from);}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \ \ \ \ qr.unload(storage\_);}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00507\ \ \ \ \ \}}
+\DoxyCodeLine{00508\ \ \ \}}
+\DoxyCodeLine{00509\ \}}
+\DoxyCodeLine{00510\ }
+\DoxyCodeLine{00511\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00512\ diy::Master::}
+\DoxyCodeLine{00513\ unload\_outgoing(\textcolor{keywordtype}{int}\ gid\_\_)}
+\DoxyCodeLine{00514\ \{}
+\DoxyCodeLine{00515\ \ \ OutgoingQueues\&\ out\_qs\ =\ outgoing\_[gid\_\_];}
+\DoxyCodeLine{00516\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ out\_qs)}
+\DoxyCodeLine{00517\ \ \ \{}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ to\ =\ x.first.gid;}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (QueueRecord\&\ qr\ :\ *x.second.access())}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (queue\_policy\_-\/>unload\_outgoing(*\textcolor{keyword}{this},\ gid\_\_,\ qr.size()))}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Unloading\ outgoing\ queue:\ \{\}\ -\/>\ \{\}"{}},\ gid\_\_,\ to);}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ qr.unload(storage\_);}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00526\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00527\ \ \ \}}
+\DoxyCodeLine{00528\ \}}
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00530\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00531\ diy::Master::}
+\DoxyCodeLine{00532\ load(\textcolor{keywordtype}{int}\ i)}
+\DoxyCodeLine{00533\ \{}
+\DoxyCodeLine{00534\ \ log-\/>debug(\textcolor{stringliteral}{"{}Loading\ block:\ \{\}"{}},\ gid(i));}
+\DoxyCodeLine{00535\ }
+\DoxyCodeLine{00536\ \ \ blocks\_.load(i);}
+\DoxyCodeLine{00537\ \ \ load\_queues(i);}
+\DoxyCodeLine{00538\ \}}
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00540\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00541\ diy::Master::}
+\DoxyCodeLine{00542\ load\_queues(\textcolor{keywordtype}{int}\ i)}
+\DoxyCodeLine{00543\ \{}
+\DoxyCodeLine{00544\ \ \ load\_incoming(gid(i));}
+\DoxyCodeLine{00545\ \ \ load\_outgoing(gid(i));}
+\DoxyCodeLine{00546\ \}}
+\DoxyCodeLine{00547\ }
+\DoxyCodeLine{00548\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00549\ diy::Master::}
+\DoxyCodeLine{00550\ load\_incoming(\textcolor{keywordtype}{int}\ gid\_\_)}
+\DoxyCodeLine{00551\ \{}
+\DoxyCodeLine{00552\ \ \ IncomingQueues\&\ in\_qs\ =\ incoming\_[exchange\_round\_].map[gid\_\_];}
+\DoxyCodeLine{00553\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ in\_qs)}
+\DoxyCodeLine{00554\ \ \ \{}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ from\ =\ x.first;}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ access\ =\ x.second.access();}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!access-\/>empty())}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NB:\ we\ only\ load\ the\ front\ queue,\ if\ we\ want\ to\ use\ out-\/of-\/core}}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ machinery\ with\ iexchange,\ this\ will\ require\ changes}}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ qr\ =\ access-\/>front();}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (qr.external())}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Loading\ queue:\ \{\}\ <-\/\ \{\}"{}},\ gid\_\_,\ from);}
+\DoxyCodeLine{00565\ \ \ \ \ \ \ \ \ \ \ \ \ qr.load(storage\_);}
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00568\ \ \ \}}
+\DoxyCodeLine{00569\ \}}
+\DoxyCodeLine{00570\ }
+\DoxyCodeLine{00571\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00572\ diy::Master::}
+\DoxyCodeLine{00573\ load\_outgoing(\textcolor{keywordtype}{int}\ gid\_\_)}
+\DoxyCodeLine{00574\ \{}
+\DoxyCodeLine{00575\ \ \ \textcolor{comment}{//\ TODO:\ we\ could\ adjust\ this\ mechanism\ to\ read\ directly\ from\ storage,}}
+\DoxyCodeLine{00576\ \ \ \textcolor{comment}{//\ \ \ \ \ \ \ bypassing\ an\ intermediate\ MemoryBuffer}}
+\DoxyCodeLine{00577\ \ \ OutgoingQueues\&\ out\_qs\ =\ outgoing\_[gid\_\_];}
+\DoxyCodeLine{00578\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ out\_qs)}
+\DoxyCodeLine{00579\ \ \ \{}
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ to\ \ \ \ \ \ =\ x.first.gid;}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ to\_rank\ =\ x.first.proc;}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ access\ =\ x.second.access();}
+\DoxyCodeLine{00583\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!access-\/>empty())}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00585\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NB:\ we\ only\ load\ the\ front\ queue,\ if\ we\ want\ to\ use\ out-\/of-\/core}}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ machinery\ with\ iexchange,\ this\ will\ require\ changes}}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ qr\ =\ access-\/>front();}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (qr.external()\ \&\&\ comm\_.rank()\ !=\ to\_rank)\ \ \ \ \ \textcolor{comment}{//\ skip\ queues\ to\ the\ same\ rank}}
+\DoxyCodeLine{00589\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00590\ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Loading\ queue:\ \{\}\ -\/>\ \{\}"{}},\ gid\_\_,\ to);}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \ \ \ \ qr.load(storage\_);}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00594\ \ \ \}}
+\DoxyCodeLine{00595\ \}}
+\DoxyCodeLine{00596\ }
+\DoxyCodeLine{00597\ diy::Master::ProxyWithLink}
+\DoxyCodeLine{00598\ diy::Master::}
+\DoxyCodeLine{00599\ proxy(\textcolor{keywordtype}{int}\ i,\ IExchangeInfo*\ iex)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00600\ \textcolor{keyword}{}\{\ \textcolor{keywordflow}{return}\ ProxyWithLink(Proxy(\textcolor{keyword}{const\_cast<}Master*\textcolor{keyword}{>}(\textcolor{keyword}{this}),\ gid(i),\ iex),\ block(i),\ link(i));\ \}}
+\DoxyCodeLine{00601\ }
+\DoxyCodeLine{00602\ \textcolor{keywordtype}{int}}
+\DoxyCodeLine{00603\ diy::Master::}
+\DoxyCodeLine{00604\ add(\textcolor{keywordtype}{int}\ gid\_\_,\ \textcolor{keywordtype}{void}*\ b,\ \doxymbox{\hyperlink{classdiy_1_1_link}{Link}}*\ l)}
+\DoxyCodeLine{00605\ \{}
+\DoxyCodeLine{00606\ \ \ \textcolor{keywordflow}{if}\ (*blocks\_.in\_memory().const\_access()\ ==\ limit\_)}
+\DoxyCodeLine{00607\ \ \ \ \ unload\_all();}
+\DoxyCodeLine{00608\ }
+\DoxyCodeLine{00609\ \ \ \doxymbox{\hyperlink{structdiy_1_1lock__guard}{lock\_guard<fast\_mutex>}}\ \ \ \ lock(add\_mutex\_);\ \ \ \ \ \ \ \textcolor{comment}{//\ allow\ to\ add\ blocks\ from\ multiple\ threads}}
+\DoxyCodeLine{00610\ }
+\DoxyCodeLine{00611\ \ \ blocks\_.add(b);}
+\DoxyCodeLine{00612\ \ \ links\_.push\_back(l);}
+\DoxyCodeLine{00613\ \ \ gids\_.push\_back(gid\_\_);}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \ \ \textcolor{keywordtype}{int}\ lid\_\_\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(gids\_.size())\ -\/\ 1;}
+\DoxyCodeLine{00616\ \ \ lids\_[gid\_\_]\ =\ lid\_\_;}
+\DoxyCodeLine{00617\ \ \ add\_expected(l-\/>size\_unique());\ \textcolor{comment}{//\ NB:\ at\ every\ iteration\ we\ expect\ a\ message\ from\ each\ unique\ neighbor}}
+\DoxyCodeLine{00618\ }
+\DoxyCodeLine{00619\ \ \ \textcolor{keywordflow}{return}\ lid\_\_;}
+\DoxyCodeLine{00620\ \}}
+\DoxyCodeLine{00621\ }
+\DoxyCodeLine{00622\ \textcolor{keywordtype}{void}*}
+\DoxyCodeLine{00623\ diy::Master::}
+\DoxyCodeLine{00624\ release(\textcolor{keywordtype}{int}\ i)}
+\DoxyCodeLine{00625\ \{}
+\DoxyCodeLine{00626\ \ \ \textcolor{keywordtype}{void}*\ b\ =\ blocks\_.release(i);}
+\DoxyCodeLine{00627\ }
+\DoxyCodeLine{00628\ \ \ expected\_\ -\/=\ links\_[i]-\/>size\_unique();}
+\DoxyCodeLine{00629\ \ \ \textcolor{keyword}{delete}\ link(i);\ \ \ links\_[i]\ =\ 0;}
+\DoxyCodeLine{00630\ \ \ std::swap(links\_[i],\ links\_.back());}
+\DoxyCodeLine{00631\ \ \ links\_.pop\_back();}
+\DoxyCodeLine{00632\ }
+\DoxyCodeLine{00633\ \ \ lids\_.erase(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i));}
+\DoxyCodeLine{00634\ }
+\DoxyCodeLine{00635\ \ \ std::swap(gids\_[i],\ gids\_.back());}
+\DoxyCodeLine{00636\ \ \ gids\_.pop\_back();}
+\DoxyCodeLine{00637\ \ \ lids\_[\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i)]\ =\ i;}
+\DoxyCodeLine{00638\ }
+\DoxyCodeLine{00639\ \ \ \textcolor{keywordflow}{return}\ b;}
+\DoxyCodeLine{00640\ \}}
+\DoxyCodeLine{00641\ }
+\DoxyCodeLine{00642\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{00643\ diy::Master::}
+\DoxyCodeLine{00644\ has\_incoming(\textcolor{keywordtype}{int}\ i)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00645\ \textcolor{keyword}{}\{}
+\DoxyCodeLine{00646\ \ \ \textcolor{keyword}{const}\ IncomingQueues\&\ in\_qs\ =\ \textcolor{keyword}{const\_cast<}\doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\textcolor{keyword}{>}(*this).incoming\_[exchange\_round\_].map[gid(i)];}
+\DoxyCodeLine{00647\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ in\_qs)}
+\DoxyCodeLine{00648\ \ \ \{}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ access\ =\ x.second.const\_access();}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!access-\/>empty()\ \&\&\ access-\/>front().size()\ !=\ 0)}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00652\ \ \ \}}
+\DoxyCodeLine{00653\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00654\ \}}
+\DoxyCodeLine{00655\ }
+\DoxyCodeLine{00656\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00657\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00658\ diy::Master::}
+\DoxyCodeLine{00659\ foreach\_(\textcolor{keyword}{const}\ Callback<Block>\&\ f,\ \textcolor{keyword}{const}\ Skip\&\ skip)}
+\DoxyCodeLine{00660\ \{}
+\DoxyCodeLine{00661\ \ \ \ \ exchange\_round\_annotation.set(exchange\_round\_);}
+\DoxyCodeLine{00662\ }
+\DoxyCodeLine{00663\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}foreach"{}});}
+\DoxyCodeLine{00664\ \ \ \ \ DIY\_UNUSED(scoped);}
+\DoxyCodeLine{00665\ }
+\DoxyCodeLine{00666\ \ \ \ \ commands\_.emplace\_back(\textcolor{keyword}{new}\ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_command}{Command<Block>}}(f,\ skip));}
+\DoxyCodeLine{00667\ }
+\DoxyCodeLine{00668\ \ \ \ \ \textcolor{keywordflow}{if}\ (immediate())}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \ \ execute();}
+\DoxyCodeLine{00670\ \}}
+\DoxyCodeLine{00671\ }
+\DoxyCodeLine{00672\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00673\ diy::Master::}
+\DoxyCodeLine{00674\ exchange(\textcolor{keywordtype}{bool}\ remote,\ \doxymbox{\hyperlink{structdiy_1_1_memory_management}{MemoryManagement}}\ mem)}
+\DoxyCodeLine{00675\ \{}
+\DoxyCodeLine{00676\ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}exchange"{}});}
+\DoxyCodeLine{00677\ \ \ DIY\_UNUSED(scoped);}
+\DoxyCodeLine{00678\ }
+\DoxyCodeLine{00679\ \ \ execute();}
+\DoxyCodeLine{00680\ }
+\DoxyCodeLine{00681\ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Starting\ exchange"{}});}
+\DoxyCodeLine{00682\ }
+\DoxyCodeLine{00683\ \ \ \textcolor{keywordflow}{if}\ (comm\_.size()\ ==\ 1)}
+\DoxyCodeLine{00684\ \ \ \{}
+\DoxyCodeLine{00685\ \ \ \ \ remote\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00686\ \ \ \}}
+\DoxyCodeLine{00687\ }
+\DoxyCodeLine{00688\ \ \ \textcolor{comment}{//\ make\ sure\ there\ is\ a\ queue\ for\ each\ neighbor}}
+\DoxyCodeLine{00689\ \ \ \textcolor{keywordflow}{if}\ (!remote)}
+\DoxyCodeLine{00690\ \ \ \ \ \ \ touch\_queues();}
+\DoxyCodeLine{00691\ }
+\DoxyCodeLine{00692\ \ \ flush(remote,\ mem);}
+\DoxyCodeLine{00693\ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Finished\ exchange"{}});}
+\DoxyCodeLine{00694\ \}}
+\DoxyCodeLine{00695\ }
+\DoxyCodeLine{00696\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00697\ diy::Master::}
+\DoxyCodeLine{00698\ touch\_queues()}
+\DoxyCodeLine{00699\ \{}
+\DoxyCodeLine{00700\ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ (int)size();\ ++i)}
+\DoxyCodeLine{00701\ \ \ \{}
+\DoxyCodeLine{00702\ \ \ \ \ \ \ OutgoingQueues\&\ \ outgoing\_queues\ \ =\ outgoing\_[gid(i)];}
+\DoxyCodeLine{00703\ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\doxymbox{\hyperlink{structdiy_1_1_block_i_d}{BlockID}}\ target\ :\ link(i)-\/>neighbors())}
+\DoxyCodeLine{00704\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00705\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ access\ =\ outgoing\_queues[target].access();}
+\DoxyCodeLine{00706\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (access-\/>empty())}
+\DoxyCodeLine{00707\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ access-\/>emplace\_back();}
+\DoxyCodeLine{00708\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00709\ \ \ \}}
+\DoxyCodeLine{00710\ \}}
+\DoxyCodeLine{00711\ }
+\DoxyCodeLine{00712\ \textcolor{comment}{//\ iexchange()}}
+\DoxyCodeLine{00713\ \textcolor{comment}{//\ \{}}
+\DoxyCodeLine{00714\ \textcolor{comment}{//\ \ \ \ \ while\ !all\_done}}
+\DoxyCodeLine{00715\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ for\ all\ blocks}}
+\DoxyCodeLine{00716\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ icommunicate}}
+\DoxyCodeLine{00717\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ iproxywithlink}}
+\DoxyCodeLine{00718\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ f}}
+\DoxyCodeLine{00719\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ icommunicate()}}
+\DoxyCodeLine{00720\ \textcolor{comment}{//\ \}}}
+\DoxyCodeLine{00721\ }
+\DoxyCodeLine{00722\ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block>}
+\DoxyCodeLine{00723\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00724\ diy::Master::}
+\DoxyCodeLine{00725\ iexchange\_(\textcolor{keyword}{const}\ ICallback<Block>\&\ f,\ \doxymbox{\hyperlink{structdiy_1_1_memory_management}{MemoryManagement}}\ mem)}
+\DoxyCodeLine{00726\ \{}
+\DoxyCodeLine{00727\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}iexchange"{}});}
+\DoxyCodeLine{00728\ \ \ \ \ DIY\_UNUSED(scoped);}
+\DoxyCodeLine{00729\ }
+\DoxyCodeLine{00730\ \textcolor{preprocessor}{\#if\ !defined(DIY\_NO\_THREADS)\ \&\&\ (!defined(DIY\_USE\_CALIPER)\ \&\&\ defined(DIY\_PROFILE))}}
+\DoxyCodeLine{00731\ \ \ \ \ \textcolor{keyword}{static\_assert}(\textcolor{keyword}{false},\ \textcolor{stringliteral}{"{}Cannot\ use\ DIY's\ internal\ profiler;\ it's\ not\ thread\ safe.\ Use\ caliper."{}});}
+\DoxyCodeLine{00732\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00733\ }
+\DoxyCodeLine{00734\ \ \ \ \ \textcolor{comment}{//\ prepare\ for\ next\ round}}
+\DoxyCodeLine{00735\ \ \ \ \ incoming\_.erase(exchange\_round\_);}
+\DoxyCodeLine{00736\ \ \ \ \ ++exchange\_round\_;}
+\DoxyCodeLine{00737\ \ \ \ \ exchange\_round\_annotation.set(exchange\_round\_);}
+\DoxyCodeLine{00738\ }
+\DoxyCodeLine{00739\ \ \ \ \ \textcolor{comment}{//\ touch\ the\ outgoing\ and\ incoming\ queues\ to\ make\ sure\ they\ exist}}
+\DoxyCodeLine{00740\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{unsigned}\ i\ =\ 0;\ i\ <\ \doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}();\ ++i)}
+\DoxyCodeLine{00741\ \ \ \ \ \{}
+\DoxyCodeLine{00742\ \ \ \ \ \ \ outgoing(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i));}
+\DoxyCodeLine{00743\ \ \ \ \ \ \ incoming(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i));}
+\DoxyCodeLine{00744\ \ \ \ \ \}}
+\DoxyCodeLine{00745\ }
+\DoxyCodeLine{00746\ \ \ \ \ \textcolor{comment}{//IExchangeInfoDUD\ iexchange(comm\_,\ min\_queue\_size,\ max\_hold\_time,\ fine,\ prof);}}
+\DoxyCodeLine{00747\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_i_exchange_info_collective}{IExchangeInfoCollective}}\ iex(comm\_,\ prof);}
+\DoxyCodeLine{00748\ \ \ \ \ iex.add\_work(\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}());\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ start\ with\ one\ work\ unit\ for\ each\ block}}
+\DoxyCodeLine{00749\ }
+\DoxyCodeLine{00750\ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1thread}{thread}}\ comm\_thread;}
+\DoxyCodeLine{00751\ \ \ \ \ \textcolor{keywordflow}{if}\ (threads()\ >\ 1)}
+\DoxyCodeLine{00752\ \ \ \ \ \ \ \ \ comm\_thread\ =\ \doxymbox{\hyperlink{structdiy_1_1thread}{thread}}([\textcolor{keyword}{this},\&iex,mem]()}
+\DoxyCodeLine{00753\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00754\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}(!iex.all\_done())}
+\DoxyCodeLine{00755\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00756\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ icommunicate(\&iex,\ mem);}
+\DoxyCodeLine{00757\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iex.control();}
+\DoxyCodeLine{00758\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//std::this\_thread::sleep\_for(std::chrono::microseconds(1));}}
+\DoxyCodeLine{00759\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00760\ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00761\ }
+\DoxyCodeLine{00762\ \ \ \ \ \textcolor{keyword}{auto}\ empty\_incoming\ =\ [\textcolor{keyword}{this}](\textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}})}
+\DoxyCodeLine{00763\ \ \ \ \ \{}
+\DoxyCodeLine{00764\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ incoming(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}))}
+\DoxyCodeLine{00765\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!x.second.access()-\/>empty())}
+\DoxyCodeLine{00766\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00767\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00768\ \ \ \ \ \};}
+\DoxyCodeLine{00769\ }
+\DoxyCodeLine{00770\ \ \ \ \ std::map<int,\ bool>\ done\_result;}
+\DoxyCodeLine{00771\ \ \ \ \ \textcolor{keywordflow}{do}}
+\DoxyCodeLine{00772\ \ \ \ \ \{}
+\DoxyCodeLine{00773\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ work\_done\ =\ 0;}
+\DoxyCodeLine{00774\ \ \ \ \ \ \ \ \ DIY\_UNUSED(work\_done);}
+\DoxyCodeLine{00775\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ static\_cast<int>(\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}());\ i++)\ \ \ \ \ \textcolor{comment}{//\ for\ all\ blocks}}
+\DoxyCodeLine{00776\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00777\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}\ =\ this-\/>gid(i);}
+\DoxyCodeLine{00778\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_annotation_1_1_guard}{stats::Annotation::Guard}}\ g(\ \doxymbox{\hyperlink{structdiy_1_1stats_1_1_annotation}{stats::Annotation}}(\textcolor{stringliteral}{"{}diy.block"{}}).set(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}})\ );}
+\DoxyCodeLine{00779\ }
+\DoxyCodeLine{00780\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (threads()\ ==\ 1)}
+\DoxyCodeLine{00781\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ icommunicate(\&iex,\ mem);}
+\DoxyCodeLine{00782\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ done\ =\ done\_result[\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}];}
+\DoxyCodeLine{00783\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!done\ ||\ !empty\_incoming(\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}))}
+\DoxyCodeLine{00784\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00785\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ prof\ <<\ \textcolor{stringliteral}{"{}callback"{}};}
+\DoxyCodeLine{00786\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iex.inc\_work();\ \ \ \ \ \ \ \textcolor{comment}{//\ even\ if\ we\ remove\ the\ queues,\ when\ constructing\ the\ proxy,\ we\ still\ have\ work\ to\ do}}
+\DoxyCodeLine{00787\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00788\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_master_1_1_proxy_with_link}{ProxyWithLink}}\ cp\ =\ proxy(i,\ \&iex);}
+\DoxyCodeLine{00789\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ done\ =\ f(block<Block>(i),\ cp);}
+\DoxyCodeLine{00790\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (done\_result[\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}]\ \string^\ done)\ \ \ \ \ \ \ \ \textcolor{comment}{//\ status\ changed}}
+\DoxyCodeLine{00791\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00792\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (done)}
+\DoxyCodeLine{00793\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iex.dec\_work();}
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00795\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iex.inc\_work();}
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00797\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \ \ \textcolor{comment}{//\ NB:\ we\ need\ cp\ to\ go\ out\ of\ scope\ and\ copy\ out\ its\ queues\ before\ we\ can\ decrement\ the\ work}}
+\DoxyCodeLine{00798\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iex.dec\_work();}
+\DoxyCodeLine{00799\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ prof\ >>\ \textcolor{stringliteral}{"{}callback"{}};}
+\DoxyCodeLine{00800\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++work\_done;}
+\DoxyCodeLine{00801\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00802\ \ \ \ \ \ \ \ \ \ \ \ \ done\_result[\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}]\ =\ done;}
+\DoxyCodeLine{00803\ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Done:\ \{\}"{}},\ done);}
+\DoxyCodeLine{00804\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00805\ }
+\DoxyCodeLine{00806\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (threads()\ ==\ 1)}
+\DoxyCodeLine{00807\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00808\ \ \ \ \ \ \ \ \ \ \ \ \ prof\ <<\ \textcolor{stringliteral}{"{}iexchange-\/control"{}};}
+\DoxyCodeLine{00809\ \ \ \ \ \ \ \ \ \ \ \ \ iex.control();}
+\DoxyCodeLine{00810\ \ \ \ \ \ \ \ \ \ \ \ \ prof\ >>\ \textcolor{stringliteral}{"{}iexchange-\/control"{}};}
+\DoxyCodeLine{00811\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00812\ \ \ \ \ \ \ \ \ \textcolor{comment}{//else}}
+\DoxyCodeLine{00813\ \ \ \ \ \ \ \ \ \textcolor{comment}{//if\ (work\_done\ ==\ 0)}}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ std::this\_thread::sleep\_for(std::chrono::microseconds(1));}}
+\DoxyCodeLine{00815\ \ \ \ \ \}\ \textcolor{keywordflow}{while}\ (!iex.all\_done());}
+\DoxyCodeLine{00816\ \ \ \ \ log-\/>info(\textcolor{stringliteral}{"{}[\{\}]\ ====\ Leaving\ iexchange\ ====\(\backslash\)n"{}},\ iex.comm.rank());}
+\DoxyCodeLine{00817\ }
+\DoxyCodeLine{00818\ \ \ \ \ \textcolor{keywordflow}{if}\ (threads()\ >\ 1)}
+\DoxyCodeLine{00819\ \ \ \ \ \ \ \ \ comm\_thread.join();}
+\DoxyCodeLine{00820\ }
+\DoxyCodeLine{00821\ \ \ \ \ \textcolor{comment}{//comm\_.barrier();\ \ \ \ \ \ \ \ //\ TODO:\ this\ is\ only\ necessary\ for\ DUD}}
+\DoxyCodeLine{00822\ \ \ \ \ prof\ >>\ \textcolor{stringliteral}{"{}consensus-\/time"{}};}
+\DoxyCodeLine{00823\ }
+\DoxyCodeLine{00824\ \ \ \ \ outgoing\_.clear();}
+\DoxyCodeLine{00825\ \}}
+\DoxyCodeLine{00826\ }
+\DoxyCodeLine{00827\ \textcolor{comment}{/*\ Communicator\ */}}
+\DoxyCodeLine{00828\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00829\ diy::Master::}
+\DoxyCodeLine{00830\ comm\_exchange(GidSendOrder\&\ gid\_order,\ \doxymbox{\hyperlink{structdiy_1_1_memory_management}{MemoryManagement}}\ mem,\ IExchangeInfo*\ iex)}
+\DoxyCodeLine{00831\ \{}
+\DoxyCodeLine{00832\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}comm-\/exchange"{}});}
+\DoxyCodeLine{00833\ \ \ \ \ DIY\_UNUSED(scoped);}
+\DoxyCodeLine{00834\ }
+\DoxyCodeLine{00835\ \ \ \ \ send\_outgoing\_queues(gid\_order,\ \textcolor{keyword}{false},\ mem,\ iex);}
+\DoxyCodeLine{00836\ }
+\DoxyCodeLine{00837\ \ \ \ \ \textcolor{keywordflow}{while}(nudge(iex))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ kick\ requests}}
+\DoxyCodeLine{00838\ \ \ \ \ \ \ \ \ ;}
+\DoxyCodeLine{00839\ }
+\DoxyCodeLine{00840\ \ \ \ \ check\_incoming\_queues(mem,\ iex);}
+\DoxyCodeLine{00841\ \}}
+\DoxyCodeLine{00842\ }
+\DoxyCodeLine{00843\ \textcolor{comment}{/*\ Remote\ communicator\ */}}
+\DoxyCodeLine{00844\ }
+\DoxyCodeLine{00845\ \textcolor{comment}{//\ pseudocode\ for\ rexchange\ protocol\ based\ on\ NBX\ algorithm\ of\ Hoefler\ et\ al.,}}
+\DoxyCodeLine{00846\ \textcolor{comment}{//\ Scalable\ Communication\ Protocols\ for\ Dynamic\ Sparse\ Data\ Exchange,\ 2010.}}
+\DoxyCodeLine{00847\ \textcolor{comment}{//}}
+\DoxyCodeLine{00848\ \textcolor{comment}{//\ rcomm\_exchange()}}
+\DoxyCodeLine{00849\ \textcolor{comment}{//\ \{}}
+\DoxyCodeLine{00850\ \textcolor{comment}{//\ \ \ \ \ \ while\ (!done)}}
+\DoxyCodeLine{00851\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ while\ (sends\_in\_flight\ <\ limit\_on\_queues\_in\_memory\ and\ there\ are\ unprocessed\ queues)}}
+\DoxyCodeLine{00852\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ q\ =\ next\ outgoing\ queue\ (going\ over\ the\ in-\/memory\ queues\ first)}}
+\DoxyCodeLine{00853\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ (q\ not\ in\ memory)}}
+\DoxyCodeLine{00854\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ load\ q}}
+\DoxyCodeLine{00855\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ issend(q)}}
+\DoxyCodeLine{00856\ \textcolor{comment}{//}}
+\DoxyCodeLine{00857\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ test\ all\ requests}}
+\DoxyCodeLine{00858\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ if\ (iprobe)}}
+\DoxyCodeLine{00859\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ recv}}
+\DoxyCodeLine{00860\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ if\ (barrier\_active)}}
+\DoxyCodeLine{00861\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ (test\ barrier)}}
+\DoxyCodeLine{00862\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ done\ =\ true}}
+\DoxyCodeLine{00863\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ else}}
+\DoxyCodeLine{00864\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ (all\ sends\ finished\ and\ all\ queues\ have\ been\ processed\ (including\ out-\/of-\/core\ queues))}}
+\DoxyCodeLine{00865\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ibarrier}}
+\DoxyCodeLine{00866\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ barrier\_active\ =\ true}}
+\DoxyCodeLine{00867\ \textcolor{comment}{//\ \}}}
+\DoxyCodeLine{00868\ \textcolor{comment}{//}}
+\DoxyCodeLine{00869\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00870\ diy::Master::}
+\DoxyCodeLine{00871\ rcomm\_exchange(MemoryManagement\ mem)}
+\DoxyCodeLine{00872\ \{}
+\DoxyCodeLine{00873\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ done\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00874\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ ibarr\_act\ \ \ \ \ \ \ \ \ \ \ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00875\ \ \ \ \ mpi::request\ \ \ \ ibarr\_req;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ mpi\ request\ associated\ with\ ibarrier}}
+\DoxyCodeLine{00876\ }
+\DoxyCodeLine{00877\ \ \ \ \ \textcolor{comment}{//\ make\ a\ list\ of\ outgoing\ queues\ to\ send\ (the\ ones\ in\ memory\ come\ first)}}
+\DoxyCodeLine{00878\ \ \ \ \ \textcolor{keyword}{auto}\ gid\_order\ =\ order\_gids();}
+\DoxyCodeLine{00879\ }
+\DoxyCodeLine{00880\ \ \ \ \ \textcolor{keywordflow}{while}\ (!done)}
+\DoxyCodeLine{00881\ \ \ \ \ \{}
+\DoxyCodeLine{00882\ \ \ \ \ \ \ \ \ send\_outgoing\_queues(gid\_order,\ \textcolor{keyword}{true},\ mem,\ 0);}
+\DoxyCodeLine{00883\ }
+\DoxyCodeLine{00884\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ kick\ requests}}
+\DoxyCodeLine{00885\ \ \ \ \ \ \ \ \ nudge();}
+\DoxyCodeLine{00886\ }
+\DoxyCodeLine{00887\ \ \ \ \ \ \ \ \ check\_incoming\_queues(mem);}
+\DoxyCodeLine{00888\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ibarr\_act)}
+\DoxyCodeLine{00889\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00890\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ibarr\_req.test())}
+\DoxyCodeLine{00891\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ done\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00892\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00893\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00894\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00895\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (gid\_order.empty()\ \&\&\ inflight\_sends().empty())}
+\DoxyCodeLine{00896\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00897\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ibarr\_req\ =\ comm\_.ibarrier();}
+\DoxyCodeLine{00898\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ibarr\_act\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00899\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00900\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00901\ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ while\ !done}}
+\DoxyCodeLine{00902\ \}}
+\DoxyCodeLine{00903\ }
+\DoxyCodeLine{00904\ \textcolor{comment}{//\ fill\ list\ of\ outgoing\ queues\ to\ send\ (the\ ones\ in\ memory\ come\ first)}}
+\DoxyCodeLine{00905\ \textcolor{comment}{//\ for\ iexchange}}
+\DoxyCodeLine{00906\ diy::Master::GidSendOrder}
+\DoxyCodeLine{00907\ diy::Master::}
+\DoxyCodeLine{00908\ order\_gids()}
+\DoxyCodeLine{00909\ \{}
+\DoxyCodeLine{00910\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}order-\/gids"{}});}
+\DoxyCodeLine{00911\ }
+\DoxyCodeLine{00912\ \ \ \ \ GidSendOrder\ order;}
+\DoxyCodeLine{00913\ }
+\DoxyCodeLine{00914\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ outgoing\_)}
+\DoxyCodeLine{00915\ \ \ \ \ \{}
+\DoxyCodeLine{00916\ \ \ \ \ \ \ \ \ OutgoingQueues\&\ out\ =\ x.second;}
+\DoxyCodeLine{00917\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!out.empty())}
+\DoxyCodeLine{00918\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00919\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ access\ =\ out.begin()-\/>second.access();}
+\DoxyCodeLine{00920\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!access-\/>empty()\ \&\&\ !access-\/>front().external())}
+\DoxyCodeLine{00921\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00922\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ order.list.push\_front(x.first);}
+\DoxyCodeLine{00923\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00924\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00925\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00926\ \ \ \ \ \ \ \ \ order.list.push\_back(x.first);}
+\DoxyCodeLine{00927\ \ \ \ \ \}}
+\DoxyCodeLine{00928\ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}order.size():\ \{\}"{}},\ order.size());}
+\DoxyCodeLine{00929\ }
+\DoxyCodeLine{00930\ \ \ \ \ \textcolor{comment}{//\ compute\ maximum\ number\ of\ queues\ to\ keep\ in\ memory}}
+\DoxyCodeLine{00931\ \ \ \ \ \textcolor{comment}{//\ first\ version\ just\ average\ number\ of\ queues\ per\ block\ *\ num\_blocks\ in\ memory}}
+\DoxyCodeLine{00932\ \ \ \ \ \textcolor{comment}{//\ for\ iexchange}}
+\DoxyCodeLine{00933\ \ \ \ \ \textcolor{keywordflow}{if}\ (limit\_\ ==\ -\/1\ ||\ size()\ ==\ 0)}
+\DoxyCodeLine{00934\ \ \ \ \ \ \ \ \ order.limit\ =\ order.size();}
+\DoxyCodeLine{00935\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00936\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ average\ number\ of\ queues\ per\ block\ *\ in-\/memory\ block\ limit}}
+\DoxyCodeLine{00937\ \ \ \ \ \ \ \ \ order.limit\ =\ (std::max)((\textcolor{keywordtype}{size\_t})\ 1,\ order.size()\ /\ size()\ *\ limit\_);}
+\DoxyCodeLine{00938\ }
+\DoxyCodeLine{00939\ \ \ \ \ \textcolor{keywordflow}{return}\ order;}
+\DoxyCodeLine{00940\ \}}
+\DoxyCodeLine{00941\ }
+\DoxyCodeLine{00942\ \textcolor{comment}{//\ iexchange\ communicator}}
+\DoxyCodeLine{00943\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00944\ diy::Master::}
+\DoxyCodeLine{00945\ icommunicate(IExchangeInfo*\ iex,\ MemoryManagement\ mem)}
+\DoxyCodeLine{00946\ \{}
+\DoxyCodeLine{00947\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}icommunicate"{}});}
+\DoxyCodeLine{00948\ \ \ \ \ DIY\_UNUSED(scoped);}
+\DoxyCodeLine{00949\ }
+\DoxyCodeLine{00950\ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Entering\ icommunicate()"{}});}
+\DoxyCodeLine{00951\ }
+\DoxyCodeLine{00952\ \ \ \ \ \textcolor{keyword}{auto}\ gid\_order\ =\ order\_gids();}
+\DoxyCodeLine{00953\ }
+\DoxyCodeLine{00954\ \ \ \ \ \textcolor{comment}{//\ exchange}}
+\DoxyCodeLine{00955\ \ \ \ \ comm\_exchange(gid\_order,\ mem,\ iex);}
+\DoxyCodeLine{00956\ }
+\DoxyCodeLine{00957\ \ \ \ \ \textcolor{comment}{//\ cleanup}}
+\DoxyCodeLine{00958\ }
+\DoxyCodeLine{00959\ \ \ \ \ \textcolor{comment}{//\ NB:\ not\ doing\ outgoing\_.clear()\ as\ in\ Master::flush()\ so\ that\ outgoing\ queues\ remain\ in\ place}}
+\DoxyCodeLine{00960\ \ \ \ \ \textcolor{comment}{//\ TODO:\ consider\ having\ a\ flush\ function\ for\ a\ final\ cleanup\ if\ the\ user\ plans\ to\ move\ to}}
+\DoxyCodeLine{00961\ \ \ \ \ \textcolor{comment}{//\ another\ part\ of\ the\ DIY\ program}}
+\DoxyCodeLine{00962\ }
+\DoxyCodeLine{00963\ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Exiting\ icommunicate()"{}});}
+\DoxyCodeLine{00964\ \}}
+\DoxyCodeLine{00965\ }
+\DoxyCodeLine{00966\ \textcolor{comment}{//\ send\ a\ single\ queue,\ either\ to\ same\ rank\ or\ different\ rank}}
+\DoxyCodeLine{00967\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00968\ diy::Master::}
+\DoxyCodeLine{00969\ send\_queue(\textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ from\_gid,}
+\DoxyCodeLine{00970\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ to\_gid,}
+\DoxyCodeLine{00971\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ to\_proc,}
+\DoxyCodeLine{00972\ \ \ \ \ \ \ \ \ \ \ \ QueueRecord\&\ \ \ \ \ qr,}
+\DoxyCodeLine{00973\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ remote,}
+\DoxyCodeLine{00974\ \ \ \ \ \ \ \ \ \ \ \ MemoryManagement\ mem,}
+\DoxyCodeLine{00975\ \ \ \ \ \ \ \ \ \ \ \ IExchangeInfo*\ \ \ iex)}
+\DoxyCodeLine{00976\ \{}
+\DoxyCodeLine{00977\ \ \ \ \ stats::Annotation::Guard\ gb(\ stats::Annotation(\textcolor{stringliteral}{"{}diy.block"{}}).set(from\_gid)\ );}
+\DoxyCodeLine{00978\ \ \ \ \ stats::Annotation::Guard\ gt(\ stats::Annotation(\textcolor{stringliteral}{"{}diy.to"{}}).set(to\_gid)\ );}
+\DoxyCodeLine{00979\ \ \ \ \ stats::Annotation::Guard\ gq(\ stats::Annotation(\textcolor{stringliteral}{"{}diy.q-\/size"{}}).set(stats::Variant(\textcolor{keyword}{static\_cast<}uint64\_t\textcolor{keyword}{>}(qr.size())))\ );}
+\DoxyCodeLine{00980\ }
+\DoxyCodeLine{00981\ \ \ \ \ \textcolor{comment}{//\ skip\ empty\ queues\ and\ hold\ queues\ shorter\ than\ some\ limit\ for\ some\ time}}
+\DoxyCodeLine{00982\ \ \ \ \ assert(!iex\ ||\ qr.size()\ !=\ 0);}
+\DoxyCodeLine{00983\ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}[\{\}]\ Sending\ queue:\ \{\}\ <-\/\ \{\}\ of\ size\ \{\},\ iexchange\ =\ \{\}"{}},\ comm\_.rank(),\ to\_gid,\ from\_gid,\ qr.size(),\ iex\ ?\ 1\ :\ 0);}
+\DoxyCodeLine{00984\ }
+\DoxyCodeLine{00985\ \ \ \ \ \textcolor{keywordflow}{if}\ (to\_proc\ ==\ comm\_.rank())\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ sending\ to\ same\ rank,\ simply\ swap\ buffers}}
+\DoxyCodeLine{00986\ \ \ \ \ \ \ \ \ send\_same\_rank(from\_gid,\ to\_gid,\ qr,\ mem,\ iex);}
+\DoxyCodeLine{00987\ \ \ \ \ \textcolor{keywordflow}{else}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ sending\ to\ an\ actual\ message\ to\ a\ different\ rank}}
+\DoxyCodeLine{00988\ \ \ \ \ \ \ \ \ send\_different\_rank(from\_gid,\ to\_gid,\ to\_proc,\ qr,\ remote,\ iex);}
+\DoxyCodeLine{00989\ \}}
+\DoxyCodeLine{00990\ }
+\DoxyCodeLine{00991\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{00992\ diy::Master::}
+\DoxyCodeLine{00993\ send\_outgoing\_queues(GidSendOrder\&\ \ \ gid\_order,}
+\DoxyCodeLine{00994\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ remote,\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ are\ remote\ and\ iexchange\ mutually\ exclusive?\ If\ so,\ use\ single\ enum?}}
+\DoxyCodeLine{00995\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ MemoryManagement\ mem,}
+\DoxyCodeLine{00996\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IExchangeInfo*\ \ iex)}
+\DoxyCodeLine{00997\ \{}
+\DoxyCodeLine{00998\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}send-\/outgoing-\/queues"{}});}
+\DoxyCodeLine{00999\ \ \ \ \ DIY\_UNUSED(scoped);}
+\DoxyCodeLine{01000\ }
+\DoxyCodeLine{01001\ \ \ \ \ \textcolor{keywordflow}{if}\ (iex)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ for\ iex,\ send\ queues\ from\ a\ single\ block}}
+\DoxyCodeLine{01002\ \ \ \ \ \{}
+\DoxyCodeLine{01003\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ from\ :\ gid\_order.list)}
+\DoxyCodeLine{01004\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01005\ \ \ \ \ \ \ \ \ \ \ \ \ OutgoingQueues\&\ outgoing\ =\ this-\/>outgoing(from);}
+\DoxyCodeLine{01006\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ outgoing)}
+\DoxyCodeLine{01007\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01008\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BlockID\ to\_block\ \ \ \ =\ x.first;}
+\DoxyCodeLine{01009\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ to\_gid\ \ \ \ \ \ =\ to\_block.gid;}
+\DoxyCodeLine{01010\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ to\_proc\ \ \ \ \ =\ to\_block.proc;}
+\DoxyCodeLine{01011\ }
+\DoxyCodeLine{01012\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ access\ =\ x.second.access();}
+\DoxyCodeLine{01013\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (!access-\/>empty())}
+\DoxyCodeLine{01014\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01015\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ qr\ =\ std::move(access-\/>front());}
+\DoxyCodeLine{01016\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ access-\/>pop\_front();}
+\DoxyCodeLine{01017\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ access.unlock();\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ others\ can\ push\ on\ this\ queue,\ while\ we\ are\ working}}
+\DoxyCodeLine{01018\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ assert(!qr.external());}
+\DoxyCodeLine{01019\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Processing\ queue:\ \ \ \ \ \ \{\}\ <-\/\ \{\}\ of\ size\ \{\}"{}},\ to\_gid,\ from,\ qr.size());}
+\DoxyCodeLine{01020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ send\_queue(from,\ to\_gid,\ to\_proc,\ qr,\ remote,\ mem,\ iex);}
+\DoxyCodeLine{01021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ access.lock();}
+\DoxyCodeLine{01022\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01023\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01024\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01025\ \ \ \ \ \}}
+\DoxyCodeLine{01026\ \ \ \ \ \textcolor{keywordflow}{else}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ normal\ mode:\ send\ all\ outgoing\ queues}}
+\DoxyCodeLine{01027\ \ \ \ \ \{}
+\DoxyCodeLine{01028\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (inflight\_sends().size()\ <\ gid\_order.limit\ \&\&\ !gid\_order.empty())}
+\DoxyCodeLine{01029\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01030\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ from\_gid\ =\ gid\_order.pop();}
+\DoxyCodeLine{01031\ }
+\DoxyCodeLine{01032\ \ \ \ \ \ \ \ \ \ \ \ \ load\_outgoing(from\_gid);}
+\DoxyCodeLine{01033\ }
+\DoxyCodeLine{01034\ \ \ \ \ \ \ \ \ \ \ \ \ OutgoingQueues\&\ outgoing\ =\ outgoing\_[from\_gid];}
+\DoxyCodeLine{01035\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\&\ x\ :\ outgoing)}
+\DoxyCodeLine{01036\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BlockID\ to\_block\ \ \ \ =\ x.first;}
+\DoxyCodeLine{01038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ to\_gid\ \ \ \ \ \ =\ to\_block.gid;}
+\DoxyCodeLine{01039\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ to\_proc\ \ \ \ \ =\ to\_block.proc;}
+\DoxyCodeLine{01040\ }
+\DoxyCodeLine{01041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ access\ =\ x.second.access();}
+\DoxyCodeLine{01042\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (access-\/>empty())}
+\DoxyCodeLine{01043\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{01044\ }
+\DoxyCodeLine{01045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NB:\ send\ only\ front}}
+\DoxyCodeLine{01046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ qr\ =\ access-\/>front();}
+\DoxyCodeLine{01047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Processing\ queue:\ \ \ \ \ \ \{\}\ <-\/\ \{\}\ of\ size\ \{\}"{}},\ to\_gid,\ from\_gid,\ qr.size());}
+\DoxyCodeLine{01048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ send\_queue(from\_gid,\ to\_gid,\ to\_proc,\ qr,\ remote,\ mem,\ iex);}
+\DoxyCodeLine{01049\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ access-\/>pop\_front();}
+\DoxyCodeLine{01050\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01051\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01052\ \ \ \ \ \}}
+\DoxyCodeLine{01053\ \}}
+\DoxyCodeLine{01054\ }
+\DoxyCodeLine{01055\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01056\ diy::Master::}
+\DoxyCodeLine{01057\ send\_same\_rank(\textcolor{keywordtype}{int}\ from,\ \textcolor{keywordtype}{int}\ to,\ QueueRecord\&\ qr,\ MemoryManagement\ mem,\ IExchangeInfo*)}
+\DoxyCodeLine{01058\ \{}
+\DoxyCodeLine{01059\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}send-\/same-\/rank"{}});}
+\DoxyCodeLine{01060\ }
+\DoxyCodeLine{01061\ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Moving\ queue\ in-\/place:\ \{\}\ <-\/\ \{\}"{}},\ to,\ from);}
+\DoxyCodeLine{01062\ }
+\DoxyCodeLine{01063\ \ \ \ \ IncomingRound\&\ current\_incoming\ =\ incoming\_[exchange\_round\_];}
+\DoxyCodeLine{01064\ }
+\DoxyCodeLine{01065\ \ \ \ \ \textcolor{keyword}{auto}\ access\_incoming\ =\ current\_incoming.map[to][from].access();}
+\DoxyCodeLine{01066\ }
+\DoxyCodeLine{01067\ \ \ \ \ \textcolor{comment}{//\ save\ blobs\ to\ copy\ them\ explicitly}}
+\DoxyCodeLine{01068\ \ \ \ \ std::vector<BinaryBlob>\ blobs;}
+\DoxyCodeLine{01069\ \ \ \ \ qr.buffer().blobs.swap(blobs);}
+\DoxyCodeLine{01070\ \ \ \ \ qr.buffer().blob\_position\ =\ 0;}
+\DoxyCodeLine{01071\ }
+\DoxyCodeLine{01072\ \ \ \ \ access\_incoming-\/>emplace\_back(std::move(qr));}
+\DoxyCodeLine{01073\ \ \ \ \ QueueRecord\&\ in\_qr\ =\ access\_incoming-\/>back();}
+\DoxyCodeLine{01074\ }
+\DoxyCodeLine{01075\ \ \ \ \ \textcolor{comment}{//\ copy\ blobs\ explicitly;\ we\ cannot\ just\ move\ them\ in\ place,\ since\ we\ don't}}
+\DoxyCodeLine{01076\ \ \ \ \ \textcolor{comment}{//\ own\ their\ memory\ and\ must\ guarantee\ that\ it's\ safe\ to\ free,\ once}}
+\DoxyCodeLine{01077\ \ \ \ \ \textcolor{comment}{//\ exchange()\ is\ done}}
+\DoxyCodeLine{01078\ \ \ \ \ \textcolor{keywordflow}{for}\ (BinaryBlob\&\ blob\ :\ blobs)}
+\DoxyCodeLine{01079\ \ \ \ \ \{}
+\DoxyCodeLine{01080\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{char}*\ p\ =\ mem.allocate(to,\ blob.size);}
+\DoxyCodeLine{01081\ \ \ \ \ \ \ \ \ mem.copy(p,\ blob.pointer.get(),\ blob.size);}
+\DoxyCodeLine{01082\ \ \ \ \ \ \ \ \ in\_qr.buffer().save\_binary\_blob(p,\ blob.size,\ mem.deallocate);}
+\DoxyCodeLine{01083\ \ \ \ \ \}}
+\DoxyCodeLine{01084\ }
+\DoxyCodeLine{01085\ \ \ \ \ \textcolor{keywordflow}{if}\ (!in\_qr.external())}
+\DoxyCodeLine{01086\ \ \ \ \ \{}
+\DoxyCodeLine{01087\ \ \ \ \ \ \ \ \ in\_qr.reset();}
+\DoxyCodeLine{01088\ }
+\DoxyCodeLine{01089\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ to\_external\ =\ block(lid(to))\ ==\ 0;}
+\DoxyCodeLine{01090\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (to\_external)}
+\DoxyCodeLine{01091\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01092\ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Unloading\ outgoing\ directly\ as\ incoming:\ \{\}\ <-\/\ \{\}"{}},\ to,\ from);}
+\DoxyCodeLine{01093\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (queue\_policy\_-\/>unload\_incoming(*\textcolor{keyword}{this},\ from,\ to,\ in\_qr.size()))}
+\DoxyCodeLine{01094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ in\_qr.unload(storage\_);}
+\DoxyCodeLine{01095\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01096\ \ \ \ \ \}}
+\DoxyCodeLine{01097\ }
+\DoxyCodeLine{01098\ \ \ \ \ ++current\_incoming.received;}
+\DoxyCodeLine{01099\ \}}
+\DoxyCodeLine{01100\ }
+\DoxyCodeLine{01101\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01102\ diy::Master::}
+\DoxyCodeLine{01103\ send\_different\_rank(\textcolor{keywordtype}{int}\ from,\ \textcolor{keywordtype}{int}\ to,\ \textcolor{keywordtype}{int}\ proc,\ QueueRecord\&\ qr,\ \textcolor{keywordtype}{bool}\ remote,\ IExchangeInfo*\ iex)}
+\DoxyCodeLine{01104\ \{}
+\DoxyCodeLine{01105\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}send-\/different-\/rank"{}});}
+\DoxyCodeLine{01106\ }
+\DoxyCodeLine{01107\ \ \ \ \ assert(!qr.external());}
+\DoxyCodeLine{01108\ }
+\DoxyCodeLine{01109\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ MAX\_MPI\_MESSAGE\_COUNT\ =\ INT\_MAX;}
+\DoxyCodeLine{01110\ }
+\DoxyCodeLine{01111\ \ \ \ \ \textcolor{comment}{//\ sending\ to\ a\ different\ rank}}
+\DoxyCodeLine{01112\ \ \ \ \ std::shared\_ptr<MemoryBuffer>\ buffer\ =\ std::make\_shared<MemoryBuffer>(qr.move());}
+\DoxyCodeLine{01113\ }
+\DoxyCodeLine{01114\ \ \ \ \ MessageInfo\ info\{from,\ to,\ 1,\ exchange\_round\_,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(buffer-\/>nblobs())\};}
+\DoxyCodeLine{01115\ \ \ \ \ \textcolor{comment}{//\ size\ fits\ in\ one\ message}}
+\DoxyCodeLine{01116\ \ \ \ \ \textcolor{keywordflow}{if}\ (Serialization<MemoryBuffer>::size(*buffer)\ +\ Serialization<MessageInfo>::size(info)\ <=\ MAX\_MPI\_MESSAGE\_COUNT)}
+\DoxyCodeLine{01117\ \ \ \ \ \{}
+\DoxyCodeLine{01118\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(*buffer,\ info);}
+\DoxyCodeLine{01119\ }
+\DoxyCodeLine{01120\ \ \ \ \ \ \ \ \ inflight\_sends().emplace\_back();}
+\DoxyCodeLine{01121\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ inflight\_send\ =\ inflight\_sends().back();}
+\DoxyCodeLine{01122\ }
+\DoxyCodeLine{01123\ \ \ \ \ \ \ \ \ inflight\_send.info\ =\ info;}
+\DoxyCodeLine{01124\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (remote\ ||\ iex)}
+\DoxyCodeLine{01125\ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.request\ =\ comm\_.issend(proc,\ tags::queue,\ buffer-\/>buffer);}
+\DoxyCodeLine{01126\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01127\ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.request\ =\ comm\_.isend(proc,\ tags::queue,\ buffer-\/>buffer);}
+\DoxyCodeLine{01128\ \ \ \ \ \ \ \ \ inflight\_send.message\ =\ buffer;}
+\DoxyCodeLine{01129\ \ \ \ \ \}}
+\DoxyCodeLine{01130\ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{//\ large\ message\ gets\ broken\ into\ chunks}}
+\DoxyCodeLine{01131\ \ \ \ \ \{}
+\DoxyCodeLine{01132\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ npieces\ =\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}((buffer-\/>size()\ +\ MAX\_MPI\_MESSAGE\_COUNT\ -\/\ 1)/MAX\_MPI\_MESSAGE\_COUNT);}
+\DoxyCodeLine{01133\ \ \ \ \ \ \ \ \ info.nparts\ +=\ npieces;}
+\DoxyCodeLine{01134\ }
+\DoxyCodeLine{01135\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ first\ send\ the\ head}}
+\DoxyCodeLine{01136\ \ \ \ \ \ \ \ \ std::shared\_ptr<MemoryBuffer>\ hb\ =\ std::make\_shared<MemoryBuffer>();}
+\DoxyCodeLine{01137\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(*hb,\ buffer-\/>size());}
+\DoxyCodeLine{01138\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{group___serialization_gafaac9aa4ccdc04930f612ca20341fc9b}{diy::save}}(*hb,\ info);}
+\DoxyCodeLine{01139\ }
+\DoxyCodeLine{01140\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01141\ \ \ \ \ \ \ \ \ \ \ inflight\_sends().emplace\_back();}
+\DoxyCodeLine{01142\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ inflight\_send\ =\ inflight\_sends().back();}
+\DoxyCodeLine{01143\ }
+\DoxyCodeLine{01144\ \ \ \ \ \ \ \ \ \ \ inflight\_send.info\ =\ info;}
+\DoxyCodeLine{01145\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (remote\ ||\ iex)}
+\DoxyCodeLine{01146\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ add\ one\ unit\ of\ work\ for\ the\ entire\ large\ message\ (upon\ sending\ the\ head,\ not\ the\ individual\ pieces\ below)}}
+\DoxyCodeLine{01148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iex)}
+\DoxyCodeLine{01149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iex-\/>inc\_work();}
+\DoxyCodeLine{01151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}[\{\}]\ Incrementing\ work\ when\ sending\ the\ leading\ piece\(\backslash\)n"{}},\ comm\_.rank());}
+\DoxyCodeLine{01152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.request\ =\ comm\_.issend(proc,\ tags::queue,\ hb-\/>buffer);}
+\DoxyCodeLine{01154\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01155\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01156\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.request\ =\ comm\_.isend(proc,\ tags::queue,\ hb-\/>buffer);}
+\DoxyCodeLine{01158\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01159\ \ \ \ \ \ \ \ \ \ \ inflight\_send.message\ =\ hb;}
+\DoxyCodeLine{01160\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01161\ }
+\DoxyCodeLine{01162\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ send\ the\ message\ pieces}}
+\DoxyCodeLine{01163\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ msg\_buff\_idx\ =\ 0;}
+\DoxyCodeLine{01164\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ npieces;\ ++i,\ msg\_buff\_idx\ +=\ MAX\_MPI\_MESSAGE\_COUNT)}
+\DoxyCodeLine{01165\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01166\ \ \ \ \ \ \ \ \ \ \ \ \ detail::VectorWindow<char>\ window;}
+\DoxyCodeLine{01167\ \ \ \ \ \ \ \ \ \ \ \ \ window.begin\ =\ \&buffer-\/>buffer[msg\_buff\_idx];}
+\DoxyCodeLine{01168\ \ \ \ \ \ \ \ \ \ \ \ \ window.count\ =\ (std::min)(MAX\_MPI\_MESSAGE\_COUNT,\ buffer-\/>size()\ -\/\ msg\_buff\_idx);}
+\DoxyCodeLine{01169\ }
+\DoxyCodeLine{01170\ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_sends().emplace\_back();}
+\DoxyCodeLine{01171\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ inflight\_send\ =\ inflight\_sends().back();}
+\DoxyCodeLine{01172\ }
+\DoxyCodeLine{01173\ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.info\ =\ info;}
+\DoxyCodeLine{01174\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (remote\ ||\ iex)}
+\DoxyCodeLine{01175\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iex)}
+\DoxyCodeLine{01177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ iex-\/>inc\_work();}
+\DoxyCodeLine{01179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}[\{\}]\ Incrementing\ work\ when\ sending\ non-\/leading\ piece\(\backslash\)n"{}},\ comm\_.rank());}
+\DoxyCodeLine{01180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.request\ =\ comm\_.issend(proc,\ tags::queue,\ window);}
+\DoxyCodeLine{01182\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01183\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.request\ =\ comm\_.isend(proc,\ tags::queue,\ window);}
+\DoxyCodeLine{01185\ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.message\ =\ buffer;}
+\DoxyCodeLine{01186\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01187\ \ \ \ \ \}\ \ \ \textcolor{comment}{//\ large\ message\ broken\ into\ pieces}}
+\DoxyCodeLine{01188\ }
+\DoxyCodeLine{01189\ \ \ \ \ \textcolor{comment}{//\ send\ binary\ blobs}}
+\DoxyCodeLine{01190\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ buffer-\/>nblobs();\ ++i)}
+\DoxyCodeLine{01191\ \ \ \ \ \{}
+\DoxyCodeLine{01192\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ blob\ =\ buffer-\/>load\_binary\_blob();}
+\DoxyCodeLine{01193\ \ \ \ \ \ \ \ \ assert(blob.size\ <\ MAX\_MPI\_MESSAGE\_COUNT);\ \ \ \ \ \ \textcolor{comment}{//\ for\ now\ assume\ blobs\ are\ small\ enough\ that\ we\ don't\ need\ to\ break\ them\ into\ multiple\ parts}}
+\DoxyCodeLine{01194\ }
+\DoxyCodeLine{01195\ \ \ \ \ \ \ \ \ inflight\_sends().emplace\_back();}
+\DoxyCodeLine{01196\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\&\ inflight\_send\ =\ inflight\_sends().back();}
+\DoxyCodeLine{01197\ }
+\DoxyCodeLine{01198\ \ \ \ \ \ \ \ \ inflight\_send.info\ =\ info;}
+\DoxyCodeLine{01199\ }
+\DoxyCodeLine{01200\ \ \ \ \ \ \ \ \ detail::VectorWindow<char>\ window;}
+\DoxyCodeLine{01201\ \ \ \ \ \ \ \ \ window.begin\ =\ \textcolor{keyword}{const\_cast<}\textcolor{keywordtype}{char}*\textcolor{keyword}{>}(blob.pointer.get());}
+\DoxyCodeLine{01202\ \ \ \ \ \ \ \ \ window.count\ =\ blob.size;}
+\DoxyCodeLine{01203\ }
+\DoxyCodeLine{01204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (remote\ ||\ iex)}
+\DoxyCodeLine{01205\ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.request\ =\ comm\_.issend(proc,\ tags::queue,\ window);}
+\DoxyCodeLine{01206\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01207\ \ \ \ \ \ \ \ \ \ \ \ \ inflight\_send.request\ =\ comm\_.isend(proc,\ tags::queue,\ window);}
+\DoxyCodeLine{01208\ \ \ \ \ \ \ \ \ inflight\_send.blob\ =\ std::move(blob);}
+\DoxyCodeLine{01209\ \ \ \ \ \}}
+\DoxyCodeLine{01210\ \}}
+\DoxyCodeLine{01211\ }
+\DoxyCodeLine{01212\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01213\ diy::Master::}
+\DoxyCodeLine{01214\ check\_incoming\_queues(MemoryManagement\ mem,\ IExchangeInfo*\ iex)}
+\DoxyCodeLine{01215\ \{}
+\DoxyCodeLine{01216\ \ \ \ \ \textcolor{keyword}{auto}\ scoped\ =\ prof.scoped(\textcolor{stringliteral}{"{}check-\/incoming-\/queues"{}});}
+\DoxyCodeLine{01217\ \ \ \ \ DIY\_UNUSED(scoped);}
+\DoxyCodeLine{01218\ }
+\DoxyCodeLine{01219\ \ \ \ \ mpi::optional<mpi::status>\ ostatus\ =\ comm\_.iprobe(mpi::any\_source,\ tags::queue);}
+\DoxyCodeLine{01220\ \ \ \ \ \textcolor{keywordflow}{while}\ (ostatus)}
+\DoxyCodeLine{01221\ \ \ \ \ \{}
+\DoxyCodeLine{01222\ \ \ \ \ \ \ \ \ InFlightRecv\&\ ir\ =\ inflight\_recv(ostatus-\/>source());}
+\DoxyCodeLine{01223\ \ \ \ \ \ \ \ \ ir.mem\ =\ mem;}
+\DoxyCodeLine{01224\ }
+\DoxyCodeLine{01225\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iex)}
+\DoxyCodeLine{01226\ \ \ \ \ \ \ \ \ \ \ \ \ iex-\/>inc\_work();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ increment\ work\ before\ sender's\ issend\ request\ can\ complete\ (so\ we\ are\ now\ responsible\ for\ the\ queue)}}
+\DoxyCodeLine{01227\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ first\_message\ =\ ir.recv(comm\_,\ *ostatus);\ \ \textcolor{comment}{//\ possibly\ partial\ recv,\ in\ case\ of\ a\ multi-\/piece\ message}}
+\DoxyCodeLine{01228\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!first\_message\ \&\&\ iex)}
+\DoxyCodeLine{01229\ \ \ \ \ \ \ \ \ \ \ \ \ iex-\/>dec\_work();}
+\DoxyCodeLine{01230\ }
+\DoxyCodeLine{01231\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (ir.done)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ all\ pieces\ assembled}}
+\DoxyCodeLine{01232\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01233\ \ \ \ \ \ \ \ \ \ \ \ \ assert(ir.info.round\ >=\ exchange\_round\_);}
+\DoxyCodeLine{01234\ \ \ \ \ \ \ \ \ \ \ \ \ IncomingRound*\ in\ =\ \&incoming\_[ir.info.round];}
+\DoxyCodeLine{01235\ }
+\DoxyCodeLine{01236\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ unload\ =\ ((ir.info.round\ ==\ exchange\_round\_)\ ?\ (block(lid(ir.info.to))\ ==\ 0)\ :\ (limit\_\ !=\ -\/1))}
+\DoxyCodeLine{01237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\&\ queue\_policy\_-\/>unload\_incoming(*\textcolor{keyword}{this},\ ir.info.from,\ ir.info.to,\ ir.message.size());}
+\DoxyCodeLine{01238\ }
+\DoxyCodeLine{01239\ \ \ \ \ \ \ \ \ \ \ \ \ ir.place(in,\ unload,\ storage\_,\ iex);}
+\DoxyCodeLine{01240\ \ \ \ \ \ \ \ \ \ \ \ \ ir.reset();}
+\DoxyCodeLine{01241\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01242\ }
+\DoxyCodeLine{01243\ \ \ \ \ \ \ \ \ ostatus\ =\ comm\_.iprobe(mpi::any\_source,\ tags::queue);}
+\DoxyCodeLine{01244\ \ \ \ \ \}}
+\DoxyCodeLine{01245\ \}}
+\DoxyCodeLine{01246\ }
+\DoxyCodeLine{01247\ \textcolor{keywordtype}{void}}
+\DoxyCodeLine{01248\ diy::Master::}
+\DoxyCodeLine{01249\ flush(\textcolor{keywordtype}{bool}\ remote,\ MemoryManagement\ mem)}
+\DoxyCodeLine{01250\ \{}
+\DoxyCodeLine{01251\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{01252\ \ \ time\_type\ start\ =\ get\_time();}
+\DoxyCodeLine{01253\ \ \ \textcolor{keywordtype}{unsigned}\ wait\ =\ 1;}
+\DoxyCodeLine{01254\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01255\ }
+\DoxyCodeLine{01256\ \ \ \textcolor{comment}{//\ prepare\ for\ next\ round}}
+\DoxyCodeLine{01257\ \ \ incoming\_.erase(exchange\_round\_);}
+\DoxyCodeLine{01258\ \ \ ++exchange\_round\_;}
+\DoxyCodeLine{01259\ \ \ exchange\_round\_annotation.set(exchange\_round\_);}
+\DoxyCodeLine{01260\ }
+\DoxyCodeLine{01261\ }
+\DoxyCodeLine{01262\ \ \ \textcolor{keywordflow}{if}\ (remote)}
+\DoxyCodeLine{01263\ \ \ \ \ \ \ rcomm\_exchange(mem);}
+\DoxyCodeLine{01264\ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01265\ \ \ \{}
+\DoxyCodeLine{01266\ \ \ \ \ \ \ \textcolor{keyword}{auto}\ gid\_order\ =\ order\_gids();}
+\DoxyCodeLine{01267\ \ \ \ \ \ \ \textcolor{keywordflow}{do}}
+\DoxyCodeLine{01268\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01269\ \ \ \ \ \ \ \ \ \ \ comm\_exchange(gid\_order,\ mem);}
+\DoxyCodeLine{01270\ }
+\DoxyCodeLine{01271\ \textcolor{preprocessor}{\#ifdef\ DEBUG}}
+\DoxyCodeLine{01272\ \ \ \ \ \ \ \ \ \ \ time\_type\ cur\ =\ get\_time();}
+\DoxyCodeLine{01273\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (cur\ -\/\ start\ >\ wait*1000)}
+\DoxyCodeLine{01274\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ log-\/>warn(\textcolor{stringliteral}{"{}Waiting\ in\ flush\ [\{\}]:\ \{\}\ -\/\ \{\}\ out\ of\ \{\}"{}},}
+\DoxyCodeLine{01276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ comm\_.rank(),\ inflight\_sends().size(),\ incoming\_[exchange\_round\_].received,\ expected\_);}
+\DoxyCodeLine{01277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wait\ *=\ 2;}
+\DoxyCodeLine{01278\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01279\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{01280\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{while}\ (!inflight\_sends().empty()\ ||\ incoming\_[exchange\_round\_].received\ <\ expected\_\ ||\ !gid\_order.empty());}
+\DoxyCodeLine{01281\ \ \ \}}
+\DoxyCodeLine{01282\ }
+\DoxyCodeLine{01283\ \ \ outgoing\_.clear();}
+\DoxyCodeLine{01284\ }
+\DoxyCodeLine{01285\ \ \ log-\/>debug(\textcolor{stringliteral}{"{}Done\ in\ flush"{}});}
+\DoxyCodeLine{01286\ }
+\DoxyCodeLine{01287\ \ \ process\_collectives();}
+\DoxyCodeLine{01288\ \}}
+\DoxyCodeLine{01289\ }
+\DoxyCodeLine{01290\ \textcolor{keywordtype}{bool}}
+\DoxyCodeLine{01291\ diy::Master::}
+\DoxyCodeLine{01292\ nudge(IExchangeInfo*\ iex)}
+\DoxyCodeLine{01293\ \{}
+\DoxyCodeLine{01294\ \ \ \textcolor{keywordtype}{bool}\ success\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{01295\ \ \ \textcolor{keywordflow}{for}\ (InFlightSendsList::iterator\ it\ =\ inflight\_sends().begin();\ it\ !=\ inflight\_sends().end();)}
+\DoxyCodeLine{01296\ \ \ \{}
+\DoxyCodeLine{01297\ \ \ \ \ mpi::optional<mpi::status>\ ostatus\ =\ it-\/>request.test();}
+\DoxyCodeLine{01298\ \ \ \ \ \textcolor{keywordflow}{if}\ (ostatus)}
+\DoxyCodeLine{01299\ \ \ \ \ \{}
+\DoxyCodeLine{01300\ \ \ \ \ \ \ success\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{01301\ \ \ \ \ \ \ it\ =\ inflight\_sends().erase(it);}
+\DoxyCodeLine{01302\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (iex)}
+\DoxyCodeLine{01303\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{01304\ \ \ \ \ \ \ \ \ \ \ log-\/>debug(\textcolor{stringliteral}{"{}[\{\}]\ message\ left,\ decrementing\ work"{}},\ iex-\/>comm.rank());}
+\DoxyCodeLine{01305\ \ \ \ \ \ \ \ \ \ \ iex-\/>dec\_work();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ this\ message\ is\ receiver's\ responsibility\ now}}
+\DoxyCodeLine{01306\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{01307\ \ \ \ \ \}}
+\DoxyCodeLine{01308\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{01309\ \ \ \ \ \{}
+\DoxyCodeLine{01310\ \ \ \ \ \ \ ++it;}
+\DoxyCodeLine{01311\ \ \ \ \ \}}
+\DoxyCodeLine{01312\ \ \ \}}
+\DoxyCodeLine{01313\ \ \ \textcolor{keywordflow}{return}\ success;}
+\DoxyCodeLine{01314\ \}}
+\DoxyCodeLine{01315\ }
+\DoxyCodeLine{01316\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,639 @@
+\doxysection{offile.\+h}
+\hypertarget{offile_8h_source}{}\label{offile_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/offile.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/ofstd/offile.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2006-\/2024,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ ofstd}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Marco\ Eichelberg,\ Joerg\ Riesmeier}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ C++\ wrapper\ class\ for\ stdio\ FILE\ functions\ and}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *\ \ \ \ \ \ \ \ \ \ \ wide\ character\ filenames}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00021\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#ifndef\ OFFILE\_H}}
+\DoxyCodeLine{00024\ \textcolor{preprocessor}{\#define\ OFFILE\_H}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}\doxymbox{\hyperlink{oftypes_8h}{dcmtk/ofstd/oftypes.h}}"{}}\ \ \ \ \textcolor{comment}{/*\ for\ class\ OFBool\ */}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofstring.h"{}}\ \ \ \textcolor{comment}{/*\ for\ class\ OFString\ */}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/ofstd.h"{}}\ \ \ \ \ \ \textcolor{comment}{/*\ for\ class\ OFStandard\ */}}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ <cstdio>}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ <cstdlib>}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ <cerrno>}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ BEGIN\_EXTERN\_C}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#ifdef\ HAVE\_SYS\_STAT\_H}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#include\ <sys/stat.h>}\ \ \ \ \ \ \ \textcolor{comment}{/*\ needed\ for\ struct\ \_stati64\ on\ Win32\ */}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00039\ END\_EXTERN\_C}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \textcolor{preprocessor}{\#ifdef\ HAVE\_UNIX\_H}}
+\DoxyCodeLine{00042\ \textcolor{preprocessor}{\#include\ <unix.h>}\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ needed\ for\ setlinebuf()\ on\ QNX\ */}}
+\DoxyCodeLine{00043\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \textcolor{comment}{/*\ HP-\/UX\ has\ clearerr\ both\ as\ macro\ and\ as\ a\ function\ definition.\ We\ have\ to}}
+\DoxyCodeLine{00046\ \textcolor{comment}{\ *\ undef\ the\ macro\ so\ that\ we\ can\ define\ a\ function\ called\ "{}clearerr"{}.}}
+\DoxyCodeLine{00047\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00048\ \textcolor{preprocessor}{\#if\ defined(\_\_hpux)\ \&\&\ defined(clearerr)}}
+\DoxyCodeLine{00049\ \textcolor{preprocessor}{\#undef\ clearerr}}
+\DoxyCodeLine{00050\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{comment}{/*\ When\ using\ the\ ISO\ C++\ include\ files\ such\ as\ <cstdio>,\ <cstdarg>\ etc.,}}
+\DoxyCodeLine{00053\ \textcolor{comment}{\ *\ all\ ANSI\ C\ functions\ like\ fopen()\ are\ declared\ in\ namespace\ std,}}
+\DoxyCodeLine{00054\ \textcolor{comment}{\ *\ (e.g.\ we\ have\ to\ use\ std::fopen()),\ but\ non-\/ANSI\ Posix\ functions\ remain}}
+\DoxyCodeLine{00055\ \textcolor{comment}{\ *\ in\ global\ namespace,\ e.g.\ we\ have\ to\ use\ ::fopen64().}}
+\DoxyCodeLine{00056\ \textcolor{comment}{\ *\ To\ make\ things\ even\ more\ difficult,\ not\ all\ compilers\ really\ declare}}
+\DoxyCodeLine{00057\ \textcolor{comment}{\ *\ ANSI\ C\ functions\ in\ namespace\ std\ in\ accordance\ with\ the\ C++\ standard.}}
+\DoxyCodeLine{00058\ \textcolor{comment}{\ *\ Yes,\ this\ is\ ugly.}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{comment}{/*\ Find\ out\ whether\ to\ use\ explicit\ LFS\ function\ calls\ to\ handle}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ *\ large\ file\ support}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#if\ defined(DCMTK\_ENABLE\_LFS)\ \&\&\ DCMTK\_ENABLE\_LFS\ ==\ DCMTK\_LFS64}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#define\ EXPLICIT\_LFS\_64}}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{comment}{//\ Use\ POSIX\ 64\ bit\ file\ position\ type\ when\ available}}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#ifdef\ HAVE\_FPOS64\_T}}
+\DoxyCodeLine{00069\ \textcolor{keyword}{typedef}\ fpos64\_t\ offile\_fpos\_t;}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ Otherwise\ this\ should\ be\ sufficient}}
+\DoxyCodeLine{00071\ \textcolor{keyword}{typedef}\ fpos\_t\ offile\_fpos\_t;}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{comment}{//\ Use\ POSIX\ 64\ bit\ file\ offset\ type\ when\ available}}
+\DoxyCodeLine{00075\ \textcolor{preprocessor}{\#ifdef\ HAVE\_OFF64\_T}}
+\DoxyCodeLine{00076\ \textcolor{keyword}{typedef}\ off64\_t\ offile\_off\_t;}
+\DoxyCodeLine{00077\ \textcolor{preprocessor}{\#elif\ !defined(OF\_NO\_SINT64)\ }\textcolor{comment}{//\ Otherwise\ use\ a\ 64\ bit\ integer}}
+\DoxyCodeLine{00078\ \textcolor{keyword}{typedef}\ Sint64\ offile\_off\_t;}
+\DoxyCodeLine{00079\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ Cry\ when\ 64\ LFS\ is\ required\ but\ no\ 64\ bit\ integer\ exists}}
+\DoxyCodeLine{00080\ \textcolor{preprocessor}{\#error\ \(\backslash\)}}
+\DoxyCodeLine{00081\ \textcolor{preprocessor}{\ \ Could\ not\ find\ a\ suitable\ offset-\/type\ for\ LFS64\ support.}}
+\DoxyCodeLine{00082\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ Implicit\ LFS\ or\ no\ LFS}}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \textcolor{preprocessor}{\#if\ defined(DCMTK\_ENABLE\_LFS)\ \&\&\ DCMTK\_ENABLE\_LFS\ ==\ DCMTK\_LFS}}
+\DoxyCodeLine{00087\ \textcolor{preprocessor}{\#if\ defined(SIZEOF\_FPOS\_T)\ \&\&\ (!defined(SIZEOF\_OFF\_T)\ ||\ SIZEOF\_FPOS\_T\ >\ SIZEOF\_OFF\_T)}}
+\DoxyCodeLine{00088\ \textcolor{comment}{//\ strange\ Windows\ LFS\ where\ sizeof(fpos\_t)\ ==\ 8\ but\ sizeof(off\_t)\ ==\ 4}}
+\DoxyCodeLine{00089\ \textcolor{preprocessor}{\#ifndef\ OF\_NO\_SINT64\ }\textcolor{comment}{//\ Use\ a\ 64\ bit\ integer}}
+\DoxyCodeLine{00090\ \textcolor{keyword}{typedef}\ Sint64\ offile\_off\_t;}
+\DoxyCodeLine{00091\ \textcolor{preprocessor}{\#else\ }\textcolor{comment}{//\ Cry\ when\ LFS\ is\ required\ but\ no\ 64\ bit\ integer\ exists}}
+\DoxyCodeLine{00092\ \textcolor{preprocessor}{\#error\ \(\backslash\)}}
+\DoxyCodeLine{00093\ \textcolor{preprocessor}{\ \ Could\ not\ find\ a\ suitable\ offset-\/type\ for\ LFS\ support.}}
+\DoxyCodeLine{00094\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00095\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00096\ \textcolor{keyword}{typedef}\ off\_t\ offile\_off\_t;}
+\DoxyCodeLine{00097\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#elif\ defined(HAVE\_FSEEKO)}}
+\DoxyCodeLine{00099\ \textcolor{keyword}{typedef}\ off\_t\ offile\_off\_t;}
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00101\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{long}\ offile\_off\_t;}
+\DoxyCodeLine{00102\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00103\ \textcolor{keyword}{typedef}\ fpos\_t\ offile\_fpos\_t;}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ basic\ type\ definitions}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \textcolor{comment}{//\ the\ type\ we\ use\ to\ store\ the\ last\ error.}}
+\DoxyCodeLine{00108\ \textcolor{keyword}{typedef}\ \textcolor{keywordtype}{int}\ offile\_errno\_t;}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{comment}{//\ forward\ declarations}}
+\DoxyCodeLine{00112\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_o_fpath}{OFpath}};}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00119\ \textcolor{keyword}{class\ }DCMTK\_OFSTD\_EXPORT\ \doxymbox{\hyperlink{class_o_f_filename_add7ad4f971140caabd752d140919a74d}{OFFilename}}}
+\DoxyCodeLine{00120\ \{}
+\DoxyCodeLine{00121\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00124\ \ \ \doxymbox{\hyperlink{class_o_f_filename_add7ad4f971140caabd752d140919a74d}{OFFilename}}();}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00131\ \ \ \doxymbox{\hyperlink{class_o_f_filename_a65917071e8ad36bcd6aa4cc4e88d2dde}{OFFilename}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OFBool\ convert\ =\ OFFalse);}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00139\ \ \ \doxymbox{\hyperlink{class_o_f_filename_afcb093ed82858ad4d18c824a34f57037}{OFFilename}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ \&filename,}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OFBool\ convert\ =\ OFFalse);}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00148\ \ \ \doxymbox{\hyperlink{class_o_f_filename_a807917fff50f86eeb839210e527115d0}{OFFilename}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_fpath}{OFpath}}\ \&path,}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OFBool\ convert\ =\ OFFalse);}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \textcolor{preprocessor}{\#if\ (defined(WIDE\_CHAR\_FILE\_IO\_FUNCTIONS)\ ||\ defined(WIDE\_CHAR\_MAIN\_FUNCTION))\ \&\&\ defined(\_WIN32)}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00160\ \ \ \doxymbox{\hyperlink{class_o_f_filename_add7ad4f971140caabd752d140919a74d}{OFFilename}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{wchar\_t}\ *filename,}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OFBool\ convert\ =\ OFTrue);}
+\DoxyCodeLine{00162\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00167\ \ \ \doxymbox{\hyperlink{class_o_f_filename_aa56b805bda872a33b162eda09f66aad0}{OFFilename}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_filename_add7ad4f971140caabd752d140919a74d}{OFFilename}}\ \&arg);}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00171\ \ \ \doxymbox{\hyperlink{class_o_f_filename_ae801ee764b165060f20bf4b77b5a4cd7}{\string~OFFilename}}();}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00177\ \ \ \doxymbox{\hyperlink{class_o_f_filename_add7ad4f971140caabd752d140919a74d}{OFFilename}}\ \&\doxymbox{\hyperlink{class_o_f_filename_ade6784b21899280a0add05e5d0eeace6}{operator=}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_filename_add7ad4f971140caabd752d140919a74d}{OFFilename}}\ \&arg);}
+\DoxyCodeLine{00178\ }
+\DoxyCodeLine{00181\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_filename_af5f28a0593d312c3c462b1fc7aff9368}{clear}}();}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00187\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_filename_ab557d9929d7db4b2c8e9e2a9d5de417e}{swap}}(\doxymbox{\hyperlink{class_o_f_filename_add7ad4f971140caabd752d140919a74d}{OFFilename}}\ \&arg);}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00192\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_filename_a85633ca4859ac2bdaa86fe2850fb6e1a}{isEmpty}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00197\ \ \ \textcolor{keyword}{inline}\ OFBool\ \doxymbox{\hyperlink{class_o_f_filename_a96030d17b8c2847571b6b2d5a67d0470}{usesWideChars}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00198\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00199\ \textcolor{preprocessor}{\#if\ (defined(WIDE\_CHAR\_FILE\_IO\_FUNCTIONS)\ ||\ defined(WIDE\_CHAR\_MAIN\_FUNCTION))\ \&\&\ defined(\_WIN32)}}
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{keywordflow}{return}\ (wfilename\_\ !=\ NULL);}
+\DoxyCodeLine{00201\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordflow}{return}\ OFFalse;}
+\DoxyCodeLine{00203\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00204\ \ \ \}}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00209\ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{class_o_f_filename_a26683984b9b9cf46f09edd4b7df06e75}{getCharPointer}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00210\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keywordflow}{return}\ filename\_;}
+\DoxyCodeLine{00212\ \ \ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#if\ (defined(WIDE\_CHAR\_FILE\_IO\_FUNCTIONS)\ ||\ defined(WIDE\_CHAR\_MAIN\_FUNCTION))\ \&\&\ defined(\_WIN32)}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00221\ \ \ \textcolor{keyword}{inline}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{wchar\_t}\ *getWideCharPointer()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00222\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{keywordflow}{return}\ wfilename\_;}
+\DoxyCodeLine{00224\ \ \ \}}
+\DoxyCodeLine{00225\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00231\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_filename_ad9622237e48a923c6ce5f57894f9155a}{isStandardStream}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00232\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00233\ \ \ \ \ OFBool\ result\ =\ OFFalse;}
+\DoxyCodeLine{00234\ \textcolor{preprocessor}{\#if\ defined(WIDE\_CHAR\_FILE\_IO\_FUNCTONS)\ \&\&\ defined(\_WIN32)}}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{class_o_f_filename_a96030d17b8c2847571b6b2d5a67d0470}{usesWideChars}}())}
+\DoxyCodeLine{00236\ \ \ \ \ \{}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ result\ =\ (wcscmp(getWideCharPointer(),\ L\textcolor{stringliteral}{"{}-\/"{}})\ ==\ 0);}
+\DoxyCodeLine{00238\ \ \ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00239\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00240\ \ \ \ \ \textcolor{keywordflow}{if}\ (\doxymbox{\hyperlink{class_o_f_filename_a26683984b9b9cf46f09edd4b7df06e75}{getCharPointer}}()\ !=\ NULL)}
+\DoxyCodeLine{00241\ \ \ \ \ \{}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ result\ =\ (strcmp(\doxymbox{\hyperlink{class_o_f_filename_a26683984b9b9cf46f09edd4b7df06e75}{getCharPointer}}(),\ \textcolor{stringliteral}{"{}-\/"{}})\ ==\ 0);}
+\DoxyCodeLine{00243\ \ \ \ \ \}}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00245\ \ \ \}}
+\DoxyCodeLine{00246\ }
+\DoxyCodeLine{00252\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_filename_a3e1ea68680a6d929845bcfe34986e559}{set}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OFBool\ convert\ =\ OFFalse);}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00260\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_filename_a26081fdc8a372835af44118be9a121df}{set}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_string}{OFString}}\ \&filename,}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OFBool\ convert\ =\ OFFalse);}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00269\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_filename_afc3f03087f2b9eb2d30cdc5ca332a58a}{set}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_fpath}{OFpath}}\ \&path,}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OFBool\ convert\ =\ OFFalse);}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \textcolor{preprocessor}{\#if\ (defined(WIDE\_CHAR\_FILE\_IO\_FUNCTIONS)\ ||\ defined(WIDE\_CHAR\_MAIN\_FUNCTION))\ \&\&\ defined(\_WIN32)}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00281\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_filename_a3e1ea68680a6d929845bcfe34986e559}{set}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{wchar\_t}\ *filename,}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ OFBool\ convert\ =\ OFTrue);}
+\DoxyCodeLine{00283\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00287\ \ \ \textcolor{keywordtype}{char}\ *filename\_;}
+\DoxyCodeLine{00288\ \textcolor{preprocessor}{\#if\ (defined(WIDE\_CHAR\_FILE\_IO\_FUNCTIONS)\ ||\ defined(WIDE\_CHAR\_MAIN\_FUNCTION))\ \&\&\ defined(\_WIN32)}}
+\DoxyCodeLine{00293\ \ \ \textcolor{keywordtype}{wchar\_t}\ *wfilename\_;}
+\DoxyCodeLine{00294\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00295\ \};}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00302\ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ swap(\doxymbox{\hyperlink{class_o_f_filename}{OFFilename}}\ \&lhs,\ \doxymbox{\hyperlink{class_o_f_filename}{OFFilename}}\ \&rhs)}
+\DoxyCodeLine{00303\ \{}
+\DoxyCodeLine{00304\ \ \ lhs.\doxymbox{\hyperlink{class_o_f_filename_ab557d9929d7db4b2c8e9e2a9d5de417e}{swap}}(rhs);}
+\DoxyCodeLine{00305\ \}}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00314\ DCMTK\_OFSTD\_EXPORT\ STD\_NAMESPACE\ ostream\ \&operator<<(STD\_NAMESPACE\ ostream\ \&stream,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_filename}{OFFilename}}\ \&filename);}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00330\ \textcolor{keyword}{class\ }DCMTK\_OFSTD\_EXPORT\ \doxymbox{\hyperlink{class_o_f_file_a6e6544a4ee422e88bbd6629e4547e784}{OFFile}}}
+\DoxyCodeLine{00331\ \{}
+\DoxyCodeLine{00332\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00334\ \ \ \doxymbox{\hyperlink{class_o_f_file_a6e6544a4ee422e88bbd6629e4547e784}{OFFile}}():\ file\_(NULL),\ popened\_(OFFalse),\ lasterror\_(0)\ \{\}}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00339\ \ \ \doxymbox{\hyperlink{class_o_f_file_aa90c8f5310d7bc9a1c1a4f1e53853cb5}{OFFile}}(FILE\ *f):\ file\_(f),\ popened\_(OFFalse),\ lasterror\_(0)\ \{\}}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00342\ \ \ \doxymbox{\hyperlink{class_o_f_file_a07311f8332339a4ae8fb7bdb19cba513}{\string~OFFile}}()}
+\DoxyCodeLine{00343\ \ \ \{}
+\DoxyCodeLine{00344\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ \doxymbox{\hyperlink{class_o_f_file_ae79262a03b727f2d513439901aa1a42b}{fclose}}();}
+\DoxyCodeLine{00345\ \ \ \}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00354\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_file_a36564e09a6be8503428df807cbef97cd}{fopen}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *modes)}
+\DoxyCodeLine{00355\ \ \ \{}
+\DoxyCodeLine{00356\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ \doxymbox{\hyperlink{class_o_f_file_ae79262a03b727f2d513439901aa1a42b}{fclose}}();}
+\DoxyCodeLine{00357\ \textcolor{preprocessor}{\#ifdef\ EXPLICIT\_LFS\_64}}
+\DoxyCodeLine{00358\ \ \ \ \ file\_\ =\ ::\ fopen64(filename,\ modes);}
+\DoxyCodeLine{00359\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00360\ \ \ \ \ file\_\ =\ ::\ fopen(filename,\ modes);}
+\DoxyCodeLine{00361\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ popened\_\ =\ OFFalse;\ \textcolor{keywordflow}{else}\ storeLastError();}
+\DoxyCodeLine{00363\ \ \ \ \ \textcolor{keywordflow}{return}\ (file\_\ !=\ NULL);}
+\DoxyCodeLine{00364\ \ \ \}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \textcolor{preprocessor}{\#if\ defined(WIDE\_CHAR\_FILE\_IO\_FUNCTIONS)\ \&\&\ defined(\_WIN32)}\textcolor{preprocessor}{}}
+\DoxyCodeLine{00378\ \ \ OFBool\ wfopen(\textcolor{keyword}{const}\ \textcolor{keywordtype}{wchar\_t}\ *filename,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{wchar\_t}\ *modes)}
+\DoxyCodeLine{00379\ \ \ \{}
+\DoxyCodeLine{00380\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ fclose();}
+\DoxyCodeLine{00381\ \ \ \ \ file\_\ =\ \_wfopen(filename,\ modes);}
+\DoxyCodeLine{00382\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ popened\_\ =\ OFFalse;\ \textcolor{keywordflow}{else}\ storeLastError();}
+\DoxyCodeLine{00383\ \ \ \ \ \textcolor{keywordflow}{return}\ (file\_\ !=\ NULL);}
+\DoxyCodeLine{00384\ \ \ \}}
+\DoxyCodeLine{00385\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00394\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_file_a6f0744ad890778ec479eaacbb35cbe79}{fopen}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_o_f_filename}{OFFilename}}\ \&filename,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *modes)}
+\DoxyCodeLine{00395\ \ \ \{}
+\DoxyCodeLine{00396\ \ \ \ \ OFBool\ result\ =\ OFFalse;}
+\DoxyCodeLine{00397\ \textcolor{preprocessor}{\#if\ defined(WIDE\_CHAR\_FILE\_IO\_FUNCTIONS)\ \&\&\ defined(\_WIN32)}}
+\DoxyCodeLine{00398\ \ \ \ \ \textcolor{keywordflow}{if}\ (filename.usesWideChars())}
+\DoxyCodeLine{00399\ \ \ \ \ \{}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \textcolor{comment}{//\ convert\ file\ mode\ to\ wide\ char\ string}}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ length\ =\ strlen(modes)\ +\ 1;}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \textcolor{keywordtype}{wchar\_t}\ *wmodes\ =\ \textcolor{keyword}{new}\ \textcolor{keywordtype}{wchar\_t}[length];}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wmodes\ !=\ NULL)}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ length;\ ++i)}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ conversion\ of\ ASCII\ codes\ (7-\/bit)\ is\ easy}}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ wmodes[i]\ =\ OFstatic\_cast(\textcolor{keywordtype}{wchar\_t},\ modes[i]);}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ result\ =\ wfopen(filename.getWideCharPointer(),\ wmodes);}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \textcolor{keyword}{delete}[]\ wmodes;}
+\DoxyCodeLine{00413\ \ \ \ \ \}\ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00414\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ result\ =\ \doxymbox{\hyperlink{class_o_f_file_a36564e09a6be8503428df807cbef97cd}{fopen}}(filename.getCharPointer(),\ modes);}
+\DoxyCodeLine{00416\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00417\ \ \ \}}
+\DoxyCodeLine{00418\ }
+\DoxyCodeLine{00432\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_file_aa96a6fddc1d4ba536d68dbf135f3cc84}{fdopen}}(\textcolor{keywordtype}{int}\ fd,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *modes)}
+\DoxyCodeLine{00433\ \ \ \{}
+\DoxyCodeLine{00434\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ \doxymbox{\hyperlink{class_o_f_file_ae79262a03b727f2d513439901aa1a42b}{fclose}}();}
+\DoxyCodeLine{00435\ \ \ \ \ file\_\ =\ ::\ fdopen(fd,\ modes);}
+\DoxyCodeLine{00436\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ popened\_\ =\ OFFalse;\ \textcolor{keywordflow}{else}\ storeLastError();}
+\DoxyCodeLine{00437\ \ \ \ \ \textcolor{keywordflow}{return}\ (file\_\ !=\ NULL);}
+\DoxyCodeLine{00438\ \ \ \}}
+\DoxyCodeLine{00439\ }
+\DoxyCodeLine{00449\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_file_a4a8b221e6880cca98401576e7471b608}{popen}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *command,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *modes);}
+\DoxyCodeLine{00450\ }
+\DoxyCodeLine{00461\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_file_a215079f052d70a05f2de33277d949374}{freopen}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *filename,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *modes)}
+\DoxyCodeLine{00462\ \ \ \{}
+\DoxyCodeLine{00463\ \textcolor{preprocessor}{\#if\ defined(EXPLICIT\_LFS\_64)\ \&\&\ !\ defined(\_\_MINGW32\_\_)}}
+\DoxyCodeLine{00464\ \ \ \ \ \textcolor{comment}{//\ MinGW\ has\ EXPLICIT\_LFS\_64\ but\ no\ freopen64()}}
+\DoxyCodeLine{00465\ \ \ \ \ file\_\ =\ ::\ freopen64(filename,\ modes,\ file\_);}
+\DoxyCodeLine{00466\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00467\ \ \ \ \ file\_\ =\ ::\ freopen(filename,\ modes,\ file\_);}
+\DoxyCodeLine{00468\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00469\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ popened\_\ =\ OFFalse;\ \textcolor{keywordflow}{else}\ storeLastError();}
+\DoxyCodeLine{00470\ \ \ \ \ \textcolor{keywordflow}{return}\ (file\_\ !=\ NULL);}
+\DoxyCodeLine{00471\ \ \ \}}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00479\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_file_a907499068d112855bd00ec98f52df09e}{tmpfile}}()}
+\DoxyCodeLine{00480\ \ \ \{}
+\DoxyCodeLine{00481\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ \doxymbox{\hyperlink{class_o_f_file_ae79262a03b727f2d513439901aa1a42b}{fclose}}();}
+\DoxyCodeLine{00482\ \textcolor{preprocessor}{\#if\ defined(EXPLICIT\_LFS\_64)\ \&\&\ !\ defined(\_\_MINGW32\_\_)}}
+\DoxyCodeLine{00483\ \ \ \ \ \textcolor{comment}{//\ MinGW\ has\ EXPLICIT\_LFS\_64\ but\ no\ tmpfile64()}}
+\DoxyCodeLine{00484\ \ \ \ \ file\_\ =\ ::\ tmpfile64();}
+\DoxyCodeLine{00485\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00486\ \ \ \ \ file\_\ =\ ::\ tmpfile();}
+\DoxyCodeLine{00487\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00488\ \ \ \ \ \textcolor{keywordflow}{if}\ (file\_)\ popened\_\ =\ OFFalse;\ \textcolor{keywordflow}{else}\ storeLastError();}
+\DoxyCodeLine{00489\ \ \ \ \ \textcolor{keywordflow}{return}\ (file\_\ !=\ NULL);}
+\DoxyCodeLine{00490\ \ \ \}}
+\DoxyCodeLine{00491\ }
+\DoxyCodeLine{00499\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_ae79262a03b727f2d513439901aa1a42b}{fclose}}();}
+\DoxyCodeLine{00500\ }
+\DoxyCodeLine{00507\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_ac980a9c66c2342829281dc2ecebd3746}{pclose}}()\ \{\ \textcolor{keywordflow}{return}\ \doxymbox{\hyperlink{class_o_f_file_ae79262a03b727f2d513439901aa1a42b}{fclose}}();\ \}}
+\DoxyCodeLine{00508\ }
+\DoxyCodeLine{00518\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{class_o_f_file_adb22aa9a65956d6d1ddf560bfb1c3305}{fwrite}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keywordtype}{size\_t}\ size,\ \textcolor{keywordtype}{size\_t}\ n)}
+\DoxyCodeLine{00519\ \ \ \{}
+\DoxyCodeLine{00520\ \ \ \ \ return\ ::\ fwrite(ptr,\ size,\ n,\ file\_);}
+\DoxyCodeLine{00521\ \ \ \}}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00534\ \ \ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{class_o_f_file_a117df6d307708c831f533a2e512544c8}{fread}}(\textcolor{keywordtype}{void}\ *ptr,\ \textcolor{keywordtype}{size\_t}\ size,\ \textcolor{keywordtype}{size\_t}\ n)}
+\DoxyCodeLine{00535\ \ \ \{}
+\DoxyCodeLine{00536\ \ \ \ \ return\ ::\ fread(ptr,\ size,\ n,\ file\_);}
+\DoxyCodeLine{00537\ \ \ \}}
+\DoxyCodeLine{00538\ }
+\DoxyCodeLine{00544\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a02952ff58fe0edb489364f2a855547a7}{fflush}}()}
+\DoxyCodeLine{00545\ \ \ \{}
+\DoxyCodeLine{00546\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ ::\ fflush(file\_);}
+\DoxyCodeLine{00547\ \ \ \ \ \textcolor{keywordflow}{if}\ (result)\ storeLastError();}
+\DoxyCodeLine{00548\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00549\ \ \ \}}
+\DoxyCodeLine{00550\ }
+\DoxyCodeLine{00555\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a39adaf2ef5813046ea35d6ae6cb26720}{fgetc}}()\ \{\ return\ ::\ fgetc(file\_);\ \}}
+\DoxyCodeLine{00556\ }
+\DoxyCodeLine{00570\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_file_a5aaed3df732322469e7cff3076c7437d}{setlinebuf}}()}
+\DoxyCodeLine{00571\ \ \ \{}
+\DoxyCodeLine{00572\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)\ ||\ defined(\_\_hpux)}}
+\DoxyCodeLine{00573\ \ \ \ \ this-\/>\doxymbox{\hyperlink{class_o_f_file_aa90ebe1b031b5e3b442096665c9634b5}{setvbuf}}(NULL,\ \_IOLBF,\ 0);}
+\DoxyCodeLine{00574\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00575\ \ \ \ \ ::\ setlinebuf(file\_);}
+\DoxyCodeLine{00576\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00577\ \ \ \}}
+\DoxyCodeLine{00578\ }
+\DoxyCodeLine{00583\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_file_a457f04cf811c27fd3377889c7cbf80b7}{rewind}}()}
+\DoxyCodeLine{00584\ \ \ \{}
+\DoxyCodeLine{00585\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)\ ||\ defined(\_\_CYGWIN\_\_)}}
+\DoxyCodeLine{00586\ \ \ \ \ \textcolor{comment}{/*\ On\ these\ platforms\ rewind()\ fails\ after\ reading\ to\ the\ end\ of\ file}}
+\DoxyCodeLine{00587\ \textcolor{comment}{\ \ \ \ \ *\ if\ the\ file\ is\ read-\/only.\ Using\ fseek()\ instead.}}
+\DoxyCodeLine{00588\ \textcolor{comment}{\ \ \ \ \ */}}
+\DoxyCodeLine{00589\ \ \ \ \ (void)\ this-\/>\doxymbox{\hyperlink{class_o_f_file_a8490f9cb1a5e7bcb6a48e12fa47b223d}{fseek}}(0L,\ SEEK\_SET);}
+\DoxyCodeLine{00590\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00591\ \ \ \ \ ::\ rewind(file\_);}
+\DoxyCodeLine{00592\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00593\ \ \ \}}
+\DoxyCodeLine{00594\ }
+\DoxyCodeLine{00597\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_file_aca12f72df2c2a0049d6ea9d3c1e9b16e}{clearerr}}()\ \{\ ::\ clearerr(file\_);\ \}}
+\DoxyCodeLine{00598\ }
+\DoxyCodeLine{00605\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_aa54063339a9ec3b34aa465bb11b681d3}{eof}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00606\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00607\ \textcolor{preprocessor}{\#ifdef\ feof}}
+\DoxyCodeLine{00608\ \ \ \ \ \textcolor{comment}{//\ feof\ is\ a\ macro\ on\ some\ systems.\ Macros\ never\ have\ namespaces.}}
+\DoxyCodeLine{00609\ \ \ \ \ \textcolor{keywordflow}{return}\ feof(file\_);}
+\DoxyCodeLine{00610\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00611\ \ \ \ \ return\ ::\ feof(file\_);}
+\DoxyCodeLine{00612\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00613\ \ \ \}}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00621\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a08e2b6c3af9a8a532575e5f032f3312f}{error}}()}
+\DoxyCodeLine{00622\ \ \ \{}
+\DoxyCodeLine{00623\ \textcolor{preprocessor}{\#ifdef\ ferror}}
+\DoxyCodeLine{00624\ \ \ \ \ \textcolor{comment}{//\ ferror\ is\ a\ macro\ on\ some\ systems.\ Macros\ never\ have\ namespaces.}}
+\DoxyCodeLine{00625\ \ \ \ \ \textcolor{keywordflow}{return}\ ferror(file\_);}
+\DoxyCodeLine{00626\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00627\ \ \ \ \ return\ ::\ ferror(file\_);}
+\DoxyCodeLine{00628\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00629\ \ \ \}}
+\DoxyCodeLine{00630\ }
+\DoxyCodeLine{00637\ \textcolor{preprocessor}{\#ifdef\ fileno}}
+\DoxyCodeLine{00638\ \ \ \textcolor{keywordtype}{int}\ fileNo()\ \{\ \textcolor{keywordflow}{return}\ fileno(file\_);\ \}}
+\DoxyCodeLine{00639\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00640\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a40babba8564844702f59c68319ffa70d}{fileNo}}()\ \{\ return\ ::\ fileno(file\_);\ \}}
+\DoxyCodeLine{00641\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00642\ }
+\DoxyCodeLine{00656\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_file_aeb6ef2f0399a1a579826425c6a8f11c2}{setbuf}}(\textcolor{keywordtype}{char}\ *buf)\ \{\ ::\ setbuf(file\_,\ buf);\ \}}
+\DoxyCodeLine{00657\ }
+\DoxyCodeLine{00673\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_aa90ebe1b031b5e3b442096665c9634b5}{setvbuf}}(\textcolor{keywordtype}{char}\ *\ buf,\ \textcolor{keywordtype}{int}\ modes,\ \textcolor{keywordtype}{size\_t}\ n)}
+\DoxyCodeLine{00674\ \ \ \{}
+\DoxyCodeLine{00675\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ ::\ setvbuf(file\_,\ buf,\ modes,\ n);}
+\DoxyCodeLine{00676\ \ \ \ \ \textcolor{keywordflow}{if}\ (result)\ storeLastError();}
+\DoxyCodeLine{00677\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00678\ \ \ \}}
+\DoxyCodeLine{00679\ }
+\DoxyCodeLine{00694\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_file_a023488d2b4d6aced48c10700837377cb}{setbuffer}}(\textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ size)}
+\DoxyCodeLine{00695\ \ \ \{}
+\DoxyCodeLine{00696\ \textcolor{preprocessor}{\#if\ defined(\_WIN32)\ ||\ defined(\_\_hpux)}}
+\DoxyCodeLine{00697\ \ \ \ \ this-\/>\doxymbox{\hyperlink{class_o_f_file_aa90ebe1b031b5e3b442096665c9634b5}{setvbuf}}(NULL,\ buf\ ?\ \_IOFBF\ :\ \_IONBF,\ size);}
+\DoxyCodeLine{00698\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00699\ \ \ \ \ ::\ setbuffer(file\_,\ buf,\ size);}
+\DoxyCodeLine{00700\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00701\ \ \ \}}
+\DoxyCodeLine{00702\ }
+\DoxyCodeLine{00707\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_aa6002d5e252256817bc0135a2dc2d785}{fputc}}(\textcolor{keywordtype}{int}\ c)\ \{\ return\ ::\ fputc(c,\ file\_);\ \}}
+\DoxyCodeLine{00708\ }
+\DoxyCodeLine{00717\ \ \ \textcolor{keywordtype}{char}\ *\doxymbox{\hyperlink{class_o_f_file_a7c8ef2db08aa2c9414df1ffc1d47190a}{fgets}}(\textcolor{keywordtype}{char}\ *s,\ \textcolor{keywordtype}{int}\ n)\ \{\ return\ ::\ fgets(s,\ n,\ file\_);\ \}}
+\DoxyCodeLine{00718\ }
+\DoxyCodeLine{00723\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a9731ef2d8d2cd55c5bbbea0eabe0f490}{fputs}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *s)\ \{\ return\ ::\ fputs(s,\ file\_);\ \}}
+\DoxyCodeLine{00724\ }
+\DoxyCodeLine{00731\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a7201dcb91429151a508bd1ebc38127d2}{ungetc}}(\textcolor{keywordtype}{int}\ c)\ \{\ return\ ::\ ungetc(c,\ file\_);\ \}}
+\DoxyCodeLine{00732\ }
+\DoxyCodeLine{00744\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a8490f9cb1a5e7bcb6a48e12fa47b223d}{fseek}}(offile\_off\_t\ off,\ \textcolor{keywordtype}{int}\ whence)}
+\DoxyCodeLine{00745\ \ \ \{}
+\DoxyCodeLine{00746\ \ \ \ \ \textcolor{keywordtype}{int}\ result;}
+\DoxyCodeLine{00747\ \textcolor{preprocessor}{\#ifdef\ \_WIN32}}
+\DoxyCodeLine{00748\ \ \ \ \ \textcolor{comment}{//\ Windows\ does\ not\ have\ a\ 64-\/bit\ fseek.}}
+\DoxyCodeLine{00749\ \ \ \ \ \textcolor{comment}{//\ We\ emulate\ fseek\ through\ fsetpos,\ which\ does\ exist\ on\ Windows.}}
+\DoxyCodeLine{00750\ \ \ \ \ \textcolor{comment}{//\ fpos\_t\ is\ (hopefully\ always)\ defined\ as\ \_\_int64\ on\ this\ platform}}
+\DoxyCodeLine{00751\ \ \ \ \ offile\_fpos\_t\ off2\ =\ off;}
+\DoxyCodeLine{00752\ \ \ \ \ fpos\_t\ pos;}
+\DoxyCodeLine{00753\ \ \ \ \ \textcolor{keyword}{struct\ }\_stati64\ buf;}
+\DoxyCodeLine{00754\ \ \ \ \ \textcolor{keywordflow}{switch}\ (whence)}
+\DoxyCodeLine{00755\ \ \ \ \ \{}
+\DoxyCodeLine{00756\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ SEEK\_END:}
+\DoxyCodeLine{00757\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ flush\ write\ buffer,\ if\ any,\ so\ that\ the\ file\ size\ is\ correct}}
+\DoxyCodeLine{00758\ \ \ \ \ \ \ \ \ ::\ fflush(file\_);}
+\DoxyCodeLine{00759\ \textcolor{preprocessor}{\#if\ 0}}
+\DoxyCodeLine{00760\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Python\ implementation\ based\ on\ \_lseeki64().\ May\ be\ unsafe\ because}}
+\DoxyCodeLine{00761\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ there\ is\ no\ guarantee\ that\ fflush\ also\ empties\ read\ buffers.}}
+\DoxyCodeLine{00762\ \ \ \ \ \ \ \ \ ::\ fflush(file\_);}
+\DoxyCodeLine{00763\ \textcolor{preprocessor}{\#ifdef\ fileno}}
+\DoxyCodeLine{00764\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_lseeki64(\ \ \ fileno(file\_),\ 0,\ 2)\ ==\ -\/1)}
+\DoxyCodeLine{00765\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00766\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_lseeki64(::\ fileno(file\_),\ 0,\ 2)\ ==\ -\/1)}
+\DoxyCodeLine{00767\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00768\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00769\ \ \ \ \ \ \ \ \ \ \ storeLastError();}
+\DoxyCodeLine{00770\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00771\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00772\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ fall\ through}}
+\DoxyCodeLine{00773\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00774\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ determine\ file\ size\ (using\ underlying\ file\ descriptor).\ This\ should\ be\ safe.}}
+\DoxyCodeLine{00775\ \textcolor{preprocessor}{\#ifdef\ fileno}}
+\DoxyCodeLine{00776\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_fstati64(\ \ \ fileno(file\_),\ \&buf)\ ==\ -\/1)}
+\DoxyCodeLine{00777\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00778\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\_fstati64(::\ fileno(file\_),\ \&buf)\ ==\ -\/1)}
+\DoxyCodeLine{00779\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00780\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00781\ \ \ \ \ \ \ \ \ \ \ storeLastError();}
+\DoxyCodeLine{00782\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00783\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00784\ }
+\DoxyCodeLine{00785\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ fsetpos\ position\ is\ offset\ +\ file\ size.}}
+\DoxyCodeLine{00786\ \ \ \ \ \ \ \ \ off2\ +=\ buf.st\_size;}
+\DoxyCodeLine{00787\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00788\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00789\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ SEEK\_CUR:}
+\DoxyCodeLine{00790\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (::\ \doxymbox{\hyperlink{class_o_f_file_a2ae5a3ebce44e8423240e843a58ee9e7}{fgetpos}}(file\_,\ \&pos)\ !=\ 0)}
+\DoxyCodeLine{00791\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00792\ \ \ \ \ \ \ \ \ \ \ storeLastError();}
+\DoxyCodeLine{00793\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00795\ }
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \ \ off2\ +=\ pos;}
+\DoxyCodeLine{00797\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00798\ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ SEEK\_SET:}
+\DoxyCodeLine{00799\ \ \ \ \ \ \ \ \ \textcolor{comment}{/*\ do\ nothing\ */}}
+\DoxyCodeLine{00800\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00801\ \ \ \ \ \}}
+\DoxyCodeLine{00802\ \ \ \ \ result\ =\ this-\/>\doxymbox{\hyperlink{class_o_f_file_a7ef97cfb4f6e522220526b0187075ccb}{fsetpos}}(\&off2);}
+\DoxyCodeLine{00803\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00804\ \textcolor{preprocessor}{\#ifdef\ HAVE\_FSEEKO}}
+\DoxyCodeLine{00805\ \textcolor{preprocessor}{\#ifdef\ EXPLICIT\_LFS\_64}}
+\DoxyCodeLine{00806\ \ \ \ \ result\ =\ ::\ fseeko64(file\_,\ off,\ whence);}
+\DoxyCodeLine{00807\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00808\ \ \ \ \ result\ =\ ::\ fseeko(file\_,\ off,\ whence);}
+\DoxyCodeLine{00809\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00810\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00811\ \ \ \ \ result\ =\ ::\ fseek(file\_,\ off,\ whence);}
+\DoxyCodeLine{00812\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00813\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00814\ \ \ \ \ \textcolor{keywordflow}{if}\ (result)\ storeLastError();}
+\DoxyCodeLine{00815\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00816\ \ \ \}}
+\DoxyCodeLine{00817\ }
+\DoxyCodeLine{00821\ \ \ offile\_off\_t\ \doxymbox{\hyperlink{class_o_f_file_a815432fffe399103ac661e57a202a02d}{ftell}}()}
+\DoxyCodeLine{00822\ \ \ \{}
+\DoxyCodeLine{00823\ \textcolor{preprocessor}{\#ifdef\ \_WIN32}}
+\DoxyCodeLine{00824\ \ \ \ \ \textcolor{comment}{//\ Windows\ does\ not\ have\ a\ 64-\/bit\ ftell,\ and\ \_telli64\ cannot\ be\ used}}
+\DoxyCodeLine{00825\ \ \ \ \ \textcolor{comment}{//\ because\ it\ operates\ on\ file\ descriptors\ and\ ignores\ FILE\ buffers.}}
+\DoxyCodeLine{00826\ \ \ \ \ \textcolor{comment}{//\ We\ emulate\ ftell\ through\ fgetpos,\ which\ does\ exist\ on\ Windows.}}
+\DoxyCodeLine{00827\ \ \ \ \ \textcolor{comment}{//\ fpos\_t\ is\ (hopefully\ always)\ defined\ as\ \_\_int64\ on\ this\ platform.}}
+\DoxyCodeLine{00828\ \ \ \ \ offile\_fpos\_t\ pos;}
+\DoxyCodeLine{00829\ \ \ \ \ \textcolor{keywordflow}{if}\ (this-\/>\doxymbox{\hyperlink{class_o_f_file_a2ae5a3ebce44e8423240e843a58ee9e7}{fgetpos}}(\&pos)\ !=\ 0)}
+\DoxyCodeLine{00830\ \ \ \ \ \{}
+\DoxyCodeLine{00831\ \ \ \ \ \ \ storeLastError();}
+\DoxyCodeLine{00832\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00833\ \ \ \ \ \}}
+\DoxyCodeLine{00834\ \ \ \ \ \textcolor{keywordflow}{return}\ OFstatic\_cast(offile\_off\_t,\ pos);}
+\DoxyCodeLine{00835\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00836\ \ \ \ \ offile\_off\_t\ result;}
+\DoxyCodeLine{00837\ \textcolor{preprocessor}{\#ifdef\ HAVE\_FSEEKO}}
+\DoxyCodeLine{00838\ \textcolor{preprocessor}{\#ifdef\ EXPLICIT\_LFS\_64}}
+\DoxyCodeLine{00839\ \ \ \ \ result\ =\ ::\ ftello64(file\_);}
+\DoxyCodeLine{00840\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00841\ \ \ \ \ result\ =\ ::\ ftello(file\_);}
+\DoxyCodeLine{00842\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00843\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00844\ \ \ \ \ result\ =\ ::\ ftell(file\_);}
+\DoxyCodeLine{00845\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00846\ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ <\ 0)\ storeLastError();}
+\DoxyCodeLine{00847\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00848\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00849\ \ \ \}}
+\DoxyCodeLine{00850\ }
+\DoxyCodeLine{00858\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a2ae5a3ebce44e8423240e843a58ee9e7}{fgetpos}}(offile\_fpos\_t\ *pos)}
+\DoxyCodeLine{00859\ \ \ \{}
+\DoxyCodeLine{00860\ \ \ \ \ \textcolor{keywordtype}{int}\ result;}
+\DoxyCodeLine{00861\ \textcolor{preprocessor}{\#if\ defined(EXPLICIT\_LFS\_64)\ \&\&\ !\ defined(\_\_MINGW32\_\_)\ \&\&\ !\ defined(\_\_QNX\_\_)}}
+\DoxyCodeLine{00862\ \ \ \ \ \textcolor{comment}{//\ MinGW\ and\ QNX\ have\ EXPLICIT\_LFS\_64\ but\ no\ fgetpos64()}}
+\DoxyCodeLine{00863\ \ \ \ \ result\ =\ ::\ fgetpos64(file\_,\ pos);}
+\DoxyCodeLine{00864\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00865\ \ \ \ \ result\ =\ ::\ fgetpos(file\_,\ pos);}
+\DoxyCodeLine{00866\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00867\ \ \ \ \ \textcolor{keywordflow}{if}\ (result)\ storeLastError();}
+\DoxyCodeLine{00868\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00869\ \ \ \}}
+\DoxyCodeLine{00870\ }
+\DoxyCodeLine{00878\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a7ef97cfb4f6e522220526b0187075ccb}{fsetpos}}(offile\_fpos\_t\ *pos)}
+\DoxyCodeLine{00879\ \ \ \{}
+\DoxyCodeLine{00880\ \ \ \ \ \textcolor{keywordtype}{int}\ result;}
+\DoxyCodeLine{00881\ \textcolor{preprocessor}{\#if\ defined(EXPLICIT\_LFS\_64)\ \&\&\ !\ defined(\_\_MINGW32\_\_)\ \&\&\ !\ defined(\_\_QNX\_\_)}}
+\DoxyCodeLine{00882\ \ \ \ \ \textcolor{comment}{//\ MinGW\ and\ QNX\ have\ EXPLICIT\_LFS\_64\ but\ no\ fsetpos64()}}
+\DoxyCodeLine{00883\ \ \ \ \ result\ =\ ::\ fsetpos64(file\_,\ pos);}
+\DoxyCodeLine{00884\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00885\ \ \ \ \ result\ =\ ::\ fsetpos(file\_,\ pos);}
+\DoxyCodeLine{00886\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00887\ \ \ \ \ \textcolor{keywordflow}{if}\ (result)\ storeLastError();}
+\DoxyCodeLine{00888\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00889\ \ \ \}}
+\DoxyCodeLine{00890\ }
+\DoxyCodeLine{00896\ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_a80f9283787fa962471e76a0bea597bcc}{fprintf}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *format,\ ...)}
+\DoxyCodeLine{00897\ \ \ \{}
+\DoxyCodeLine{00898\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ 0;}
+\DoxyCodeLine{00899\ \ \ \ \ va\_list\ ap;}
+\DoxyCodeLine{00900\ \ \ \ \ va\_start(ap,\ format);}
+\DoxyCodeLine{00901\ \ \ \ \ result\ =\ ::\ vfprintf(file\_,\ format,\ ap);}
+\DoxyCodeLine{00902\ \ \ \ \ va\_end(ap);}
+\DoxyCodeLine{00903\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00904\ \ \ \}}
+\DoxyCodeLine{00905\ }
+\DoxyCodeLine{00911\ \ \ \ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{class_o_f_file_ae1a2e11a9725c19831def966e40bdfaa}{vfprintf}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *format,\ va\_list\ arg)}
+\DoxyCodeLine{00912\ \ \ \ \{}
+\DoxyCodeLine{00913\ \ \ \ \ \ return\ ::\ vfprintf(file\_,\ format,\ arg);}
+\DoxyCodeLine{00914\ \ \ \ \}}
+\DoxyCodeLine{00915\ }
+\DoxyCodeLine{00916\ \ \ \textcolor{comment}{//\ we\ cannot\ emulate\ fscanf\ because\ we\ would\ need\ vfscanf\ for\ this}}
+\DoxyCodeLine{00917\ \ \ \textcolor{comment}{//\ purpose,\ which\ does\ not\ exist,\ e.g.\ on\ Win32.}}
+\DoxyCodeLine{00918\ }
+\DoxyCodeLine{00924\ \ \ FILE\ *\doxymbox{\hyperlink{class_o_f_file_af67a4f9e74691067bb8fe29af906826a}{file}}()\ \{\ \textcolor{keywordflow}{return}\ file\_;\ \}}
+\DoxyCodeLine{00925\ }
+\DoxyCodeLine{00929\ \ \ OFBool\ \doxymbox{\hyperlink{class_o_f_file_a5b250205d004a4c9615688d6faa098d9}{open}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ file\_\ !=\ NULL;\ \}}
+\DoxyCodeLine{00930\ }
+\DoxyCodeLine{00934\ \ \ offile\_errno\_t\ \doxymbox{\hyperlink{class_o_f_file_a6629332d9b54b70d47903de082c81dcc}{getLastError}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ lasterror\_;\ \}}
+\DoxyCodeLine{00935\ }
+\DoxyCodeLine{00939\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_o_f_file_a6d22e3cab9f88a8d553b3f6a3cee3767}{getLastErrorString}}(\doxymbox{\hyperlink{class_o_f_string}{OFString}}\&\ s)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00940\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00941\ \ \ \ \ \textcolor{keywordtype}{char}\ buf[1000];}
+\DoxyCodeLine{00942\ \ \ \ \ s\ =\ \doxymbox{\hyperlink{class_o_f_standard_a4fc215ba6f584de10ba812d2d5467dad}{OFStandard::strerror}}(lasterror\_,\ buf,\ 1000);}
+\DoxyCodeLine{00943\ \ \ \}}
+\DoxyCodeLine{00944\ }
+\DoxyCodeLine{00945\ \textcolor{comment}{//\ wide\ character\ functions\ (disabled\ by\ default,\ since\ currently\ not\ used\ within\ DCMTK)}}
+\DoxyCodeLine{00946\ \textcolor{preprocessor}{\#ifdef\ WIDE\_CHAR\_FILE\_IO\_FUNCTIONS}}
+\DoxyCodeLine{00947\ }
+\DoxyCodeLine{00965\ \ \ \textcolor{keywordtype}{int}\ fwide(\textcolor{keywordtype}{int}\ mode)}
+\DoxyCodeLine{00966\ \ \ \{}
+\DoxyCodeLine{00967\ \ \ \ \ return\ ::\ fwide(file\_,\ mode);}
+\DoxyCodeLine{00968\ \ \ \}}
+\DoxyCodeLine{00969\ }
+\DoxyCodeLine{00976\ \ \ wint\_t\ fgetwc()}
+\DoxyCodeLine{00977\ \ \ \{}
+\DoxyCodeLine{00978\ \ \ \ \ wint\_t\ result\ =\ ::\ fgetwc(file\_);}
+\DoxyCodeLine{00979\ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ ==\ WEOF)\ storeLastError();}
+\DoxyCodeLine{00980\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00981\ \ \ \}}
+\DoxyCodeLine{00982\ }
+\DoxyCodeLine{00989\ \ \ wint\_t\ fputwc(\textcolor{keywordtype}{wchar\_t}\ wc)}
+\DoxyCodeLine{00990\ \ \ \{}
+\DoxyCodeLine{00991\ \ \ \ \ wint\_t\ result\ =\ ::\ fputwc(wc,\ file\_);}
+\DoxyCodeLine{00992\ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ ==\ WEOF)\ storeLastError();}
+\DoxyCodeLine{00993\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00994\ \ \ \}}
+\DoxyCodeLine{00995\ }
+\DoxyCodeLine{01010\ \ \ wint\_t\ ungetwc(wint\_t\ wc)}
+\DoxyCodeLine{01011\ \ \ \{}
+\DoxyCodeLine{01012\ \ \ \ \ wint\_t\ result\ =\ ::\ ungetwc(wc,\ file\_);}
+\DoxyCodeLine{01013\ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ ==\ WEOF)\ storeLastError();}
+\DoxyCodeLine{01014\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{01015\ \ \ \}}
+\DoxyCodeLine{01016\ }
+\DoxyCodeLine{01022\ \ \ \textcolor{keywordtype}{int}\ fwprintf(\textcolor{keyword}{const}\ \textcolor{keywordtype}{wchar\_t}\ *format,\ ...)}
+\DoxyCodeLine{01023\ \ \ \{}
+\DoxyCodeLine{01024\ \ \ \ \ \textcolor{keywordtype}{int}\ result\ =\ 0;}
+\DoxyCodeLine{01025\ \ \ \ \ va\_list\ ap;}
+\DoxyCodeLine{01026\ \ \ \ \ va\_start(ap,\ format);}
+\DoxyCodeLine{01027\ \ \ \ \ result\ =\ ::\ vfwprintf(file\_,\ format,\ ap);}
+\DoxyCodeLine{01028\ \ \ \ \ va\_end(ap);}
+\DoxyCodeLine{01029\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{01030\ \ \ \}}
+\DoxyCodeLine{01031\ }
+\DoxyCodeLine{01037\ \ \ \ \textcolor{keywordtype}{int}\ vfwprintf(\textcolor{keyword}{const}\ \textcolor{keywordtype}{wchar\_t}\ *format,\ va\_list\ arg)}
+\DoxyCodeLine{01038\ \ \ \ \{}
+\DoxyCodeLine{01039\ \ \ \ \ \ return\ ::\ vfwprintf(file\_,\ format,\ arg);}
+\DoxyCodeLine{01040\ \ \ \ \}}
+\DoxyCodeLine{01041\ }
+\DoxyCodeLine{01042\ \ \ \textcolor{comment}{//\ we\ cannot\ emulate\ fwscanf\ because\ we\ would\ need\ vfwscanf\ for\ this}}
+\DoxyCodeLine{01043\ \ \ \textcolor{comment}{//\ purpose,\ which\ does\ not\ exist,\ e.g.\ on\ Win32.}}
+\DoxyCodeLine{01044\ }
+\DoxyCodeLine{01045\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ WIDE\_CHAR\_FILE\_IO\_FUNCTIONS\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{01046\ }
+\DoxyCodeLine{01047\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{01048\ }
+\DoxyCodeLine{01049\ \ \ \textcolor{comment}{//\ private\ undefined\ copy\ constructor}}
+\DoxyCodeLine{01050\ \ \ OFFile(\textcolor{keyword}{const}\ OFFile\ \&arg);}
+\DoxyCodeLine{01051\ }
+\DoxyCodeLine{01052\ \ \ \textcolor{comment}{//\ private\ undefined\ assignment\ operator}}
+\DoxyCodeLine{01053\ \ \ OFFile\ \&operator=(\textcolor{keyword}{const}\ OFFile\ \&arg);}
+\DoxyCodeLine{01054\ }
+\DoxyCodeLine{01056\ \ \ FILE\ *file\_;}
+\DoxyCodeLine{01057\ }
+\DoxyCodeLine{01059\ \ \ OFBool\ popened\_;}
+\DoxyCodeLine{01060\ }
+\DoxyCodeLine{01062\ \ \ offile\_errno\_t\ lasterror\_;}
+\DoxyCodeLine{01063\ }
+\DoxyCodeLine{01065\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ storeLastError()}
+\DoxyCodeLine{01066\ \ \ \{}
+\DoxyCodeLine{01067\ \ \ \ \ lasterror\_\ =\ errno;}
+\DoxyCodeLine{01068\ \ \ \}}
+\DoxyCodeLine{01069\ }
+\DoxyCodeLine{01070\ \};}
+\DoxyCodeLine{01071\ }
+\DoxyCodeLine{01072\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

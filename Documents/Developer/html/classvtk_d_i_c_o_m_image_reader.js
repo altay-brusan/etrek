@@ -1,0 +1,25 @@
+var classvtk_d_i_c_o_m_image_reader =
+[
+    [ "ExecuteDataWithInformation", "classvtk_d_i_c_o_m_image_reader.html#accd9b1f35b442c19001f44780812e854", null ],
+    [ "GetBitsAllocated", "classvtk_d_i_c_o_m_image_reader.html#a9b6366fc7e92c6d3978e1b8b0c5f8f9c", null ],
+    [ "GetDescriptiveName", "classvtk_d_i_c_o_m_image_reader.html#a00f4a91d69e8ad3b24417a8e742e3596", null ],
+    [ "GetFileExtensions", "classvtk_d_i_c_o_m_image_reader.html#a9d16d358e5d8237aa0c1f3ac8b41b31e", null ],
+    [ "GetGantryAngle", "classvtk_d_i_c_o_m_image_reader.html#a58a8efa588b4364723598a7673cbc5eb", null ],
+    [ "GetHeight", "classvtk_d_i_c_o_m_image_reader.html#a5c628c269622816c4d0c128b75839c9a", null ],
+    [ "GetImageOrientationPatient", "classvtk_d_i_c_o_m_image_reader.html#ad08f6f1ea0dfbb32020680a498bdeb66", null ],
+    [ "GetImagePositionPatient", "classvtk_d_i_c_o_m_image_reader.html#a79e2b721dc1a5c26cc6d6e5b932695b3", null ],
+    [ "GetNumberOfComponents", "classvtk_d_i_c_o_m_image_reader.html#a5d175f2a5abfd2ca1d422ca99211a057", null ],
+    [ "GetPatientName", "classvtk_d_i_c_o_m_image_reader.html#adec795411938a5c6935f611af8803a56", null ],
+    [ "GetPixelRepresentation", "classvtk_d_i_c_o_m_image_reader.html#a7e52191599dc8d2057379afb033fdc85", null ],
+    [ "GetPixelSpacing", "classvtk_d_i_c_o_m_image_reader.html#a3c1ee7698b8625e3b55124ce31352456", null ],
+    [ "GetRescaleOffset", "classvtk_d_i_c_o_m_image_reader.html#a83b103d3f00aad712a20f16d0c0476c9", null ],
+    [ "GetRescaleSlope", "classvtk_d_i_c_o_m_image_reader.html#aa16c49bc83db317e81d6839029022a71", null ],
+    [ "GetStudyID", "classvtk_d_i_c_o_m_image_reader.html#a3a44887a33a17ac49c6f02ffa989cabf", null ],
+    [ "GetStudyUID", "classvtk_d_i_c_o_m_image_reader.html#a250ff496c5b2745001a9febf804346a1", null ],
+    [ "GetTransferSyntaxUID", "classvtk_d_i_c_o_m_image_reader.html#abeec667b98470dade78dee7c17de214a", null ],
+    [ "GetWidth", "classvtk_d_i_c_o_m_image_reader.html#aa9cbfe7cde885c8d1ee3d75597b107be", null ],
+    [ "PrintSelf", "classvtk_d_i_c_o_m_image_reader.html#ad6433bec388bf29517ee998754841147", null ],
+    [ "SetDirectoryName", "classvtk_d_i_c_o_m_image_reader.html#aa35c056fcda6d6faaacb15c288592eb6", null ],
+    [ "SetFileName", "classvtk_d_i_c_o_m_image_reader.html#ab1db699f098134bacb440a8884081330", null ],
+    [ "vtkGetFilePathMacro", "classvtk_d_i_c_o_m_image_reader.html#aeecfd768408d758215a48c45bb5ef3f7", null ]
+];

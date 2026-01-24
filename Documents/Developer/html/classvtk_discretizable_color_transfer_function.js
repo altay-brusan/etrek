@@ -1,0 +1,28 @@
+var classvtk_discretizable_color_transfer_function =
+[
+    [ "Build", "classvtk_discretizable_color_transfer_function.html#afb220beb8336ab0aa0fb5ede001af0f8", null ],
+    [ "GetColor", "classvtk_discretizable_color_transfer_function.html#a430a9f096fa2a091abdae0f26a22458e", null ],
+    [ "GetIndexedColor", "classvtk_discretizable_color_transfer_function.html#a55c0561e390ea73179ab89e160a263b2", null ],
+    [ "GetMTime", "classvtk_discretizable_color_transfer_function.html#a134ee13510d322446de18d8f22a4025d", null ],
+    [ "GetNumberOfAvailableColors", "classvtk_discretizable_color_transfer_function.html#a8e538847f590559a91e325b80cf92ad3", null ],
+    [ "GetOpacity", "classvtk_discretizable_color_transfer_function.html#abe4523bd2c3df3aaeb998c3f7a6a21a4", null ],
+    [ "IsOpaque", "classvtk_discretizable_color_transfer_function.html#a8e3c360861164f5d705e64d2bf975f71", null ],
+    [ "MapScalarsThroughTable2", "classvtk_discretizable_color_transfer_function.html#a3ff5ea80da3d0c4f1404dd0a62781b05", null ],
+    [ "MapValue", "classvtk_discretizable_color_transfer_function.html#a5fb29a4a2d52d68db26bc7a7b0a58622", null ],
+    [ "PrintSelf", "classvtk_discretizable_color_transfer_function.html#af81a9e08c7fcd33c5f841582eacbc141", null ],
+    [ "SetAlpha", "classvtk_discretizable_color_transfer_function.html#a737226c7d9efa3723d59933cb35a6adf", null ],
+    [ "SetIndexedColorRGB", "classvtk_discretizable_color_transfer_function.html#aa73756e98779656ca1bd4827f3414da6", null ],
+    [ "SetNanColor", "classvtk_discretizable_color_transfer_function.html#ac4cf8894fe4b9c2bce305e4438b6d97a", null ],
+    [ "SetNanOpacity", "classvtk_discretizable_color_transfer_function.html#ad522351322e32f75e96ec6160e296797", null ],
+    [ "SetNumberOfIndexedColors", "classvtk_discretizable_color_transfer_function.html#a4373305ee8eeaf8ed5b27cc6a1d4d3c6", null ],
+    [ "SetScalarOpacityFunction", "classvtk_discretizable_color_transfer_function.html#aa5614cbea9a18cc926a69956f033288c", null ],
+    [ "SetUseLogScale", "classvtk_discretizable_color_transfer_function.html#a6da9ca327b5b84baa5397bd740710c65", null ],
+    [ "UsingLogScale", "classvtk_discretizable_color_transfer_function.html#af5a01a898e9201e4c58a3c4b43fb91af", null ],
+    [ "vtkSetMacro", "classvtk_discretizable_color_transfer_function.html#ac7a69bda2e02bbafccd15924e08ffed1", null ],
+    [ "vtkSetMacro", "classvtk_discretizable_color_transfer_function.html#a183551862a387f3fcb8fe1a238377e53", null ],
+    [ "vtkSetMacro", "classvtk_discretizable_color_transfer_function.html#acde62c8fcc14035f4ea003ae27da4fc8", null ],
+    [ "Discretize", "classvtk_discretizable_color_transfer_function.html#a7318c59db300db6626549c5174d290aa", null ],
+    [ "LookupTable", "classvtk_discretizable_color_transfer_function.html#a996f7d7dd784833f1673f6c893f90ab4", null ],
+    [ "NumberOfValues", "classvtk_discretizable_color_transfer_function.html#a15b59989700b79c75030d937adfe1af6", null ],
+    [ "UseLogScale", "classvtk_discretizable_color_transfer_function.html#a2c268c2c804fc268989c4176f03495fa", null ]
+];

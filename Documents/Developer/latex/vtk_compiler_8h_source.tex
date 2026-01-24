@@ -1,0 +1,75 @@
+\doxysection{vtk\+Compiler.\+h}
+\hypertarget{vtk_compiler_8h_source}{}\label{vtk_compiler_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkCompiler.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkCompiler.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#ifndef\ vtkCompiler\_h}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#define\ vtkCompiler\_h}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{comment}{/*-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/*/}}
+\DoxyCodeLine{00008\ \textcolor{comment}{/*\ Compiler\ backend\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00009\ \textcolor{comment}{/*\ Be\ careful\ modifying\ this\ -\/-\/\ order\ is\ important.\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ */}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#if\ defined(\_MSC\_VER)}}
+\DoxyCodeLine{00011\ \textcolor{comment}{/*\ MSVC\ 2015+\ can\ use\ a\ clang\ frontend,\ so\ we\ want\ to\ label\ it\ only\ as\ MSVC}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *\ and\ not\ MSVC\ and\ clang.\ */}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#define\ VTK\_COMPILER\_MSVC}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#elif\ defined(\_\_INTEL\_COMPILER)}}
+\DoxyCodeLine{00016\ \textcolor{comment}{/*\ Intel\ 14+\ on\ OSX\ uses\ a\ clang\ frontend,\ so\ again\ we\ want\ to\ label\ them\ as}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *\ intel\ only,\ and\ not\ intel\ and\ clang.\ */}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#define\ VTK\_COMPILER\_ICC}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#elif\ defined(\_\_PGI)}}
+\DoxyCodeLine{00021\ \textcolor{comment}{/*\ PGI\ reports\ as\ GNUC\ as\ it\ generates\ the\ same\ ABI,\ so\ we\ need\ to\ check\ for}}
+\DoxyCodeLine{00022\ \textcolor{comment}{\ *\ it\ before\ gcc.\ */}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ VTK\_COMPILER\_PGI}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#elif\ defined(\_\_clang\_\_)}}
+\DoxyCodeLine{00026\ \textcolor{comment}{/*\ Check\ for\ clang\ before\ GCC,\ as\ clang\ says\ it\ is\ GNUC\ since\ it\ has\ ABI}}
+\DoxyCodeLine{00027\ \textcolor{comment}{\ *\ compliance\ and\ supports\ many\ of\ the\ same\ extensions.\ */}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#define\ VTK\_COMPILER\_CLANG}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#elif\ defined(\_\_GNUC\_\_)}}
+\DoxyCodeLine{00031\ \textcolor{comment}{/*\ Several\ compilers\ pretend\ to\ be\ GCC\ but\ have\ minor\ differences.\ To}}
+\DoxyCodeLine{00032\ \textcolor{comment}{\ *\ compensate\ for\ that,\ we\ checked\ for\ those\ compilers\ first\ above.\ */}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#define\ VTK\_COMPILER\_GCC}}
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#define\ VTK\_COMPILER\_GCC\_VERSION\ (\_\_GNUC\_\_\ *\ 10000\ +\ \_\_GNUC\_MINOR\_\_\ *\ 100\ +\ \_\_GNUC\_PATCHLEVEL\_\_)}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#define\ VTK\_USE\_EXTERN\_TEMPLATE}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{comment}{//-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00041\ \textcolor{comment}{//\ Provide\ a\ VTK\_ALWAYS\_EXPORT\ macro.}}
+\DoxyCodeLine{00042\ \textcolor{comment}{//}}
+\DoxyCodeLine{00043\ \textcolor{comment}{//\ Issue:}}
+\DoxyCodeLine{00044\ \textcolor{comment}{//\ Dynamic\ cast\ is\ not\ just\ based\ on\ the\ name\ of\ the\ class,\ but\ also\ the}}
+\DoxyCodeLine{00045\ \textcolor{comment}{//\ combined\ visibility\ of\ the\ class\ on\ macos.\ When\ building\ the\ hash\_code\ of}}
+\DoxyCodeLine{00046\ \textcolor{comment}{//\ an\ object\ the\ symbol\ visibility\ controls\ of\ the\ type\ are\ taken\ into}}
+\DoxyCodeLine{00047\ \textcolor{comment}{//\ consideration\ (including\ symbol\ visibility\ of\ template\ parameters).}}
+\DoxyCodeLine{00048\ \textcolor{comment}{//\ Therefore,\ if\ a\ class\ has\ a\ component\ with\ private/hidden\ visibility\ then}}
+\DoxyCodeLine{00049\ \textcolor{comment}{//\ it\ cannot\ be\ passed\ across\ library\ boundaries.}}
+\DoxyCodeLine{00050\ \textcolor{comment}{//}}
+\DoxyCodeLine{00051\ \textcolor{comment}{//\ Solution:}}
+\DoxyCodeLine{00052\ \textcolor{comment}{//\ The\ solution\ is\ fairly\ simple,\ but\ annoying.\ You\ need\ to\ mark\ template}}
+\DoxyCodeLine{00053\ \textcolor{comment}{//\ classes\ intended\ for\ use\ in\ dynamic\_cast\ with\ appropriate\ visibility}}
+\DoxyCodeLine{00054\ \textcolor{comment}{//\ settings.}}
+\DoxyCodeLine{00055\ \textcolor{comment}{//}}
+\DoxyCodeLine{00056\ \textcolor{comment}{//\ TL;DR:}}
+\DoxyCodeLine{00057\ \textcolor{comment}{//\ This\ markup\ is\ used\ when\ we\ want\ to\ make\ sure:}}
+\DoxyCodeLine{00058\ \textcolor{comment}{//\ \ -\/\ The\ class\ can\ be\ compiled\ into\ multiple\ libraries\ and\ at\ runtime\ will}}
+\DoxyCodeLine{00059\ \textcolor{comment}{//\ \ \ \ resolve\ to\ a\ single\ type\ instance}}
+\DoxyCodeLine{00060\ \textcolor{comment}{//\ \ -\/\ Be\ a\ type\ (\ or\ component\ of\ a\ types\ signature\ )\ that\ can\ be\ passed\ between}}
+\DoxyCodeLine{00061\ \textcolor{comment}{//\ \ \ \ dynamic\ libraries\ and\ requires\ RTTI\ support\ (\ dynamic\_cast\ ).}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#if\ defined(VTK\_COMPILER\_MSVC)}}
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#define\ VTK\_ALWAYS\_EXPORT}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\#define\ VTK\_ALWAYS\_EXPORT\ \_\_attribute\_\_((visibility("{}default"{})))}}
+\DoxyCodeLine{00066\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{comment}{//\ VTK-\/HeaderTest-\/Exclude:\ vtkCompiler.h}}
+
+\end{DoxyCode}

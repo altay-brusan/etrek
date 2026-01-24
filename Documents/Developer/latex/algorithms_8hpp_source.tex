@@ -1,0 +1,286 @@
+\doxysection{algorithms.\+hpp}
+\hypertarget{algorithms_8hpp_source}{}\label{algorithms_8hpp_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/algorithms.hpp@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkdiy2/include/vtkdiy2/algorithms.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ DIY\_ALGORITHMS\_HPP}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ DIY\_ALGORITHMS\_HPP}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}master.hpp"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}assigner.hpp"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}reduce.hpp"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}reduce-\/operations.hpp"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}partners/swap.hpp"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}resolve.hpp"{}}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}detail/algorithms/sort.hpp"{}}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ "{}detail/algorithms/kdtree.hpp"{}}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ "{}detail/algorithms/kdtree-\/sampling.hpp"{}}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}detail/algorithms/load-\/balance-\/collective.hpp"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ "{}detail/algorithms/load-\/balance-\/sampling.hpp"{}}}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}log.hpp"{}}}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacediy}{diy}}}
+\DoxyCodeLine{00022\ \{}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ T,\ \textcolor{keyword}{class}\ Cmp>}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespacediy_ad7301f5d7bb62b79ca679affdf874ace}{sort}}(\doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_assigner}{Assigner}}\&\ \ \ \ \ \ \ \ \ \ \ assigner,\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<T>\ Block::*\ \ \ values,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<T>\ Block::*\ \ \ samples,\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ num\_samples,\ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Cmp\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cmp,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ k\ \ \ =\ 2,\ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ samples\_only\ =\ \textcolor{keyword}{false})\ }
+\DoxyCodeLine{00036\ \ \ \ \ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ immediate\ =\ master.immediate();}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ master.set\_immediate(\textcolor{keyword}{false});}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ NB:\ although\ sorter\ will\ go\ out\ of\ scope,\ its\ member\ functions\ sample()}}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ \ \ \ \ and\ exchange()\ will\ return\ functors\ whose\ copies\ get\ saved\ inside\ reduce}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_sample_sort}{detail::SampleSort<Block,T,Cmp>}}\ sorter(values,\ samples,\ cmp,\ num\_samples);}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ swap-\/reduce\ to\ all-\/gather\ samples}}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_decomposer}{RegularDecomposer<DiscreteBounds>}}\ decomposer(1,\ \doxymbox{\hyperlink{namespacediy_ad1fd3af6d561c31897636040e023a101}{interval}}(0,assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}()),\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}());}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1_regular_swap_partners}{RegularSwapPartners}}\ \ \ partners(decomposer,\ k);}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_a4254d5b9c3e97e5d5d73dd019023257f}{reduce}}(master,\ assigner,\ partners,\ sorter.sample(),\ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_skip_intermediate}{detail::SkipIntermediate}}(partners.rounds()));}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ all\_to\_all\ to\ exchange\ the\ values}}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!samples\_only)}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_a3dfb1bdb9c078d9f18fc6953295a0208}{all\_to\_all}}(master,\ assigner,\ sorter.exchange(),\ k);}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ master.set\_immediate(immediate);}
+\DoxyCodeLine{00054\ \ \ \ \ \}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ T>}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespacediy_ad7301f5d7bb62b79ca679affdf874ace}{sort}}(\doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ }
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_assigner}{Assigner}}\&\ \ \ \ \ \ \ \ \ \ \ assigner,\ \ \ \ }
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<T>\ Block::*\ \ \ values,\ \ \ \ \ \ }
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<T>\ Block::*\ \ \ samples,\ \ \ \ \ }
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ num\_samples,\ }
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ k\ \ \ =\ 2)\ \ \ \ \ }
+\DoxyCodeLine{00070\ \ \ \ \ \{}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_ad7301f5d7bb62b79ca679affdf874ace}{sort}}(master,\ assigner,\ values,\ samples,\ num\_samples,\ std::less<T>(),\ k);}
+\DoxyCodeLine{00072\ \ \ \ \ \}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespacediy_a77704e363d4ae5dd3459e966b8453dad}{kdtree}}(\doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ }
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_assigner}{Assigner}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ assigner,\ \ \ \ }
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ContinuousBounds\&\ \ \ \ \ \ \ \ \ domain,\ \ \ \ \ \ }
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<Point>\ \ Block::*\ \ \ \ points,\ \ \ \ \ \ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bins,\ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wrap\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00086\ \ \ \ \ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}()\ \&\ (assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}()\ -\/\ 1))}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(fmt::format(\textcolor{stringliteral}{"{}KD-\/tree\ requires\ a\ number\ of\ blocks\ that's\ a\ power\ of\ 2,\ got\ \{\}"{}},\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}()));}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ diy::RegularContinuousLink\ \ \ \ \ \ RCLink;}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ static\_cast<int>(master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}());\ ++i)}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ RCLink*\ link\ \ \ =\ \textcolor{keyword}{static\_cast<}RCLink*\textcolor{keyword}{>}(master.link(i));}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ *link\ =\ RCLink(dim,\ domain,\ domain);}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wrap)\ \ \ \ \ \ \ \textcolor{comment}{//\ set\ up\ the\ links\ to\ self}}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::BlockID\ self\ =\ \{\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i),\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().rank()\ \};}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ dim;\ ++j)}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::Direction\ dir(dim,0),\ wrap\_dir(dim,0);}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ left}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dir[j]\ =\ -\/1;\ wrap\_dir[j]\ =\ -\/1;}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_neighbor(self);}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_bounds(domain);}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_direction(dir);}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_wrap(wrap\_dir);}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ right}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dir[j]\ =\ 1;\ wrap\_dir[j]\ =\ 1;}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_neighbor(self);}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_bounds(domain);}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_direction(dir);}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_wrap(wrap\_dir);}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_k_d_tree_partition}{detail::KDTreePartition<Block,Point>}}\ \ \ \ kdtree\_partition(dim,\ points,\ bins);}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_k_d_tree_partners}{detail::KDTreePartners}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ partners(dim,\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}(),\ wrap,\ domain);}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_a4254d5b9c3e97e5d5d73dd019023257f}{reduce}}(master,\ assigner,\ partners,\ kdtree\_partition);}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ update\ master.expected\ to\ match\ the\ links}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ expected\ =\ 0;}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ static\_cast<int>(master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}());\ ++i)}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ expected\ +=\ master.link(i)-\/>size\_unique();}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ master.set\_expected(expected);}
+\DoxyCodeLine{00131\ \ \ \ \ \}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Block,\ \textcolor{keyword}{class}\ Po\textcolor{keywordtype}{int}>}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{namespacediy_accbe161dad777a55402d43cdca4b6795}{kdtree\_sampling}}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (\doxymbox{\hyperlink{classdiy_1_1_master}{Master}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ }
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{classdiy_1_1_assigner}{Assigner}}\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ assigner,\ \ \ \ }
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dim,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ ContinuousBounds\&\ \ \ \ \ \ \ \ \ domain,\ \ \ \ \ \ }
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::vector<Point>\ \ Block::*\ \ \ \ points,\ \ \ \ \ \ }
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ samples,\ \ \ \ \ }
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ wrap\ =\ \textcolor{keyword}{false})}
+\DoxyCodeLine{00146\ \ \ \ \ \{}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}()\ \&\ (assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}()\ -\/\ 1))}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::runtime\_error(fmt::format(\textcolor{stringliteral}{"{}KD-\/tree\ requires\ a\ number\ of\ blocks\ that's\ a\ power\ of\ 2,\ got\ \{\}"{}},\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}()));}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \ \ \ \ diy::RegularContinuousLink\ \ \ \ \ \ RCLink;}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ static\_cast<int>(master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}());\ ++i)}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ RCLink*\ link\ \ \ =\ \textcolor{keyword}{static\_cast<}RCLink*\textcolor{keyword}{>}(master.link(i));}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ *link\ =\ RCLink(dim,\ domain,\ domain);}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (wrap)\ \ \ \ \ \ \ \textcolor{comment}{//\ set\ up\ the\ links\ to\ self}}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::BlockID\ self\ =\ \{\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i),\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().rank()\ \};}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ dim;\ ++j)}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ diy::Direction\ dir(dim,0),\ wrap\_dir(dim,0);}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ left}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dir[j]\ =\ -\/1;\ wrap\_dir[j]\ =\ -\/1;}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_neighbor(self);}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_bounds(domain);}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_direction(dir);}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_wrap(wrap\_dir);}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ right}}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ dir[j]\ =\ 1;\ wrap\_dir[j]\ =\ 1;}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_neighbor(self);}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_bounds(domain);}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_direction(dir);}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ link-\/>add\_wrap(wrap\_dir);}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_k_d_tree_sampling_partition}{detail::KDTreeSamplingPartition<Block,Point>}}\ \ \ \ kdtree\_partition(dim,\ points,\ samples);}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{structdiy_1_1detail_1_1_k_d_tree_partners}{detail::KDTreePartners}}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ partners(dim,\ assigner.\doxymbox{\hyperlink{classdiy_1_1_assigner_a4f3db550b2b333f9fa71c7aea1ef07da}{nblocks}}(),\ wrap,\ domain);}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{namespacediy_a4254d5b9c3e97e5d5d73dd019023257f}{reduce}}(master,\ assigner,\ partners,\ kdtree\_partition);}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ update\ master.expected\ to\ match\ the\ links}}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ expected\ =\ 0;}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ static\_cast<int>(master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}());\ ++i)}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ expected\ +=\ master.link(i)-\/>size\_unique();}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ master.set\_expected(expected);}
+\DoxyCodeLine{00191\ \ \ \ \ \}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ B>}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{keyword}{using\ }LBCallback\ =\ std::function<Work(B*,\ \textcolor{keywordtype}{int})>;}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \ \ \textcolor{comment}{//\ load\ balancing\ using\ collective\ method}}
+\DoxyCodeLine{00197\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Callback>}
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keywordtype}{void}\ load\_balance\_collective(}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ diy\ master}}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ diy::DynamicAssigner\&\ \ \ \ \ \ \ dynamic\_assigner,\ \ \ \textcolor{comment}{//\ diy\ dynamic\ assigner}}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Callback\&\ \ \ \ \ \ \ \ \ \ \ \ \ f)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ callback\ to\ get\ work\ for\ a\ block}}
+\DoxyCodeLine{00202\ \ \ \ \ \{}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ assert\ that\ master.destroyer()\ exists,\ will\ be\ needed\ for\ moving\ blocks}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!master.destroyer())}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ fmt::print(stderr,\ \textcolor{stringliteral}{"{}DIY\ error:\ Master\ must\ have\ a\ block\ destroyer\ function\ in\ order\ to\ use\ load\ balancing.\ Please\ define\ one.\(\backslash\)n"{}});}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ abort();}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Block\ =\ \textcolor{keyword}{typename}\ detail::block\_traits<Callback>::type;}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ LBCallback<Block>\&\ f\_\ =\ f;}
+\DoxyCodeLine{00212\ }
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ compile\ my\ work\ info}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ diy::detail::WorkInfo\ my\_work\_info\ =\ \{\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().rank(),\ -\/1,\ 0,\ 0,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}())\ \};}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}();\ i++)}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ Block*\ block\ =\ \textcolor{keyword}{static\_cast<}Block*\textcolor{keyword}{>}(master.block(i));}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \ \ \ \ Work\ w\ =\ f\_(block,\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i));}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ \ \ my\_work\_info.proc\_work\ +=\ w;}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (my\_work\_info.top\_gid\ ==\ -\/1\ ||\ my\_work\_info.top\_work\ <\ w)}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ my\_work\_info.top\_gid\ \ \ \ =\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i);}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ my\_work\_info.top\_work\ \ \ =\ w;}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ exchange\ info\ about\ load\ balance}}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ std::vector<diy::detail::WorkInfo>\ \ \ all\_work\_info;\ \textcolor{comment}{//\ work\ info\ collected\ from\ all\ mpi\ processes}}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ diy::detail::exchange\_work\_info(master,\ my\_work\_info,\ all\_work\_info);}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ decide\ what\ to\ move\ where}}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ std::vector<diy::detail::MoveInfo>\ \ \ all\_move\_info;\ \textcolor{comment}{//\ move\ info\ for\ all\ moves}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ diy::detail::decide\_move\_info(all\_work\_info,\ all\_move\_info);}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ move\ blocks\ from\ src\ to\ dst\ proc}}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ all\_move\_info.size();\ i++)}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ diy::detail::move\_block(master,\ all\_move\_info[i]);}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ fix\ links}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ diy::fix\_links(master,\ dynamic\_assigner);}
+\DoxyCodeLine{00241\ \ \ \ \ \}}
+\DoxyCodeLine{00242\ }
+\DoxyCodeLine{00243\ \ \ \ \ \textcolor{comment}{//\ load\ balancing\ using\ sampling\ method}}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keyword}{template}<\textcolor{keyword}{class}\ Callback>}
+\DoxyCodeLine{00245\ \ \ \ \ \textcolor{keywordtype}{void}\ load\_balance\_sampling(}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ diy::Master\&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ master,}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ diy::DynamicAssigner\&\ \ \ \ \ \ \ dynamic\_assigner,\ \ \ \textcolor{comment}{//\ diy\ dynamic\ assigner}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ Callback\&\ \ \ \ \ \ \ \ \ \ \ \ \ f,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ callback\ to\ get\ work\ for\ a\ block}}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ sample\_frac\ =\ 0.5,\ \ \textcolor{comment}{//\ fraction\ of\ procs\ to\ sample\ 0.0\ <\ sample\_size\ <=\ 1.0}}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ quantile\ \ \ \ =\ 0.8)\ \ \textcolor{comment}{//\ quantile\ cutoff\ above\ which\ to\ move\ blocks\ (0.0\ -\/\ 1.0)}}
+\DoxyCodeLine{00251\ \ \ \ \ \{}
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ assert\ that\ master.destroyer()\ exists,\ will\ be\ needed\ for\ moving\ blocks}}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!master.destroyer())}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ fmt::print(stderr,\ \textcolor{stringliteral}{"{}DIY\ error:\ Master\ must\ have\ a\ block\ destroyer\ function\ in\ order\ to\ use\ load\ balancing.\ Please\ define\ one.\(\backslash\)n"{}});}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ abort();}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Block\ =\ \textcolor{keyword}{typename}\ detail::block\_traits<Callback>::type;}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ LBCallback<Block>\&\ f\_\ =\ f;}
+\DoxyCodeLine{00261\ }
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ compile\ my\ work\ info}}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ diy::detail::WorkInfo\ my\_work\_info\ =\ \{\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}().rank(),\ -\/1,\ 0,\ 0,\ \textcolor{keyword}{static\_cast<}\textcolor{keywordtype}{int}\textcolor{keyword}{>}(master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}())\ \};}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{auto}\ i\ =\ 0;\ i\ <\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a2884999a0d4a9401008e9df0d86b0b69}{size}}();\ i++)}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ Block*\ block\ =\ \textcolor{keyword}{static\_cast<}Block*\textcolor{keyword}{>}(master.block(i));}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ Work\ w\ =\ f\_(block,\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i));}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \ \ \ \ my\_work\_info.proc\_work\ +=\ w;}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (my\_work\_info.top\_gid\ ==\ -\/1\ ||\ my\_work\_info.top\_work\ <\ w)}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ my\_work\_info.top\_gid\ \ \ \ =\ master.\doxymbox{\hyperlink{classdiy_1_1_master_a1a614dfc28defbe35e916a79f7ead0b5}{gid}}(i);}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ my\_work\_info.top\_work\ \ \ =\ w;}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ "{}auxiliary"{}\ master\ and\ decomposer\ for\ using\ rexchange\ for\ load\ balancing,\ 1\ block\ per\ process}}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ diy::Master\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ aux\_master(master.\doxymbox{\hyperlink{classdiy_1_1_master_a6eaa1af22dfbc034b99ececa84ebb667}{communicator}}(),\ 1,\ -\/1,\ \&diy::detail::AuxBlock::create,\ \&diy::detail::AuxBlock::destroy);}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ diy::ContiguousAssigner\ \ \ \ \ \ \ \ \ aux\_assigner(aux\_master.communicator().size(),\ aux\_master.communicator().size());}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ diy::DiscreteBounds\ aux\_domain(1);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ any\ fake\ domain}}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ aux\_domain.min[0]\ =\ 0;}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ aux\_domain.max[0]\ =\ aux\_master.communicator().size()\ +\ 1;}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ diy::RegularDecomposer<diy::DiscreteBounds>\ \ aux\_decomposer(1,\ aux\_domain,\ aux\_master.communicator().size());}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ aux\_decomposer.decompose(aux\_master.communicator().rank(),\ aux\_assigner,\ aux\_master);}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ exchange\ info\ about\ load\ balance}}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ std::vector<diy::detail::WorkInfo>\ \ \ sample\_work\_info;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ work\ info\ collecting\ from\ sampling\ other\ mpi\ processes}}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ diy::detail::exchange\_sample\_work\_info(master,\ aux\_master,\ sample\_frac,\ my\_work\_info,\ sample\_work\_info);}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ move\ blocks}}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ diy::detail::move\_sample\_blocks(master,\ aux\_master,\ sample\_work\_info,\ my\_work\_info,\ quantile);}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ fix\ links}}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ diy::fix\_links(master,\ dynamic\_assigner);}
+\DoxyCodeLine{00294\ \ \ \ \ \}}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \}}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

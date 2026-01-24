@@ -1,0 +1,107 @@
+\doxysection{vtk\+SMPTools\+Internal.\+h}
+\hypertarget{vtk_s_m_p_tools_internal_8h_source}{}\label{vtk_s_m_p_tools_internal_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/Common/vtkSMPToolsInternal.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/SMP/Common/vtkSMPToolsInternal.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#ifndef\ vtkSMPToolsInternal\_h}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#define\ vtkSMPToolsInternal\_h}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <iterator>}\ \textcolor{comment}{//\ For\ std::advance}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#ifndef\ DOXYGEN\_SHOULD\_SKIP\_THIS}}
+\DoxyCodeLine{00010\ \textcolor{keyword}{namespace\ }\doxymbox{\hyperlink{namespacevtk}{vtk}}}
+\DoxyCodeLine{00011\ \{}
+\DoxyCodeLine{00012\ \textcolor{keyword}{namespace\ }detail}
+\DoxyCodeLine{00013\ \{}
+\DoxyCodeLine{00014\ \textcolor{keyword}{namespace\ }smp}
+\DoxyCodeLine{00015\ \{}
+\DoxyCodeLine{00016\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ InputIt,\ \textcolor{keyword}{typename}\ OutputIt,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00019\ \textcolor{keyword}{class\ }UnaryTransformCall}
+\DoxyCodeLine{00020\ \{}
+\DoxyCodeLine{00021\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00022\ \ \ InputIt\ In;}
+\DoxyCodeLine{00023\ \ \ OutputIt\ Out;}
+\DoxyCodeLine{00024\ \ \ Functor\&\ Transform;}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00027\ \ \ UnaryTransformCall(InputIt\ \_in,\ OutputIt\ \_out,\ Functor\&\ \_transform)}
+\DoxyCodeLine{00028\ \ \ \ \ :\ In(\_in)}
+\DoxyCodeLine{00029\ \ \ \ \ ,\ Out(\_out)}
+\DoxyCodeLine{00030\ \ \ \ \ ,\ Transform(\_transform)}
+\DoxyCodeLine{00031\ \ \ \{}
+\DoxyCodeLine{00032\ \ \ \}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \textcolor{keywordtype}{void}\ Execute(vtkIdType\ begin,\ vtkIdType\ end)}
+\DoxyCodeLine{00035\ \ \ \{}
+\DoxyCodeLine{00036\ \ \ \ \ InputIt\ itIn(In);}
+\DoxyCodeLine{00037\ \ \ \ \ OutputIt\ itOut(Out);}
+\DoxyCodeLine{00038\ \ \ \ \ std::advance(itIn,\ begin);}
+\DoxyCodeLine{00039\ \ \ \ \ std::advance(itOut,\ begin);}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ it\ =\ begin;\ it\ <\ end;\ it++)}
+\DoxyCodeLine{00041\ \ \ \ \ \{}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ *itOut\ =\ Transform(*itIn);}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ ++itIn;}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ ++itOut;}
+\DoxyCodeLine{00045\ \ \ \ \ \}}
+\DoxyCodeLine{00046\ \ \ \}}
+\DoxyCodeLine{00047\ \};}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ InputIt1,\ \textcolor{keyword}{typename}\ InputIt2,\ \textcolor{keyword}{typename}\ OutputIt,\ \textcolor{keyword}{typename}\ Functor>}
+\DoxyCodeLine{00050\ \textcolor{keyword}{class\ }BinaryTransformCall\ :\ \textcolor{keyword}{public}\ UnaryTransformCall<InputIt1,\ OutputIt,\ Functor>}
+\DoxyCodeLine{00051\ \{}
+\DoxyCodeLine{00052\ \ \ InputIt2\ In2;}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00055\ \ \ BinaryTransformCall(InputIt1\ \_in1,\ InputIt2\ \_in2,\ OutputIt\ \_out,\ Functor\&\ \_transform)}
+\DoxyCodeLine{00056\ \ \ \ \ :\ UnaryTransformCall<InputIt1,\ OutputIt,\ Functor>(\_in1,\ \_out,\ \_transform)}
+\DoxyCodeLine{00057\ \ \ \ \ ,\ In2(\_in2)}
+\DoxyCodeLine{00058\ \ \ \{}
+\DoxyCodeLine{00059\ \ \ \}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \textcolor{keywordtype}{void}\ Execute(vtkIdType\ begin,\ vtkIdType\ end)}
+\DoxyCodeLine{00062\ \ \ \{}
+\DoxyCodeLine{00063\ \ \ \ \ InputIt1\ itIn1(this-\/>In);}
+\DoxyCodeLine{00064\ \ \ \ \ InputIt2\ itIn2(In2);}
+\DoxyCodeLine{00065\ \ \ \ \ OutputIt\ itOut(this-\/>Out);}
+\DoxyCodeLine{00066\ \ \ \ \ std::advance(itIn1,\ begin);}
+\DoxyCodeLine{00067\ \ \ \ \ std::advance(itIn2,\ begin);}
+\DoxyCodeLine{00068\ \ \ \ \ std::advance(itOut,\ begin);}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordflow}{for}\ (vtkIdType\ it\ =\ begin;\ it\ <\ end;\ it++)}
+\DoxyCodeLine{00070\ \ \ \ \ \{}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ *itOut\ =\ this-\/>Transform(*itIn1,\ *itIn2);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ ++itIn1;}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ ++itIn2;}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ ++itOut;}
+\DoxyCodeLine{00075\ \ \ \ \ \}}
+\DoxyCodeLine{00076\ \ \ \}}
+\DoxyCodeLine{00077\ \};}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00080\ \textcolor{keyword}{struct\ }FillFunctor}
+\DoxyCodeLine{00081\ \{}
+\DoxyCodeLine{00082\ \ \ \textcolor{keyword}{const}\ T\&\ Value;}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00085\ \ \ FillFunctor(\textcolor{keyword}{const}\ T\&\ \_value)}
+\DoxyCodeLine{00086\ \ \ \ \ :\ Value(\_value)}
+\DoxyCodeLine{00087\ \ \ \{}
+\DoxyCodeLine{00088\ \ \ \}}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ T\ operator()(T\ vtkNotUsed(inValue))\ \{\ \textcolor{keywordflow}{return}\ Value;\ \}}
+\DoxyCodeLine{00091\ \};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \}\ \textcolor{comment}{//\ namespace\ smp}}
+\DoxyCodeLine{00096\ \}\ \textcolor{comment}{//\ namespace\ detail}}
+\DoxyCodeLine{00097\ \}\ \textcolor{comment}{//\ namespace\ vtk}}
+\DoxyCodeLine{00098\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ DOXYGEN\_SHOULD\_SKIP\_THIS}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00101\ \textcolor{comment}{/*\ VTK-\/HeaderTest-\/Exclude:\ vtkSMPToolsInternal.h\ */}}
+
+\end{DoxyCode}

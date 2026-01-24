@@ -1,0 +1,5 @@
+var class_eigen_1_1_block_impl_3_01_xpr_type_00_01_block_rows_00_01_block_cols_00_01_inner_panel_00_01_sparse_01_4 =
+[
+    [ "BlockImpl", "class_eigen_1_1_block_impl_3_01_xpr_type_00_01_block_rows_00_01_block_cols_00_01_inner_panel_00_01_sparse_01_4.html#aa724feeda73e4d5d2330c6dced2d18f9", null ],
+    [ "BlockImpl", "class_eigen_1_1_block_impl_3_01_xpr_type_00_01_block_rows_00_01_block_cols_00_01_inner_panel_00_01_sparse_01_4.html#a2fe461bd49f27e586b7d0e652e370644", null ]
+];

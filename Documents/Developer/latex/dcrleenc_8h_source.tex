@@ -1,0 +1,329 @@
+\doxysection{dcrleenc.\+h}
+\hypertarget{dcrleenc_8h_source}{}\label{dcrleenc_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmdata/dcrleenc.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/dcmtk/include/dcmtk/dcmdata/dcrleenc.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{/*}}
+\DoxyCodeLine{00002\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00003\ \textcolor{comment}{\ *\ \ Copyright\ (C)\ 2002-\/2024,\ OFFIS\ e.V.}}
+\DoxyCodeLine{00004\ \textcolor{comment}{\ *\ \ All\ rights\ reserved.\ \ See\ COPYRIGHT\ file\ for\ details.}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\ *\ \ This\ software\ and\ supporting\ documentation\ were\ developed\ by}}
+\DoxyCodeLine{00007\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00008\ \textcolor{comment}{\ *\ \ \ \ OFFIS\ e.V.}}
+\DoxyCodeLine{00009\ \textcolor{comment}{\ *\ \ \ \ R\&D\ Division\ Health}}
+\DoxyCodeLine{00010\ \textcolor{comment}{\ *\ \ \ \ Escherweg\ 2}}
+\DoxyCodeLine{00011\ \textcolor{comment}{\ *\ \ \ \ D-\/26121\ Oldenburg,\ Germany}}
+\DoxyCodeLine{00012\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00013\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00014\ \textcolor{comment}{\ *\ \ Module:\ \ dcmdata}}
+\DoxyCodeLine{00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00016\ \textcolor{comment}{\ *\ \ Author:\ \ Marco\ Eichelberg}}
+\DoxyCodeLine{00017\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00018\ \textcolor{comment}{\ *\ \ Purpose:\ RLE\ compressor}}
+\DoxyCodeLine{00019\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{00020\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{preprocessor}{\#ifndef\ DCRLEENC\_H}}
+\DoxyCodeLine{00023\ \textcolor{preprocessor}{\#define\ DCRLEENC\_H}}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#include\ "{}dcmtk/config/osconfig.h"{}}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#include\ "{}dcmtk/ofstd/oflist.h"{}}\ \ \ \textcolor{comment}{/*\ for\ class\ OFList<>\ */}}
+\DoxyCodeLine{00027\ \textcolor{preprocessor}{\#include\ "{}dcmtk/dcmdata/dcdefine.h"{}}}
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ <cstring>}}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#define\ DcmRLEEncoder\_BLOCKSIZE\ 16384}}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00037\ \textcolor{keyword}{class\ }DCMTK\_DCMDATA\_EXPORT\ \doxymbox{\hyperlink{class_dcm_encoder_output_stream}{DcmEncoderOutputStream}}}
+\DoxyCodeLine{00038\ \{}
+\DoxyCodeLine{00039\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00044\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_encoder_output_stream_a807b3853ac97b84b08808b71d5f56c0e}{write}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ bufsize)\ =0;}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{virtual}\ \doxymbox{\hyperlink{class_dcm_encoder_output_stream_af69d44697f977f8b8f41c4a0c4aabc47}{\string~DcmEncoderOutputStream}}()\ \{\}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00056\ \textcolor{keyword}{class\ }DCMTK\_DCMDATA\_EXPORT\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_a61eb117503ee1c82f23b0d4996c44318}{DcmRLEEncoder}}}
+\DoxyCodeLine{00057\ \{}
+\DoxyCodeLine{00058\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00063\ \ \ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_a61eb117503ee1c82f23b0d4996c44318}{DcmRLEEncoder}}(\textcolor{keywordtype}{int}\ doPad)}
+\DoxyCodeLine{00064\ \ \ :\ fail\_(0)}
+\DoxyCodeLine{00065\ \ \ ,\ pad\_(doPad)}
+\DoxyCodeLine{00066\ \ \ ,\ currentBlock\_(new\ unsigned\ char[DcmRLEEncoder\_BLOCKSIZE])}
+\DoxyCodeLine{00067\ \ \ ,\ offset\_(0)}
+\DoxyCodeLine{00068\ \ \ ,\ blockList\_()}
+\DoxyCodeLine{00069\ \ \ ,\ RLE\_buff\_(new\ unsigned\ char[132])}
+\DoxyCodeLine{00070\ \ \ ,\ RLE\_prev\_(-\/1)}
+\DoxyCodeLine{00071\ \ \ ,\ RLE\_pcount\_(0)}
+\DoxyCodeLine{00072\ \ \ ,\ RLE\_bindex\_(1)}
+\DoxyCodeLine{00073\ \ \ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordflow}{if}\ ((!\ RLE\_buff\_)||(!\ currentBlock\_))\ fail\_\ =\ 1;}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{else}\ RLE\_buff\_[0]\ =\ 0;}
+\DoxyCodeLine{00076\ \ \ \}}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00079\ \ \ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_ad32411a1f765a6ec17ddc7d7b1b6f47b}{\string~DcmRLEEncoder}}()}
+\DoxyCodeLine{00080\ \ \ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keyword}{delete}[]\ currentBlock\_;}
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{keyword}{delete}[]\ RLE\_buff\_;}
+\DoxyCodeLine{00083\ \ \ \ \ OFListIterator(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *)\ first\ =\ blockList\_.begin();}
+\DoxyCodeLine{00084\ \ \ \ \ OFListIterator(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *)\ last\ =\ blockList\_.end();}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keywordflow}{while}\ (first\ !=\ last)}
+\DoxyCodeLine{00086\ \ \ \ \ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}[]\ *first;}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ first\ =\ blockList\_.erase(first);}
+\DoxyCodeLine{00089\ \ \ \ \ \}}
+\DoxyCodeLine{00090\ \ \ \}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_ac615d559cfbd233441ff9b8ff7c0d57c}{add}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ ch)}
+\DoxyCodeLine{00097\ \ \ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\ fail\_)\ \textcolor{comment}{//\ if\ fail\_\ is\ true,\ just\ ignore\ input}}
+\DoxyCodeLine{00099\ \ \ \ \ \{}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ the\ current\ byte\ equals\ the\ last\ byte\ read}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \textcolor{comment}{//\ (which\ is\ initialized\ with\ the\ "{}impossible"{}\ value\ -\/1),}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \textcolor{comment}{//\ just\ increase\ the\ repeat\ counter}}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (OFstatic\_cast(\textcolor{keywordtype}{int},\ ch)\ ==\ RLE\_prev\_)\ RLE\_pcount\_++;}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ byte\ is\ different\ from\ last\ byte\ read.}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ flush\ replicate\ run\ if\ necessary}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{switch}\ (RLE\_pcount\_)}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ 0:}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ happens\ only\ after\ construction\ or\ flush()}}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ 2:}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ two\ bytes\ in\ repeat\ buffer.\ Convert\ to\ literal\ run}}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[RLE\_bindex\_++]\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char},\ RLE\_prev\_);}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ no\ break.\ Fall-\/through\ into\ next\ case\ statement\ is\ intended.}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ 1:}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ one\ (or\ two)\ bytes\ in\ repeat\ buffer.\ Convert\ to\ literal\ run}}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[RLE\_bindex\_++]\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char},\ RLE\_prev\_);}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ more\ than\ two\ bytes\ in\ repeat\ buffer.\ Convert\ to\ replicate\ run}}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_bindex\_\ >\ 1)}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ there\ is\ a\ literal\ run\ in\ the\ buffer\ that\ must\ be\ flushed}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ before\ the\ replicate\ run.\ \ Flush\ literal\ run\ now.}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[0]\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char},\ RLE\_bindex\_-\/2);}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ move(RLE\_bindex\_);}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ this\ is\ the\ byte\ value\ for\ the\ repeat\ run}}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[1]\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char},\ RLE\_prev\_);}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ write\ as\ many\ repeat\ runs\ as\ necessary}}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (;\ RLE\_pcount\_>0;\ RLE\_pcount\_-\/=128)}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ different\ PackBit\ schemes\ exist.\ The\ original\ from\ which}}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ this\ code\ is\ derived\ used\ 0x80\ |\ (RLE\_pcount\_\ -\/\ 1)}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ to\ represent\ replicate\ runs.}}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DICOM\ instead\ uses\ 257\ -\/\ RLE\_pcount\_}}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_pcount\_\ >\ 128)\ RLE\_buff\_[0]\ =\ 0x81;}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ RLE\_buff\_[0]\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char},\ 257\ -\/\ RLE\_pcount\_);}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ move(2);}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ now\ the\ buffer\ is\ guaranteed\ to\ be\ empty}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[0]\ =\ 0;}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_bindex\_\ =\ 1;}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ if\ we\ have\ 128\ or\ more\ bytes\ in\ the\ literal\ run,\ flush\ buffer}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_bindex\_\ >\ 129)}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[0]\ =\ 127;}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ move(129);}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_bindex\_\ -\/=\ 128;}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_bindex\_\ >\ 1)}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[1]\ =\ RLE\_buff\_[129];}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_bindex\_\ >\ 2)}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[2]\ =\ RLE\_buff\_[130];}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ current\ byte\ is\ stored\ in\ RLE\_prev\_,\ RLE\_pcount\_\ is\ 1.}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ RLE\_prev\_\ =\ ch;}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ RLE\_pcount\_\ =\ 1;}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00165\ \ \ \ \ \}}
+\DoxyCodeLine{00166\ \ \ \}}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00173\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_a2b1f5336a7cc5050a5cd2eece01a5d76}{add}}(\textcolor{keyword}{const}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *buf,\ \textcolor{keywordtype}{size\_t}\ bufcount)}
+\DoxyCodeLine{00174\ \ \ \{}
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{keywordflow}{if}\ (buf)}
+\DoxyCodeLine{00176\ \ \ \ \ \{}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (bufcount-\/-\/)\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_ac615d559cfbd233441ff9b8ff7c0d57c}{add}}(*buf++);}
+\DoxyCodeLine{00178\ \ \ \ \ \}}
+\DoxyCodeLine{00179\ \ \ \}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00187\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_a80f205ce559ed8fbffe07eb74fa3ee48}{flush}}()}
+\DoxyCodeLine{00188\ \ \ \{}
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordflow}{if}\ (!\ fail\_)\ \textcolor{comment}{//\ if\ fail\_\ is\ true,\ do\ nothing}}
+\DoxyCodeLine{00190\ \ \ \ \ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ there\ are\ max\ 1\ bytes\ in\ the\ repeat\ counter,\ convert\ to\ literal\ run}}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_pcount\_\ <\ 2)}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (;\ RLE\_pcount\_>0;\ -\/-\/RLE\_pcount\_)\ RLE\_buff\_[RLE\_bindex\_++]\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char},\ RLE\_prev\_);}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ we\ have\ 128\ or\ more\ bytes\ in\ the\ literal\ run,\ flush\ buffer}}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_bindex\_\ >\ 129)}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[0]\ =\ 127;}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ move(129);}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ RLE\_bindex\_\ -\/=\ 128;}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_bindex\_\ >\ 1)}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[1]\ =\ RLE\_buff\_[129];}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_bindex\_\ >\ 2)}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[2]\ =\ RLE\_buff\_[130];}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00208\ }
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ there\ is\ still\ a\ literal\ run\ in\ the\ buffer,\ flush\ literal\ run}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_bindex\_\ >\ 1)}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[0]\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char},\ RLE\_bindex\_-\/2);}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ move(RLE\_bindex\_);}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00215\ }
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \textcolor{comment}{//\ if\ there\ is\ a\ remaining\ repeat\ run,\ flush\ this\ one\ as\ well}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_pcount\_\ >=\ 2)}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \ \ RLE\_buff\_[1]\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char},\ RLE\_prev\_);}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ write\ as\ many\ repeat\ runs\ as\ necessary}}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (;\ RLE\_pcount\_>0;\ RLE\_pcount\_-\/=128)}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ different\ PackBit\ schemes\ exist.\ The\ original\ from\ which}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ this\ code\ is\ derived\ used\ 0x80\ |\ (RLE\_pcount\_\ -\/\ 1)}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ to\ represent\ replicate\ runs.}}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ DICOM\ instead\ uses\ 257\ -\/\ RLE\_pcount\_}}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (RLE\_pcount\_\ >\ 128)\ RLE\_buff\_[0]\ =\ 0x81;}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ RLE\_buff\_[0]\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char},\ 257\ -\/\ RLE\_pcount\_);}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ \ \ \ \ move(2);}
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00232\ }
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \textcolor{comment}{//\ now\ the\ buffer\ is\ guaranteed\ to\ be\ empty,\ re-\/initialize}}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ RLE\_buff\_[0]\ =\ 0;}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ RLE\_prev\_\ =\ -\/1;}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ RLE\_pcount\_\ =\ 0;}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ RLE\_bindex\_\ =\ 1;}
+\DoxyCodeLine{00238\ \ \ \ \ \}}
+\DoxyCodeLine{00239\ \ \ \}}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00248\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{size\_t}\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_ad31a505673ab6a87412b409a1adf7618}{size}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00249\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00250\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ result\ =\ blockList\_.size()\ *\ DcmRLEEncoder\_BLOCKSIZE\ +\ offset\_;}
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordflow}{if}\ (pad\_\ \&\&\ (result\ \&\ 1))\ result++;\ \textcolor{comment}{//\ enforce\ even\ number\ of\ bytes}}
+\DoxyCodeLine{00252\ \ \ \ \ \textcolor{keywordflow}{return}\ result;}
+\DoxyCodeLine{00253\ \ \ \}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{keyword}{inline}\ OFBool\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_ad851535cff659e9b254c36e145791375}{fail}}()\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00259\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00260\ \ \ \ \ \textcolor{keywordflow}{if}\ (fail\_)\ \textcolor{keywordflow}{return}\ OFTrue;\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{return}\ OFFalse;}
+\DoxyCodeLine{00261\ \ \ \}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00267\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_ab86827b38a2415d2eca5f2f61b9fa195}{write}}(\textcolor{keywordtype}{void}\ *target)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00268\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{keywordflow}{if}\ ((!fail\_)\ \&\&\ target)}
+\DoxyCodeLine{00270\ \ \ \ \ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *current\ =\ NULL;}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *target8\ =\ OFstatic\_cast(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *,\ target);}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ OFListConstIterator(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *)\ first\ =\ blockList\_.begin();}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ OFListConstIterator(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *)\ last\ =\ blockList\_.end();}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (first\ !=\ last)}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ current\ =\ *first;}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ memcpy(target8,\ current,\ DcmRLEEncoder\_BLOCKSIZE);}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ target8\ +=\ DcmRLEEncoder\_BLOCKSIZE;}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (offset\_\ >\ 0)}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ memcpy(target8,\ currentBlock\_,\ offset\_);}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \textcolor{comment}{//\ pad\ to\ even\ number\ of\ bytes\ if\ necessary}}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (pad\_\ \&\&\ ((blockList\_.size()\ *\ DcmRLEEncoder\_BLOCKSIZE\ +\ offset\_)\ \&\ 1))}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ target8\ +=\ offset\_;}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ *target8\ =\ 0;}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00293\ \ \ \ \ \}}
+\DoxyCodeLine{00294\ \ \ \}}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00300\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder_a49ce0f262657e3f56914958ae446dbbe}{write}}(\doxymbox{\hyperlink{class_dcm_encoder_output_stream}{DcmEncoderOutputStream}}\&\ os)\textcolor{keyword}{\ const}}
+\DoxyCodeLine{00301\ \textcolor{keyword}{\ \ }\{}
+\DoxyCodeLine{00302\ \ \ \ \ \textcolor{keywordflow}{if}\ (!fail\_)}
+\DoxyCodeLine{00303\ \ \ \ \ \{}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ OFListConstIterator(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *)\ first\ =\ blockList\_.begin();}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ OFListConstIterator(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *)\ last\ =\ blockList\_.end();}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (first\ !=\ last)}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ os.\doxymbox{\hyperlink{class_dcm_encoder_output_stream_a807b3853ac97b84b08808b71d5f56c0e}{write}}(*first,\ DcmRLEEncoder\_BLOCKSIZE);}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ ++first;}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (offset\_\ >\ 0)}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ os.\doxymbox{\hyperlink{class_dcm_encoder_output_stream_a807b3853ac97b84b08808b71d5f56c0e}{write}}(currentBlock\_,\ offset\_);}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \textcolor{comment}{//\ pad\ to\ even\ number\ of\ bytes\ if\ necessary}}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (pad\_\ \&\&\ ((blockList\_.size()\ *\ DcmRLEEncoder\_BLOCKSIZE\ +\ offset\_)\ \&\ 1))}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ c\ =\ 0;}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ os.\doxymbox{\hyperlink{class_dcm_encoder_output_stream_a807b3853ac97b84b08808b71d5f56c0e}{write}}(\&c,\ 1);}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00322\ \ \ \ \ \}}
+\DoxyCodeLine{00323\ \ \ \}}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00326\ }
+\DoxyCodeLine{00328\ \ \ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder}{DcmRLEEncoder}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder}{DcmRLEEncoder}}\&);}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00331\ \ \ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder}{DcmRLEEncoder}}\&\ operator=(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_dcm_r_l_e_encoder}{DcmRLEEncoder}}\&);}
+\DoxyCodeLine{00332\ }
+\DoxyCodeLine{00338\ \ \ \textcolor{keyword}{inline}\ \textcolor{keywordtype}{void}\ move(\textcolor{keywordtype}{size\_t}\ numberOfBytes)}
+\DoxyCodeLine{00339\ \ \ \{}
+\DoxyCodeLine{00340\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ i=0;}
+\DoxyCodeLine{00341\ \ \ \ \ \textcolor{keywordflow}{while}\ (i\ <\ numberOfBytes)}
+\DoxyCodeLine{00342\ \ \ \ \ \{}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (offset\_\ ==\ DcmRLEEncoder\_BLOCKSIZE)}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ blockList\_.push\_back(currentBlock\_);}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ currentBlock\_\ =\ \textcolor{keyword}{new}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}[DcmRLEEncoder\_BLOCKSIZE];}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ offset\_\ =\ 0;}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!\ currentBlock\_)\ \textcolor{comment}{//\ out\ of\ memory}}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ fail\_\ =\ 1;}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};\ \ \ \ \textcolor{comment}{//\ exit\ while\ loop}}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ currentBlock\_[offset\_++]\ =\ RLE\_buff\_[i++];}
+\DoxyCodeLine{00355\ \ \ \ \ \}}
+\DoxyCodeLine{00356\ \ \ \}}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00358\ \ \ \textcolor{comment}{/*\ member\ variables\ */}}
+\DoxyCodeLine{00359\ }
+\DoxyCodeLine{00365\ \ \ \textcolor{keywordtype}{int}\ fail\_;}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00371\ \ \ \textcolor{keywordtype}{int}\ pad\_;}
+\DoxyCodeLine{00372\ }
+\DoxyCodeLine{00377\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *currentBlock\_;}
+\DoxyCodeLine{00378\ }
+\DoxyCodeLine{00383\ \ \ \textcolor{keywordtype}{size\_t}\ offset\_;}
+\DoxyCodeLine{00384\ }
+\DoxyCodeLine{00389\ \ \ OFList<unsigned\ char\ *>\ blockList\_;}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00394\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}\ *RLE\_buff\_;}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00400\ \ \ \textcolor{keywordtype}{int}\ RLE\_prev\_;}
+\DoxyCodeLine{00401\ }
+\DoxyCodeLine{00405\ \ \ \textcolor{keywordtype}{int}\ RLE\_pcount\_;}
+\DoxyCodeLine{00406\ }
+\DoxyCodeLine{00409\ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ RLE\_bindex\_;}
+\DoxyCodeLine{00410\ }
+\DoxyCodeLine{00411\ \};}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

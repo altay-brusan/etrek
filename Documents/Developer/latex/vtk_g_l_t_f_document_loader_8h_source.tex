@@ -1,0 +1,492 @@
+\doxysection{vtk\+GLTFDocument\+Loader.\+h}
+\hypertarget{vtk_g_l_t_f_document_loader_8h_source}{}\label{vtk_g_l_t_f_document_loader_8h_source}\index{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkGLTFDocumentLoader.h@{C:/Users/altay/OneDrive/Projects/etrek/ThirdPartyLibraries/vtk/include/vtk-\/9.5/vtkGLTFDocumentLoader.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ SPDX-\/FileCopyrightText:\ Copyright\ (c)\ Ken\ Martin,\ Will\ Schroeder,\ Bill\ Lorensen}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ SPDX-\/License-\/Identifier:\ BSD-\/3-\/Clause}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{preprocessor}{\#ifndef\ vtkGLTFDocumentLoader\_h}}
+\DoxyCodeLine{00026\ \textcolor{preprocessor}{\#define\ vtkGLTFDocumentLoader\_h}}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \textcolor{preprocessor}{\#include\ "{}GLTFSampler.h"{}}\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ For\ "{}Sampler"{}}}
+\DoxyCodeLine{00029\ \textcolor{preprocessor}{\#include\ "{}vtkIOGeometryModule.h"{}}\ \textcolor{comment}{//\ For\ export\ macro}}
+\DoxyCodeLine{00030\ \textcolor{preprocessor}{\#include\ "{}vtkObject.h"{}}}
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#include\ "{}vtkResourceStream.h"{}}\ \textcolor{comment}{//\ For\ "{}vtkResourceStream"{}}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#include\ "{}vtkSmartPointer.h"{}}\ \ \ \textcolor{comment}{//\ For\ "{}vtkSmartPointer"{}}}
+\DoxyCodeLine{00033\ \textcolor{preprocessor}{\#include\ "{}vtkURILoader.h"{}}\ \ \ \ \ \ \textcolor{comment}{//\ For\ "{}vtkURILoader"{}}}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ <map>}\ \ \ \ \textcolor{comment}{//\ For\ std::map}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#include\ <memory>}\ \textcolor{comment}{//\ For\ std::shared\_ptr}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#include\ <string>}\ \textcolor{comment}{//\ For\ std::string}}
+\DoxyCodeLine{00038\ \textcolor{preprocessor}{\#include\ <vector>}\ \textcolor{comment}{//\ For\ std::vector}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ VTK\_ABI\_NAMESPACE\_BEGIN}
+\DoxyCodeLine{00041\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_cell_array}{vtkCellArray}};}
+\DoxyCodeLine{00042\ \textcolor{keyword}{class\ }vtkDataArray;}
+\DoxyCodeLine{00043\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_float_array}{vtkFloatArray}};}
+\DoxyCodeLine{00044\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_image_data}{vtkImageData}};}
+\DoxyCodeLine{00045\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_matrix4x4}{vtkMatrix4x4}};}
+\DoxyCodeLine{00046\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_points}{vtkPoints}};}
+\DoxyCodeLine{00047\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_poly_data}{vtkPolyData}};}
+\DoxyCodeLine{00048\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvtk_unsigned_short_array}{vtkUnsignedShortArray}};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{keyword}{class\ }VTKIOGEOMETRY\_EXPORT\ vtkGLTFDocumentLoader\ :\ \textcolor{keyword}{public}\ vtkObject}
+\DoxyCodeLine{00051\ \{}
+\DoxyCodeLine{00052\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{static}\ vtkGLTFDocumentLoader*\ \doxymbox{\hyperlink{classvtk_object_ab522226b135754e829b30804b4572427}{New}}();}
+\DoxyCodeLine{00054\ \ \ vtkTypeMacro(vtkGLTFDocumentLoader,\ vtkObject);}
+\DoxyCodeLine{00055\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a9017772845a73e9a94af7853e9d75a13}{PrintSelf}}(ostream\&\ os,\ \doxymbox{\hyperlink{classvtk_indent}{vtkIndent}}\ indent)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00060\ \ \ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_aa5bcb24ffde201f72d8aba2265a9763b}{Target}}\ :\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}}
+\DoxyCodeLine{00061\ \ \ \{}
+\DoxyCodeLine{00062\ \ \ \ \ ARRAY\_BUFFER\ =\ 34962,}
+\DoxyCodeLine{00063\ \ \ \ \ ELEMENT\_ARRAY\_BUFFER\ =\ 34963}
+\DoxyCodeLine{00064\ \ \ \};}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00070\ \ \ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a0cf3c55a9fd8705b2a457c19c961222d}{AccessorType}}\ :\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}}
+\DoxyCodeLine{00071\ \ \ \{}
+\DoxyCodeLine{00072\ \ \ \ \ SCALAR,}
+\DoxyCodeLine{00073\ \ \ \ \ VEC2,}
+\DoxyCodeLine{00074\ \ \ \ \ VEC3,}
+\DoxyCodeLine{00075\ \ \ \ \ VEC4,}
+\DoxyCodeLine{00076\ \ \ \ \ MAT2,}
+\DoxyCodeLine{00077\ \ \ \ \ MAT3,}
+\DoxyCodeLine{00078\ \ \ \ \ MAT4,}
+\DoxyCodeLine{00079\ \ \ \ \ INVALID}
+\DoxyCodeLine{00080\ \ \ \};}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{enum\ class}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_ada2ddcee6613699e09335820875ec209}{ComponentType}}\ :\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{short}}
+\DoxyCodeLine{00087\ \ \ \{}
+\DoxyCodeLine{00088\ \ \ \ \ BYTE\ =\ 5120,}
+\DoxyCodeLine{00089\ \ \ \ \ UNSIGNED\_BYTE\ =\ 5121,}
+\DoxyCodeLine{00090\ \ \ \ \ SHORT\ =\ 5122,}
+\DoxyCodeLine{00091\ \ \ \ \ UNSIGNED\_SHORT\ =\ 5123,}
+\DoxyCodeLine{00092\ \ \ \ \ UNSIGNED\_INT\ =\ 5125,}
+\DoxyCodeLine{00093\ \ \ \ \ FLOAT\ =\ 5126}
+\DoxyCodeLine{00094\ \ \ \};}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \textcolor{comment}{/*\ The\ following\ structs\ help\ deserialize\ a\ glTF\ document,\ representing\ each\ object.\ As\ such,}}
+\DoxyCodeLine{00097\ \textcolor{comment}{\ \ \ *\ their\ members\ mostly\ match\ with\ the\ specification.\ Default\ values\ and\ boundaries\ are\ set}}
+\DoxyCodeLine{00098\ \textcolor{comment}{\ \ \ *\ according\ to\ the\ specification.}}
+\DoxyCodeLine{00099\ \textcolor{comment}{\ \ \ *\ Most\ of\ these\ structs\ contain\ a\ name\ property,\ which\ is\ optional,\ and,\ while\ being\ loaded,\ is}}
+\DoxyCodeLine{00100\ \textcolor{comment}{\ \ \ *\ not\ currently\ exploited\ by\ the\ loader.}}
+\DoxyCodeLine{00101\ \textcolor{comment}{\ \ \ *\ They\ are\ mostly\ root-\/level\ properties,\ and\ once\ created,\ are\ stored\ into\ vectors\ in\ the\ Model}}
+\DoxyCodeLine{00102\ \textcolor{comment}{\ \ \ *\ structure.}}
+\DoxyCodeLine{00103\ \textcolor{comment}{\ \ \ */}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00109\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_buffer_view}{BufferView}}}
+\DoxyCodeLine{00110\ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keywordtype}{int}\ Buffer;}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordtype}{int}\ ByteOffset;}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordtype}{int}\ ByteLength;}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keywordtype}{int}\ ByteStride;}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keywordtype}{int}\ Target;}
+\DoxyCodeLine{00116\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00117\ \ \ \};}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00125\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_accessor}{Accessor}}}
+\DoxyCodeLine{00126\ \ \ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_accessor_1_1_sparse}{Sparse}}}
+\DoxyCodeLine{00132\ \ \ \ \ \{}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ Count;}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ IndicesBufferView;}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ IndicesByteOffset;}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_ada2ddcee6613699e09335820875ec209}{ComponentType}}\ IndicesComponentType;}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ ValuesBufferView;}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ ValuesByteOffset;}
+\DoxyCodeLine{00139\ \ \ \ \ \};}
+\DoxyCodeLine{00140\ \ \ \ \ \textcolor{keywordtype}{int}\ BufferView;}
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keywordtype}{int}\ ByteOffset;}
+\DoxyCodeLine{00142\ \ \ \ \ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_ada2ddcee6613699e09335820875ec209}{ComponentType}}\ ComponentTypeValue;}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordtype}{bool}\ Normalized;}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordtype}{int}\ Count;}
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ NumberOfComponents;}
+\DoxyCodeLine{00146\ \ \ \ \ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a0cf3c55a9fd8705b2a457c19c961222d}{AccessorType}}\ Type;}
+\DoxyCodeLine{00147\ \ \ \ \ std::vector<double>\ Max;}
+\DoxyCodeLine{00148\ \ \ \ \ std::vector<double>\ Min;}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordtype}{bool}\ IsSparse;}
+\DoxyCodeLine{00150\ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_accessor_1_1_sparse}{Sparse}}\ SparseObject;}
+\DoxyCodeLine{00151\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00152\ \ \ \};}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00160\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_morph_target}{MorphTarget}}}
+\DoxyCodeLine{00161\ \ \ \{}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{comment}{//\ accessor\ indices\ from\ the\ .gltf\ file,\ the\ map's\ keys\ correspond\ to\ attribute\ names}}
+\DoxyCodeLine{00163\ \ \ \ \ std::map<std::string,\ int>\ AttributeIndices;}
+\DoxyCodeLine{00164\ \ \ \ \ \textcolor{comment}{//\ attribute\ values}}
+\DoxyCodeLine{00165\ \ \ \ \ std::map<std::string,\ vtkSmartPointer<vtkFloatArray>>\ AttributeValues;}
+\DoxyCodeLine{00166\ \ \ \};}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00175\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_primitive}{Primitive}}}
+\DoxyCodeLine{00176\ \ \ \{}
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{comment}{//\ accessor\ indices\ from\ the\ .glTF\ file,\ the\ map's\ keys\ correspond\ to\ attribute\ names}}
+\DoxyCodeLine{00178\ \ \ \ \ std::map<std::string,\ int>\ AttributeIndices;}
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keywordtype}{int}\ IndicesId;}
+\DoxyCodeLine{00180\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkCellArray>}}\ Indices;}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{comment}{//\ attribute\ values\ from\ buffer\ data}}
+\DoxyCodeLine{00183\ \ \ \ \ std::map<std::string,\ vtkSmartPointer<vtkDataArray>>\ AttributeValues;}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00185\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkPolyData>}}\ Geometry;}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \ \ std::vector<MorphTarget>\ Targets;}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordtype}{int}\ Material;}
+\DoxyCodeLine{00190\ \ \ \ \ \textcolor{keywordtype}{int}\ Mode;}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keywordtype}{int}\ CellSize;\ \textcolor{comment}{//\ 1,\ 2\ or\ 3,\ depending\ on\ draw\ mode}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{comment}{//\ Primitive-\/specific\ extension\ metadata}}
+\DoxyCodeLine{00194\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_primitive_1_1_extensions}{Extensions}}}
+\DoxyCodeLine{00195\ \ \ \ \ \{}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \textcolor{comment}{//\ KHR\_draco\_mesh\_compression\ extension}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \textcolor{comment}{//\ Only\ metadata\ are\ read\ (decoding\ and\ modifying\ the\ internal\ model\ is\ not\ done\ yet)}}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_primitive_1_1_extensions_1_1_k_h_r_draco_mesh_compression}{KHRDracoMeshCompression}}}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ BufferView\ =\ -\/1;}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ std::map<std::string,\ int>\ AttributeIndices;}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_primitive_1_1_extensions_1_1_k_h_r_draco_mesh_compression}{Primitive::Extensions::KHRDracoMeshCompression}}\ KHRDracoMetaData;}
+\DoxyCodeLine{00204\ \ \ \ \ \};}
+\DoxyCodeLine{00205\ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_primitive_1_1_extensions}{Primitive::Extensions}}\ ExtensionMetaData;}
+\DoxyCodeLine{00206\ \ \ \};}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00214\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_node}{Node}}}
+\DoxyCodeLine{00215\ \ \ \{}
+\DoxyCodeLine{00216\ \ \ \ \ std::vector<int>\ Children;}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordtype}{int}\ Camera;}
+\DoxyCodeLine{00218\ \ \ \ \ \textcolor{keywordtype}{int}\ Mesh;}
+\DoxyCodeLine{00219\ \ \ \ \ \textcolor{keywordtype}{int}\ Skin;}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00221\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkMatrix4x4>}}\ Transform;}
+\DoxyCodeLine{00222\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkMatrix4x4>}}\ GlobalTransform;}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{keywordtype}{bool}\ TRSLoaded;}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00226\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkMatrix4x4>}}\ Matrix;}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \ \ std::vector<float>\ InitialRotation;}
+\DoxyCodeLine{00229\ \ \ \ \ std::vector<float>\ InitialTranslation;}
+\DoxyCodeLine{00230\ \ \ \ \ std::vector<float>\ InitialScale;}
+\DoxyCodeLine{00231\ \ \ \ \ std::vector<float>\ InitialWeights;}
+\DoxyCodeLine{00232\ \ \ \ \ std::vector<float>\ Rotation;}
+\DoxyCodeLine{00233\ \ \ \ \ std::vector<float>\ Translation;}
+\DoxyCodeLine{00234\ \ \ \ \ std::vector<float>\ Scale;}
+\DoxyCodeLine{00235\ \ \ \ \ std::vector<float>\ Weights;}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{comment}{//\ Object-\/specific\ extension\ metadata}}
+\DoxyCodeLine{00238\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_node_1_1_extensions}{Extensions}}}
+\DoxyCodeLine{00239\ \ \ \ \ \{}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \textcolor{comment}{//\ KHR\_lights\_punctual\ extension}}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_node_1_1_extensions_1_1_k_h_r_lights_punctual}{KHRLightsPunctual}}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ Light\ =\ -\/1;}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_node_1_1_extensions_1_1_k_h_r_lights_punctual}{Node::Extensions::KHRLightsPunctual}}\ KHRLightsPunctualMetaData;}
+\DoxyCodeLine{00246\ \ \ \ \ \};}
+\DoxyCodeLine{00247\ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_node_1_1_extensions}{Node::Extensions}}\ ExtensionMetaData;}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00249\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00250\ }
+\DoxyCodeLine{00251\ \ \ \ \ \textcolor{keywordtype}{void}\ UpdateTransform();}
+\DoxyCodeLine{00252\ \ \ \};}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00258\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_mesh}{Mesh}}}
+\DoxyCodeLine{00259\ \ \ \{}
+\DoxyCodeLine{00260\ \ \ \ \ std::vector<struct\ Primitive>\ Primitives;}
+\DoxyCodeLine{00261\ \ \ \ \ std::vector<float>\ Weights;}
+\DoxyCodeLine{00262\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00263\ \ \ \};}
+\DoxyCodeLine{00264\ }
+\DoxyCodeLine{00270\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_texture_info}{TextureInfo}}}
+\DoxyCodeLine{00271\ \ \ \{}
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keywordtype}{int}\ Index\ =\ -\/1;}
+\DoxyCodeLine{00273\ \ \ \ \ \textcolor{keywordtype}{int}\ TexCoord\ =\ -\/1;}
+\DoxyCodeLine{00274\ \ \ \};}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00280\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_image}{Image}}}
+\DoxyCodeLine{00281\ \ \ \{}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{keywordtype}{int}\ BufferView;}
+\DoxyCodeLine{00283\ \ \ \ \ std::string\ MimeType;}
+\DoxyCodeLine{00284\ \ \ \ \ std::string\ Uri;}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkImageData>}}\ ImageData;}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00288\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00289\ \ \ \};}
+\DoxyCodeLine{00290\ }
+\DoxyCodeLine{00297\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_material}{Material}}}
+\DoxyCodeLine{00298\ \ \ \{}
+\DoxyCodeLine{00299\ \ \ \ \ \textcolor{keyword}{enum\ class}\ AlphaModeType\ :\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}}
+\DoxyCodeLine{00300\ \ \ \ \ \{}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ OPAQUE,}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ MASK,}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ BLEND}
+\DoxyCodeLine{00304\ \ \ \ \ \};}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_material_1_1_pbr_metallic_roughness}{PbrMetallicRoughness}}}
+\DoxyCodeLine{00307\ \ \ \ \ \{}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_texture_info}{TextureInfo}}\ BaseColorTexture;}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ std::vector<double>\ BaseColorFactor;}
+\DoxyCodeLine{00310\ }
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_texture_info}{TextureInfo}}\ MetallicRoughnessTexture;}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ MetallicFactor;}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ RoughnessFactor;}
+\DoxyCodeLine{00314\ \ \ \ \ \};}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_material_1_1_pbr_metallic_roughness}{PbrMetallicRoughness}}\ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_material_1_1_pbr_metallic_roughness}{PbrMetallicRoughness}};}
+\DoxyCodeLine{00317\ }
+\DoxyCodeLine{00318\ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_texture_info}{TextureInfo}}\ NormalTexture;}
+\DoxyCodeLine{00319\ \ \ \ \ \textcolor{keywordtype}{double}\ NormalTextureScale;}
+\DoxyCodeLine{00320\ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_texture_info}{TextureInfo}}\ OcclusionTexture;}
+\DoxyCodeLine{00321\ \ \ \ \ \textcolor{keywordtype}{double}\ OcclusionTextureStrength;}
+\DoxyCodeLine{00322\ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_texture_info}{TextureInfo}}\ EmissiveTexture;}
+\DoxyCodeLine{00323\ \ \ \ \ std::vector<double>\ EmissiveFactor;}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \ \ \ \ AlphaModeType\ AlphaMode;}
+\DoxyCodeLine{00326\ \ \ \ \ \textcolor{keywordtype}{double}\ AlphaCutoff;}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00328\ \ \ \ \ \textcolor{keywordtype}{bool}\ DoubleSided;}
+\DoxyCodeLine{00329\ }
+\DoxyCodeLine{00330\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \ \ \ \ \textcolor{comment}{//\ extension\ KHR\_materials\_unlit}}
+\DoxyCodeLine{00333\ \ \ \ \ \textcolor{keywordtype}{bool}\ Unlit;}
+\DoxyCodeLine{00334\ \ \ \};}
+\DoxyCodeLine{00335\ }
+\DoxyCodeLine{00340\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_texture}{Texture}}}
+\DoxyCodeLine{00341\ \ \ \{}
+\DoxyCodeLine{00342\ \ \ \ \ \textcolor{keywordtype}{int}\ Sampler;}
+\DoxyCodeLine{00343\ \ \ \ \ \textcolor{keywordtype}{int}\ Source;}
+\DoxyCodeLine{00344\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00345\ \ \ \};}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00351\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_sampler}{Sampler}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_g_l_t_f_sampler}{GLTFSampler}}}
+\DoxyCodeLine{00352\ \ \ \{}
+\DoxyCodeLine{00353\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00354\ \ \ \};}
+\DoxyCodeLine{00355\ }
+\DoxyCodeLine{00361\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_scene}{Scene}}}
+\DoxyCodeLine{00362\ \ \ \{}
+\DoxyCodeLine{00363\ \ \ \ \ std::vector<unsigned\ int>\ Nodes;}
+\DoxyCodeLine{00364\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00365\ \ \ \};}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00372\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_skin}{Skin}}}
+\DoxyCodeLine{00373\ \ \ \{}
+\DoxyCodeLine{00374\ \ \ \ \ std::vector<vtkSmartPointer<vtkMatrix4x4>>\ InverseBindMatrices;}
+\DoxyCodeLine{00375\ \ \ \ \ std::vector<int>\ Joints;}
+\DoxyCodeLine{00376\ \ \ \ \ \textcolor{keywordtype}{int}\ InverseBindMatricesAccessorId;}
+\DoxyCodeLine{00377\ \ \ \ \ \textcolor{keywordtype}{int}\ Skeleton;}
+\DoxyCodeLine{00378\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00379\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkPolyData>}}\ Armature;}
+\DoxyCodeLine{00380\ \ \ \};}
+\DoxyCodeLine{00381\ }
+\DoxyCodeLine{00388\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_animation}{Animation}}}
+\DoxyCodeLine{00389\ \ \ \{}
+\DoxyCodeLine{00390\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_animation_1_1_sampler}{Sampler}}}
+\DoxyCodeLine{00391\ \ \ \ \ \{}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ InterpolationMode\ :\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ LINEAR,}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ STEP,}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ CUBICSPLINE}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ InterpolationMode\ Interpolation;}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ Input;}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ Output;}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ NumberOfComponents;}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkFloatArray>}}\ InputData;}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkFloatArray>}}\ OutputData;}
+\DoxyCodeLine{00405\ }
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_animation_1_1_sampler_aca8fd0db333d97514ed69301c6a8ce1e}{GetInterpolatedData}}(\textcolor{keywordtype}{float}\ t,\ \textcolor{keywordtype}{size\_t}\ numberOfComponents,\ std::vector<float>*\ output,}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ forceStep\ =\ \textcolor{keyword}{false},\ \textcolor{keywordtype}{bool}\ isRotation\ =\ \textcolor{keyword}{false})\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00411\ \ \ \ \ \};}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_animation_1_1_channel}{Channel}}}
+\DoxyCodeLine{00414\ \ \ \ \ \{}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ PathType\ :\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ ROTATION,}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ TRANSLATION,}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ SCALE,}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ WEIGHTS}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ Sampler;}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ TargetNode;}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ PathType\ TargetPath;}
+\DoxyCodeLine{00425\ \ \ \ \ \};}
+\DoxyCodeLine{00426\ }
+\DoxyCodeLine{00427\ \ \ \ \ \textcolor{keywordtype}{float}\ Duration;\ \textcolor{comment}{//\ In\ seconds}}
+\DoxyCodeLine{00428\ \ \ \ \ std::vector<Animation::Channel>\ Channels;}
+\DoxyCodeLine{00429\ \ \ \ \ std::vector<Animation::Sampler>\ Samplers;}
+\DoxyCodeLine{00430\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00431\ \ \ \};}
+\DoxyCodeLine{00432\ }
+\DoxyCodeLine{00438\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_camera}{Camera}}}
+\DoxyCodeLine{00439\ \ \ \{}
+\DoxyCodeLine{00440\ \ \ \ \ \textcolor{comment}{//\ common\ properties}}
+\DoxyCodeLine{00441\ \ \ \ \ \textcolor{keywordtype}{double}\ Znear;}
+\DoxyCodeLine{00442\ \ \ \ \ \textcolor{keywordtype}{double}\ Zfar;}
+\DoxyCodeLine{00443\ \ \ \ \ \textcolor{keywordtype}{bool}\ IsPerspective;\ \textcolor{comment}{//\ if\ not,\ camera\ mode\ is\ orthographic}}
+\DoxyCodeLine{00444\ \ \ \ \ \textcolor{comment}{//\ perspective}}
+\DoxyCodeLine{00445\ \ \ \ \ \textcolor{keywordtype}{double}\ Xmag;}
+\DoxyCodeLine{00446\ \ \ \ \ \textcolor{keywordtype}{double}\ Ymag;}
+\DoxyCodeLine{00447\ \ \ \ \ \textcolor{comment}{//\ orthographic}}
+\DoxyCodeLine{00448\ \ \ \ \ \textcolor{keywordtype}{double}\ Yfov;}
+\DoxyCodeLine{00449\ \ \ \ \ \textcolor{keywordtype}{double}\ AspectRatio;}
+\DoxyCodeLine{00450\ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00451\ \ \ \};}
+\DoxyCodeLine{00452\ }
+\DoxyCodeLine{00459\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_extensions}{Extensions}}}
+\DoxyCodeLine{00460\ \ \ \{}
+\DoxyCodeLine{00461\ \ \ \ \ \textcolor{comment}{//\ KHR\_lights\_punctual\ extension}}
+\DoxyCodeLine{00462\ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_extensions_1_1_k_h_r_lights_punctual}{KHRLightsPunctual}}}
+\DoxyCodeLine{00463\ \ \ \ \ \{}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_extensions_1_1_k_h_r_lights_punctual_1_1_light}{Light}}}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ \textcolor{keyword}{enum\ class}\ LightType\ :\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{char}}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \ \ DIRECTIONAL,}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ POINT,}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ \ \ SPOT}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \ \ LightType\ Type;}
+\DoxyCodeLine{00473\ }
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ std::vector<double>\ Color;}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ Intensity;}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ Range;}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Type-\/specific\ parameters}}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ SpotInnerConeAngle;}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{double}\ SpotOuterConeAngle;}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ std::string\ Name;}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ std::vector<Light>\ Lights;}
+\DoxyCodeLine{00485\ \ \ \ \ \};}
+\DoxyCodeLine{00486\ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_extensions_1_1_k_h_r_lights_punctual}{KHRLightsPunctual}}\ KHRLightsPunctualMetaData;}
+\DoxyCodeLine{00487\ \ \ \};}
+\DoxyCodeLine{00488\ }
+\DoxyCodeLine{00492\ \ \ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_model}{Model}}}
+\DoxyCodeLine{00493\ \ \ \{}
+\DoxyCodeLine{00494\ \ \ \ \ std::vector<Accessor>\ Accessors;}
+\DoxyCodeLine{00495\ \ \ \ \ std::vector<Animation>\ Animations;}
+\DoxyCodeLine{00496\ \ \ \ \ std::vector<std::vector<char>>\ Buffers;}
+\DoxyCodeLine{00497\ \ \ \ \ std::vector<BufferView>\ BufferViews;}
+\DoxyCodeLine{00498\ \ \ \ \ std::vector<Camera>\ Cameras;}
+\DoxyCodeLine{00499\ \ \ \ \ std::vector<Image>\ Images;}
+\DoxyCodeLine{00500\ \ \ \ \ std::vector<Material>\ Materials;}
+\DoxyCodeLine{00501\ \ \ \ \ std::vector<Mesh>\ Meshes;}
+\DoxyCodeLine{00502\ \ \ \ \ std::vector<Node>\ Nodes;}
+\DoxyCodeLine{00503\ \ \ \ \ std::vector<Sampler>\ Samplers;}
+\DoxyCodeLine{00504\ \ \ \ \ std::vector<Scene>\ Scenes;}
+\DoxyCodeLine{00505\ \ \ \ \ std::vector<Skin>\ Skins;}
+\DoxyCodeLine{00506\ \ \ \ \ std::vector<Texture>\ Textures;}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \ \ \ \ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_extensions}{Extensions}}\ ExtensionMetaData;}
+\DoxyCodeLine{00509\ }
+\DoxyCodeLine{00510\ \ \ \ \ std::string\ BufferMetaData;}
+\DoxyCodeLine{00511\ \ \ \ \ \textcolor{keywordtype}{int}\ DefaultScene;}
+\DoxyCodeLine{00512\ \ \ \ \ std::string\ FileName;}
+\DoxyCodeLine{00513\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkResourceStream>}}\ Stream;}
+\DoxyCodeLine{00514\ \ \ \ \ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkURILoader>}}\ URILoader;}
+\DoxyCodeLine{00515\ \ \ \};}
+\DoxyCodeLine{00516\ }
+\DoxyCodeLine{00521\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_aaa3c72f06384428b591bc614094c644a}{ApplyAnimation}}(\textcolor{keywordtype}{float}\ t,\ \textcolor{keywordtype}{int}\ animationId,\ \textcolor{keywordtype}{bool}\ forceStep\ =\ \textcolor{keyword}{false});}
+\DoxyCodeLine{00522\ }
+\DoxyCodeLine{00526\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a3239edad0905feef45e27e8b5a1ace5e}{ResetAnimation}}(\textcolor{keywordtype}{int}\ animationId);}
+\DoxyCodeLine{00527\ }
+\DoxyCodeLine{00529\ }
+\DoxyCodeLine{00534\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a34d6146e511eea23722dc58821e6bfad}{LoadFileBuffer}}(VTK\_FILEPATH\ \textcolor{keyword}{const}\ std::string\&\ fileName,\ std::vector<char>\&\ glbBuffer);}
+\DoxyCodeLine{00535\ \ \ \textcolor{keywordtype}{bool}\ LoadStreamBuffer(\doxymbox{\hyperlink{classvtk_resource_stream}{vtkResourceStream}}*\ stream,\ std::vector<char>\&\ glbBuffer);}
+\DoxyCodeLine{00537\ }
+\DoxyCodeLine{00539\ }
+\DoxyCodeLine{00547\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a496ef9ffe8b7478d3c0d6ee1b3ae7f3b}{LoadModelMetaDataFromFile}}(VTK\_FILEPATH\ \textcolor{keyword}{const}\ std::string\&\ FileName);}
+\DoxyCodeLine{00548\ \ \ \textcolor{keywordtype}{bool}\ LoadModelMetaDataFromStream(\doxymbox{\hyperlink{classvtk_resource_stream}{vtkResourceStream}}*\ stream,\ \doxymbox{\hyperlink{classvtk_u_r_i_loader}{vtkURILoader}}*\ loader\ =\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00550\ }
+\DoxyCodeLine{00554\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a63a538a70ad1b2932948cdb8a1d378be}{LoadModelData}}(\textcolor{keyword}{const}\ std::vector<char>\&\ glbBuffer);}
+\DoxyCodeLine{00555\ }
+\DoxyCodeLine{00559\ \ \ \textcolor{keywordtype}{bool}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_af3a909619528461f795941623d0d6011}{BuildModelVTKGeometry}}();}
+\DoxyCodeLine{00560\ }
+\DoxyCodeLine{00564\ \ \ std::shared\_ptr<Model>\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_ae79a599e501f199ca9b20635ae56f0c9}{GetInternalModel}}();}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00569\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a7a2d1382efd66229257f7171953c5889}{GetNumberOfComponentsForType}}(\doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a0cf3c55a9fd8705b2a457c19c961222d}{vtkGLTFDocumentLoader::AccessorType}}\ \doxymbox{\hyperlink{struct_o_fremove__volatile}{type}});}
+\DoxyCodeLine{00570\ }
+\DoxyCodeLine{00574\ \ \ \textcolor{keyword}{virtual}\ std::vector<std::string>\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a61544836ca5f68ac1008432a7380c0a3}{GetSupportedExtensions}}();}
+\DoxyCodeLine{00575\ }
+\DoxyCodeLine{00579\ \ \ \textcolor{keyword}{const}\ std::vector<std::string>\&\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_ab6358a8c1fdd5097ac9462e7bf4faf64}{GetUsedExtensions}}();}
+\DoxyCodeLine{00580\ }
+\DoxyCodeLine{00587\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a650a4717704631338e41829c5e821906}{BuildGlobalTransforms}}(\textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{int}\ nodeIndex,\ \doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkMatrix4x4>}}\ parentTransform);}
+\DoxyCodeLine{00588\ }
+\DoxyCodeLine{00592\ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_af7ab35c0ce2f12e069d6633804194b18}{BuildGlobalTransforms}}();}
+\DoxyCodeLine{00593\ }
+\DoxyCodeLine{00597\ \ \ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a8054b5448873d82e209a9c811f8d9ac0}{ComputeJointMatrices}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_model}{Model}}\&\ model,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_skin}{Skin}}\&\ skin,\ \doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_node}{Node}}\&\ node,}
+\DoxyCodeLine{00598\ \ \ \ \ std::vector<\doxymbox{\hyperlink{classvtk_smart_pointer}{vtkSmartPointer<vtkMatrix4x4>}}>\&\ jointMats);}
+\DoxyCodeLine{00599\ }
+\DoxyCodeLine{00606\ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a87f7ff0f7813e758f6691c62b234938a}{PrepareData}}()\ \{\}}
+\DoxyCodeLine{00607\ }
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00614\ \ \ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_aa2768542262a770cc49cf351a23f167c}{vtkSetMacro}}(GLBStart,\ vtkTypeInt64);}
+\DoxyCodeLine{00615\ \ \ vtkGetMacro(GLBStart,\ vtkTypeInt64);}
+\DoxyCodeLine{00617\ }
+\DoxyCodeLine{00619\ }
+\DoxyCodeLine{00624\ \ \ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_af7d37283d7f7847abaa99623397f3b2d}{vtkSetMacro}}(LoadAnimation,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00625\ \ \ vtkGetMacro(LoadAnimation,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00626\ \ \ vtkBooleanMacro(LoadAnimation,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00628\ }
+\DoxyCodeLine{00630\ }
+\DoxyCodeLine{00635\ \ \ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a93c6aeff9bfa600d63417ed24b044d38}{vtkSetMacro}}(LoadImages,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00636\ \ \ vtkGetMacro(LoadImages,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00637\ \ \ vtkBooleanMacro(LoadImages,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00639\ }
+\DoxyCodeLine{00641\ }
+\DoxyCodeLine{00646\ \ \ \doxymbox{\hyperlink{classvtk_g_l_t_f_document_loader_a5a7a69e9a827f25258e0a2688e06d275}{vtkSetMacro}}(LoadSkinMatrix,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00647\ \ \ vtkGetMacro(LoadSkinMatrix,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00648\ \ \ vtkBooleanMacro(LoadSkinMatrix,\ \textcolor{keywordtype}{bool});}
+\DoxyCodeLine{00650\ }
+\DoxyCodeLine{00651\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00652\ \ \ vtkGLTFDocumentLoader()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00653\ \ \ \string~vtkGLTFDocumentLoader()\ \textcolor{keyword}{override}\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00654\ }
+\DoxyCodeLine{00655\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00656\ \ \ \textcolor{keyword}{struct\ }AccessorLoadingWorker;}
+\DoxyCodeLine{00657\ }
+\DoxyCodeLine{00658\ \ \ \textcolor{keyword}{struct\ }SparseAccessorLoadingWorker;}
+\DoxyCodeLine{00659\ }
+\DoxyCodeLine{00660\ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Type>}
+\DoxyCodeLine{00661\ \ \ \textcolor{keyword}{struct\ }BufferDataExtractionWorker;}
+\DoxyCodeLine{00662\ }
+\DoxyCodeLine{00663\ \ \ vtkGLTFDocumentLoader(\textcolor{keyword}{const}\ vtkGLTFDocumentLoader\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00664\ \ \ \textcolor{keywordtype}{void}\ operator=(\textcolor{keyword}{const}\ vtkGLTFDocumentLoader\&)\ =\ \textcolor{keyword}{delete};}
+\DoxyCodeLine{00665\ }
+\DoxyCodeLine{00669\ \ \ \textcolor{keywordtype}{bool}\ LoadSkinMatrixData();}
+\DoxyCodeLine{00670\ }
+\DoxyCodeLine{00675\ \ \ \textcolor{keywordtype}{bool}\ ExtractPrimitiveAttributes(\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_primitive}{Primitive}}\&\ primitive);}
+\DoxyCodeLine{00676\ }
+\DoxyCodeLine{00683\ \ \ \textcolor{keywordtype}{bool}\ ExtractPrimitiveAccessorData(\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_primitive}{Primitive}}\&\ primitive);}
+\DoxyCodeLine{00684\ }
+\DoxyCodeLine{00689\ \ \ \textcolor{keywordtype}{bool}\ BuildPolyDataFromPrimitive(\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_primitive}{Primitive}}\&\ primitive);}
+\DoxyCodeLine{00690\ }
+\DoxyCodeLine{00694\ \ \ \textcolor{keywordtype}{bool}\ BuildPolyDataFromSkin(\doxymbox{\hyperlink{structvtk_g_l_t_f_document_loader_1_1_skin}{Skin}}\&\ skin);}
+\DoxyCodeLine{00695\ }
+\DoxyCodeLine{00699\ \ \ \textcolor{keywordtype}{bool}\ LoadAnimationData();}
+\DoxyCodeLine{00700\ }
+\DoxyCodeLine{00704\ \ \ \textcolor{keywordtype}{bool}\ LoadImageData();}
+\DoxyCodeLine{00705\ }
+\DoxyCodeLine{00706\ \ \ std::shared\_ptr<Model>\ InternalModel;}
+\DoxyCodeLine{00707\ }
+\DoxyCodeLine{00708\ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ std::vector<std::string>\ SupportedExtensions;}
+\DoxyCodeLine{00709\ \ \ std::vector<std::string>\ UsedExtensions;}
+\DoxyCodeLine{00710\ \ \ vtkTypeInt64\ GLBStart\ =\ 0;}
+\DoxyCodeLine{00711\ }
+\DoxyCodeLine{00715\ \ \ \textcolor{keywordtype}{bool}\ LoadAnimation\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00716\ \ \ \textcolor{keywordtype}{bool}\ LoadImages\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00717\ \ \ \textcolor{keywordtype}{bool}\ LoadSkinMatrix\ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00718\ \};}
+\DoxyCodeLine{00719\ }
+\DoxyCodeLine{00720\ VTK\_ABI\_NAMESPACE\_END}
+\DoxyCodeLine{00721\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

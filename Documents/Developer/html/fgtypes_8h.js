@@ -1,0 +1,25 @@
+var fgtypes_8h =
+[
+    [ "DcmFGTypes", "class_dcm_f_g_types.html", "class_dcm_f_g_types" ],
+    [ "FG_EC_ConcatenationComplete", "fgtypes_8h.html#a882ee457f3be988a5fcac981f0fc39fd", null ],
+    [ "FG_EC_CouldNotAddFG", "fgtypes_8h.html#aff67d44c12435e8e29ea922bfe1f1249", null ],
+    [ "FG_EC_CouldNotCreateFG", "fgtypes_8h.html#a25228926c2c21c6d1cc0c609f65a2987", null ],
+    [ "FG_EC_CouldNotInsertFG", "fgtypes_8h.html#a25744d0ad177f83e125dc2e60f6e55a2", null ],
+    [ "FG_EC_CouldNotReadSourceImage", "fgtypes_8h.html#a5bcbf20a395412d6f56ac605f487a009", null ],
+    [ "FG_EC_CouldNotWriteFG", "fgtypes_8h.html#a36df1d773e0385c0835781b443f63e35", null ],
+    [ "FG_EC_DoubledFG", "fgtypes_8h.html#a371e08d733cd08143d7cb126ec0ca72e", null ],
+    [ "FG_EC_InconsistentConcatenationData", "fgtypes_8h.html#ac2e4ec7f0230443fc7e6554ffaf640e5", null ],
+    [ "FG_EC_InvalidData", "fgtypes_8h.html#aa896c08c3473b44caf245326e7619765", null ],
+    [ "FG_EC_NoPerFrameFG", "fgtypes_8h.html#abf1156d57f4ab000ee3312bf2c8ab27c", null ],
+    [ "FG_EC_NoSharedFG", "fgtypes_8h.html#ac965699020714192008ac2725f2dd5ee", null ],
+    [ "FG_EC_NoStacksFound", "fgtypes_8h.html#a3548ed5481062e023153fdf39ab903e3", null ],
+    [ "FG_EC_NoSuchGroup", "fgtypes_8h.html#a97ed777cfdf4e1f677a2a586df8763fe", null ],
+    [ "FG_EC_NotEnoughFrames", "fgtypes_8h.html#a176534c4126fe17240c7a3f6414381ef", null ],
+    [ "FG_EC_NotEnoughItems", "fgtypes_8h.html#abfd2213ce2448d1ed6f292ce3841054f", null ],
+    [ "FG_EC_PixelDataDimensionsInvalid", "fgtypes_8h.html#aa9aa711ff90b80cf4ec6e21ba9e74bdd", null ],
+    [ "FG_EC_PixelDataMissing", "fgtypes_8h.html#a95ec490164b77365518a30c43b51e05d", null ],
+    [ "FG_EC_PixelDataTooLarge", "fgtypes_8h.html#acf57ae4057392b50a61bb7d3a79d7dea", null ],
+    [ "FG_EC_SOPClassForbidsConcatenations", "fgtypes_8h.html#a079dcbcd14f8ee6d8b123dd4fb03a365", null ],
+    [ "FG_EC_TooManyItems", "fgtypes_8h.html#a237083b4278c59c6955817cf321c2c45", null ],
+    [ "FG_EC_UnsupportedPixelDataLayout", "fgtypes_8h.html#a26e65a821d7e6b8199ce422638c4452e", null ]
+];

@@ -1,0 +1,27 @@
+var class_d_r_t_measured_dose_reference_sequence_1_1_item =
+[
+    [ "Item", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#aee5e248ab058bb061f5fae06c5461623", null ],
+    [ "Item", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a9ffe4792e12e2150f6224b36df8b8fff", null ],
+    [ "~Item", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a7da53a4a7918d5e808a6caf30c13ae52", null ],
+    [ "clear", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#acbf9ea770d7c6bded6aafcb473ca665d", null ],
+    [ "getDoseUnits", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a1fd66ff6cf6e50166ca99a22a7b18650", null ],
+    [ "getMeasuredDoseDescription", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a232203f2f33e27803daef4b38c4d320c", null ],
+    [ "getMeasuredDoseReferenceNumber", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a9fe3f2bb362ccf01d65c44694241af11", null ],
+    [ "getMeasuredDoseReferenceNumber", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#abb73c069efc1f023070aeb6d8613bb69", null ],
+    [ "getMeasuredDoseType", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#acbfabe6e1693235cdd51203e92164fa3", null ],
+    [ "getMeasuredDoseValue", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a47734cc2b81438e7f3fda0ff449e77f6", null ],
+    [ "getMeasuredDoseValue", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a0d05a88d0802352965319ab42f8c790b", null ],
+    [ "getReferencedDoseReferenceNumber", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a5f19915463b5151adc5f33e60678fc22", null ],
+    [ "getReferencedDoseReferenceNumber", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a4ee257655bcbfb8b60c105a6021788a7", null ],
+    [ "isEmpty", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#abd3cd91e58594f00dc6d4dc4b045e454", null ],
+    [ "isValid", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a3969d378fbc2559cce0e88355dcf542c", null ],
+    [ "operator=", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a31750cf29430df6c2d430797a39715c2", null ],
+    [ "read", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#aa3ad59f2086b9c78e9e33c1f03e85acf", null ],
+    [ "setDoseUnits", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a217de611f5220da86c59aa25dae67f2a", null ],
+    [ "setMeasuredDoseDescription", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a144a2752c0094f27ab08139190876d44", null ],
+    [ "setMeasuredDoseReferenceNumber", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a6f87aa94972b00f236c706b082cdddee", null ],
+    [ "setMeasuredDoseType", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a986bb60fc44cf86ad8fffae94c960240", null ],
+    [ "setMeasuredDoseValue", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#afd7df032d901334bb5463c85e20d982a", null ],
+    [ "setReferencedDoseReferenceNumber", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#a0a1ef959235e254fe583f37d82c8fbb8", null ],
+    [ "write", "class_d_r_t_measured_dose_reference_sequence_1_1_item.html#af2a9ab8316098d0cafd9e26f80c0d8e4", null ]
+];
