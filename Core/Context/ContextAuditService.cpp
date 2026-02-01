@@ -4,6 +4,7 @@
 #include "ISessionContext.h"
 #include "IWorkflowContext.h"
 #include "IExaminationContext.h"
+#include "User.h"
 
 #include <QJsonObject>
 #include <QDebug>
