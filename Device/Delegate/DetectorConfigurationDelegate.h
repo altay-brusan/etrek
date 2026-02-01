@@ -25,6 +25,7 @@
 #include "IPageAction.h"
 
 namespace Etrek::Device::Repository { class DeviceRepository; }
+namespace Etrek::Context { class IContextManager; }
 class DetectorConfigurationWidget;
 
 /**
@@ -79,11 +80,13 @@ namespace Etrek::Device::Delegate
 		 *
 		 * @param[in] widget Pointer to the associated UI widget.
 		 * @param[in] repository Shared pointer to the device repository for database operations.
+		 * @param[in] contextManager Weak pointer to the context manager for audit tracking.
 		 * @param[in] parent Parent QObject for memory management.
 		 */
 		DetectorConfigurationDelegate(
 			DetectorConfigurationWidget* widget,
 			std::shared_ptr<rpo::DeviceRepository> repository,
+			std::weak_ptr<Etrek::Context::IContextManager> contextManager,
 			QObject* parent);
 
 		/**
@@ -107,6 +110,7 @@ namespace Etrek::Device::Delegate
 	private:
 		DetectorConfigurationWidget* m_widget = nullptr;     ///< Pointer to the associated UI widget.
 		std::shared_ptr<rpo::DeviceRepository> m_repository; ///< Repository for database operations.
+		std::weak_ptr<Etrek::Context::IContextManager> m_contextManager; ///< Context manager for audit tracking.
 
 		/**
 		 * @brief Persists current widget state to the database.

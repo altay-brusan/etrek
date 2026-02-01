@@ -18,7 +18,7 @@ namespace Etrek::Device::Delegate
 
         // Use params.dbConnection if needed
         auto widget = new ConnectionSetupWidget(parentWidget);
-        auto delegate = new ConnectionSetupDelegate(widget, parentDelegate);
+        auto delegate = new ConnectionSetupDelegate(widget, params.contextManager, parentDelegate);
         // Optionally: delegate->AttachDelegates(params.delegates.values());
         return { widget, delegate };
     }

@@ -27,7 +27,7 @@ namespace Etrek::Device::Delegate
         auto widget = new WorkflowConfigurationWidget(envSettings.value, equipments.value, institutes.value, parentWidget);
         
         // Delegate receives repository to perform CRUD operations on apply/accept
-        auto delegate = new WorkflowConfigurationDelegate(widget, repository, parentDelegate);
+        auto delegate = new WorkflowConfigurationDelegate(widget, repository, params.contextManager, parentDelegate);
 
         // If you need to attach other delegates:
         // if (delegate) delegate->AttachDelegates(params.delegates.values());
