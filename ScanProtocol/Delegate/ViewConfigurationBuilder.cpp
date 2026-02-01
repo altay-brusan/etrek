@@ -24,7 +24,7 @@ namespace Etrek::ScanProtocol::Delegate
         auto* widget = new ViewConfigurationWidget(views.value, parentWidget);
 
         // Delegate receives repository to perform CRUD operations on apply/accept
-        auto* delegate = new ViewConfigurationDelegate(widget, repository, parentDelegate);
+        auto* delegate = new ViewConfigurationDelegate(widget, repository, params.contextManager, parentDelegate);
 
         return { widget, delegate };
     }

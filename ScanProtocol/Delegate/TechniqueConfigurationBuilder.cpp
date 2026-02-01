@@ -27,7 +27,7 @@ TechniqueConfigurationBuilder::build(const DelegateParameter& params,
     auto* widget   = new TechniqueConfigurationWidget(techniqueParameters.value, parentWidget);
     
     // Delegate receives repository because it needs to perform CRUD operations
-    auto* delegate = new Etrek::ScanProtocol::Delegate::TechniqueConfigurationDelegate(widget, repository, parentDelegate);
+    auto* delegate = new Etrek::ScanProtocol::Delegate::TechniqueConfigurationDelegate(widget, repository, params.contextManager, parentDelegate);
 
     return std::make_pair(widget, delegate); // MSVC: prefer make_pair
 }
