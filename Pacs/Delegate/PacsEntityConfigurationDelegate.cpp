@@ -9,8 +9,9 @@ namespace Etrek::Pacs::Delegate
 	PacsEntityConfigurationDelegate::PacsEntityConfigurationDelegate(
 		PacsEntityConfigurationWidget* widget,
 		std::shared_ptr<PacsNodeRepository> repository,
+		std::weak_ptr<Etrek::Context::IContextManager> contextManager,
 		QObject* parent)
-		: QObject(parent), m_widget(widget), m_repository(repository)
+		: QObject(parent), m_widget(widget), m_repository(repository), m_contextManager(contextManager)
 	{
 	}
 
