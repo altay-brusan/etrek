@@ -25,6 +25,7 @@
 #include "IPageAction.h"
 
 namespace Etrek::Worklist::Repository { class WorklistRepository; }
+namespace Etrek::Context { class IContextManager; }
 class WorkListConfigurationWidget;
 
 /**
@@ -72,11 +73,13 @@ namespace Etrek::Worklist::Delegate
 		 *
 		 * @param[in] widget Pointer to the associated UI widget.
 		 * @param[in] repository Shared pointer to the worklist repository for database operations.
+		 * @param[in] contextManager Weak pointer to the context manager for audit tracking.
 		 * @param[in] parent Parent QObject for memory management.
 		 */
 		WorkListConfigurationDelegate(
 			WorkListConfigurationWidget* widget,
 			std::shared_ptr<rpo::WorklistRepository> repository,
+			std::weak_ptr<Etrek::Context::IContextManager> contextManager,
 			QObject* parent);
 
 		/**
@@ -100,6 +103,7 @@ namespace Etrek::Worklist::Delegate
 	private:
 		WorkListConfigurationWidget* m_widget = nullptr;     ///< Pointer to the associated UI widget.
 		std::shared_ptr<rpo::WorklistRepository> m_repository; ///< Repository for database operations.
+		std::weak_ptr<Etrek::Context::IContextManager> m_contextManager; ///< Context manager for audit tracking.
 
 		/**
 		 * @brief Persists current widget state to the database.
