@@ -318,6 +318,48 @@ Unified workflow status tracking for all DICOM entities.
 - Full audit trail of status transitions
 - Supports workflow management (task assignment, prioritization)
 
+#### context_audit_log
+Audit trail for all context changes in the application.
+
+**Since**: Version 1.1 (2026-01-24)
+
+**Key Fields:**
+- `context_type`: SESSION or WORKFLOW
+- `context_key`: Workflow identifier (e.g., "Examination"), NULL for session
+- `event_type`: CREATED, UPDATED, CLEARED
+- `user_id`: User who triggered the change
+- `workstation_name`: Where the change occurred
+- `details`: JSON object with context-specific data
+- `timestamp`: When the event occurred
+
+**Indexes:**
+- `(user_id)` - Query by user
+- `(context_type)` - Filter by context type
+- `(context_key)` - Query specific workflows
+- `(timestamp DESC)` - Recent activity
+- `(event_type)` - Filter by event type
+
+**Purpose:**
+- Track user login/logout (session context)
+- Track examination workflow start/end
+- Settings changes affecting context
+- Compliance and debugging support
+
+**Example Queries:**
+```sql
+-- Get login history for a user
+SELECT * FROM context_audit_log 
+WHERE context_type = 'SESSION' AND event_type = 'CREATED' AND user_id = ?
+ORDER BY timestamp DESC LIMIT 10;
+
+-- Get examination workflow history
+SELECT * FROM context_audit_log
+WHERE context_type = 'WORKFLOW' AND context_key = 'Examination'
+ORDER BY timestamp DESC LIMIT 20;
+```
+
+**See Also**: Documents/09-ContextManager.md for implementation details.
+
 ---
 
 ### 3. Device & Hardware Configuration
