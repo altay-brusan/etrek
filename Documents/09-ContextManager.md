@@ -199,6 +199,88 @@ The `ContextManager` emits signals when context changes:
 
 `ContextManager` uses `QMutex` for thread-safe access to context data. All public methods are safe to call from any thread.
 
+## Context Audit Trail
+
+**Since**: Version 1.1 (2026-01-24)
+
+The `ContextAuditService` provides comprehensive audit logging for all context changes, supporting compliance and debugging requirements.
+
+### Architecture
+
+```
+ContextManager (emits signals)
+    ↓ signals: sessionContextChanged(), workflowContextChanged()
+ContextAuditService (listens)
+    ↓ persists to database
+context_audit_log table
+```
+
+### Features
+
+1. **Automatic Tracking**: All context changes are automatically audited
+   - Session creation (login)
+   - Session clearing (logout)
+   - Workflow context creation (examination start)
+   - Workflow context clearing (examination end)
+
+2. **Detailed Context Data**: Extracts and stores relevant context information as JSON
+   - Session: username, user_id, workstation, institution, signin time
+   - Workflow: worklist_entry_id, patient info, body part, accession number
+
+3. **Query API**: Retrieve audit history
+   ```cpp
+   // Get login history for a user
+   auto history = auditService->getAuditHistoryForUser(userId, 10);
+   
+   // Get recent examination workflow events
+   auto examHistory = auditService->getRecentAuditHistory(
+       ContextType::WORKFLOW, 20);
+   ```
+
+4. **Database Schema**:
+   ```sql
+   CREATE TABLE context_audit_log (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       context_type ENUM('SESSION', 'WORKFLOW'),
+       context_key VARCHAR(50),  -- NULL for session, workflow name for workflow
+       event_type ENUM('CREATED', 'UPDATED', 'CLEARED'),
+       user_id INT,
+       workstation_name VARCHAR(100),
+       details JSON,
+       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+       INDEX (user_id), INDEX (context_type), INDEX (timestamp)
+   );
+   ```
+
+### Integration
+
+The `ContextAuditService` is initialized in `ApplicationService` after successful authentication:
+
+```cpp
+// In ApplicationService::authenticateUser()
+if (!m_contextAuditService && m_databaseConnectionSetting) {
+    m_contextAuditService = std::make_shared<ContextAuditService>(
+        m_databaseConnectionSetting, this);
+    m_contextAuditService->connectToContextManager(m_contextManager.get());
+}
+```
+
+### Use Cases
+
+- **Compliance**: Track user login/logout times and workstation usage
+- **Debugging**: Trace when examination contexts were created/cleared
+- **Analytics**: Analyze workflow patterns and user activity
+- **Audit Reports**: Generate reports on context changes over time
+
+### Migration
+
+Database migration script: `Core/Script/migration_context_audit_log.sql`
+
+Run migration:
+```bash
+mysql -u root -p EtrekDb < Core/Script/migration_context_audit_log.sql
+```
+
 ## Future Extensions
 
 The system is designed to be extensible:
@@ -207,6 +289,8 @@ The system is designed to be extensible:
 2. **Additional session data**: Extend `SessionContext` with new fields
 3. **Context persistence**: Add save/restore for session recovery
 4. **Context events**: Subscribe to context changes via signals
+5. **Audit retention policies**: Implement automatic cleanup of old audit records
+6. **Real-time monitoring**: Subscribe to audit events for live monitoring dashboards
 
 ---
 

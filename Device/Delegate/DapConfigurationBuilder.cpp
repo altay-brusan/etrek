@@ -24,7 +24,7 @@ namespace Etrek::Device::Delegate
         auto widget = new DapConfigurationWidget(parentWidget);
 
         // Delegate receives repository to perform CRUD operations on apply/accept
-        auto delegate = new DapConfigurationDelegate(widget, repository, parentDelegate);
+        auto delegate = new DapConfigurationDelegate(widget, repository, params.contextManager, parentDelegate);
 
         return { widget, delegate };
     }

@@ -30,6 +30,8 @@
 #include "TechniqueConfigurationWidget.h"
 #include "ScanProtocolRepository.h"
 
+namespace Etrek::Context { class IContextManager; }
+
 namespace Etrek::ScanProtocol::Delegate {
 
     namespace ent = Etrek::ScanProtocol::Data::Entity;
@@ -79,10 +81,12 @@ namespace Etrek::ScanProtocol::Delegate {
          *
          * @param[in] widget Pointer to the associated UI widget.
          * @param[in] repo Shared pointer to the scan protocol repository.
+         * @param[in] contextManager Weak pointer to the context manager for audit tracking.
          * @param[in] parent Parent QObject for memory management.
          */
         TechniqueConfigurationDelegate(TechniqueConfigurationWidget* widget,
             std::shared_ptr<repo::ScanProtocolRepository> repo,
+            std::weak_ptr<Etrek::Context::IContextManager> contextManager,
             QObject* parent = nullptr);
 
         /**
@@ -120,6 +124,7 @@ namespace Etrek::ScanProtocol::Delegate {
 
         TechniqueConfigurationWidget* m_widget = nullptr;  ///< Pointer to the associated UI widget.
         std::shared_ptr<repo::ScanProtocolRepository> m_repo; ///< Repository for database operations.
+        std::weak_ptr<Etrek::Context::IContextManager> m_contextManager; ///< Context manager for audit tracking.
 
         /**
          * @brief Cache of last persisted parameters for change detection.

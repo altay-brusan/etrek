@@ -32,7 +32,7 @@ namespace Etrek::Device::Delegate
                                                        parentWidget);
         
         // Delegate receives repository because it needs to perform CRUD operations
-        auto delegate = new GeneratorConfigurationDelegate(widget, repository, parentDelegate);
+        auto delegate = new GeneratorConfigurationDelegate(widget, repository, params.contextManager, parentDelegate);
 
         // If you need to attach other delegates:
         // if (delegate) delegate->AttachDelegates(params.delegates.values());

@@ -248,6 +248,92 @@ Parse arguments with `Etrek::Specification::ParseLaunchMode()`:
 - Configuration stored in `RisConnectionSetting` entities
 - Mapping profiles convert DICOM tags to application entities
 
+## Context System
+
+The application uses a centralized context management system for tracking session and workflow state across components.
+
+### Core Components
+
+**Location**: `Core/Context/` and `Common/Include/Context/`
+
+| Component | File | Description |
+|-----------|------|-------------|
+| `IContextManager` | `Common/Include/Context/IContextManager.h` | Interface for context management |
+| `ContextManager` | `Core/Context/ContextManager.h/.cpp` | Thread-safe context storage with Qt signals |
+| `ISessionContext` | `Common/Include/Context/ISessionContext.h` | User session interface (user, workstation, institution) |
+| `SessionContext` | `Core/Context/SessionContext.h/.cpp` | Session implementation |
+| `IWorkflowContext` | `Common/Include/Context/IWorkflowContext.h` | Workflow state interface |
+| `IExaminationContext` | `Common/Include/Context/IExaminationContext.h` | Examination workflow (patient, worklist entry) |
+| `IContextAuditService` | `Common/Include/Context/IContextAuditService.h` | Audit logging interface |
+| `ContextAuditService` | `Core/Context/ContextAuditService.h/.cpp` | Audit trail implementation |
+
+### Context Flow
+
+1. **Session Context**: Created by `ApplicationService::authenticateUser()` after successful login
+2. **Workflow Context**: Set by delegates when user starts a workflow (e.g., selecting worklist item)
+3. **Audit Service**: Automatically logs context changes to `context_audit_log` table
+
+### Context Propagation
+
+Contexts are passed to delegates via `DelegateParameter`:
+```cpp
+struct DelegateParameter {
+    std::shared_ptr<DatabaseConnectionSetting> dbConnection;
+    std::weak_ptr<IContextManager> contextManager;      // For accessing contexts
+    std::shared_ptr<ISessionContext> sessionContext;    // Pre-fetched session
+    std::shared_ptr<IWorkflowContext> workflowContext;  // Pre-fetched workflow
+};
+```
+
+Builders fetch context from `ContextManager` and inject into delegates:
+```cpp
+// In builder
+params.contextManager = applicationService->contextManager();
+params.sessionContext = contextManager->sessionContext();
+
+// In delegate constructor
+MyDelegate(widget, repository, params.contextManager, parent);
+```
+
+### ContextAuditService
+
+The audit service monitors `ContextManager` signals and persists audit records:
+
+**Signals monitored:**
+- `sessionContextChanged()` - Login/logout events
+- `workflowContextChanged(key)` - Workflow starts
+- `workflowContextCleared(key)` - Workflow completions
+
+**Database table:** `context_audit_log`
+```sql
+CREATE TABLE context_audit_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    context_type VARCHAR(20),      -- 'SESSION' or 'WORKFLOW'
+    context_key VARCHAR(100),      -- Workflow identifier (NULL for session)
+    event_type VARCHAR(20),        -- 'CREATED', 'UPDATED', 'CLEARED'
+    user_id INT,
+    user_name VARCHAR(100),
+    workstation_name VARCHAR(100),
+    details JSON,                  -- Context-specific details
+    event_timestamp DATETIME(6)
+);
+```
+
+**Query methods:**
+- `getAuditHistoryForUser(userId, limit)` - User's audit trail
+- `getRecentAuditHistory(contextType, limit)` - Recent events by type
+- `getAuditHistoryByDateRange(from, to, contextType)` - Date range query
+- `getLoginHistory(userId, days)` - Login events for compliance
+
+### Configuration Delegates with Context
+
+All configuration delegates under `SystemSettingPageBuilder` receive context:
+- Device: Detector, Generator, DAP, Collimator, ConnectionSetup, Workflow
+- ScanProtocol: Procedure, View, Technique
+- Pacs: PacsEntityConfiguration
+- Worklist: WorkListConfiguration, RisProcedureMapping
+- Dicom: ImageCommentConfiguration
+
 ## Current Refactoring Efforts
 
 The branch `refactor/namespace-standardization-and-header-hygiene` is actively improving:

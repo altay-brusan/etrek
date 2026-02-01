@@ -26,7 +26,7 @@ namespace Etrek::ScanProtocol::Delegate
         auto widget = new ProcedureConfigurationWidget(procedures.value, bodyParts.value, anatomicalRegions.value, views.value, parentWidget);
 
         // Delegate receives repository to perform CRUD operations on apply/accept
-        auto delegate = new ProcedureConfigurationDelegate(widget, repository, parentDelegate);
+        auto delegate = new ProcedureConfigurationDelegate(widget, repository, params.contextManager, parentDelegate);
 
         return { widget, delegate };
     }

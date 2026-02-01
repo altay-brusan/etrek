@@ -24,7 +24,7 @@ namespace Etrek::Device::Delegate
         auto widget = new CollimatorConfigurationWidget(parentWidget);
 
         // Delegate receives repository to perform CRUD operations on apply/accept
-        auto delegate = new CollimatorConfigurationDelegate(widget, repository, parentDelegate);
+        auto delegate = new CollimatorConfigurationDelegate(widget, repository, params.contextManager, parentDelegate);
 
         return { widget, delegate };
     }

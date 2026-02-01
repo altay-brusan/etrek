@@ -27,7 +27,7 @@ namespace Etrek::Pacs::Delegate
         auto widget = new PacsEntityConfigurationWidget(nodesResult, parentWidget);
         
         // Delegate receives repository to perform CRUD operations on apply/accept
-        auto delegate = new PacsEntityConfigurationDelegate(widget, repository, parentDelegate);
+        auto delegate = new PacsEntityConfigurationDelegate(widget, repository, params.contextManager, parentDelegate);
 
         // If you need to attach other delegates:
         // if (delegate) delegate->AttachDelegates(params.delegates.values());

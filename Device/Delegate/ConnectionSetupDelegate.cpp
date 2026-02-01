@@ -2,8 +2,11 @@
 
 namespace Etrek::Device::Delegate
 {
-	ConnectionSetupDelegate::ConnectionSetupDelegate(QWidget* widget, QObject* parent)
-		: QObject(parent), m_widget(widget)
+	ConnectionSetupDelegate::ConnectionSetupDelegate(
+		QWidget* widget,
+		std::weak_ptr<Etrek::Context::IContextManager> contextManager,
+		QObject* parent)
+		: QObject(parent), m_widget(widget), m_contextManager(contextManager)
 	{
 	}
 
