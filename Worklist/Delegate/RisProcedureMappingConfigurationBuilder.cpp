@@ -42,7 +42,7 @@ namespace Etrek::Worklist::Delegate
 
         // Delegate receives repository to perform CRUD operations on apply/accept
         auto* delegate = new RisProcedureMappingConfigurationDelegate(
-            widget, repository, parentDelegate);
+            widget, repository, params.contextManager, parentDelegate);
 
         return { widget, delegate };
     }

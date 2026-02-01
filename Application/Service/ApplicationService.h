@@ -73,6 +73,7 @@ namespace Etrek::Worklist::Connectivity {
 
 namespace Etrek::Core::Context {
     class ContextManager;
+    class ContextAuditService;
 }
 
 namespace Etrek::Context {
@@ -156,6 +157,7 @@ namespace Etrek::Application::Service
         QVector<QSharedPointer<Etrek::Core::Data::Model::RisConnectionSetting>> m_risConnectionSettingList;
         Etrek::Worklist::Connectivity::ModalityWorklistManager* m_modalityWorklistManager = nullptr;
         std::shared_ptr<Etrek::Core::Context::ContextManager> m_contextManager;
+        std::shared_ptr<Etrek::Core::Context::ContextAuditService> m_contextAuditService;
 
         // Value members - MUST include headers
         Etrek::Core::Setting::SettingProvider m_settingProvider;

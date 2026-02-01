@@ -24,7 +24,7 @@ namespace Etrek::Dicom::Delegate
         auto widget = new ImageCommentConfigurationWidget(allComments, parentWidget);
         
         // Delegate receives repository to perform CRUD operations on apply/accept
-        auto delegate = new ImageCommentConfigurationDelegate(widget, repository, parentDelegate);
+        auto delegate = new ImageCommentConfigurationDelegate(widget, repository, params.contextManager, parentDelegate);
 
         // If you need to attach other delegates:
         // if (delegate) delegate->AttachDelegates(params.delegates.values());

@@ -10,8 +10,9 @@ namespace Etrek::ScanProtocol::Delegate {
     TechniqueConfigurationDelegate::TechniqueConfigurationDelegate(
         ::TechniqueConfigurationWidget* widget,
         std::shared_ptr<ScanProtocolRepository> repo,
+        std::weak_ptr<Etrek::Context::IContextManager> contextManager,
         QObject* parent)
-        : QObject(parent), m_widget(widget), m_repo(std::move(repo))
+        : QObject(parent), m_widget(widget), m_repo(std::move(repo)), m_contextManager(contextManager)
     {
     }
 

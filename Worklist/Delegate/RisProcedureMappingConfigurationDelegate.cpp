@@ -10,10 +10,12 @@ namespace Etrek::Worklist::Delegate
     RisProcedureMappingConfigurationDelegate::RisProcedureMappingConfigurationDelegate(
         RisProcedureMappingConfigurationWidget* widget,
         std::shared_ptr<RisProcedureMappingRepository> repository,
+        std::weak_ptr<Etrek::Context::IContextManager> contextManager,
         QObject* parent)
         : QObject(parent)
         , m_widget(widget)
         , m_repository(repository)
+        , m_contextManager(contextManager)
     {
     }
 

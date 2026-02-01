@@ -25,6 +25,7 @@
 #include "IPageAction.h"
 
 namespace Etrek::ScanProtocol::Repository { class ScanProtocolRepository; }
+namespace Etrek::Context { class IContextManager; }
 class ProcedureConfigurationWidget;
 
 namespace Etrek::ScanProtocol::Delegate
@@ -71,11 +72,13 @@ namespace Etrek::ScanProtocol::Delegate
 		 *
 		 * @param[in] widget Pointer to the associated UI widget.
 		 * @param[in] repository Shared pointer to the scan protocol repository.
+		 * @param[in] contextManager Weak pointer to the context manager for audit tracking.
 		 * @param[in] parent Parent QObject for memory management.
 		 */
 		ProcedureConfigurationDelegate(
 			ProcedureConfigurationWidget* widget,
 			std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> repository,
+			std::weak_ptr<Etrek::Context::IContextManager> contextManager,
 			QObject* parent);
 
 		/**
@@ -98,6 +101,7 @@ namespace Etrek::ScanProtocol::Delegate
 	private:
 		ProcedureConfigurationWidget* m_widget;  ///< Pointer to the associated UI widget.
 		std::shared_ptr<Etrek::ScanProtocol::Repository::ScanProtocolRepository> m_repository; ///< Repository for database operations.
+		std::weak_ptr<Etrek::Context::IContextManager> m_contextManager; ///< Context manager for audit tracking.
 
 		/**
 		 * @brief Persists current widget state to the database.
