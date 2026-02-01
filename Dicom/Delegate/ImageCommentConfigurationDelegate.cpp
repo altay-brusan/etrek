@@ -9,8 +9,9 @@ namespace Etrek::Dicom::Delegate
 	ImageCommentConfigurationDelegate::ImageCommentConfigurationDelegate(
 		ImageCommentConfigurationWidget* widget,
 		std::shared_ptr<ImageCommentRepository> repository,
+		std::weak_ptr<Etrek::Context::IContextManager> contextManager,
 		QObject* parent)
-		: QObject(parent), m_widget(widget), m_repository(repository)
+		: QObject(parent), m_widget(widget), m_repository(repository), m_contextManager(contextManager)
 	{
 	}
 
