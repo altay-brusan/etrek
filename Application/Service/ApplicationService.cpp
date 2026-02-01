@@ -17,6 +17,8 @@
 #include "ContextManager.h"
 #include "SessionContext.h"
 #include "IContextManager.h"
+#include "ContextAuditService.h"
+#include "ContextAuditRepository.h"
 #include "RisProcedureMappingRepository.h"
 #include "RisProcedureMappingService.h"
 #include "ScanProtocolRepository.h"
@@ -136,6 +138,16 @@ namespace Etrek::Application::Service
             m_contextManager->setSessionContext(sessionContext);
             logger->LogInfo(QString("Session context created for user: %1")
                 .arg(authenticationResult.value->Username));
+        }
+
+        // Initialize ContextAuditService after session context is set
+        if (!m_contextAuditService && m_databaseConnectionSetting && m_contextManager) {
+            auto auditRepository = std::make_shared<Etrek::Core::Repository::ContextAuditRepository>(
+                m_databaseConnectionSetting);
+            m_contextAuditService = std::make_shared<Etrek::Core::Context::ContextAuditService>(
+                auditRepository, this);
+            m_contextAuditService->connectToContextManager(m_contextManager.get());
+            logger->LogInfo("Context audit service initialized and connected");
         }
 
         logger->LogInfo(translator->getInfoMessage(AUTH_SUCCEED));
